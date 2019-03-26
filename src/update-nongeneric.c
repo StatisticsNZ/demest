@@ -3930,8 +3930,7 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 }
 
 
-/* y_R is a demographic array, g'teed to be doubles,
- * betas is a list, length same as length of the iteratorBetas' indices */
+/* y_R is a demographic array, g'teed to be doubles */
 void
 updateTheta_NormalVarying(SEXP object, SEXP y_R)
 {
@@ -3939,7 +3938,9 @@ updateTheta_NormalVarying(SEXP object, SEXP y_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
-    
+
+    double *mu = REAL(GET_SLOT(object, mu_sym));
+	
     double lower = *REAL(GET_SLOT(object, lower_sym));
     double upper = *REAL(GET_SLOT(object, upper_sym));
     double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
@@ -3952,19 +3953,6 @@ updateTheta_NormalVarying(SEXP object, SEXP y_R)
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
     double varsigma = *REAL(GET_SLOT(object, varsigma_sym));
     
-    SEXP betas_R = GET_SLOT(object, betas_sym);
-    int n_beta =  LENGTH(betas_R);
-
-    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym);
-
-    resetB(iteratorBetas_R);
-    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
-
-    double* betas[n_beta]; /* array of pointers */
-    for (int b = 0; b < n_beta; ++b) {
-        betas[b] = REAL(VECTOR_ELT(betas_R, b));
-    }
-
     double *y = REAL(y_R);
 
     double prec_prior = 1/(sigma*sigma);
@@ -3974,14 +3962,6 @@ updateTheta_NormalVarying(SEXP object, SEXP y_R)
 
     for (int i = 0; i < n_theta; ++i) {
         
-        /* get 'mu' */
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-            double *this_beta = betas[b];
-            
-            mu += this_beta[indices[b]-1];
-        }
-        
         double this_y = y[i];
         
         int y_is_missing = ( this_y == NA_REAL || ISNA(this_y) );
@@ -3990,13 +3970,13 @@ updateTheta_NormalVarying(SEXP object, SEXP y_R)
         double sd = 0;
         
         if (y_is_missing) {
-            mean = mu;
+            mean = mu[i];
             sd = sigma;
         }
         else {
             double prec_data = w[i] / varsigma_sq;
             double var = 1/ (prec_data + prec_prior);
-            mean = var * ( prec_prior * mu + prec_data * this_y);
+            mean = var * ( prec_prior * mu[i] + prec_data * this_y);
             sd = sqrt(var);
         }
         
@@ -4021,20 +4001,19 @@ updateTheta_NormalVarying(SEXP object, SEXP y_R)
             ++n_failed_prop_theta;
         }    
 
-        advanceB(iteratorBetas_R);
     } /* end loop through thetas */
     
     SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
 }
 
-/* y_R is g'teed to be real,
- * betas is a list, length same as length of the iteratorBetas' indices */
+/* y_R is g'teed to be real */
 void
 updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
 {
    
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
+
     double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
     int n_theta = LENGTH(theta_R);
     double * w = REAL(GET_SLOT(object, w_sym));
@@ -4048,23 +4027,13 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
 
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
 
-    SEXP betas_R = GET_SLOT(object, betas_sym);
-    
     double *weightAg = REAL(GET_SLOT(object, weightAg_sym));
     SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
-    /* same length as weightAg, and same as theta, I assume */
 
     int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
 
-    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym);
-
-    resetB(iteratorBetas_R);
-
-    /* make 'mu' (need whole thing to get values for th.other)*/
-    getMu(mu, n_theta, betas_R, iteratorBetas_R);
-    
     #ifdef DEBUGGING
         PrintValue(mkString("theta"));
         PrintValue(theta_R);
@@ -4073,8 +4042,6 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
         PrintValue(mu_R);
     #endif
     
-    resetB(iteratorBetas_R);
-
     double *y = REAL(y_R);
     
     int n_accept_theta = 0;
@@ -4351,7 +4318,6 @@ updateThetaAndValueAgNormal_Normal(SEXP object, SEXP y_R)
     double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
-    /* same length as weightBench, and same as theta, I assume */
 
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
 
@@ -4489,6 +4455,7 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
 
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
+    double *mu = REAL(GET_SLOT(object, mu_sym));
     int n_theta = LENGTH(theta_R);
     double *w = REAL(GET_SLOT(object, w_sym));
     /* n_theta and length of w and y_R are all identical */
@@ -4502,9 +4469,6 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
     double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
 
-    SEXP betas_R = GET_SLOT(object, betas_sym);
-    int n_beta =  LENGTH(betas_R);
-
     double *valueAg = REAL(GET_SLOT(object, valueAg_sym));
     
     double *meanAg = REAL(GET_SLOT(object, meanAg_sym));
@@ -4512,14 +4476,6 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
 
     SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
 
-    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym);
-    resetB(iteratorBetas_R);
-
-    double* betas[n_beta]; /* array of pointers */
-    for (int b = 0; b < n_beta; ++b) {
-        betas[b] = REAL(VECTOR_ELT(betas_R, b));
-    }
-    
     SEXP funAg_R = GET_SLOT(object, funAg_sym);
     
     /* set up to be able to call the R function from C */     
@@ -4545,18 +4501,10 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
     int n_accept_theta = 0;
     int n_failed_prop_theta = 0;
 
-    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
-
     for (int i = 0; i < n_theta; ++i) {
 
         int ir = i+1; /* R style index */
         
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-            double *this_beta = betas[b];
-            mu += this_beta[indices[b]-1];
-        }
-
         int i_ag_r = dembase_getIAfter(ir, transformAg_R);
         int i_ag = i_ag_r - 1;
         
@@ -4569,7 +4517,7 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
         
         double th_curr = theta[i];
         
-        double mean = mu;
+        double mean = mu[i];
         double sd = sigma;
         
         double this_w = w[i];
@@ -4627,8 +4575,8 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
                     log_diff = log_lik_prop - log_lik_curr;    
                 }
                 
-                double log_dens_prop = dnorm(th_prop, mu, sigma, USE_LOG);
-                double log_dens_curr = dnorm(th_curr, mu, sigma, USE_LOG);
+                double log_dens_prop = dnorm(th_prop, mu[i], sigma, USE_LOG);
+                double log_dens_curr = dnorm(th_curr, mu[i], sigma, USE_LOG);
                 log_diff += (log_dens_prop - log_dens_curr);
 
                 double ag_prop = 0;
@@ -4686,7 +4634,6 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
             ++n_failed_prop_theta;
         }
         
-        advanceB(iteratorBetas_R);
     } /* end i-loop through thetas */
     
     SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);

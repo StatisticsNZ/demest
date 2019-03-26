@@ -2787,6 +2787,7 @@ updateTheta_NormalVarying <- function(object, y, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        mu <- object@mu
         lower <- object@lower
         upper <- object@upper
         max.attempt <- object@maxAttempt
@@ -2794,28 +2795,21 @@ updateTheta_NormalVarying <- function(object, y, useC = FALSE) {
         w <- object@w
         varsigma <- object@varsigma@.Data
         sigma <- object@sigma@.Data
-        betas <- object@betas
-        iterator <- object@iteratorBetas
         max.attempt <- object@maxAttempt
         prec.prior <- 1 / (sigma^2)
         varsigma.sq <- varsigma^2
         n.failed.prop.theta <- 0L
-        iterator <- resetB(iterator)
         for (i in seq_along(theta)) {
-            indices <- iterator@indices
-            mu <- 0
-            for (b in seq_along(betas))
-                mu <- mu + betas[[b]][indices[b]]
             y.is.missing <- is.na(y[i])
             if (y.is.missing) {
                 sd <- sigma
-                mean <- mu
+                mean <- mu[i]
             }
             else {
                 prec.data <- w[i] / varsigma.sq
                 var <- 1 / (prec.data + prec.prior)
                 sd <- sqrt(var)
-                mean <- var * (prec.prior * mu + prec.data * y[i])
+                mean <- var * (prec.prior * mu[i] + prec.data * y[i])
             }
             found <- FALSE
             n.attempt <- 0L
@@ -2829,7 +2823,6 @@ updateTheta_NormalVarying <- function(object, y, useC = FALSE) {
                 theta[i] <- prop.value
             else
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
-            iterator <- advanceB(iterator)
         }
         object@theta <- theta
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
@@ -2860,7 +2853,6 @@ updateTheta_NormalVaryingAgCertain <- function(object, y, useC = FALSE) {
         w <- object@w
         varsigma <- object@varsigma@.Data
         sigma <- object@sigma@.Data
-        betas <- object@betas
         weight.ag <- object@weightAg
         transform.ag <- object@transformAg
         mu <- object@mu
@@ -2869,7 +2861,6 @@ updateTheta_NormalVaryingAgCertain <- function(object, y, useC = FALSE) {
         n.theta <- length(theta)
         n.accept.theta <- 0L
         n.failed.prop.theta <- 0L
-        mu <- makeMu(n = n.theta, betas = betas, iterator = iterator)
         for (i in seq_len(n.theta)) {
             ## determine type of update
             i.other <- makeIOther(i = i, transform = transform.ag, useC = TRUE)
@@ -3002,7 +2993,6 @@ updateTheta_NormalVaryingAgCertain <- function(object, y, useC = FALSE) {
             }
         }
         object@theta <- theta
-        object@mu <- mu
         object@nAcceptTheta@.Data <- n.accept.theta
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object
@@ -3135,6 +3125,7 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        mu <- object@mu
         scale <- object@scaleTheta
         w <- object@w
         lower <- object@lower
@@ -3142,8 +3133,6 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
         tolerance <- object@tolerance
         varsigma <- object@varsigma@.Data
         sigma <- object@sigma@.Data
-        betas <- object@betas
-        iterator <- object@iteratorBetas
         value.ag <- object@valueAg@.Data
         mean.ag <- object@meanAg@.Data
         sd.ag <- object@sdAg@.Data
@@ -3154,13 +3143,8 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
         max.attempt <- object@maxAttempt
         n.accept.theta <- 0L
         n.failed.prop.theta <- 0L
-        iterator <- resetB(iterator)
         n.shared <- length(x.args.ag[[1L]]@.Data)
         for (i in seq_along(theta)) {
-            indices <- iterator@indices
-            mu <- 0
-            for (b in seq_along(betas))
-                mu <- mu + betas[[b]][indices[b]]
             i.ag <- getIAfter(i = i,
                               transform = transform.ag,
                               check = FALSE,
@@ -3169,7 +3153,7 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
             y.is.missing <- is.na(y[i])
             th.curr <- theta[i]
             if (y.is.missing) {
-                mean <- mu
+                mean <- mu[i]
                 sd <- sigma
             }
             else {
@@ -3196,8 +3180,8 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
                         log.lik.curr <- stats::dnorm(y[i], mean = th.curr, sd = varsigma / sqrt(w[i]), log = TRUE)
                         log.diff <- log.lik.prop - log.lik.curr
                     }
-                    log.dens.prop <- stats::dnorm(x = th.prop, mean = mu, sd = sigma, log = TRUE)
-                    log.dens.curr <- stats::dnorm(x = th.curr, mean = mu, sd = sigma, log = TRUE)
+                    log.dens.prop <- stats::dnorm(x = th.prop, mean = mu[i], sd = sigma, log = TRUE)
+                    log.dens.curr <- stats::dnorm(x = th.curr, mean = mu[i], sd = sigma, log = TRUE)
                     log.diff <- log.diff + log.dens.prop - log.dens.curr
                     if (contributes.to.ag) {
                         ag.curr <- value.ag[i.ag]
@@ -3227,7 +3211,6 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
             }
             else
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
-            iterator <- advanceB(iterator)
         }
         object@theta <- theta
         object@valueAg@.Data <- value.ag

@@ -107,7 +107,7 @@ updateGradientBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
     if (useC) {
-        .Call(gradientBeta_R, object) 
+        .Call(updateGradientBetas_R, object) 
     }
     else {
         gradient.betas <- object@gradientBetas
