@@ -2096,6 +2096,7 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         scale.theta <- object@scaleTheta@.Data
         scale.theta.multiplier <- object@scaleThetaMultiplier@.Data
@@ -2103,7 +2104,6 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
         upper <- object@upper
         tolerance <- object@tolerance
         sigma <- object@sigma@.Data
-        betas <- object@betas
         weight.ag <- object@weightAg
         transform.ag <- object@transformAg
         max.attempt <- object@maxAttempt
@@ -2138,7 +2138,7 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
             found.prop <- FALSE
             attempt <- 0L
             th.curr <- theta[i]
-            logit.th.curr <- log(th.curr / (1 - th.curr))
+            logit.th.curr <- theta.transformed[i]
             while (!found.prop && (attempt < max.attempt)) {
                 attempt <- attempt + 1L
                 logit.th.prop <- stats::rnorm(n = 1L, mean = logit.th.curr, sd = scale.theta.i)
@@ -2197,7 +2197,7 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
             }
             ## calculate prior and proposal densities
             if (update.pair) {
-                logit.th.other.curr <- log(th.other.curr / (1 - th.other.curr))
+                logit.th.other.curr <- theta.transformed[i.other]
                 ## need to include Jacobians, since they do not cancel
                 ## with the proposal density, which is additive and nasty
                 log.diff.prior <- (-log(th.prop * (1 - th.prop))
@@ -2253,11 +2253,15 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
             if (accept) {
                 n.accept.theta <- n.accept.theta + 1L
                 theta[i] <- th.prop
-                if (update.pair)
+                theta.transformed[i] <- logit.th.prop
+                if (update.pair) {
                     theta[i.other] <- th.other.prop
+                    theta.transformed[i.other] <- logit.th.other.prop
+                }
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nAcceptTheta@.Data <- n.accept.theta
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object
@@ -2853,7 +2857,6 @@ updateTheta_NormalVaryingAgCertain <- function(object, y, useC = FALSE) {
         transform.ag <- object@transformAg
         mu <- object@mu
         max.attempt <- object@maxAttempt
-        iterator <- object@iteratorBetas
         n.theta <- length(theta)
         n.accept.theta <- 0L
         n.failed.prop.theta <- 0L

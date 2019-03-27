@@ -2882,6 +2882,7 @@ updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R and exposure_R are all identical */
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
@@ -2949,7 +2950,7 @@ updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
                             && is_has_other && is_weight_other_positive);
         
         double theta_curr = theta[i];
-        double logit_th_curr = log(theta_curr/(1- theta_curr));
+        double logit_th_curr = thetaTransformed[i];
 
         double theta_other_curr = (is_update_pair ? theta[i_other] : 0.0);
         
@@ -3042,8 +3043,7 @@ updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
         
             double mu_other = mu[i_other];
         
-            double logit_th_other_curr
-                        = log(theta_other_curr/(1- theta_other_curr));
+            double logit_th_other_curr = thetaTransformed[i_other];
 
             double log_diff_prior = 
                 -log(theta_prop*(1-theta_prop))
@@ -3059,14 +3059,14 @@ updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
                                                     logit_th_other_curr,
                                                     logit_th_prop,
                                                     logit_th_other_prop,
-                                                    scale_theta_i, /* changed by John 21 May 2016 */
+                                                    scale_theta_i,
                                                     weight, 
                                                     weight_other)
                                     - safeLogProp_Binomial(logit_th_prop,
                                                     logit_th_other_prop,
                                                     logit_th_curr,
                                                     logit_th_other_curr,
-                                                    scale_theta_i, /* changed by John 21 May 2016 */
+                                                    scale_theta_i,
                                                     weight, 
                                                     weight_other);
 
@@ -3083,11 +3083,12 @@ updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
         if (accept) {
             ++n_accept_theta;
             theta[i] = theta_prop;
+	    thetaTransformed[i] = logit_th_prop;
             
             if (is_update_pair) {
                 theta[i_other] = theta_other_prop;
-            
-           }
+		thetaTransformed[i_other] = logit_th_other_prop;            
+	    }
         }
         else {
         }
