@@ -2291,6 +2291,7 @@ updateThetaAndValueAgNormal_Binomial <- function(object, y, exposure, useC = FAL
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         lower <- object@lower
         upper <- object@upper
         tolerance <- object@tolerance
@@ -2312,7 +2313,7 @@ updateThetaAndValueAgNormal_Binomial <- function(object, y, exposure, useC = FAL
             i.ag <- dembase::getIBefore(k, transform = transform.ag, useC = TRUE)
             n.ag <- length(i.ag)
             vec.th.curr <- theta[i.ag]
-            vec.logit.th.curr <- log(vec.th.curr / (1 - vec.th.curr))
+            vec.logit.th.curr <- theta.transformed[i.ag]
             vec.th.prop <- numeric(length = n.ag)
             vec.logit.th.prop <- numeric(length = n.ag)
             attempt <- 0L
@@ -2326,7 +2327,7 @@ updateThetaAndValueAgNormal_Binomial <- function(object, y, exposure, useC = FAL
                     increment <- stats::rnorm(n = 1L, mean = 0, sd = scale.ag)
                     logit.th.prop <- vec.logit.th.curr[i] + increment
                     inside.limits <- ((logit.th.prop > lower + tolerance)
-                                      && (logit.th.prop < upper - tolerance))
+                        && (logit.th.prop < upper - tolerance))
                     if (!inside.limits)
                         break
                     if (logit.th.prop > 0) {
@@ -2358,39 +2359,41 @@ updateThetaAndValueAgNormal_Binomial <- function(object, y, exposure, useC = FAL
             mean.k <- mean.ag[k]
             sd.k <- sd.ag[k]
             log.diff.lik <- (sum(stats::dbinom(x = vec.y[is.observed],
-                                        size = vec.exp[is.observed],
-                                        prob = vec.th.prop[is.observed],
-                                        log = TRUE))
-                             - sum(stats::dbinom(x = vec.y[is.observed],
-                                          size = vec.exp[is.observed],
-                                          prob = vec.th.curr[is.observed],
-                                          log = TRUE)))
+                                               size = vec.exp[is.observed],
+                                               prob = vec.th.prop[is.observed],
+                                               log = TRUE))
+                - sum(stats::dbinom(x = vec.y[is.observed],
+                                    size = vec.exp[is.observed],
+                                    prob = vec.th.curr[is.observed],
+                                    log = TRUE)))
             ## do not include Jacobians, since they cancel with proposal densities
             log.diff.prior <- (sum(stats::dnorm(x = vec.logit.th.prop,
-                                         mean = vec.mu,
-                                         sd = sigma,
-                                         log = TRUE))
-                               - sum(stats::dnorm(x = vec.logit.th.curr,
-                                           mean = vec.mu,
-                                           sd = sigma,
-                                           log = TRUE)))
+                                                mean = vec.mu,
+                                                sd = sigma,
+                                                log = TRUE))
+                - sum(stats::dnorm(x = vec.logit.th.curr,
+                                   mean = vec.mu,
+                                   sd = sigma,
+                                   log = TRUE)))
             log.diff.ag <- (stats::dnorm(x = mean.k,
-                                  mean = ag.prop,
-                                  sd = sd.k,
-                                  log = TRUE)
-                            - stats::dnorm(x = mean.k,
-                                    mean = ag.curr,
-                                    sd = sd.k,
-                                    log = TRUE))
+                                         mean = ag.prop,
+                                         sd = sd.k,
+                                         log = TRUE)
+                - stats::dnorm(x = mean.k,
+                               mean = ag.curr,
+                               sd = sd.k,
+                               log = TRUE))
             log.diff <- log.diff.lik + log.diff.prior + log.diff.ag
             accept <- (log.diff >= 0) || (stats::runif(1) < exp(log.diff))
             if (accept) {
                 n.accept.ag <- n.accept.ag + 1L
                 value.ag[k] <- ag.prop
                 theta[i.ag] <- vec.th.prop
+                theta.transformed[i.ag] <- vec.logit.th.prop
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@valueAg@.Data <- value.ag
         object@nFailedPropValueAg@.Data <- n.failed.prop.value.ag
         object@nAcceptAg@.Data <- n.accept.ag
@@ -2422,6 +2425,7 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
@@ -2449,7 +2453,7 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
             contributes.to.ag <- i.ag > 0L
             y.is.missing <- is.na(y[i])
             th.curr <- theta[i]
-            logit.th.curr <- log(th.curr / (1 - th.curr))
+            logit.th.curr <- theta.transformed[i]
             if (y.is.missing) {
                 mean <- mu[i]
                 sd <- sigma
@@ -2472,8 +2476,10 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
                 else
                     th.prop <- exp(logit.th.prop) / (1 + exp(logit.th.prop))
                 draw.straight.from.prior <- y.is.missing && !contributes.to.ag
-                if (draw.straight.from.prior)
+                if (draw.straight.from.prior) {
                     theta[i] <- th.prop
+                    theta.transformed[i] <- logit.th.prop
+                }
                 else {
                     if (y.is.missing)
                         log.diff <- 0
@@ -2504,6 +2510,7 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
                     if (accept) {
                         n.accept.theta <- n.accept.theta + 1L
                         theta[i] <- th.prop
+                        theta.transformed[i] <- logit.th.prop
                         if (contributes.to.ag) {
                             x.args.ag[[i.ag]] <- x
                             value.ag[i.ag] <- ag.prop
@@ -2515,6 +2522,7 @@ updateThetaAndValueAgFun_Binomial <- function(object, y, exposure, useC = FALSE)
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@valueAg@.Data <- value.ag
         object@xArgsAg <- x.args.ag
         object@nFailedPropTheta@.Data <- n.failed.prop.theta

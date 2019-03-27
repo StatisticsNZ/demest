@@ -3108,6 +3108,7 @@ updateThetaAndValueAgNormal_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R and exposure_R are all identical */
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
@@ -3154,8 +3155,9 @@ updateThetaAndValueAgNormal_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
         for (int i = 0; i < nAg; ++i) {
             int index = iAg[i] - 1;
             double th_curr = theta[index];
+	    double logit_th_curr = thetaTransformed[index];
             vec_th_curr[i] = th_curr;
-            vec_logit_th_curr[i] = log(th_curr/(1-th_curr));
+            vec_logit_th_curr[i] = logit_th_curr;
         }
 
         int attempt = 0;
@@ -3255,6 +3257,7 @@ updateThetaAndValueAgNormal_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
             for (int i = 0; i < nAg; ++i) {
                 int index = iAg[i] - 1;
                 theta[index] = vec_th_prop[i];
+		thetaTransformed[index] = vec_logit_th_prop[i];
             }
         }
     } /* end for each value ag and set of thetas */
@@ -3272,6 +3275,7 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R are all identical */
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
@@ -3334,7 +3338,7 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
         int this_exposure = exposure[i];
         
         double theta_curr = theta[i];
-        double logit_th_curr = log( theta_curr/(1-theta_curr) );
+        double logit_th_curr = thetaTransformed[i];
         
         double mean = mu[i];
         double sd = sigma;
@@ -3414,6 +3418,7 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
             
             if (draw_straight_from_prior) {
                 theta[i] = theta_prop;
+		thetaTransformed[i] = logit_th_prop;
                 #ifdef DEBUGGING
                     PrintValue(mkString("drawing straight from prior"));
                     PrintValue(mkString("theta[i]"));
@@ -3527,6 +3532,7 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
                 if (accept) {
                     ++n_accept_theta;
                     theta[i] = theta_prop;
+		    thetaTransformed[i] = logit_th_prop;
                     if (contributes_to_ag) {
                         /* x will have been updated in place already*/
                         valueAg[i_ag] = ag_prop;
