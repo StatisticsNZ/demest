@@ -64,6 +64,7 @@ SEXP
   iMethodModel_sym, 
   priorsBetas_sym, 
   theta_sym,
+  thetaTransformed_sym,
   cellInLik_sym,
   mu_sym,
   sigma_sym,

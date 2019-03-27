@@ -1959,23 +1959,14 @@ updateSigma_Varying <- function(object, g, useC = FALSE) {
         A <- object@ASigma@.Data
         nu <- object@nuSigma@.Data
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
-        cell.in.lik <- object@cellInLik
-        if (identical(g, log)) { 
-            box.cox.param <- object@boxCoxParam 
-            uses.box.cox.transform <- box.cox.param > 0 
-        } 
-        else 
-            uses.box.cox.transform <- FALSE 
+        cell.in.lik <- object@cellInLik 
         V <- 0
         n <- 0L
         for (i in seq_along(theta)) {
             if (cell.in.lik[i]) {
-                if (uses.box.cox.transform) 
-                    transformed.theta <- (theta[i] ^ box.cox.param - 1) / box.cox.param 
-                else 
-                    transformed.theta <- g(theta[i]) 
-                V <- V + (transformed.theta - mu[i])^2
+                V <- V + (theta.transformed[i] - mu[i])^2
                 n <- n + 1L
             }
         }
@@ -2014,6 +2005,7 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
@@ -2033,7 +2025,7 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
             }
             else {
                 th.curr <- theta[i]
-                logit.th.curr <- log(th.curr / (1 - th.curr))
+                logit.th.curr <- theta.transformed[i]
                 mean <- logit.th.curr
                 sd <- scale * sqrt((exposure[i] - y[i] + 0.5) / ((exposure[i] + 0.5) * (y[i] + 0.5)))
             }
@@ -2050,13 +2042,15 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
                     th.prop <- 1 / (1 + exp(-logit.th.prop))
                 else
                     th.prop <- exp(logit.th.prop) / (1 + exp(logit.th.prop))
-                if (y.is.missing) 
+                if (y.is.missing) {
                     theta[i] <- th.prop
+                    theta.transformed[i] <- logit.th.prop
+                }
                 else {                 
                     log.lik.prop <- stats::dbinom(x = y[i], size = exposure[i], prob = th.prop, log = TRUE)
                     log.lik.curr <- stats::dbinom(x = y[i], size = exposure[i], prob = th.curr, log = TRUE)
                     ## The Jacobians from the transformation of variables cancel,
-                    ## as do the normal densitites in the proposal distributions.
+                    ## as do the normal densities in the proposal distributions.
                     log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu[i], sd = sigma, log = TRUE)
                     log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu[i], sd = sigma, log = TRUE)
                     log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
@@ -2064,6 +2058,7 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
                     if (accept) {
                         n.accept.theta <- n.accept.theta + 1L
                         theta[i] <- th.prop
+                        theta.transformed[i] <- logit.th.prop
                     }
                 }
             }
@@ -2071,6 +2066,7 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object@nAcceptTheta@.Data <- n.accept.theta
         object

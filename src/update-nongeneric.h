@@ -11,7 +11,7 @@
 
     void updateMu(SEXP object_R);
 
-    void updateSigma_Varying_General(SEXP object, double (*g)(double));
+    void updateSigma_Varying(SEXP object);
     
     void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double));
 

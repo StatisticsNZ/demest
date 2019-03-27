@@ -2622,6 +2622,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iMethodModel);
   ADD_SYM(priorsBetas);
   ADD_SYM(theta);
+  ADD_SYM(thetaTransformed);
   ADD_SYM(cellInLik);
   ADD_SYM(mu);
   ADD_SYM(sigma);

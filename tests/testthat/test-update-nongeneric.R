@@ -4830,6 +4830,7 @@ test_that("updateTheta_BinomialVarying gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- logit(theta.prop)
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -4864,6 +4865,7 @@ test_that("updateTheta_BinomialVarying gives valid answer", {
                + rep(model@betas[[3]], each = 2))
         sigma <- model@sigma
         ans.expected@theta <- invlogit(rnorm(n = 20, mean = mu, sd = sigma))
+        ans.expected@thetaTransformed <- logit(ans.expected@theta)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else

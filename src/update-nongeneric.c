@@ -2718,42 +2718,10 @@ updateMu(SEXP object_R)
 
 
 
-
-/* only here for testing updateSigma_Varying:
- * the uber update model function effectively duplicates this */
 void
 updateSigma_Varying(SEXP object)
 {
-     int i_method_model = *(INTEGER(GET_SLOT(object, iMethodModel_sym)));
-
-    switch(i_method_model)
-    {
-        case 4: case 5: case 12: case 13: case 14: case 15:/*Normal */
-            updateSigma_Varying_General(object, identity);
-            break;
-        case 6: case 10: case 16: case 17: case 20: case 21:/* Poisson */
-            updateSigma_Varying_General(object, log);
-            break;
-        case 9: case 18: case 19:/* Binomial */
-            updateSigma_Varying_General(object, logit);
-            break;
-        default:
-            error("unknown iMethodModel: %d", i_method_model);
-            break;
-    }
-}
-
-void
-updateSigma_Varying_General(SEXP object, double (*g)(double))
-{
-    double boxCoxParam = 0;
-    if (g == log) {
-        boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
-    }
-    int usesBoxCoxTransform = ((boxCoxParam > 0)? 1: 0);
-    
     SEXP sigma_R = GET_SLOT(object, sigma_sym);
-    
     double sigma = *REAL(GET_SLOT(sigma_R, Data_sym));
     double sigmaMax = *REAL(GET_SLOT(object, sigmaMax_sym));
     
@@ -2761,8 +2729,9 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
     double nu = *REAL(GET_SLOT(object, nuSigma_sym));
 
     SEXP theta_R = GET_SLOT(object, theta_sym);
-    double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
 
@@ -2772,21 +2741,10 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
     int n = 0;
     
     for (int i = 0; i < n_theta; ++i) {
-
       if (cellInLik[i]) {
-        
-        double transformedTheta = 0;
-        if(usesBoxCoxTransform) {
-	  transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
-        }
-        else {
-	  transformedTheta = g( theta[i] );
-        }
-        
-        double tmp = transformedTheta - mu[i];
+        double tmp = thetaTransformed[i] - mu[i];
         V += (tmp * tmp);
         n += 1;
-
       }
     }
 
@@ -2800,20 +2758,20 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
     }
 }
 
-/* y_R and exposure_R are both Counts objects, g'teed to be integer,
- * betas is a list, length same as length of the iteratorBetas' indices */
+/* y_R and exposure_R are both Counts objects, g'teed to be integer  */
 void
 updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R and exposure_R are all identical */
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
 
     double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
-    double scale_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym)); /* added by John 22 May 2016 */
+    double scale_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym));
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
     double upper = *REAL(GET_SLOT(object, upper_sym));
@@ -2840,14 +2798,13 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
         double mean = 0;
         double sd = 0;
         double theta_curr = theta[i]; /* only used if y not missing */
-        double logit_th_curr = 0.0; /* only used if y not missing */
+        double logit_th_curr = thetaTransformed[i]; /* only used if y not missing */
         
         if (y_is_missing) {
             mean = mu[i];
             sd = sigma;
         }
         else {
-	  logit_th_curr = log(theta_curr/(1- theta_curr));
 	  mean = logit_th_curr;
 	  sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
         }
@@ -2879,6 +2836,7 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
             
             if (y_is_missing) {
                 theta[i] = theta_prop;
+		thetaTransformed[i] = logit_th_prop;
             }
             else {
                 
@@ -2901,6 +2859,7 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
                 if (accept) {
                     ++n_accept_theta;
                     theta[i] = theta_prop;
+		    thetaTransformed[i] = logit_th_prop;
                 }
             }
         }
