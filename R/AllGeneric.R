@@ -131,11 +131,11 @@ setGeneric("concatDimScaleFirstSecond",
                                  "along", name, class(first), class(second)))
            })
 
-#' Decompose a Values array
+#' Decompose a demographic array
 #'
-#' Decompose a \code{\link[dembase]{Values}} array into terms
+#' Decompose a \code{\link[dembase]{DemographicArray}} array into terms
 #' made up of component dimensions, plus an error.
-#' \code{decompose} is typically used to obtain
+#' \code{decomposition} is typically used to obtain
 #' initial estimates of main effects and interactions,
 #' as part of model building.
 #'

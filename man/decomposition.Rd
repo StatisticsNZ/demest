@@ -3,12 +3,12 @@
 \docType{methods}
 \name{decomposition}
 \alias{decomposition}
-\alias{decomposition,Values-method}
-\title{Decompose a Values array}
+\alias{decomposition,DemographicArray-method}
+\title{Decompose a demographic array}
 \usage{
 decomposition(object, max = NULL)
 
-\S4method{decomposition}{Values}(object, max = NULL)
+\S4method{decomposition}{DemographicArray}(object, max = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\link[dembase]{Values}}.}
@@ -20,9 +20,9 @@ A named list, the elements of which have class
 \code{\link[dembase]{Values}}.
 }
 \description{
-Decompose a \code{\link[dembase]{Values}} array into terms
+Decompose a \code{\link[dembase]{DemographicArray}} array into terms
 made up of component dimensions, plus an error.
-\code{decompose} is typically used to obtain
+\code{decomposition} is typically used to obtain
 initial estimates of main effects and interactions,
 as part of model building.
 }
