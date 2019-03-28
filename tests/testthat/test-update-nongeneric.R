@@ -5497,6 +5497,7 @@ test_that("updateThetaAndNu_CMPVaryingNotUseExp gives valid answer", {
         ans.obtained <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y)
         expect_true(validObject(ans.obtained))
         expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@thetaTransformed != model@thetaTransformed))
         expect_true(any(ans.obtained@nuCMP != model@nuCMP))
         ## has missing values
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
@@ -5511,6 +5512,7 @@ test_that("updateThetaAndNu_CMPVaryingNotUseExp gives valid answer", {
         ans.obtained <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y)
         expect_true(validObject(ans.obtained))
         expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@thetaTransformed != model@thetaTransformed))
         expect_true(any(ans.obtained@nuCMP != model@nuCMP))
         ## has lower, upper
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
@@ -5526,6 +5528,7 @@ test_that("updateThetaAndNu_CMPVaryingNotUseExp gives valid answer", {
         set.seed(seed + 1)
         ans.obtained <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y)
         expect_true(all((ans.obtained@theta > 0.3) & ans.obtained@theta < 0.6))
+        expect_true(any(ans.obtained@thetaTransformed != model@thetaTransformed))
         expect_true(any(ans.obtained@theta != model@theta))
         expect_true(any(ans.obtained@nuCMP != model@nuCMP))
         ## boxcox 
@@ -5543,10 +5546,10 @@ test_that("updateThetaAndNu_CMPVaryingNotUseExp gives valid answer", {
         ans.obtained <- updateThetaAndNu_CMPVaryingNotUseExp(model, y = y)
         expect_true(validObject(ans.obtained))
         expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@thetaTransformed != model@thetaTransformed))
         expect_true(any(ans.obtained@nuCMP != model@nuCMP))
     }
 })
-
 
 test_that("R and C versions of updateThetaAndNu_CMPVaryingNotUseExp give same answer", {
     updateThetaAndNu_CMPVaryingNotUseExp <- demest:::updateThetaAndNu_CMPVaryingNotUseExp
@@ -5638,6 +5641,7 @@ test_that("updateThetaAndNu_CMPVaryingUseExp gives valid answer", {
         ans.obtained <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure)
         expect_true(validObject(ans.obtained))
         expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@thetaTransformed != model@thetaTransformed))
         expect_true(any(ans.obtained@nuCMP != model@nuCMP))
         ## has missing values
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
@@ -5652,6 +5656,7 @@ test_that("updateThetaAndNu_CMPVaryingUseExp gives valid answer", {
         ans.obtained <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure)
         expect_true(validObject(ans.obtained))
         expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@thetaTransformed != model@thetaTransformed))
         expect_true(any(ans.obtained@nuCMP != model@nuCMP))
         ## has lower, upper
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
@@ -5668,6 +5673,7 @@ test_that("updateThetaAndNu_CMPVaryingUseExp gives valid answer", {
         ans.obtained <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure)
         expect_true(all((ans.obtained@theta > 0.3) & ans.obtained@theta < 0.6))
         expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@thetaTransformed != model@thetaTransformed))
         expect_true(any(ans.obtained@nuCMP != model@nuCMP))
         ## boxcox
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
@@ -5681,6 +5687,7 @@ test_that("updateThetaAndNu_CMPVaryingUseExp gives valid answer", {
         ans.obtained <- updateThetaAndNu_CMPVaryingUseExp(model, y = y, exposure = exposure)
         expect_true(validObject(ans.obtained))
         expect_true(any(ans.obtained@theta != model@theta))
+        expect_true(any(ans.obtained@thetaTransformed != model@thetaTransformed))
         expect_true(any(ans.obtained@nuCMP != model@nuCMP))
     }
 })

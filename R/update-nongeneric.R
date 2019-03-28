@@ -2547,6 +2547,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         box.cox.param <- object@boxCoxParam
         cell.in.lik <- object@cellInLik
@@ -2575,10 +2576,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                 }
                 else {
                     th.curr <- theta[i]
-                    if (box.cox.param > 0)
-                        tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
-                    else
-                        tr.th.curr <- log(th.curr)
+                    tr.th.curr <- theta.transformed[i]
                     mean <- tr.th.curr
                     if (y.is.missing)
                         sd <- scale / scale.multiplier
@@ -2600,6 +2598,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         th.prop <- exp(tr.th.prop)
                     if (y.is.missing) {
                         theta[i] <- th.prop
+                        theta.transformed[i] <- tr.th.prop
                         nu[i] <- stats::rlnorm(n = 1L,
                                                meanlog = mean.log.nu,
                                                sdlog = sd.log.nu)
@@ -2630,6 +2629,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                             if (accept) {
                                 n.accept.theta <- n.accept.theta + 1L
                                 theta[i] <- th.prop
+                                theta.transformed[i] <- tr.th.prop
                                 nu[i] <- nu.prop
                             }
                         }
@@ -2643,6 +2643,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nuCMP <- nu
         object@nFailedPropYStar@.Data <- n.failed.prop.y.star
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
@@ -2674,6 +2675,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         box.cox.param <- object@boxCoxParam
         cell.in.lik <- object@cellInLik
@@ -2702,10 +2704,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                 }
                 else {
                     th.curr <- theta[i]
-                    if (box.cox.param > 0)
-                        tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
-                    else
-                        tr.th.curr <- log(th.curr)
+                    tr.th.curr <- theta.transformed[i]
                     mean <- tr.th.curr
                     sd <- scale / sqrt(1 + y[i])
                 }
@@ -2724,9 +2723,10 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                         th.prop <- exp(tr.th.prop)
                     if (y.is.missing) {
                         theta[i] <- th.prop
+                        theta.transformed[i] <- tr.th.prop
                         nu[i] <- stats::rlnorm(n = 1L,
-                                        meanlog = mean.log.nu,
-                                        sdlog = sd.log.nu)
+                                               meanlog = mean.log.nu,
+                                               sdlog = sd.log.nu)
                     }
                     else {
                         nu.curr <- nu[i]
@@ -2756,6 +2756,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                             if (accept) {
                                 n.accept.theta <- n.accept.theta + 1L
                                 theta[i] <- th.prop
+                                theta.transformed[i] <- tr.th.prop
                                 nu[i] <- nu.prop
                             }
                         }
@@ -2769,6 +2770,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nuCMP <- nu
         object@nFailedPropYStar@.Data <- n.failed.prop.y.star
         object@nFailedPropTheta@.Data <- n.failed.prop.theta

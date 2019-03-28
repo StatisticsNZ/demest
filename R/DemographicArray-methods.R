@@ -399,7 +399,7 @@ setMethod("classY",
 #' @rdname decomposition
 #' @export
 setMethod("decomposition",
-          signature(object = "Values"),
+          signature(object = "DemographicArray"),
           function(object, max = NULL) {
               if (length(object) == 0L)
                   stop(gettextf("'%s' has length %d",

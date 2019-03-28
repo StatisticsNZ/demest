@@ -483,7 +483,7 @@ test_that("decomposition works", {
                    age = 0, sex = 0, time = 0,
                    error = 0))
     expect_equal(Reduce("+", ans.obtained), x)
-    x <- Values(array(rnorm(3),
+    x <- Counts(array(rnorm(3),
                       dim = 3,
                       dimnames = list(age = c("0-4", "5-9", "10+"))))
     ans.obtained <- decomposition(x)

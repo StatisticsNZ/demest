@@ -133,9 +133,9 @@ setGeneric("concatDimScaleFirstSecond",
 
 #' Decompose a Values array
 #'
-#' Decompose a \code{\link[dembase]{Values}} array into terms
+#' Decompose a \code{\link[dembase]{DemographicArray}} into terms
 #' made up of component dimensions, plus an error.
-#' \code{decompose} is typically used to obtain
+#' \code{decomposition} is typically used to obtain
 #' initial estimates of main effects and interactions,
 #' as part of model building.
 #'
@@ -159,7 +159,8 @@ setGeneric("concatDimScaleFirstSecond",
 #' \code{\link[dembase]{pairToState}} on \code{object},
 #' to cope with origin-destination or parent-child dimensions.
 #'
-#' @param object An object of class \code{\link[dembase]{Values}}.
+#' @param object An object of class
+#' \code{\link[dembase]{DemographicArray}}.
 #' @param max An integer. Optional.
 #'
 #' @return A named list, the elements of which have class

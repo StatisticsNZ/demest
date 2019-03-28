@@ -3576,6 +3576,7 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
     SEXP theta_R = GET_SLOT(object_R, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object_R, thetaTransformed_sym));
     int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
 
     double *mu = REAL(GET_SLOT(object_R, mu_sym));
@@ -3625,12 +3626,7 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
 	    }
 	    else {
 		th_curr = theta[i];
-		if(usesBoxCoxTransform) {
-		    tr_th_curr = ( pow(th_curr, boxCoxParam) - 1)/boxCoxParam; 
-		}
-		else {
-		    tr_th_curr = log(th_curr);
-		}
+		tr_th_curr = thetaTransformed[i];
 		mean = tr_th_curr;
 		if (y_is_missing) {
 		    sd = scale / scaleMultiplier;
@@ -3667,6 +3663,7 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
             
 		if (y_is_missing) {
 		    theta[i] = th_prop;
+		    thetaTransformed[i] = tr_th_prop;
 		    nu[i] = rlnorm(meanLogNu, sdLogNu);
 		}
 		else {
@@ -3724,6 +3721,7 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
 			if (accept) {
 			    ++n_accept_theta;
 			    theta[i] = th_prop;
+			    thetaTransformed[i] = tr_th_prop;
 			    nu[i] = nu_prop; 
 			}
 		    }
@@ -3752,6 +3750,7 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
     SEXP theta_R = GET_SLOT(object_R, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object_R, thetaTransformed_sym));
     int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
 
     double *mu = REAL(GET_SLOT(object_R, mu_sym));
@@ -3802,12 +3801,7 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 	    }
 	    else {
 		th_curr = theta[i];
-		if(usesBoxCoxTransform) {
-		    tr_th_curr = ( pow(th_curr, boxCoxParam) - 1)/boxCoxParam; 
-		}
-		else {
-		    tr_th_curr = log(th_curr);
-		}
+		tr_th_curr = thetaTransformed[i];
 		mean = tr_th_curr;
 		sd = scale / sqrt(1 + this_y);
 	    }
@@ -3839,6 +3833,7 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
             
 		if (y_is_missing) {
 		    theta[i] = th_prop;
+		    thetaTransformed[i] = tr_th_prop;
 		    nu[i] = rlnorm(meanLogNu, sdLogNu);        
 		}
 		else {
@@ -3875,6 +3870,7 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 			if (accept) {
 			    ++n_accept_theta;
 			    theta[i] = th_prop;
+			    thetaTransformed[i] = tr_th_prop;
 			    nu[i] = nu_prop; 
 			}
 		    }
