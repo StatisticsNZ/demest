@@ -400,7 +400,7 @@ setMethod("classY",
 #' @export
 setMethod("decomposition",
           signature(object = "Values"),
-          function(object) {
+          function(object, max = NULL) {
               if (length(object) == 0L)
                   stop(gettextf("'%s' has length %d",
                                 "object", 0L))
@@ -415,10 +415,15 @@ setMethod("decomposition",
               .Data <- object@.Data
               metadata <- object@metadata
               n <- length(dim)
+              if (is.null(max))
+                  max <- n - 1L
+              else
+                  checkNonNegativeInteger(max)
               intercept <- mean(.Data)
               ans <- list("(Intercept)" = intercept)
               if (n > 1L) {
-                  margins <- listAllSubsets(n)
+                  margins <- listAllSubsets(n = n,
+                                            max = max)
                   makeMean <- function(margin) apply(.Data, margin, mean)
                   means <- lapply(margins, makeMean)
                   metadata.means <- lapply(margins, function(margin) metadata[margin])
@@ -441,10 +446,7 @@ setMethod("decomposition",
               }
               predicted <- Reduce(f = "+", x = ans)
               error <- object - predicted
-              name <- paste(names(object), collapse = ":")
-              error <- list(error)
-              names(error) <- name
-              ans <- c(ans, error)
+              ans <- c(ans, list(error = error))
               ans
           })
 

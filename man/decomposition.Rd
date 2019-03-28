@@ -6,12 +6,14 @@
 \alias{decomposition,Values-method}
 \title{Decompose a Values array}
 \usage{
-decomposition(object)
+decomposition(object, max = NULL)
 
-\S4method{decomposition}{Values}(object)
+\S4method{decomposition}{Values}(object, max = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{\link[dembase]{Values}}.}
+
+\item{max}{An integer. Optional.}
 }
 \value{
 A named list, the elements of which have class
@@ -19,14 +21,31 @@ A named list, the elements of which have class
 }
 \description{
 Decompose a \code{\link[dembase]{Values}} array into terms
-made up of component dimensions.  Typically used to obtain
+made up of component dimensions, plus an error.
+\code{decompose} is typically used to obtain
 initial estimates of main effects and interactions,
 as part of model building.
 }
 \details{
 When building a Poisson model, the decomposition is usually
 carried out on log-rates, and when building a binomial model,
-it is usually carried out on logit-proportions.
+it is usually carried out on logit-proportions, though in both
+cases other transformations (or no transformation) may be
+appropriate if there are lots of zeros.
+
+The final element in the return value is an 'error'
+array. This equals the observed value for \code{object} minus the
+sum of the terms in the decomposition.
+
+The \code{max} argument controls the maximum order of
+the interactions included in decomposition. For instance,
+if \code{max} is \code{2}, then only main effects and second-order
+interactions are included in the decomposition.  By default,
+all interactions are included.
+
+Internally, \code{decomposition} calls function
+\code{\link[dembase]{pairToState}} on \code{object},
+to cope with origin-destination or parent-child dimensions.
 }
 \examples{
 deaths <- Counts(demdata::VADeaths2)
@@ -40,6 +59,8 @@ ans[["age:residence"]]
 mean(log.rates)
 round(sapply(ans, sum), 5)
 all.equal(Reduce("+", ans), log.rates)
+## main effects only
+decomposition(log.rates, max = 1)
 }
 \references{
 Chapter 12 of Bryant and Zhang,
