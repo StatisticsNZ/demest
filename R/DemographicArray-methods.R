@@ -394,8 +394,6 @@ setMethod("classY",
 
 ## decomposition ##################################################################
 
-
-
 #' @rdname decomposition
 #' @export
 setMethod("decomposition",

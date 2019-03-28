@@ -131,7 +131,7 @@ setGeneric("concatDimScaleFirstSecond",
                                  "along", name, class(first), class(second)))
            })
 
-#' Decompose a Values array
+#' Decompose a demographic array
 #'
 #' Decompose a \code{\link[dembase]{DemographicArray}} into terms
 #' made up of component dimensions, plus an error.

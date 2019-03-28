@@ -4,7 +4,7 @@
 \name{decomposition}
 \alias{decomposition}
 \alias{decomposition,DemographicArray-method}
-\title{Decompose a Values array}
+\title{Decompose a demographic array}
 \usage{
 decomposition(object, max = NULL)
 
@@ -21,6 +21,7 @@ A named list, the elements of which have class
 \code{\link[dembase]{Values}}.
 }
 \description{
+
 Decompose a \code{\link[dembase]{DemographicArray}} into terms
 made up of component dimensions, plus an error.
 \code{decomposition} is typically used to obtain

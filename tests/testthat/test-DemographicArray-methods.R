@@ -492,6 +492,15 @@ test_that("decomposition works", {
                  c("(Intercept)" = mean(x),
                    error = 0))
     expect_equal(Reduce("+", ans.obtained), x)
+    x <- Counts(array(rnorm(3),
+                      dim = 3,
+                      dimnames = list(age = c("0-4", "5-9", "10+"))))
+    ans.obtained <- decomposition(x)
+    expect_equal(ans.obtained[[1]], mean(x))
+    expect_equal(sapply(ans.obtained, sum),
+                 c("(Intercept)" = mean(x),
+                   error = 0))
+    expect_equal(Reduce("+", ans.obtained), x)
 })
 
 
