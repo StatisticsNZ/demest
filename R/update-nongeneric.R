@@ -2797,6 +2797,7 @@ updateTheta_NormalVarying <- function(object, y, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         lower <- object@lower
         upper <- object@upper
@@ -2829,12 +2830,15 @@ updateTheta_NormalVarying <- function(object, y, useC = FALSE) {
                 found <- ((prop.value > (lower + tolerance))
                           && (prop.value < (upper - tolerance)))
             }
-            if (found)
+            if (found) {
                 theta[i] <- prop.value
+                theta.transformed[i] <- prop.value
+            }
             else
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object
     }
@@ -2856,7 +2860,8 @@ updateTheta_NormalVaryingAgCertain <- function(object, y, useC = FALSE) {
     }
     else {
         theta <- object@theta
-        scale.theta <- object@scaleTheta@.Data  ## NEW
+        theta.transformed <- object@thetaTransformed
+        scale.theta <- object@scaleTheta@.Data
         lower <- object@lower
         upper <- object@upper
         tolerance <- object@tolerance
@@ -2884,14 +2889,14 @@ updateTheta_NormalVaryingAgCertain <- function(object, y, useC = FALSE) {
                 }
             }
             value.fixed <- (in.delta
-                            && weight.positive
-                            && (!has.other || !weight.other.positive))
+                && weight.positive
+                && (!has.other || !weight.other.positive))
             if (value.fixed)
                 next
             update.pair <- (in.delta
-                            && weight.positive
-                            && has.other
-                            && weight.other.positive)
+                && weight.positive
+                && has.other
+                && weight.other.positive)
             ## generate proposal
             found.prop <- FALSE
             attempt <- 0L
@@ -2900,14 +2905,14 @@ updateTheta_NormalVaryingAgCertain <- function(object, y, useC = FALSE) {
                 attempt <- attempt + 1L
                 th.prop <- stats::rnorm(n = 1L, mean = th.curr, sd = scale.theta)
                 prop.in.range <- ((th.prop > lower + tolerance)
-                                  && (th.prop < upper - tolerance))
+                    && (th.prop < upper - tolerance))
                 if (!prop.in.range)
                     next
                 if (update.pair) {
                     th.other.curr <- theta[i.other]
                     th.other.prop <- (th.curr - th.prop) * weight / weight.other + th.other.curr
                     found.prop <- ((th.other.prop > lower + tolerance)
-                                   && (th.other.prop < upper - tolerance))
+                        && (th.other.prop < upper - tolerance))
                 }
                 else
                     found.prop <- TRUE
@@ -2922,26 +2927,26 @@ updateTheta_NormalVaryingAgCertain <- function(object, y, useC = FALSE) {
             if (!is.na(y.i)) {
                 sd.i <- varsigma / sqrt(w[i])
                 log.diff <- log.diff + (stats::dnorm(x = y.i,
-                                              mean = th.prop,
-                                              sd = sd.i,
-                                              log = TRUE)
-                                        - stats::dnorm(x = y.i,
-                                                mean = th.curr,
-                                                sd = sd.i,
-                                                log = TRUE))
+                                                     mean = th.prop,
+                                                     sd = sd.i,
+                                                     log = TRUE)
+                    - stats::dnorm(x = y.i,
+                                   mean = th.curr,
+                                   sd = sd.i,
+                                   log = TRUE))
             }
             if (update.pair) {
                 y.other <- y[i.other]
                 if (!is.na(y.other)) {
                     sd.other <- varsigma / sqrt(w[i.other])
                     log.diff <- log.diff + (stats::dnorm(x = y.other,
-                                                  mean = th.other.prop,
-                                                  sd = sd.other,
-                                                  log = TRUE)
-                                            - stats::dnorm(x = y.other,
-                                                    mean = th.other.curr,
-                                                    sd = sd.other,
-                                                    log = TRUE))
+                                                         mean = th.other.prop,
+                                                         sd = sd.other,
+                                                         log = TRUE)
+                        - stats::dnorm(x = y.other,
+                                       mean = th.other.curr,
+                                       sd = sd.other,
+                                       log = TRUE))
                 }
             }
             ## calculate prior and proposal densities
@@ -2949,59 +2954,63 @@ updateTheta_NormalVaryingAgCertain <- function(object, y, useC = FALSE) {
             if (update.pair) {
                 mu.other <- mu[i.other]
                 log.diff.prior <- (stats::dnorm(x = th.prop,
-                                         mean = mu.i,
-                                         sd = sigma,
-                                         log = TRUE)
-                                   + stats::dnorm(x = th.other.prop,
-                                           mean = mu.other,
-                                           sd = sigma,
-                                           log = TRUE)
-                                   - stats::dnorm(x = th.curr,
-                                           mean = mu.i,
-                                           sd = sigma,
-                                           log = TRUE)
-                                   - stats::dnorm(x = th.other.curr,
-                                           mean = mu.other,
-                                           sd = sigma,
-                                           log = TRUE))
+                                                mean = mu.i,
+                                                sd = sigma,
+                                                log = TRUE)
+                    + stats::dnorm(x = th.other.prop,
+                                   mean = mu.other,
+                                   sd = sigma,
+                                   log = TRUE)
+                    - stats::dnorm(x = th.curr,
+                                   mean = mu.i,
+                                   sd = sigma,
+                                   log = TRUE)
+                    - stats::dnorm(x = th.other.curr,
+                                   mean = mu.other,
+                                   sd = sigma,
+                                   log = TRUE))
                 weight.ratio <- abs(weight / weight.other)
                 log.diff.prop <- (log(stats::dnorm(x = th.curr,
-                                            mean = th.prop,
-                                            sd = scale.theta)
+                                                   mean = th.prop,
+                                                   sd = scale.theta)
                                       + weight.ratio
                                       * stats::dnorm(x = th.other.curr,
-                                              mean = th.other.prop,
-                                              sd = scale.theta))
-                                  - log(stats::dnorm(x = th.prop,
-                                              mean = th.curr,
-                                              sd = scale.theta)
-                                        + weight.ratio
-                                        * stats::dnorm(x = th.other.prop,
-                                                mean = th.other.curr,
-                                                sd = scale.theta)))
+                                                     mean = th.other.prop,
+                                                     sd = scale.theta))
+                    - log(stats::dnorm(x = th.prop,
+                                       mean = th.curr,
+                                       sd = scale.theta)
+                          + weight.ratio
+                          * stats::dnorm(x = th.other.prop,
+                                         mean = th.other.curr,
+                                         sd = scale.theta)))
                 log.diff <- log.diff + log.diff.prior + log.diff.prop
             }
             else {
                 ## proposal densities cancel
                 log.diff <- log.diff + (stats::dnorm(x = th.prop,
-                                              mean = mu.i,
-                                              sd = sigma,
-                                              log = TRUE)
-                                        - stats::dnorm(x = th.curr,
-                                                mean = mu.i,
-                                                sd = sigma,
-                                                log = TRUE))
+                                                     mean = mu.i,
+                                                     sd = sigma,
+                                                     log = TRUE)
+                    - stats::dnorm(x = th.curr,
+                                   mean = mu.i,
+                                   sd = sigma,
+                                   log = TRUE))
             }
             ## acceptance
             accept <- (log.diff >= 0) || (stats::runif(1) < exp(log.diff))
             if (accept) {
                 n.accept.theta <- n.accept.theta + 1L
                 theta[i] <- th.prop
-                if (update.pair)
+                theta.transformed[i] <- th.prop
+                if (update.pair) {
                     theta[i.other] <- th.other.prop
+                    theta.transformed[i.other] <- th.other.prop
+                }
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nAcceptTheta@.Data <- n.accept.theta
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object
@@ -3024,6 +3033,7 @@ updateThetaAndValueAgNormal_Normal <- function(object, y, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         w <- object@w
         varsigma <- object@varsigma@.Data
         lower <- object@lower
@@ -3059,7 +3069,7 @@ updateThetaAndValueAgNormal_Normal <- function(object, y, useC = FALSE) {
                     increment <- stats::rnorm(n = 1L, mean = 0, sd = scale.ag)
                     th.prop <- vec.th.curr[i] + increment
                     inside.limits <- ((th.prop > (lower + tolerance))
-                                      && (th.prop < (upper - tolerance)))
+                        && (th.prop < (upper - tolerance)))
                     if (!inside.limits)
                         break
                     vec.th.prop[i] <- th.prop
@@ -3080,37 +3090,39 @@ updateThetaAndValueAgNormal_Normal <- function(object, y, useC = FALSE) {
             mean.k <- mean.ag[k]
             sd.k <- sd.ag[k]
             log.diff.lik <- (sum(stats::dnorm(x = vec.y[is.observed],
-                                       mean = vec.th.prop[is.observed],
-                                       sd = vec.sd[is.observed],
-                                       log = TRUE))
-                             - sum(stats::dnorm(x = vec.y[is.observed],
-                                         mean = vec.th.curr[is.observed],
-                                         sd = vec.sd[is.observed],
-                                         log = TRUE)))
+                                              mean = vec.th.prop[is.observed],
+                                              sd = vec.sd[is.observed],
+                                              log = TRUE))
+                - sum(stats::dnorm(x = vec.y[is.observed],
+                                   mean = vec.th.curr[is.observed],
+                                   sd = vec.sd[is.observed],
+                                   log = TRUE)))
             log.diff.prior <- (sum(stats::dnorm(x = vec.th.prop,
-                                         mean = vec.mu,
-                                         sd = sigma, log = TRUE))
-                               - sum(stats::dnorm(x = vec.th.curr,
-                                           mean = vec.mu,
-                                           sd = sigma,
-                                           log = TRUE)))
+                                                mean = vec.mu,
+                                                sd = sigma, log = TRUE))
+                - sum(stats::dnorm(x = vec.th.curr,
+                                   mean = vec.mu,
+                                   sd = sigma,
+                                   log = TRUE)))
             log.diff.ag <- (stats::dnorm(x = mean.k, 
-                                  mean = ag.prop,
-                                  sd = sd.k,
-                                  log = TRUE)
-                            - stats::dnorm(x = mean.k,
-                                    mean = ag.curr,
-                                    sd = sd.k,
-                                    log = TRUE))
+                                         mean = ag.prop,
+                                         sd = sd.k,
+                                         log = TRUE)
+                - stats::dnorm(x = mean.k,
+                               mean = ag.curr,
+                               sd = sd.k,
+                               log = TRUE))
             log.diff <- log.diff.lik + log.diff.prior + log.diff.ag
             accept <- (log.diff >= 0) || (stats::runif(1) < exp(log.diff))
             if (accept) {
                 n.accept.ag <- n.accept.ag + 1L
                 value.ag[k] <- ag.prop
                 theta[i.ag] <- vec.th.prop
+                theta.transformed[i.ag] <- vec.th.prop
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@valueAg@.Data <- value.ag
         object@nFailedPropValueAg@.Data <- n.failed.prop.value.ag
         object@nAcceptAg@.Data <- n.accept.ag
@@ -3134,6 +3146,7 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         scale <- object@scaleTheta
         w <- object@w
@@ -3179,8 +3192,10 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
             }
             if (found.prop) {
                 draw.straight.from.prior <- y.is.missing && !contributes.to.ag
-                if (draw.straight.from.prior)
+                if (draw.straight.from.prior) {
                     theta[i] <- th.prop
+                    theta.transformed[i] <- th.prop
+                }
                 else {
                     if (y.is.missing)
                         log.diff <- 0
@@ -3211,6 +3226,7 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
                     if (accept) {
                         n.accept.theta <- n.accept.theta + 1L
                         theta[i] <- th.prop
+                        theta.transformed[i] <- th.prop
                         if (contributes.to.ag) {
                             x.args.ag[[i.ag]] <- x
                             value.ag[i.ag] <- ag.prop
@@ -3222,6 +3238,7 @@ updateThetaAndValueAgFun_Normal <- function(object, y, useC = FALSE) {
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@valueAg@.Data <- value.ag
         object@xArgsAg <- x.args.ag
         object@nFailedPropTheta@.Data <- n.failed.prop.theta

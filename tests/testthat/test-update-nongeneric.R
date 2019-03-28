@@ -5801,6 +5801,7 @@ test_that("updateTheta_NormalVarying, no limits, gives valid answer", {
             (prec.data / (prec.prior + prec.data)) * y
         var <- 1 / (prec.prior + prec.data)
         ans.expected@theta <- rnorm(20, mean = mean, sd = sqrt(var))
+        ans.expected@thetaTransformed <- ans.expected@theta
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -5828,6 +5829,7 @@ test_that("updateTheta_NormalVarying, no limits, gives valid answer", {
                + model@betas[[2]]
                + rep(model@betas[[3]], each = 5))
         ans.expected@theta <- rnorm(20, mean = mu, sd = model@sigma)
+        ans.expected@thetaTransformed <- ans.expected@theta
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -5874,6 +5876,7 @@ test_that("updateTheta_NormalVarying, with limits, gives valid answer", {
                                        uniform = FALSE,
                                        useC = TRUE)
         ans.expected@theta <- theta
+        ans.expected@thetaTransformed <- ans.expected@theta
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -5923,6 +5926,7 @@ test_that("updateTheta_NormalVarying, with limits, gives valid answer", {
                                        uniform = FALSE,
                                        useC = TRUE)
         ans.expected@theta <- theta
+        ans.expected@thetaTransformed <- ans.expected@theta
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -5979,8 +5983,6 @@ test_that("R and C versions of updateTheta_NormalVarying, no limits, give same a
     }
 })
 
-## JAH cannot get this test to run correctly - complaints from R about the model etc.  
-## replacement test hacked from the test of the R code only below
 test_that("R and C versions of updateTheta_NormalVarying, with limits, give same answer", {
     updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     initialModel <- demest:::initialModel
@@ -6030,7 +6032,6 @@ test_that("R and C versions of updateTheta_NormalVarying, with limits, give same
 })
 
 
-## new test - JAH 24/4/2016
 test_that("updateTheta_NormalVarying, with limits, gives valid answer", {
     updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     initialModel <- demest:::initialModel
@@ -6076,8 +6077,6 @@ test_that("updateTheta_NormalVarying, with limits, gives valid answer", {
     }
 })
 
-
-
 ## updateTheta_NormalVaryingAgCertain
 
 test_that("updateTheta_NormalVaryingAgCertain gives valid answer - single aggregate value", {
@@ -6102,6 +6101,7 @@ test_that("updateTheta_NormalVaryingAgCertain gives valid answer - single aggreg
         }
         else
             expect_identical(x0@theta, x1@theta)
+        expect_identical(x1@thetaTransformed, x1@theta)
     }
     if (!was.updated)
         warning("theta was not updated")
@@ -6125,6 +6125,7 @@ test_that("updateTheta_NormalVaryingAgCertain gives valid answer - single aggreg
         }
         else
             expect_identical(x0@theta, x1@theta)
+        expect_identical(x1@thetaTransformed, x1@theta)
     }
     if (!was.updated)
         warning("theta was not updated")
@@ -6207,6 +6208,7 @@ test_that("updateTheta_NormalVaryingAgCertain gives valid answer - multiple aggr
         }
         else
             expect_identical(x0@theta, x1@theta)
+        expect_identical(x1@thetaTransformed, x1@theta)
     }
     if (!was.updated)
         warning("theta was not updated")
@@ -6231,6 +6233,7 @@ test_that("updateTheta_NormalVaryingAgCertain gives valid answer - multiple aggr
         }
         else
             expect_identical(x0@theta, x1@theta)
+        expect_identical(x1@thetaTransformed, x1@theta)
     }
     if (!was.updated)
         warning("theta was not updated")
@@ -6573,15 +6576,6 @@ test_that("R and C versions of updateThetaAndValueAgNormal_Normal same answer - 
     if (!was.updated)
         warning("theta was not updated")
 })
-
-
-
-
-
-
-
-
-
 
 
 ## updateThetaAndValueAgFun_Normal

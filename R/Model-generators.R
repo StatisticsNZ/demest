@@ -72,16 +72,17 @@ setMethod("addAg",
                                 aggregate = aggregate,
                                 defaultWeights = defaultWeights)
               model@theta <- l$theta
+              model@thetaTransformed <- log(model@theta / (1 - model@theta))
               class <- paste0(class(model), "AgCertain")
               methods::new(class,
-                  model,
-                  valueAg = l$value,
-                  weightAg = l$weight,
-                  transformAg = l$transform,
-                  metadataAg = l$metadata,
-                  mu = l$mu,
-                  slotsToExtract = l$slotsToExtract,
-                  iMethodModel = l$iMethodModel)
+                           model,
+                           valueAg = l$value,
+                           weightAg = l$weight,
+                           transformAg = l$transform,
+                           metadataAg = l$metadata,
+                           mu = l$mu,
+                           slotsToExtract = l$slotsToExtract,
+                           iMethodModel = l$iMethodModel)
           })
 
 ## HAS_TESTS
@@ -93,16 +94,17 @@ setMethod("addAg",
                                 aggregate = aggregate,
                                 defaultWeights = defaultWeights)
               model@theta <- l$theta
+              model@thetaTransformed <- model@theta
               class <- paste0(class(model), "AgCertain")
               methods::new(class,
-                  model,
-                  valueAg = l$value,
-                  weightAg = l$weight,
-                  transformAg = l$transform,
-                  metadataAg = l$metadata,
-                  mu = l$mu,
-                  slotsToExtract = l$slotsToExtract,
-                  iMethodModel = l$iMethodModel)
+                           model,
+                           valueAg = l$value,
+                           weightAg = l$weight,
+                           transformAg = l$transform,
+                           metadataAg = l$metadata,
+                           mu = l$mu,
+                           slotsToExtract = l$slotsToExtract,
+                           iMethodModel = l$iMethodModel)
           })
 
 ## HAS_TESTS
@@ -114,16 +116,17 @@ setMethod("addAg",
                                 aggregate = aggregate,
                                 defaultWeights = defaultWeights)
               model@theta <- l$theta
+              model@thetaTransformed <- model@theta
               class <- paste0(class(model), "AgCertain")
               methods::new(class,
-                  model,
-                  valueAg = l$value,
-                  weightAg = l$weight,
-                  transformAg = l$transform,
-                  metadataAg = l$metadata,
-                  mu = l$mu,
-                  slotsToExtract = l$slotsToExtract,
-                  iMethodModel = l$iMethodModel)
+                           model,
+                           valueAg = l$value,
+                           weightAg = l$weight,
+                           transformAg = l$transform,
+                           metadataAg = l$metadata,
+                           mu = l$mu,
+                           slotsToExtract = l$slotsToExtract,
+                           iMethodModel = l$iMethodModel)
           })
 
 ## HAS_TESTS
@@ -135,16 +138,21 @@ setMethod("addAg",
                                 aggregate = aggregate,
                                 defaultWeights = defaultWeights)
               model@theta <- l$theta
+              box.cox.param <- model@boxCoxParam
+              if (box.cox.param > 0)
+                  model@thetaTransformed <- (model@theta ^ box.cox.param - 1) / box.cox.param
+              else
+                  model@thetaTransformed <- log(model@theta)
               class <- paste0(class(model), "AgCertain")
               methods::new(class,
-                  model,
-                  valueAg = l$value,
-                  weightAg = l$weight,
-                  transformAg = l$transform,
-                  metadataAg = l$metadata,
-                  mu = l$mu,
-                  slotsToExtract = l$slotsToExtract,
-                  iMethodModel = l$iMethodModel)
+                           model,
+                           valueAg = l$value,
+                           weightAg = l$weight,
+                           transformAg = l$transform,
+                           metadataAg = l$metadata,
+                           mu = l$mu,
+                           slotsToExtract = l$slotsToExtract,
+                           iMethodModel = l$iMethodModel)
           })
 
 ## HAS_TESTS
@@ -156,16 +164,21 @@ setMethod("addAg",
                                 aggregate = aggregate,
                                 defaultWeights = defaultWeights)
               model@theta <- l$theta
+              box.cox.param <- model@boxCoxParam
+              if (box.cox.param > 0)
+                  model@thetaTransformed <- (model@theta ^ box.cox.param - 1) / box.cox.param
+              else
+                  model@thetaTransformed <- log(model@theta)
               class <- paste0(class(model), "AgCertain")
               methods::new(class,
-                  model,
-                  valueAg = l$value,
-                  weightAg = l$weight,
-                  transformAg = l$transform,
-                  metadataAg = l$metadata,
-                  mu = l$mu,
-                  slotsToExtract = l$slotsToExtract,
-                  iMethodModel = l$iMethodModel)
+                           model,
+                           valueAg = l$value,
+                           weightAg = l$weight,
+                           transformAg = l$transform,
+                           metadataAg = l$metadata,
+                           mu = l$mu,
+                           slotsToExtract = l$slotsToExtract,
+                           iMethodModel = l$iMethodModel)
           })
 
 ## SpecAgNormal
@@ -180,19 +193,19 @@ setMethod("addAg",
                                defaultWeights = defaultWeights)
               class <- paste0(class(model), "AgNormal")
               methods::new(class,
-                  model,
-                  meanAg = l$mean,
-                  metadataAg = l$metadata,                  
-                  mu = l$mu,
-                  nAcceptAg = methods::new("Counter", 0L),
-                  nFailedPropValueAg = methods::new("Counter", 0L),
-                  scaleAg = l$scale,
-                  sdAg = l$sd,
-                  transformAg = l$transform,
-                  valueAg = l$value,
-                  weightAg = l$weight,
-                  slotsToExtract = l$slotsToExtract,
-                  iMethodModel = l$iMethodModel)
+                           model,
+                           meanAg = l$mean,
+                           metadataAg = l$metadata,                  
+                           mu = l$mu,
+                           nAcceptAg = methods::new("Counter", 0L),
+                           nFailedPropValueAg = methods::new("Counter", 0L),
+                           scaleAg = l$scale,
+                           sdAg = l$sd,
+                           transformAg = l$transform,
+                           valueAg = l$value,
+                           weightAg = l$weight,
+                           slotsToExtract = l$slotsToExtract,
+                           iMethodModel = l$iMethodModel)
           })
 
 ## HAS_TESTS

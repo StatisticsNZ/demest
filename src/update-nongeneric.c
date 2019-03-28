@@ -3900,6 +3900,7 @@ updateTheta_NormalVarying(SEXP object, SEXP y_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
 	
@@ -3958,6 +3959,7 @@ updateTheta_NormalVarying(SEXP object, SEXP y_R)
         
         if (found_prop) {
             theta[i] = theta_prop;
+	    thetaTransformed[i] = theta_prop;
         }
         else {
             ++n_failed_prop_theta;
@@ -3975,6 +3977,7 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
    
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
 
     double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
     int n_theta = LENGTH(theta_R);
@@ -4230,6 +4233,7 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
             ++n_accept_theta;
             
             theta[i] = th_prop;
+	    thetaTransformed[i] = th_prop;
             
             #ifdef DEBUGGING
             PrintValue(mkString("accept"));
@@ -4242,6 +4246,7 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
             if(is_update_pair) {
                 
                 theta[i_other] = th_other_prop;
+		thetaTransformed[i_other] = th_other_prop;
             
                 #ifdef DEBUGGING
                 PrintValue(mkString("theta[i_other"));
@@ -4272,7 +4277,8 @@ updateThetaAndValueAgNormal_Normal(SEXP object, SEXP y_R)
     int n_theta = LENGTH(theta_R);
     double *w = REAL(GET_SLOT(object, w_sym));
     /* n_theta and length of w and y_R are all identical */
-
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
+    
     double varsigma = *REAL(GET_SLOT(object, varsigma_sym));
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
@@ -4402,6 +4408,7 @@ updateThetaAndValueAgNormal_Normal(SEXP object, SEXP y_R)
             for (int i = 0; i < nAg; ++i) {
                 int index = iAg[i] - 1;
                 theta[index] = vec_th_prop[i];
+		thetaTransformed[index] = vec_th_prop[i];
             }
         }
     } /* end for each value benchmark and set of thetas */
@@ -4417,6 +4424,7 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
 
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     double *mu = REAL(GET_SLOT(object, mu_sym));
     int n_theta = LENGTH(theta_R);
     double *w = REAL(GET_SLOT(object, w_sym));
@@ -4510,6 +4518,7 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
             
             if (draw_straight_from_prior) {
                 theta[i] = th_prop;
+		thetaTransformed[i] = th_prop;
             }
             else {
                 
@@ -4581,6 +4590,7 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
                 if (accept) {
                     ++n_accept_theta;
                     theta[i] = th_prop;
+		    thetaTransformed[i] = th_prop;
                     if (contributes_to_ag) {
                         /* x will have been updated in place already*/
                         valueAg[i_ag] = ag_prop;
