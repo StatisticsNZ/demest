@@ -446,7 +446,6 @@ test_that("Points method for concatDimScaleFirstSecond works", {
 
 ## decomposition #################################################################
 
-
 test_that("decomposition works", {
     x <- Values(array(rnorm(6),
                       dim = 3:2,
@@ -454,7 +453,15 @@ test_that("decomposition works", {
                                       sex = c("m", "f"))))
     ans.obtained <- decomposition(x)
     expect_equal(ans.obtained[[1]], mean(x))
-    expect_equal(sapply(ans.obtained[-1], sum), c(age = 0, sex = 0, "age:sex" = 0))
+    expect_equal(sapply(ans.obtained[-1], sum), c(age = 0, sex = 0, error = 0))
+    expect_equal(Reduce("+", ans.obtained), x)
+    ans.obtained <- decomposition(x, max = 0)
+    expect_equal(ans.obtained[[1]], mean(x))
+    expect_equal(sapply(ans.obtained[-1], sum), c(error = 0))
+    expect_equal(Reduce("+", ans.obtained), x)
+    ans.obtained <- decomposition(x, max = 1)
+    expect_equal(ans.obtained[[1]], mean(x))
+    expect_equal(sapply(ans.obtained[-1], sum), c(age = 0, sex = 0, error = 0))
     expect_equal(Reduce("+", ans.obtained), x)
     x <- Values(array(rnorm(12),
                       dim = c(3:2, 2),
@@ -467,7 +474,14 @@ test_that("decomposition works", {
                  c("(Intercept)" = mean(x),
                    age = 0, sex = 0, time = 0,
                    "age:sex" = 0, "age:time" = 0, "sex:time" = 0,
-                   "age:sex:time" = 0))
+                   error = 0))
+    expect_equal(Reduce("+", ans.obtained), x)
+    ans.obtained <- decomposition(x, max = 1)
+    expect_equal(ans.obtained[[1]], mean(x))
+    expect_equal(sapply(ans.obtained, sum),
+                 c("(Intercept)" = mean(x),
+                   age = 0, sex = 0, time = 0,
+                   error = 0))
     expect_equal(Reduce("+", ans.obtained), x)
     x <- Values(array(rnorm(3),
                       dim = 3,
@@ -476,7 +490,7 @@ test_that("decomposition works", {
     expect_equal(ans.obtained[[1]], mean(x))
     expect_equal(sapply(ans.obtained, sum),
                  c("(Intercept)" = mean(x),
-                   age = 0))
+                   error = 0))
     expect_equal(Reduce("+", ans.obtained), x)
 })
 

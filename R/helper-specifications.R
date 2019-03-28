@@ -347,6 +347,30 @@ checkAndTidyParameterVector <- function(x, name) {
     methods::new("ParameterVector", x)
 }
 
+## NO_TESTS
+checkNonNegativeInteger <- function(x, name) {
+    ## 'x' has length 1
+    if (!identical(length(x), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      name, 1L))
+    ## 'x' is not missing
+    if (is.na(x))
+        stop(gettextf("'%s' is missing",
+                      name))
+    ## 'x' is numeric
+    if (!is.numeric(x))
+        stop(gettextf("'%s' is non-numeric",
+                      name))
+    ## 'x' is an integer
+    if (!isTRUE(all.equal(x, round(x))))
+        stop(gettextf("'%s' is not an integer",
+                      name))
+    ## 'x' is non-negative
+    if (x < 0L)
+        stop(gettextf("'%s' is negative",
+                      name))
+    NULL
+}
 
 ## NO_TESTS
 checkNonNegativeNumeric <- function(x, name) {

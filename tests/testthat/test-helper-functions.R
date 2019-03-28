@@ -27,19 +27,24 @@ test_that("checkAllTermsInFormulaSpecified works", {
 
 test_that("listAllSubsets works", {
     listAllSubsets <- demest:::listAllSubsets
-    ans.obtained <- listAllSubsets(n = 1L)
+    ans.obtained <- listAllSubsets(n = 1L, max = 0L)
     ans.expected <- list()
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- listAllSubsets(n = 2L)
+    ans.obtained <- listAllSubsets(n = 2L, max = 0L)
+    ans.expected <- list()
+    expect_identical(ans.obtained, ans.expected)    
+    ans.obtained <- listAllSubsets(n = 2L, max = 1L)
     ans.expected <- list(1L, 2L)
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- listAllSubsets(n = 3L)
+    ans.obtained <- listAllSubsets(n = 3L, max = 1L)
+    ans.expected <- list(1L, 2L, 3L)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- listAllSubsets(n = 3L, max = 2L)
     ans.expected <- list(1L, 2L, 3L, 1:2, c(1L, 3L), 2:3)
     expect_identical(ans.obtained, ans.expected)
+    expect_error(listAllSubsets(n = 3L, max = 3L),
+                 "'max' greater than or equal to 'n'")
 })
-
-
-
 
 test_that("makeIteratorBetas works", {
     makeIteratorBetas <- demest:::makeIteratorBetas

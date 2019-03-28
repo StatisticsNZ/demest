@@ -16,17 +16,21 @@ checkAllTermsInFormulaSpecified <- function(formula, namesSpecPriors) {
     NULL
 }
 
-
-
-listAllSubsets <- function(n) {
-    if (n == 0L)
-        stop(gettext("no dimensions"))
-    else if (n == 1L)
+## HAS_TESTS
+listAllSubsets <- function(n, max) {
+    checkPositiveInteger(x = n,
+                         name = "n")
+    checkNonNegativeInteger(x = max,
+                            name = "max")
+    if (max >= n)
+        stop(gettextf("'%s' greater than or equal to '%s'",
+                      "max", "n"))
+    if (max == 0L)
         list()
     else {
         s <- seq_len(n)
         makeCombnOrderI <- function(i) utils::combn(s, i, simplify = FALSE)
-        ans <- lapply(seq_len(n - 1L), makeCombnOrderI)
+        ans <- lapply(seq_len(max), makeCombnOrderI)
         unlist(ans, recursive = FALSE)
     }
 }
