@@ -133,7 +133,9 @@ setGeneric("concatDimScaleFirstSecond",
 
 #' Decompose a demographic array
 #'
-#' Decompose a \code{\link[dembase]{DemographicArray}} into terms
+#' Decompose a
+#' \code{\link[dembase:DemographicArray-class]{DemographicArray}}
+#' into terms
 #' made up of component dimensions, plus an error.
 #' \code{decomposition} is typically used to obtain
 #' initial estimates of main effects and interactions,
@@ -143,7 +145,8 @@ setGeneric("concatDimScaleFirstSecond",
 #' carried out on log-rates, and when building a binomial model,
 #' it is usually carried out on logit-proportions, though in both
 #' cases other transformations (or no transformation) may be
-#' appropriate if there are lots of zeros.
+#' appropriate if there are lots of zeros (and also lots of ones
+#' in the case of binomial models).
 #'
 #' The final element in the return value is an 'error'
 #' array. This equals the observed value for \code{object} minus the
@@ -160,7 +163,7 @@ setGeneric("concatDimScaleFirstSecond",
 #' to cope with origin-destination or parent-child dimensions.
 #'
 #' @param object An object of class
-#' \code{\link[dembase]{DemographicArray}}.
+#' \code{\link[dembase:DemographicArray-class]{DemographicArray}}.
 #' @param max An integer. Optional.
 #'
 #' @return A named list, the elements of which have class

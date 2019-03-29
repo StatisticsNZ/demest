@@ -680,11 +680,11 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
 void
 betaHat_MeanInternal(double *beta_hat, SEXP prior_R, int J)
 {
-    double *mean = REAL(GET_SLOT(prior_R, mean_sym));
+    double mean = *REAL(GET_SLOT(prior_R, mean_sym));
     
     for (int j = 0; j < J; ++j) {
         
-        beta_hat[j] += mean[j]; 
+        beta_hat[j] += mean; 
         
     }
 }

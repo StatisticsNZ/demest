@@ -36,47 +36,6 @@ setClass("MomentumMixin",
 
 
 
-
-
-
-
-## HAS_TESTS
-updateThetaTransformed <- function(object, g, useC = FALSE) {
-    ## object
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    ## g
-    stopifnot(is.function(g))
-    if (useC) {
-        .Call(updateThetaTransformed_R, object)
-    }
-    else {
-        theta.transformed <- object@thetaTransformed
-        theta <- object@theta
-        cell.in.lik <- object@cellInLik
-        if (identical(g, log)) { 
-            box.cox.param <- object@boxCoxParam 
-            uses.box.cox.transform <- box.cox.param > 0 
-        } 
-        else 
-            uses.box.cox.transform <- FALSE 
-        for (i in seq_along(theta)) {
-            if (cell.in.lik[i]) {
-                if (uses.box.cox.transform) 
-                    transformed.theta[i] <- (theta[i] ^ box.cox.param - 1) / box.cox.param 
-                else 
-                    transformed.theta[i] <- g(theta[i])
-            }
-        }
-        object@thetaTransformed <- theta.transformed
-        object
-    }
-}
-
-
-
-
-
 updatePriorsBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))

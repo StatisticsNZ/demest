@@ -4655,7 +4655,7 @@ test_that("updateSigma_Varying gives valid answer - no Box-Cox", {
                       age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
-        ans.obtained <- updateSigma_Varying(x, g = log)
+        ans.obtained <- updateSigma_Varying(x)
         set.seed(seed + 1)
         ans.expected <- x
         mu <- x@betas[[1]] + x@betas[[2]] + rep(x@betas[[3]], each = 5)
@@ -4690,9 +4690,9 @@ test_that("R and C versions of updateSigma_Varying give same answer - no Box-Cox
                       age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
-        ans.R <- updateSigma_Varying(x, g = log, useC = FALSE)
+        ans.R <- updateSigma_Varying(x, useC = FALSE)
         set.seed(seed + 1)
-        ans.C <- updateSigma_Varying(x, g = log, useC = TRUE)
+        ans.C <- updateSigma_Varying(x, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -4708,9 +4708,9 @@ test_that("R and C versions of updateSigma_Varying give same answer - no Box-Cox
                       age ~ Exch())
         x <- initialModel(spec, y = y, weights = weights)
         set.seed(seed + 1)
-        ans.R <- updateSigma_Varying(x, g = function(x) x, useC = FALSE)
+        ans.R <- updateSigma_Varying(x, useC = FALSE)
         set.seed(seed + 1)
-        ans.C <- updateSigma_Varying(x, g = function(x) x, useC = TRUE)
+        ans.C <- updateSigma_Varying(x, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -4727,9 +4727,9 @@ test_that("R and C versions of updateSigma_Varying give same answer - no Box-Cox
         x <- initialModel(spec, y = y, exposure = exposure)## weights = weights)
         logit <- function(x) log(x/(1-x))
         set.seed(seed + 1)
-        ans.R <- updateSigma_Varying(x, g = logit, useC = FALSE)
+        ans.R <- updateSigma_Varying(x, useC = FALSE)
         set.seed(seed + 1)
-        ans.C <- updateSigma_Varying(x, g = logit, useC = TRUE)
+        ans.C <- updateSigma_Varying(x, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -4749,7 +4749,7 @@ test_that("updateSigma_Varying gives valid answer - with Box-Cox", {
                       age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
-        ans.obtained <- updateSigma_Varying(x, g = log)
+        ans.obtained <- updateSigma_Varying(x)
         set.seed(seed + 1)
         ans.expected <- x
         mu <- x@betas[[1]] + x@betas[[2]] + rep(x@betas[[3]], each = 5)
@@ -4784,9 +4784,9 @@ test_that("R and C versions of updateSigma_Varying give same answer - with Box-C
                       age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
-        ans.R <- updateSigma_Varying(x, g = log, useC = FALSE)
+        ans.R <- updateSigma_Varying(x, useC = FALSE)
         set.seed(seed + 1)
-        ans.C <- updateSigma_Varying(x, g = log, useC = TRUE)
+        ans.C <- updateSigma_Varying(x, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -4969,7 +4969,7 @@ test_that("updateTheta_BinomialVaryingAgCertain gives valid answer - single aggr
 test_that("R and C versions of updateTheta_BinomialVaryingAgCertain same answer - single aggregate value", {
     updateTheta_BinomialVaryingAgCertain <- demest:::updateTheta_BinomialVaryingAgCertain
     initialModel <- demest:::initialModel
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(n.test * 2)) { # if don't multiply by 2, theta is not updated
         was.updated <- FALSE
         set.seed(seed)
         aggregate <- AgCertain(value = 0.5)

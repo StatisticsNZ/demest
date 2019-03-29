@@ -5002,6 +5002,7 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R are all identical */
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
@@ -5081,7 +5082,7 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
                             && is_has_other && is_weight_other_positive);
         
         double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
+        double log_th_curr = thetaTransformed[i];
 
         double theta_other_curr = (is_update_pair ? theta[i_other] : 0.0);
         
@@ -5298,7 +5299,8 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
         if (accept) {
             ++n_accept_theta;
             theta[i] = theta_prop;
-            
+	    thetaTransformed[i] = log_th_prop;
+
             #ifdef DEBUGGING
                 PrintValue(mkString("accept"));
                 PrintValue(mkString("n_accept_theta"));
@@ -5311,6 +5313,7 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
 
             if (is_update_pair) {
                 theta[i_other] = theta_other_prop;
+		thetaTransformed[i_other] = log_th_other_prop;
             
                 #ifdef DEBUGGING
                     PrintValue(mkString("theta[i_other"));
@@ -5340,6 +5343,7 @@ updateTheta_PoissonVaryingUseExpAgCertain(SEXP object, SEXP y_R, SEXP exposure_R
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R and exposure_R are all identical */
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
@@ -5349,7 +5353,7 @@ updateTheta_PoissonVaryingUseExpAgCertain(SEXP object, SEXP y_R, SEXP exposure_R
     double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
 
     double scale_theta = *REAL(GET_SLOT(object, scaleTheta_sym));
-    double scale_theta_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym)); /* added by John 22 May 2016 */
+    double scale_theta_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym));
     double sigma = *REAL(GET_SLOT(object, sigma_sym));
 
     double *weightAg = REAL(GET_SLOT(object, weightAg_sym));
@@ -5363,11 +5367,11 @@ updateTheta_PoissonVaryingUseExpAgCertain(SEXP object, SEXP y_R, SEXP exposure_R
     int n_accept_theta = 0;
     int n_failed_prop_theta = 0;
 
-    scale_theta = scale_theta * scale_theta_multiplier; /* added by John 22 May 2016 */
+    scale_theta = scale_theta * scale_theta_multiplier;
 
     for (int i = 0; i < n_theta; ++i) {
 
-        double scale_theta_i = scale_theta / sqrt(1 + log(1 + exposure[i])); /* changed by John 21 May 2016 */
+        double scale_theta_i = scale_theta / sqrt(1 + log(1 + exposure[i]));
 
         int ir = i+1; /* R style index */
                             
@@ -5407,7 +5411,7 @@ updateTheta_PoissonVaryingUseExpAgCertain(SEXP object, SEXP y_R, SEXP exposure_R
                             && is_has_other && is_weight_other_positive);
         
         double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
+        double log_th_curr = thetaTransformed[i];
 
         double theta_other_curr = (is_update_pair ? theta[i_other] : 0.0);
         double theta_prop = 0.0;
@@ -5490,8 +5494,7 @@ updateTheta_PoissonVaryingUseExpAgCertain(SEXP object, SEXP y_R, SEXP exposure_R
         
             double mu_other = mu[i_other];
         
-            double log_th_other_curr
-                        = log(theta_other_curr);
+            double log_th_other_curr = thetaTransformed[i_other];
 
             double log_diff_prior = 
                 + dlnorm(theta_prop, this_mu, sigma, USE_LOG)
@@ -5503,14 +5506,14 @@ updateTheta_PoissonVaryingUseExpAgCertain(SEXP object, SEXP y_R, SEXP exposure_R
                                                     log_th_other_curr,
                                                     log_th_prop,
                                                     log_th_other_prop,
-                                                    scale_theta_i,  /* changed by John 21 May 2016 */
+                                                    scale_theta_i,
                                                     weight, 
                                                     weight_other)
                                     - safeLogProp_Poisson(log_th_prop,
                                                     log_th_other_prop,
                                                     log_th_curr,
                                                     log_th_other_curr,
-                                                    scale_theta_i,  /* changed by John 21 May 2016 */
+                                                    scale_theta_i,
                                                     weight, 
                                                     weight_other);
 
@@ -5528,10 +5531,10 @@ updateTheta_PoissonVaryingUseExpAgCertain(SEXP object, SEXP y_R, SEXP exposure_R
         if (accept) {
             ++n_accept_theta;
             theta[i] = theta_prop;
-            
+	    thetaTransformed[i] = log_th_prop;
             if (is_update_pair) {
                 theta[i_other] = theta_other_prop;
-            
+		thetaTransformed[i_other] = log_th_other_prop;
             }
         }
         else {
@@ -5543,6 +5546,168 @@ updateTheta_PoissonVaryingUseExpAgCertain(SEXP object, SEXP y_R, SEXP exposure_R
     SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
 }
 
+/* y_R is g'teed to be integer */
+void
+updateThetaAndValueAgNormal_PoissonNotUseExp(SEXP object, SEXP y_R)
+{
+
+    SEXP theta_R = GET_SLOT(object, theta_sym);
+    double *theta = REAL(theta_R);
+    int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
+    /* n_theta and length of y_R are all identical */
+
+    double lower = *REAL(GET_SLOT(object, lower_sym));
+    double upper = *REAL(GET_SLOT(object, upper_sym));
+    double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
+
+    double *mu = REAL(GET_SLOT(object, mu_sym));
+
+    double sigma = *REAL(GET_SLOT(object, sigma_sym));
+
+    SEXP valueAg_R = GET_SLOT(object, valueAg_sym);
+    int nValueAg = LENGTH(valueAg_R);
+    double *valueAg = REAL(valueAg_R);
+    double *weightAg = REAL(GET_SLOT(object, weightAg_sym));
+    SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
+
+    double *meanAg = REAL(GET_SLOT(object, meanAg_sym));
+    double *sdAg = REAL(GET_SLOT(object, sdAg_sym));
+    double scaleAg = *REAL(GET_SLOT(object, scaleAg_sym));
+
+    int n_accept_ag = 0;
+    int n_failed_prop_value_ag = 0;
+    
+    int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
+
+    int *y = INTEGER(y_R);
+    
+    /* malloc one (overlarge) space for all the 4 vecs */
+    double *allVecs = (double *)R_alloc(4*n_theta, sizeof(double));
+    double *vec_th_curr = allVecs;
+    double *vec_log_th_curr = allVecs + n_theta;
+    double *vec_th_prop = allVecs + 2*n_theta;
+    double *vec_log_th_prop = allVecs + 3*n_theta;
+
+    for (int k = 0; k < nValueAg; ++k) {
+
+        int kr = k+1; /* R style index */
+
+        SEXP iAg_R = dembase_getIBefore(kr, transformAg_R);
+        int nAg = LENGTH(iAg_R);
+        int *iAg = INTEGER(iAg_R);
+
+        for (int i = 0; i < nAg; ++i) {
+            int index = iAg[i] - 1;
+            vec_th_curr[i] = theta[index];
+            vec_log_th_curr[i] = thetaTransformed[index];
+        }
+
+        int attempt = 0;
+        int found_prop = 0;
+
+        while( (!found_prop) && (attempt < maxAttempt) ) {
+
+            ++attempt;
+
+            double increment = 0.0;
+            
+            for (int i = 0; i < nAg; ++i) {
+
+                increment = rnorm(0, scaleAg);
+                double log_th_prop = vec_log_th_curr[i] + increment;
+                
+                int inside_limits = ((log_th_prop > lower + tolerance)
+                            && (log_th_prop < upper - tolerance));
+
+                if (!inside_limits) { /* not in range */
+                    break; /* break out of the i-loop through benchmarked indices */
+                }
+                else {
+                    
+                    double theta_prop = exp(log_th_prop);
+                    int valid = 0;
+                    if (log_th_prop > 0) {
+                        valid = R_finite(theta_prop);
+                    }
+                    else {
+                        valid = (theta_prop > 0);
+                    }
+                    
+                    if (!valid) break; /* break out of the i-loop through benchmarked indices */
+                    else {
+                        vec_log_th_prop[i] = log_th_prop;
+                        vec_th_prop[i] = theta_prop;
+                        found_prop = (i == (nAg - 1));
+                    }
+                }
+            }
+            /* found_prop is 0 if we had to break out of the loop */
+        }
+
+        if (!found_prop) {  /* reached 'maxAttempt' without generating proposal */
+            ++n_failed_prop_value_ag;
+
+            continue; /* go on to next value benchmark */
+        }
+
+        double ag_prop = 0.0;
+        for (int i = 0; i < nAg; ++i) {
+            int index = iAg[i] - 1;
+
+            ag_prop += vec_th_prop[i] * weightAg[index];
+        }
+
+        double ag_curr = valueAg[k];
+        double mean_k = meanAg[k];
+        double sd_k = sdAg[k];
+
+        double log_diff_lik = 0.0;
+        double log_diff_prior = 0.0;
+        
+        for (int i = 0; i < nAg; ++i) {
+            int index = iAg[i] - 1;
+
+            int this_y = y[index];
+            
+            int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
+            
+            if (!y_is_missing) { /* does the is.observed bit */
+    
+                log_diff_lik += dpois(this_y, vec_th_prop[i], USE_LOG);
+                log_diff_lik -= dpois(this_y, vec_th_curr[i], USE_LOG);
+            }
+
+            double this_mu = mu[index];
+            
+            log_diff_prior += dnorm(vec_log_th_prop[i], this_mu, sigma, USE_LOG);
+            log_diff_prior -= dnorm(vec_log_th_curr[i], this_mu, sigma, USE_LOG);
+        
+        }
+
+        double log_diff_ag = dnorm(mean_k, ag_prop, sd_k, USE_LOG)
+                            - dnorm(mean_k, ag_curr, sd_k, USE_LOG);
+        
+        double log_diff = log_diff_lik + log_diff_prior + log_diff_ag;
+
+        if (!(log_diff < 0) || (runif(0, 1) < exp(log_diff))) {
+
+            ++n_accept_ag;
+            valueAg[k] = ag_prop;
+            for (int i = 0; i < nAg; ++i) {
+                int index = iAg[i] - 1;
+                theta[index] = vec_th_prop[i];
+		thetaTransformed[index] = vec_log_th_prop[i];
+            }
+        }
+    } /* end for each value benchmark and set of thetas */
+
+    SET_INTSCALE_SLOT(object, nAcceptAg_sym, n_accept_ag);
+    SET_INTSCALE_SLOT(object, nFailedPropValueAg_sym, n_failed_prop_value_ag);
+}
+
+
+
 /* y_R is g'teed to be integer
  * exposure_R is g'teed to be doubles */
 void
@@ -5552,6 +5717,7 @@ updateThetaAndValueAgNormal_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R and exposure_R are all identical */
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
@@ -5597,9 +5763,8 @@ updateThetaAndValueAgNormal_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R
 
         for (int i = 0; i < nAg; ++i) {
             int index = iAg[i] - 1;
-            double th_curr = theta[index];
-            vec_th_curr[i] = th_curr;
-            vec_log_th_curr[i] = log(th_curr);
+            vec_th_curr[i] = theta[index];
+            vec_log_th_curr[i] = thetaTransformed[index];
         }
 
         int attempt = 0;
@@ -5697,6 +5862,7 @@ updateThetaAndValueAgNormal_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R
             for (int i = 0; i < nAg; ++i) {
                 int index = iAg[i] - 1;
                 theta[index] = vec_th_prop[i];
+		thetaTransformed[index] = vec_log_th_prop[i];
             }
         }
     } /* end for each value agmark and set of thetas */
@@ -5706,164 +5872,6 @@ updateThetaAndValueAgNormal_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R
 }
 
 
-/* y_R is g'teed to be integer */
-void
-updateThetaAndValueAgNormal_PoissonNotUseExp(SEXP object, SEXP y_R)
-{
-
-    SEXP theta_R = GET_SLOT(object, theta_sym);
-    double *theta = REAL(theta_R);
-    int n_theta = LENGTH(theta_R);
-    /* n_theta and length of y_R are all identical */
-
-    double lower = *REAL(GET_SLOT(object, lower_sym));
-    double upper = *REAL(GET_SLOT(object, upper_sym));
-    double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
-
-    double *mu = REAL(GET_SLOT(object, mu_sym));
-
-    double sigma = *REAL(GET_SLOT(object, sigma_sym));
-
-    SEXP valueAg_R = GET_SLOT(object, valueAg_sym);
-    int nValueAg = LENGTH(valueAg_R);
-    double *valueAg = REAL(valueAg_R);
-    double *weightAg = REAL(GET_SLOT(object, weightAg_sym));
-    SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
-
-    double *meanAg = REAL(GET_SLOT(object, meanAg_sym));
-    double *sdAg = REAL(GET_SLOT(object, sdAg_sym));
-    double scaleAg = *REAL(GET_SLOT(object, scaleAg_sym));
-
-    int n_accept_ag = 0;
-    int n_failed_prop_value_ag = 0;
-    
-    int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
-
-    int *y = INTEGER(y_R);
-    
-    /* malloc one (overlarge) space for all the 4 vecs */
-    double *allVecs = (double *)R_alloc(4*n_theta, sizeof(double));
-    double *vec_th_curr = allVecs;
-    double *vec_log_th_curr = allVecs + n_theta;
-    double *vec_th_prop = allVecs + 2*n_theta;
-    double *vec_log_th_prop = allVecs + 3*n_theta;
-
-    for (int k = 0; k < nValueAg; ++k) {
-
-        int kr = k+1; /* R style index */
-
-        SEXP iAg_R = dembase_getIBefore(kr, transformAg_R);
-        int nAg = LENGTH(iAg_R);
-        int *iAg = INTEGER(iAg_R);
-
-        for (int i = 0; i < nAg; ++i) {
-            int index = iAg[i] - 1;
-            double th_curr = theta[index];
-            vec_th_curr[i] = th_curr;
-            vec_log_th_curr[i] = log(th_curr);
-        }
-
-        int attempt = 0;
-        int found_prop = 0;
-
-        while( (!found_prop) && (attempt < maxAttempt) ) {
-
-            ++attempt;
-
-            double increment = 0.0;
-            
-            for (int i = 0; i < nAg; ++i) {
-
-                increment = rnorm(0, scaleAg);
-                double log_th_prop = vec_log_th_curr[i] + increment;
-                
-                int inside_limits = ((log_th_prop > lower + tolerance)
-                            && (log_th_prop < upper - tolerance));
-
-                if (!inside_limits) { /* not in range */
-                    break; /* break out of the i-loop through benchmarked indices */
-                }
-                else {
-                    
-                    double theta_prop = exp(log_th_prop);
-                    int valid = 0;
-                    if (log_th_prop > 0) {
-                        valid = R_finite(theta_prop);
-                    }
-                    else {
-                        valid = (theta_prop > 0);
-                    }
-                    
-                    if (!valid) break; /* break out of the i-loop through benchmarked indices */
-                    else {
-                        vec_log_th_prop[i] = log_th_prop;
-                        vec_th_prop[i] = theta_prop;
-                        found_prop = (i == (nAg - 1));
-                    }
-                }
-            }
-            /* found_prop is 0 if we had to break out of the loop */
-        }
-
-        if (!found_prop) {  /* reached 'maxAttempt' without generating proposal */
-            ++n_failed_prop_value_ag;
-
-            continue; /* go on to next value benchmark */
-        }
-
-        double ag_prop = 0.0;
-        for (int i = 0; i < nAg; ++i) {
-            int index = iAg[i] - 1;
-
-            ag_prop += vec_th_prop[i] * weightAg[index];
-        }
-
-        double ag_curr = valueAg[k];
-        double mean_k = meanAg[k];
-        double sd_k = sdAg[k];
-
-        double log_diff_lik = 0.0;
-        double log_diff_prior = 0.0;
-        
-        for (int i = 0; i < nAg; ++i) {
-            int index = iAg[i] - 1;
-
-            int this_y = y[index];
-            
-            int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
-            
-            if (!y_is_missing) { /* does the is.observed bit */
-    
-                log_diff_lik += dpois(this_y, vec_th_prop[i], USE_LOG);
-                log_diff_lik -= dpois(this_y, vec_th_curr[i], USE_LOG);
-            }
-
-            double this_mu = mu[index];
-            
-            log_diff_prior += dnorm(vec_log_th_prop[i], this_mu, sigma, USE_LOG);
-            log_diff_prior -= dnorm(vec_log_th_curr[i], this_mu, sigma, USE_LOG);
-        
-        }
-
-        double log_diff_ag = dnorm(mean_k, ag_prop, sd_k, USE_LOG)
-                            - dnorm(mean_k, ag_curr, sd_k, USE_LOG);
-        
-        double log_diff = log_diff_lik + log_diff_prior + log_diff_ag;
-
-        if (!(log_diff < 0) || (runif(0, 1) < exp(log_diff))) {
-
-            ++n_accept_ag;
-            valueAg[k] = ag_prop;
-            for (int i = 0; i < nAg; ++i) {
-                int index = iAg[i] - 1;
-                theta[index] = vec_th_prop[i];
-            }
-        }
-    } /* end for each value benchmark and set of thetas */
-
-    SET_INTSCALE_SLOT(object, nAcceptAg_sym, n_accept_ag);
-    SET_INTSCALE_SLOT(object, nFailedPropValueAg_sym, n_failed_prop_value_ag);
-}
 
 void
 updateThetaAndValueAgPoisson_PoissonNotUseExp(SEXP object, SEXP y_R)
@@ -5871,6 +5879,7 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp(SEXP object, SEXP y_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R are all identical */
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
@@ -5915,9 +5924,8 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp(SEXP object, SEXP y_R)
 
         for (int i = 0; i < nAg; ++i) {
             int index = iAg[i] - 1;
-            double th_curr = theta[index];
-            vec_th_curr[i] = th_curr;
-            vec_log_th_curr[i] = log(th_curr);
+            vec_th_curr[i] = theta[index];
+            vec_log_th_curr[i] = thetaTransformed[index];
         }
 
         int attempt = 0;
@@ -6014,6 +6022,7 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp(SEXP object, SEXP y_R)
             for (int i = 0; i < nAg; ++i) {
                 int index = iAg[i] - 1;
                 theta[index] = vec_th_prop[i];
+		thetaTransformed[index] = vec_log_th_prop[i];
             }
         }
     } /* end for each value benchmark and set of thetas */
@@ -6022,197 +6031,8 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp(SEXP object, SEXP y_R)
     SET_INTSCALE_SLOT(object, nFailedPropValueAg_sym, n_failed_prop_value_ag);
 }
 
-void
-updateThetaAndValueAgFun_PoissonNotUseExp(SEXP object, SEXP y_R)
-{
-    int *y = INTEGER(y_R);
 
-    SEXP theta_R = GET_SLOT(object, theta_sym);
-    double *theta = REAL(theta_R);
-    int n_theta = LENGTH(theta_R);
-    /* n_theta and length of y_R are all identical */
 
-    double *mu = REAL(GET_SLOT(object, mu_sym));
-    
-    double lower = *REAL(GET_SLOT(object, lower_sym));
-    double upper = *REAL(GET_SLOT(object, upper_sym));
-    double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
-
-    double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
-    double sigma = *REAL(GET_SLOT(object, sigma_sym));
-
-    double *valueAg = REAL(GET_SLOT(object, valueAg_sym));
-    
-    double *meanAg = REAL(GET_SLOT(object, meanAg_sym));
-    double *sdAg = REAL(GET_SLOT(object, sdAg_sym));
-
-    SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
-
-    SEXP funAg_R = GET_SLOT(object, funAg_sym);
-    
-    /* set up to be able to call the R function from C */     
-    SEXP call_R = NULL;
-    /* call_R will be the final called object */ 
-    PROTECT(call_R = allocList(3));
-    SET_TYPEOF(call_R, LANGSXP);
-    SETCAR(call_R, funAg_R); /* sets first value in list to this function*/
-    
-    SEXP xArgsAg_R = GET_SLOT(object, xArgsAg_sym);
-    SEXP weightsArgsAg_R = GET_SLOT(object, weightsArgsAg_sym);
-    double *tmp_x = NULL;
-    int length_x_args_list = LENGTH(xArgsAg_R);
-    int n_xs = 0;
-    if (length_x_args_list > 0) {
-        SEXP first_R = VECTOR_ELT(xArgsAg_R, 0);
-        n_xs = length(first_R);
-        tmp_x = (double *)R_alloc(n_xs, sizeof(double));
-    }
-    
-    int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
-
-    int n_accept_theta = 0;
-    int n_failed_prop_theta = 0;
-
-    for (int i = 0; i < n_theta; ++i) {
-
-        int ir = i+1; /* R style index */
-        
-        int i_ag_r = dembase_getIAfter(ir, transformAg_R);
-        int i_ag = i_ag_r - 1;
-        
-        int contributes_to_ag = (i_ag_r > 0);
-    
-        int this_y = y[i];
-        int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
-        
-        int draw_straight_from_prior = (y_is_missing && !contributes_to_ag);
-        
-        double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
-        
-        double mean = mu[i];
-        double sd = sigma;
-        
-        if (!y_is_missing) {
-            
-            mean = log_th_curr;
-            sd = scale;
-        }
-        
-        int attempt = 0;
-        int found_prop = 0;
-        
-        double log_th_prop = 0.0;
-        
-        while( (!found_prop) && (attempt < maxAttempt) ) {
-
-            ++attempt;
-            
-            log_th_prop = rnorm(mean, sd);
-            found_prop = ( (log_th_prop > lower + tolerance) &&
-                            (log_th_prop < upper - tolerance));
- 
-        }
-        
-        if (found_prop) {
-            
-            double theta_prop = exp(log_th_prop);
-            
-            if (draw_straight_from_prior) {
-                theta[i] = theta_prop;
-            }
-            else {
-                
-                SEXP x_R = NULL;
-                SEXP weight_R = NULL;
-                double *x = NULL;
-                
-                if (contributes_to_ag) {
-                            
-                    x_R = VECTOR_ELT(xArgsAg_R, i_ag);
-                    weight_R = VECTOR_ELT(weightsArgsAg_R, i_ag);
-                    x = REAL(x_R);
-                    /* store these xs in case we need to restore them*/
-                    memcpy(tmp_x, x, n_xs*sizeof(double));
-                }
-                
-                double log_diff = 0;
-                
-                if (!y_is_missing) {
-                
-                    double log_lik_prop = 0;
-                    double log_lik_curr = 0;
-                    
-                    log_lik_prop = dpois(this_y, theta_prop, USE_LOG);
-                    log_lik_curr = dpois(this_y, theta_curr, USE_LOG);
-                    log_diff = log_lik_prop - log_lik_curr;    
-                }
-                
-                double log_dens_prop = dnorm(log_th_prop, mu[i], sigma, USE_LOG);
-                double log_dens_curr = dnorm(log_th_curr, mu[i], sigma, USE_LOG);
-                log_diff += (log_dens_prop - log_dens_curr);
-
-                double ag_prop = 0;
-                
-                if (contributes_to_ag) {
-                    
-                    double ag_curr = valueAg[i_ag];
-                    double mean_ag = meanAg[i_ag];
-                    double sd_ag = sdAg[i_ag];
-                    
-                    SEXP ir_shared_R;
-                    PROTECT( ir_shared_R 
-                         = dembase_getIShared(ir, transformAg_R) ); 
-                    int n_ir_shared = LENGTH(ir_shared_R);
-                    int *ir_shared = INTEGER(ir_shared_R);
-                    
-                    for (int j = 0; j < n_ir_shared; ++j) {
-                        if ( i == (ir_shared[j] - 1) ) {
-                            x[j] = theta_prop;
-                            /* alters this x in the original R SEXP object */
-                        }
-                    }
-       
-                    /* set 2nd and 3rd values in the function call object */
-                    SETCADR(call_R, x_R);
-                    SETCADDR(call_R, weight_R);
-                    
-                    /* call the supplied function */
-                    SEXP prop_R = PROTECT(eval(call_R, R_GlobalEnv));
-                    ag_prop = *REAL(prop_R);
-                    
-                    UNPROTECT(2); /* ir_shared_r, current prop_R */
-                    
-                    double log_dens_ag_prop = dnorm(mean_ag, ag_prop, sd_ag, USE_LOG);
-                    double log_dens_ag_curr = dnorm(mean_ag, ag_curr, sd_ag, USE_LOG);
-                    log_diff += log_dens_ag_prop - log_dens_ag_curr;
-                }
-                
-                int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
-                if (accept) {
-                    ++n_accept_theta;
-                    theta[i] = theta_prop;
-                    if (contributes_to_ag) {
-                        /* x will have been updated in place already*/
-                        valueAg[i_ag] = ag_prop;
-                    }
-                }
-                else if (contributes_to_ag) {
-                    /* unmodify the x_ags */
-                    memcpy(x, tmp_x, n_xs*sizeof(double));
-                }
-            }
-        }
-        else { /* not found prop */
-            ++n_failed_prop_theta;
-        }
-        
-    } /* end i-loop through thetas */
-    
-    SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
-    SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
-    UNPROTECT(1); /* call_R */
-}
 
 void
 updateThetaAndValueAgPoisson_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
@@ -6221,6 +6041,7 @@ updateThetaAndValueAgPoisson_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R and exposure_R are all identical */
 
     double lower = *REAL(GET_SLOT(object, lower_sym));
@@ -6267,9 +6088,8 @@ updateThetaAndValueAgPoisson_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_
 
         for (int i = 0; i < nAg; ++i) {
             int index = iAg[i] - 1;
-            double th_curr = theta[index];
-            vec_th_curr[i] = th_curr;
-            vec_log_th_curr[i] = log(th_curr);
+            vec_th_curr[i] = theta[index];
+            vec_log_th_curr[i] = thetaTransformed[index];
         }
 
         int attempt = 0;
@@ -6367,6 +6187,7 @@ updateThetaAndValueAgPoisson_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_
             for (int i = 0; i < nAg; ++i) {
                 int index = iAg[i] - 1;
                 theta[index] = vec_th_prop[i];
+		thetaTransformed[index] = vec_log_th_prop[i];
             }
         }
     } /* end for each value agmark and set of thetas */
@@ -6374,6 +6195,205 @@ updateThetaAndValueAgPoisson_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_
     SET_INTSCALE_SLOT(object, nAcceptAg_sym, n_accept_ag);
     SET_INTSCALE_SLOT(object, nFailedPropValueAg_sym, n_failed_prop_value_ag);
 }
+
+
+
+
+void
+updateThetaAndValueAgFun_PoissonNotUseExp(SEXP object, SEXP y_R)
+{
+    int *y = INTEGER(y_R);
+
+    SEXP theta_R = GET_SLOT(object, theta_sym);
+    double *theta = REAL(theta_R);
+    int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
+    /* n_theta and length of y_R are all identical */
+
+    double *mu = REAL(GET_SLOT(object, mu_sym));
+    
+    double lower = *REAL(GET_SLOT(object, lower_sym));
+    double upper = *REAL(GET_SLOT(object, upper_sym));
+    double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
+
+    double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
+    double sigma = *REAL(GET_SLOT(object, sigma_sym));
+
+    double *valueAg = REAL(GET_SLOT(object, valueAg_sym));
+    
+    double *meanAg = REAL(GET_SLOT(object, meanAg_sym));
+    double *sdAg = REAL(GET_SLOT(object, sdAg_sym));
+
+    SEXP transformAg_R = GET_SLOT(object, transformAg_sym);
+
+    SEXP funAg_R = GET_SLOT(object, funAg_sym);
+    
+    /* set up to be able to call the R function from C */     
+    SEXP call_R = NULL;
+    /* call_R will be the final called object */ 
+    PROTECT(call_R = allocList(3));
+    SET_TYPEOF(call_R, LANGSXP);
+    SETCAR(call_R, funAg_R); /* sets first value in list to this function*/
+    
+    SEXP xArgsAg_R = GET_SLOT(object, xArgsAg_sym);
+    SEXP weightsArgsAg_R = GET_SLOT(object, weightsArgsAg_sym);
+    double *tmp_x = NULL;
+    int length_x_args_list = LENGTH(xArgsAg_R);
+    int n_xs = 0;
+    if (length_x_args_list > 0) {
+        SEXP first_R = VECTOR_ELT(xArgsAg_R, 0);
+        n_xs = length(first_R);
+        tmp_x = (double *)R_alloc(n_xs, sizeof(double));
+    }
+    
+    int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
+
+    int n_accept_theta = 0;
+    int n_failed_prop_theta = 0;
+
+    for (int i = 0; i < n_theta; ++i) {
+
+        int ir = i+1; /* R style index */
+        
+        int i_ag_r = dembase_getIAfter(ir, transformAg_R);
+        int i_ag = i_ag_r - 1;
+        
+        int contributes_to_ag = (i_ag_r > 0);
+    
+        int this_y = y[i];
+        int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
+        
+        int draw_straight_from_prior = (y_is_missing && !contributes_to_ag);
+        
+        double theta_curr = theta[i];
+        double log_th_curr = thetaTransformed[i];
+        
+        double mean = mu[i];
+        double sd = sigma;
+        
+        if (!y_is_missing) {
+            
+            mean = log_th_curr;
+            sd = scale;
+        }
+        
+        int attempt = 0;
+        int found_prop = 0;
+        
+        double log_th_prop = 0.0;
+        
+        while( (!found_prop) && (attempt < maxAttempt) ) {
+
+            ++attempt;
+            
+            log_th_prop = rnorm(mean, sd);
+            found_prop = ( (log_th_prop > lower + tolerance) &&
+                            (log_th_prop < upper - tolerance));
+ 
+        }
+        
+        if (found_prop) {
+            
+            double theta_prop = exp(log_th_prop);
+            
+            if (draw_straight_from_prior) {
+                theta[i] = theta_prop;
+		thetaTransformed[i] = log_th_prop;
+            }
+            else {
+                
+                SEXP x_R = NULL;
+                SEXP weight_R = NULL;
+                double *x = NULL;
+                
+                if (contributes_to_ag) {
+                            
+                    x_R = VECTOR_ELT(xArgsAg_R, i_ag);
+                    weight_R = VECTOR_ELT(weightsArgsAg_R, i_ag);
+                    x = REAL(x_R);
+                    /* store these xs in case we need to restore them*/
+                    memcpy(tmp_x, x, n_xs*sizeof(double));
+                }
+                
+                double log_diff = 0;
+                
+                if (!y_is_missing) {
+                
+                    double log_lik_prop = 0;
+                    double log_lik_curr = 0;
+                    
+                    log_lik_prop = dpois(this_y, theta_prop, USE_LOG);
+                    log_lik_curr = dpois(this_y, theta_curr, USE_LOG);
+                    log_diff = log_lik_prop - log_lik_curr;    
+                }
+                
+                double log_dens_prop = dnorm(log_th_prop, mu[i], sigma, USE_LOG);
+                double log_dens_curr = dnorm(log_th_curr, mu[i], sigma, USE_LOG);
+                log_diff += (log_dens_prop - log_dens_curr);
+
+                double ag_prop = 0;
+                
+                if (contributes_to_ag) {
+                    
+                    double ag_curr = valueAg[i_ag];
+                    double mean_ag = meanAg[i_ag];
+                    double sd_ag = sdAg[i_ag];
+                    
+                    SEXP ir_shared_R;
+                    PROTECT( ir_shared_R 
+                         = dembase_getIShared(ir, transformAg_R) ); 
+                    int n_ir_shared = LENGTH(ir_shared_R);
+                    int *ir_shared = INTEGER(ir_shared_R);
+                    
+                    for (int j = 0; j < n_ir_shared; ++j) {
+                        if ( i == (ir_shared[j] - 1) ) {
+                            x[j] = theta_prop;
+                            /* alters this x in the original R SEXP object */
+                        }
+                    }
+       
+                    /* set 2nd and 3rd values in the function call object */
+                    SETCADR(call_R, x_R);
+                    SETCADDR(call_R, weight_R);
+                    
+                    /* call the supplied function */
+                    SEXP prop_R = PROTECT(eval(call_R, R_GlobalEnv));
+                    ag_prop = *REAL(prop_R);
+                    
+                    UNPROTECT(2); /* ir_shared_r, current prop_R */
+                    
+                    double log_dens_ag_prop = dnorm(mean_ag, ag_prop, sd_ag, USE_LOG);
+                    double log_dens_ag_curr = dnorm(mean_ag, ag_curr, sd_ag, USE_LOG);
+                    log_diff += log_dens_ag_prop - log_dens_ag_curr;
+                }
+                
+                int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+                if (accept) {
+                    ++n_accept_theta;
+                    theta[i] = theta_prop;
+		    thetaTransformed[i] = log_th_prop;
+                    if (contributes_to_ag) {
+                        /* x will have been updated in place already*/
+                        valueAg[i_ag] = ag_prop;
+                    }
+                }
+                else if (contributes_to_ag) {
+                    /* unmodify the x_ags */
+                    memcpy(x, tmp_x, n_xs*sizeof(double));
+                }
+            }
+        }
+        else { /* not found prop */
+            ++n_failed_prop_theta;
+        }
+        
+    } /* end i-loop through thetas */
+    
+    SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
+    SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
+    UNPROTECT(1); /* call_R */
+}
+
 
 
 void
@@ -6385,6 +6405,7 @@ updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R are all identical */
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
@@ -6446,7 +6467,7 @@ updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         int draw_straight_from_prior = (y_is_missing && !contributes_to_ag);
         
         double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
+        double log_th_curr = thetaTransformed[i];
         
         double mean = mu[i];
         double sd = sigma;
@@ -6480,6 +6501,7 @@ updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
             
             if (draw_straight_from_prior) {
                 theta[i] = theta_prop;
+		thetaTransformed[i] = log_th_prop;
             }
             else {
                 
@@ -6552,6 +6574,7 @@ updateThetaAndValueAgFun_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
                 if (accept) {
                     ++n_accept_theta;
                     theta[i] = theta_prop;
+		    thetaTransformed[i] = log_th_prop;
                     if (contributes_to_ag) {
                         /* x will have been updated in place already*/
                         valueAg[i_ag] = ag_prop;
@@ -6584,6 +6607,7 @@ updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
     SEXP theta_R = GET_SLOT(object, theta_sym);
     double *theta = REAL(theta_R);
     int n_theta = LENGTH(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     /* n_theta and length of y_R are all identical */
 
     double *mu = REAL(GET_SLOT(object, mu_sym));
@@ -6640,7 +6664,7 @@ updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         int draw_straight_from_prior = (y_is_missing && !contributes_to_ag);
         
         double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
+        double log_th_curr = thetaTransformed[i];
         
         double mean = mu[i];
         double sd = sigma;
@@ -6674,6 +6698,7 @@ updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
             
             if (draw_straight_from_prior) {
                 theta[i] = theta_prop;
+		thetaTransformed[i] = log_th_prop;
             }
             else {
                 
@@ -6721,6 +6746,7 @@ updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
                 if (accept) {
                     ++n_accept_theta;
                     theta[i] = theta_prop;
+		    thetaTransformed[i] = log_th_prop;
                     if (contributes_to_ag) {
             int i_ag = i_mx / nAge; /* 1 less than the r style index */
                         valueAg[i_ag] = ag_prop;

@@ -1944,12 +1944,10 @@ updateMu <- function(object, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-updateSigma_Varying <- function(object, g, useC = FALSE) {
+updateSigma_Varying <- function(object, useC = FALSE) {
     ## object
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
-    ## g
-    stopifnot(is.function(g))
     if (useC) {
         .Call(updateSigma_Varying_R, object)
     }
@@ -3502,7 +3500,7 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
     }
 }
 
-
+## TODO - CHANGE BENCHMARKED VERSIONS OF updateTheta_Poisson TO USE Box-Cox
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -3520,6 +3518,7 @@ updateTheta_PoissonVaryingNotUseExpAgCertain <- function(object, y, useC = FALSE
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         scale.theta <- object@scaleTheta@.Data
         lower <- object@lower
         upper <- object@upper
@@ -3546,24 +3545,24 @@ updateTheta_PoissonVaryingNotUseExpAgCertain <- function(object, y, useC = FALSE
                 }
             }
             value.fixed <- (in.delta
-                            && weight.positive
-                            && (!has.other || !weight.other.positive))
+                && weight.positive
+                && (!has.other || !weight.other.positive))
             if (value.fixed)
                 next
             update.pair <- (in.delta
-                            && weight.positive
-                            && has.other
-                            && weight.other.positive)
+                && weight.positive
+                && has.other
+                && weight.other.positive)
             ## generate proposal
             found.prop <- FALSE
             attempt <- 0L
             th.curr <- theta[i]
-            log.th.curr <- log(th.curr)
+            log.th.curr <- theta.transformed[i]
             while (!found.prop && (attempt < max.attempt)) {
                 attempt <- attempt + 1L
                 log.th.prop <- stats::rnorm(n = 1L, mean = log.th.curr, sd = scale.theta)
                 prop.in.range <- ((log.th.prop > (lower + tolerance))
-                                 && (log.th.prop < (upper - tolerance)))
+                    && (log.th.prop < (upper - tolerance)))
                 if (!prop.in.range)
                     next
                 th.prop <- exp(log.th.prop)
@@ -3574,7 +3573,7 @@ updateTheta_PoissonVaryingNotUseExpAgCertain <- function(object, y, useC = FALSE
                     if (is.positive) {
                         log.th.other.prop <- log(th.other.prop)
                         found.prop <- ((log.th.other.prop > (lower + tolerance))
-                                       && (log.th.other.prop < (upper - tolerance)))
+                            && (log.th.other.prop < (upper - tolerance)))
                     }
                     else
                         found.prop <- FALSE
@@ -3591,45 +3590,45 @@ updateTheta_PoissonVaryingNotUseExpAgCertain <- function(object, y, useC = FALSE
             y.i <- y[i]
             if (!is.na(y.i)) {
                 log.diff <- log.diff + (stats::dpois(x = y.i,
-                                              lambda = th.prop,
-                                              log = TRUE)
-                                        - stats::dpois(x = y.i,
-                                                lambda = th.curr,
-                                                log = TRUE))
+                                                     lambda = th.prop,
+                                                     log = TRUE)
+                    - stats::dpois(x = y.i,
+                                   lambda = th.curr,
+                                   log = TRUE))
             }
             if (update.pair) {
                 y.other <- y[i.other]
                 if (!is.na(y.other)) {
                     log.diff <- log.diff + (stats::dpois(x = y.other,
-                                                  lambda = th.other.prop,
-                                                  log = TRUE)
-                                            - stats::dpois(x = y.other,
-                                                    lambda = th.other.curr,
-                                                    log = TRUE))
+                                                         lambda = th.other.prop,
+                                                         log = TRUE)
+                        - stats::dpois(x = y.other,
+                                       lambda = th.other.curr,
+                                       log = TRUE))
                 }
             }
             ## calculate prior and proposal densities
             mu.i <- mu[i]
             if (update.pair) {
-                log.th.other.curr <- log(th.other.curr)
+                log.th.other.curr <- theta.transformed[i.other]
                 mu.other <- mu[i.other]
                 ## Use log-normal, because it include the Jacobians
                 log.diff.prior <- (stats::dlnorm(x = th.prop,
-                                          meanlog = mu.i,
-                                          sdlog = sigma,
-                                          log = TRUE)
-                                   + stats::dlnorm(x = th.other.prop,
-                                            meanlog = mu.other,
-                                            sdlog = sigma,
-                                            log = TRUE)
-                                   - stats::dlnorm(x = th.curr,
-                                            meanlog = mu.i,
-                                            sdlog = sigma,
-                                            log = TRUE)
-                                   - stats::dlnorm(x = th.other.curr,
-                                            meanlog = mu.other,
-                                            sdlog = sigma,
-                                            log = TRUE))
+                                                 meanlog = mu.i,
+                                                 sdlog = sigma,
+                                                 log = TRUE)
+                    + stats::dlnorm(x = th.other.prop,
+                                    meanlog = mu.other,
+                                    sdlog = sigma,
+                                    log = TRUE)
+                    - stats::dlnorm(x = th.curr,
+                                    meanlog = mu.i,
+                                    sdlog = sigma,
+                                    log = TRUE)
+                    - stats::dlnorm(x = th.other.curr,
+                                    meanlog = mu.other,
+                                    sdlog = sigma,
+                                    log = TRUE))
                 log.diff.prop <- (safeLogProp_Poisson(log.th.new = log.th.curr,
                                                       log.th.other.new = log.th.other.curr,
                                                       log.th.old = log.th.prop,
@@ -3637,36 +3636,40 @@ updateTheta_PoissonVaryingNotUseExpAgCertain <- function(object, y, useC = FALSE
                                                       scale = scale.theta,
                                                       weight = weight,
                                                       weight.other = weight.other)
-                                  - safeLogProp_Poisson(log.th.new = log.th.prop,
-                                                        log.th.other.new = log.th.other.prop,
-                                                        log.th.old = log.th.curr,
-                                                        log.th.other.old = log.th.other.curr,
-                                                        scale = scale.theta,
-                                                        weight = weight,
-                                                        weight.other = weight.other))
+                    - safeLogProp_Poisson(log.th.new = log.th.prop,
+                                          log.th.other.new = log.th.other.prop,
+                                          log.th.old = log.th.curr,
+                                          log.th.other.old = log.th.other.curr,
+                                          scale = scale.theta,
+                                          weight = weight,
+                                          weight.other = weight.other))
                 log.diff <- log.diff + log.diff.prior + log.diff.prop
             }
             else {
                 ## Jacobian from prior density cancels with proposal density
                 log.diff <- log.diff + (stats::dnorm(x = log.th.prop,
-                                              mean = mu.i,
-                                              sd = sigma,
-                                              log = TRUE)
-                                        - stats::dnorm(x = log.th.curr,
-                                                mean = mu.i,
-                                                sd = sigma,
-                                                log = TRUE))
+                                                     mean = mu.i,
+                                                     sd = sigma,
+                                                     log = TRUE)
+                    - stats::dnorm(x = log.th.curr,
+                                   mean = mu.i,
+                                   sd = sigma,
+                                   log = TRUE))
             }
             ## acceptance
             accept <- (log.diff >= 0) || (stats::runif(1) < exp(log.diff))
             if (accept) {
                 n.accept.theta <- n.accept.theta + 1L
                 theta[i] <- th.prop
-                if (update.pair)
+                theta.transformed[i] <- log.th.prop
+                if (update.pair) {
                     theta[i.other] <- th.other.prop
+                    theta.transformed[i.other] <- log.th.other.prop
+                }
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nAcceptTheta@.Data <- n.accept.theta
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object
@@ -3695,6 +3698,7 @@ updateTheta_PoissonVaryingUseExpAgCertain <- function(object, y, exposure, useC 
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         scale.theta <- object@scaleTheta@.Data
         scale.theta.multiplier <- object@scaleThetaMultiplier
         lower <- object@lower
@@ -3724,24 +3728,24 @@ updateTheta_PoissonVaryingUseExpAgCertain <- function(object, y, exposure, useC 
                 }
             }
             value.fixed <- (in.delta
-                            && weight.positive
-                            && (!has.other || !weight.other.positive))
+                && weight.positive
+                && (!has.other || !weight.other.positive))
             if (value.fixed)
                 next
             update.pair <- (in.delta
-                            && weight.positive
-                            && has.other
-                            && weight.other.positive)
+                && weight.positive
+                && has.other
+                && weight.other.positive)
             ## generate proposal
             found.prop <- FALSE
             attempt <- 0L
             th.curr <- theta[i]
-            log.th.curr <- log(th.curr)
+            log.th.curr <- theta.transformed[i]
             while (!found.prop && (attempt < max.attempt)) {
                 attempt <- attempt + 1L
                 log.th.prop <- stats::rnorm(n = 1L, mean = log.th.curr, sd = scale.theta.i)
                 prop.in.range <- ((log.th.prop > (lower + tolerance))
-                                 && (log.th.prop < (upper - tolerance)))
+                    && (log.th.prop < (upper - tolerance)))
                 if (!prop.in.range)
                     next
                 th.prop <- exp(log.th.prop)
@@ -3752,7 +3756,7 @@ updateTheta_PoissonVaryingUseExpAgCertain <- function(object, y, exposure, useC 
                     if (is.positive) {
                         log.th.other.prop <- log(th.other.prop)
                         found.prop <- ((log.th.other.prop > (lower + tolerance))
-                                       && (log.th.other.prop < (upper - tolerance)))
+                            && (log.th.other.prop < (upper - tolerance)))
                     }
                     else
                         found.prop <- FALSE
@@ -3770,46 +3774,46 @@ updateTheta_PoissonVaryingUseExpAgCertain <- function(object, y, exposure, useC 
             if (!is.na(y.i)) {
                 exp.i <- exposure[i]
                 log.diff <- log.diff + (stats::dpois(x = y.i,
-                                              lambda = th.prop * exp.i,
-                                              log = TRUE)
-                                        - stats::dpois(x = y.i,
-                                                lambda = th.curr * exp.i,
-                                                log = TRUE))
+                                                     lambda = th.prop * exp.i,
+                                                     log = TRUE)
+                    - stats::dpois(x = y.i,
+                                   lambda = th.curr * exp.i,
+                                   log = TRUE))
             }
             if (update.pair) {
                 y.other <- y[i.other]
                 if (!is.na(y.other)) {
                     exp.other <- exposure[i.other]
                     log.diff <- log.diff + (stats::dpois(x = y.other,
-                                                  lambda = th.other.prop * exp.other,
-                                                  log = TRUE)
-                                            - stats::dpois(x = y.other,
-                                                    lambda = th.other.curr * exp.other,
-                                                    log = TRUE))
+                                                         lambda = th.other.prop * exp.other,
+                                                         log = TRUE)
+                        - stats::dpois(x = y.other,
+                                       lambda = th.other.curr * exp.other,
+                                       log = TRUE))
                 }
             }
             ## calculate prior and proposal densities
             mu.i <- mu[i]
             if (update.pair) {
-                log.th.other.curr <- log(th.other.curr)
+                log.th.other.curr <- theta.transformed[i.other]
                 mu.other <- mu[i.other]
                 ## Use log-normal, because it include the Jacobians
                 log.diff.prior <- (stats::dlnorm(x = th.prop,
-                                          meanlog = mu.i,
-                                          sdlog = sigma,
-                                          log = TRUE)
-                                   + stats::dlnorm(x = th.other.prop,
-                                            meanlog = mu.other,
-                                            sdlog = sigma,
-                                            log = TRUE)
-                                   - stats::dlnorm(x = th.curr,
-                                            meanlog = mu.i,
-                                            sdlog = sigma,
-                                            log = TRUE)
-                                   - stats::dlnorm(x = th.other.curr,
-                                            meanlog = mu.other,
-                                            sdlog = sigma,
-                                            log = TRUE))
+                                                 meanlog = mu.i,
+                                                 sdlog = sigma,
+                                                 log = TRUE)
+                    + stats::dlnorm(x = th.other.prop,
+                                    meanlog = mu.other,
+                                    sdlog = sigma,
+                                    log = TRUE)
+                    - stats::dlnorm(x = th.curr,
+                                    meanlog = mu.i,
+                                    sdlog = sigma,
+                                    log = TRUE)
+                    - stats::dlnorm(x = th.other.curr,
+                                    meanlog = mu.other,
+                                    sdlog = sigma,
+                                    log = TRUE))
                 log.diff.prop <- (safeLogProp_Poisson(log.th.new = log.th.curr,
                                                       log.th.other.new = log.th.other.curr,
                                                       log.th.old = log.th.prop,
@@ -3817,36 +3821,40 @@ updateTheta_PoissonVaryingUseExpAgCertain <- function(object, y, exposure, useC 
                                                       scale = scale.theta.i,
                                                       weight = weight,
                                                       weight.other = weight.other)
-                                  - safeLogProp_Poisson(log.th.new = log.th.prop,
-                                                        log.th.other.new = log.th.other.prop,
-                                                        log.th.old = log.th.curr,
-                                                        log.th.other.old = log.th.other.curr,
-                                                        scale = scale.theta.i,
-                                                        weight = weight,
-                                                        weight.other = weight.other))
+                    - safeLogProp_Poisson(log.th.new = log.th.prop,
+                                          log.th.other.new = log.th.other.prop,
+                                          log.th.old = log.th.curr,
+                                          log.th.other.old = log.th.other.curr,
+                                          scale = scale.theta.i,
+                                          weight = weight,
+                                          weight.other = weight.other))
                 log.diff <- log.diff + log.diff.prior + log.diff.prop
             }
             else {
                 ## Jacobian from prior density cancels with proposal density
                 log.diff <- log.diff + (stats::dnorm(x = log.th.prop,
-                                              mean = mu.i,
-                                              sd = sigma,
-                                              log = TRUE)
-                                        - stats::dnorm(x = log.th.curr,
-                                                mean = mu.i,
-                                                sd = sigma,
-                                                log = TRUE))
+                                                     mean = mu.i,
+                                                     sd = sigma,
+                                                     log = TRUE)
+                    - stats::dnorm(x = log.th.curr,
+                                   mean = mu.i,
+                                   sd = sigma,
+                                   log = TRUE))
             }
             ## acceptance
             accept <- (log.diff >= 0) || (stats::runif(1) < exp(log.diff))
             if (accept) {
                 n.accept.theta <- n.accept.theta + 1L
                 theta[i] <- th.prop
-                if (update.pair)
+                theta.transformed[i] <- log.th.prop
+                if (update.pair) {
                     theta[i.other] <- th.other.prop
+                    theta.transformed[i.other] <- log.th.other.prop
+                }
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nAcceptTheta@.Data <- n.accept.theta
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object
@@ -3869,6 +3877,7 @@ updateThetaAndValueAgNormal_PoissonNotUseExp <- function(object, y, useC = FALSE
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         lower <- object@lower
         upper <- object@upper
         tolerance <- object@tolerance
@@ -3890,7 +3899,7 @@ updateThetaAndValueAgNormal_PoissonNotUseExp <- function(object, y, useC = FALSE
             i.ag <- dembase::getIBefore(k, transform = transform.ag, useC = TRUE)
             n.ag <- length(i.ag)
             vec.th.curr <- theta[i.ag]
-            vec.log.th.curr <- log(vec.th.curr)
+            vec.log.th.curr <- theta.transformed[i.ag]
             vec.th.prop <- numeric(length = n.ag)
             vec.log.th.prop <- numeric(length = n.ag)
             attempt <- 0L
@@ -3904,7 +3913,7 @@ updateThetaAndValueAgNormal_PoissonNotUseExp <- function(object, y, useC = FALSE
                     increment <- stats::rnorm(n = 1L, mean = 0, sd = scale.ag)
                     log.th.prop <- vec.log.th.curr[i] + increment
                     inside.limits <- ((log.th.prop > (lower + tolerance))
-                                      && (log.th.prop < (upper - tolerance)))
+                        && (log.th.prop < (upper - tolerance)))
                     if (!inside.limits)
                         break
                     th.prop <- exp(log.th.prop)
@@ -3932,10 +3941,139 @@ updateThetaAndValueAgNormal_PoissonNotUseExp <- function(object, y, useC = FALSE
             mean.k <- mean.ag[k]
             sd.k <- sd.ag[k]
             log.diff.lik <- (sum(stats::dpois(x = vec.y[is.observed],
-                                       lambda = vec.th.prop[is.observed],
+                                              lambda = vec.th.prop[is.observed],
+                                              log = TRUE))
+                - sum(stats::dpois(x = vec.y[is.observed],
+                                   lambda = vec.th.curr[is.observed],
+                                   log = TRUE)))
+            ## do not include Jacobians, since they cancel with proposal densities
+            log.diff.prior <- (sum(stats::dnorm(x = vec.log.th.prop,
+                                                mean = vec.mu,
+                                                sd = sigma,
+                                                log = TRUE))
+                - sum(stats::dnorm(x = vec.log.th.curr,
+                                   mean = vec.mu,
+                                   sd = sigma,
+                                   log = TRUE)))
+            log.diff.ag <- (stats::dnorm(x = mean.k, 
+                                         mean = ag.prop,
+                                         sd = sd.k,
+                                         log = TRUE)
+                - stats::dnorm(x = mean.k, 
+                               mean = ag.curr,
+                               sd = sd.k,
+                               log = TRUE))
+            log.diff <- log.diff.lik + log.diff.prior + log.diff.ag
+            accept <- (log.diff > 0) || (stats::runif(1) < exp(log.diff))
+            if (accept) {
+                n.accept.ag <- n.accept.ag + 1L
+                value.ag[k] <- ag.prop
+                theta[i.ag] <- vec.th.prop
+                theta.transformed[i.ag] <- vec.log.th.prop
+            }
+        }
+        object@theta <- theta
+        object@thetaTransformed <- theta.transformed
+        object@valueAg@.Data <- value.ag
+        object@nFailedPropValueAg@.Data <- n.failed.prop.value.ag
+        object@nAcceptAg@.Data <- n.accept.ag
+        object
+    }
+}
+
+
+
+## TRANSLATED
+## HAS_TESTS
+updateThetaAndValueAgNormal_PoissonUseExp <- function(object, y, exposure, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "PoissonVaryingUseExp"))
+    stopifnot(methods::is(object, "AgNormal"))
+    stopifnot(methods::validObject(object))
+    ## y
+    stopifnot(is.integer(y))
+    stopifnot(identical(length(y), length(object@theta)))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+    ## exposure
+    stopifnot(is.double(exposure))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
+    ## y and exposure
+    stopifnot(identical(length(exposure), length(y)))
+    stopifnot(all(is.na(exposure) <= is.na(y)))
+    if (useC) {
+        .Call(updateThetaAndValueAgNormal_PoissonUseExp_R, object, y, exposure)
+    }
+    else {
+        theta <- object@theta
+        theta.transformed <- object@thetaTransformed
+        lower <- object@lower
+        upper <- object@upper
+        tolerance <- object@tolerance
+        mu <- object@mu
+        sigma <- object@sigma@.Data
+        value.ag <- object@valueAg@.Data
+        weight.ag <- object@weightAg
+        transform.ag <- object@transformAg
+        mean.ag <- object@meanAg@.Data
+        sd.ag <- object@sdAg@.Data
+        scale.ag <- object@scaleAg@.Data
+        max.attempt <- object@maxAttempt
+        n.failed.prop.value.ag <- 0L
+        n.accept.ag <- 0L
+        for (k in seq_along(value.ag)) {
+            ## Each cell 'k' in the benchmarks has a set of associated 'i' in 'theta'.
+            ## Construct vectors holding information on these 'theta'.  Use 'vec'
+            ## prefix to distinguish the (length > 1) vectors.
+            i.ag <- dembase::getIBefore(k, transform = transform.ag, useC = TRUE)
+            n.ag <- length(i.ag)
+            vec.th.curr <- theta[i.ag]
+            vec.log.th.curr <- theta.transformed[i.ag]
+            vec.th.prop <- numeric(length = n.ag)
+            vec.log.th.prop <- numeric(length = n.ag)
+            attempt <- 0L
+            found.prop <- FALSE
+            while (!found.prop && (attempt < max.attempt)) {
+                ## attempt to generate a new set of 'theta', and hence a new
+                ## value for benchmark[k] by adding random increments to
+                ## the 'theta' (on the log scale)
+                attempt <- attempt + 1L
+                for (i in seq_len(n.ag)) {
+                    increment <- stats::rnorm(n = 1L, mean = 0, sd = scale.ag)
+                    log.th.prop <- vec.log.th.curr[i] + increment
+                    inside.limits <- ((log.th.prop > (lower + tolerance))
+                                      && (log.th.prop < (upper - tolerance)))
+                    if (!inside.limits)
+                        break
+                    th.prop <- exp(log.th.prop)
+                    if (log.th.prop > 0)
+                        valid <- is.finite(th.prop)
+                    else
+                        valid <- th.prop > 0
+                    if (!valid)
+                        break
+                    vec.log.th.prop[i] <- log.th.prop
+                    vec.th.prop[i] <- th.prop
+                    found.prop <- i == n.ag
+                }
+            }
+            if (!found.prop) { ## if found.prop is FALSE, reached 'maxAttempt'
+                n.failed.prop.value.ag <- n.failed.prop.value.ag + 1L
+                next
+            }
+            vec.y <- y[i.ag]
+            is.observed <- !is.na(vec.y)
+            vec.exp <- exposure[i.ag]
+            vec.mu <- mu[i.ag]
+            vec.weight <- weight.ag[i.ag]
+            ag.curr <- value.ag[k]
+            ag.prop <- sum(vec.th.prop * vec.weight)
+            mean.k <- mean.ag[k]
+            sd.k <- sd.ag[k]
+            log.diff.lik <- (sum(stats::dpois(x = vec.y[is.observed],
+                                       lambda = vec.th.prop[is.observed] * vec.exp[is.observed],
                                        log = TRUE))
                              - sum(stats::dpois(x = vec.y[is.observed],
-                                         lambda = vec.th.curr[is.observed],
+                                         lambda = vec.th.curr[is.observed] * vec.exp[is.observed],
                                          log = TRUE)))
             ## do not include Jacobians, since they cancel with proposal densities
             log.diff.prior <- (sum(stats::dnorm(x = vec.log.th.prop,
@@ -3960,9 +4098,11 @@ updateThetaAndValueAgNormal_PoissonNotUseExp <- function(object, y, useC = FALSE
                 n.accept.ag <- n.accept.ag + 1L
                 value.ag[k] <- ag.prop
                 theta[i.ag] <- vec.th.prop
+                theta.transformed[i.ag] <- vec.log.th.prop
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@valueAg@.Data <- value.ag
         object@nFailedPropValueAg@.Data <- n.failed.prop.value.ag
         object@nAcceptAg@.Data <- n.accept.ag
@@ -3986,6 +4126,7 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp <- function(object, y, useC = FALS
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         lower <- object@lower
         upper <- object@upper
         tolerance <- object@tolerance
@@ -4007,7 +4148,7 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp <- function(object, y, useC = FALS
             i.ag <- dembase::getIBefore(k, transform = transform.ag, useC = TRUE)
             n.ag <- length(i.ag)
             vec.th.curr <- theta[i.ag]
-            vec.log.th.curr <- log(vec.th.curr)
+            vec.log.th.curr <- theta.transformed[i.ag]
             vec.th.prop <- numeric(length = n.ag)
             vec.log.th.prop <- numeric(length = n.ag)
             attempt <- 0L
@@ -4072,9 +4213,135 @@ updateThetaAndValueAgPoisson_PoissonNotUseExp <- function(object, y, useC = FALS
                 n.accept.ag <- n.accept.ag + 1L
                 value.ag[k] <- ag.prop
                 theta[i.ag] <- vec.th.prop
+                theta.transformed[i.ag] <- vec.log.th.prop
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
+        object@valueAg@.Data <- value.ag
+        object@nFailedPropValueAg@.Data <- n.failed.prop.value.ag
+        object@nAcceptAg@.Data <- n.accept.ag
+        object
+    }
+}
+
+
+
+## TRANSLATED
+## HAS_TESTS
+updateThetaAndValueAgPoisson_PoissonUseExp <- function(object, y, exposure, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "PoissonVaryingUseExp"))
+    stopifnot(methods::is(object, "AgPoisson"))
+    stopifnot(methods::validObject(object))
+    ## y
+    stopifnot(is.integer(y))
+    stopifnot(identical(length(y), length(object@theta)))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+    ## exposure
+    stopifnot(is.double(exposure))
+    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
+    ## y and exposure
+    stopifnot(identical(length(exposure), length(y)))
+    stopifnot(all(is.na(exposure) <= is.na(y)))
+    if (useC) {
+        .Call(updateThetaAndValueAgPoisson_PoissonUseExp_R, object, y, exposure)
+    }
+    else {
+        theta <- object@theta
+        theta.transformed <- object@thetaTransformed
+        lower <- object@lower
+        upper <- object@upper
+        tolerance <- object@tolerance
+        mu <- object@mu
+        sigma <- object@sigma@.Data
+        value.ag <- object@valueAg@.Data
+        weight.ag <- object@weightAg
+        transform.ag <- object@transformAg
+        mean.ag <- object@meanAg@.Data
+        scale.ag <- object@scaleAg@.Data
+        exposure.ag <- object@exposureAg@.Data
+        max.attempt <- object@maxAttempt
+        n.failed.prop.value.ag <- 0L
+        n.accept.ag <- 0L
+        for (k in seq_along(value.ag)) {
+            ## Each cell 'k' in the benchmarks has a set of associated 'i' in 'theta'.
+            ## Construct vectors holding information on these 'theta'.  Use 'vec'
+            ## prefix to distinguish the (length > 1) vectors.
+            i.ag <- dembase::getIBefore(k, transform = transform.ag, useC = TRUE)
+            n.ag <- length(i.ag)
+            vec.th.curr <- theta[i.ag]
+            vec.log.th.curr <- theta.transformed[i.ag]
+            vec.th.prop <- numeric(length = n.ag)
+            vec.log.th.prop <- numeric(length = n.ag)
+            attempt <- 0L
+            found.prop <- FALSE
+            while (!found.prop && (attempt < max.attempt)) {
+                ## attempt to generate a new set of 'theta', and hence a new
+                ## value for benchmark[k] by adding random increments to
+                ## the 'theta' (on the log scale)
+                attempt <- attempt + 1L
+                for (i in seq_len(n.ag)) {
+                    increment <- stats::rnorm(n = 1L, mean = 0, sd = scale.ag)
+                    log.th.prop <- vec.log.th.curr[i] + increment
+                    inside.limits <- ((log.th.prop > (lower + tolerance))
+                                      && (log.th.prop < (upper - tolerance)))
+                    if (!inside.limits)
+                        break
+                    th.prop <- exp(log.th.prop)
+                    if (log.th.prop > 0)
+                        valid <- is.finite(th.prop)
+                    else
+                        valid <- th.prop > 0
+                    if (!valid)
+                        break
+                    vec.log.th.prop[i] <- log.th.prop
+                    vec.th.prop[i] <- th.prop
+                    found.prop <- i == n.ag
+                }
+            }
+            if (!found.prop) { ## if found.prop is FALSE, reached 'maxAttempt'
+                n.failed.prop.value.ag <- n.failed.prop.value.ag + 1L
+                next
+            }
+            vec.y <- y[i.ag]
+            is.observed <- !is.na(vec.y)
+            vec.exp <- exposure[i.ag]
+            vec.mu <- mu[i.ag]
+            vec.weight <- weight.ag[i.ag]
+            ag.curr <- value.ag[k]
+            ag.prop <- sum(vec.th.prop * vec.weight)
+            mean.k <- mean.ag[k]
+            exposure.k <- exposure.ag[k]
+            log.diff.lik <- (sum(stats::dpois(x = vec.y[is.observed],
+                                       lambda = vec.th.prop[is.observed] * vec.exp[is.observed],
+                                       log = TRUE))
+                             - sum(stats::dpois(x = vec.y[is.observed],
+                                         lambda = vec.th.curr[is.observed] * vec.exp[is.observed],
+                                         log = TRUE)))
+            ## do not include Jacobians, since they cancel with proposal densities
+            log.diff.prior <- (sum(stats::dnorm(x = vec.log.th.prop,
+                                         mean = vec.mu,
+                                         sd = sigma,
+                                         log = TRUE))
+                               - sum(stats::dnorm(x = vec.log.th.curr,
+                                           mean = vec.mu,
+                                           sd = sigma,
+                                           log = TRUE)))
+            ## allow for mean.k * exposure.k to be non-integer
+            log.diff.ag <- (exposure.k * (ag.curr - ag.prop)
+                            + mean.k * exposure.k * (log(ag.prop) - log(ag.curr)))
+            log.diff <- log.diff.lik + log.diff.prior + log.diff.ag
+            accept <- (log.diff > 0) || (stats::runif(1) < exp(log.diff))
+            if (accept) {
+                n.accept.ag <- n.accept.ag + 1L
+                value.ag[k] <- ag.prop
+                theta[i.ag] <- vec.th.prop
+                theta.transformed[i.ag] <- vec.log.th.prop
+            }
+        }
+        object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@valueAg@.Data <- value.ag
         object@nFailedPropValueAg@.Data <- n.failed.prop.value.ag
         object@nAcceptAg@.Data <- n.accept.ag
@@ -4098,6 +4365,7 @@ updateThetaAndValueAgFun_PoissonNotUseExp <- function(object, y, useC = FALSE) {
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         scale <- object@scaleTheta
         lower <- object@lower
@@ -4123,7 +4391,7 @@ updateThetaAndValueAgFun_PoissonNotUseExp <- function(object, y, useC = FALSE) {
             contributes.to.ag <- i.ag > 0L
             y.is.missing <- is.na(y[i])
             th.curr <- theta[i]
-            log.th.curr <- log(th.curr)
+            log.th.curr <- theta.transformed[i]
             if (y.is.missing) {
                 mean <- mu[i]
                 sd <- sigma
@@ -4143,8 +4411,10 @@ updateThetaAndValueAgFun_PoissonNotUseExp <- function(object, y, useC = FALSE) {
             if (found.prop) {
                 th.prop <- exp(log.th.prop)
                 draw.straight.from.prior <- y.is.missing && !contributes.to.ag
-                if (draw.straight.from.prior)
+                if (draw.straight.from.prior) {
                     theta[i] <- th.prop
+                    theta.transformed[i] <- log.th.prop
+                }
                 else {
                     if (y.is.missing)
                         log.diff <- 0
@@ -4175,6 +4445,7 @@ updateThetaAndValueAgFun_PoissonNotUseExp <- function(object, y, useC = FALSE) {
                     if (accept) {
                         n.accept.theta <- n.accept.theta + 1L
                         theta[i] <- th.prop
+                        theta.transformed[i] <- log.th.prop
                         if (contributes.to.ag) {
                             x.args.ag[[i.ag]] <- x
                             value.ag[i.ag] <- ag.prop
@@ -4186,253 +4457,11 @@ updateThetaAndValueAgFun_PoissonNotUseExp <- function(object, y, useC = FALSE) {
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@valueAg@.Data <- value.ag
         object@xArgsAg <- x.args.ag
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object@nAcceptTheta@.Data <- n.accept.theta
-        object
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
-updateThetaAndValueAgNormal_PoissonUseExp <- function(object, y, exposure, useC = FALSE) {
-    ## object
-    stopifnot(methods::is(object, "PoissonVaryingUseExp"))
-    stopifnot(methods::is(object, "AgNormal"))
-    stopifnot(methods::validObject(object))
-    ## y
-    stopifnot(is.integer(y))
-    stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
-    ## exposure
-    stopifnot(is.double(exposure))
-    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
-    ## y and exposure
-    stopifnot(identical(length(exposure), length(y)))
-    stopifnot(all(is.na(exposure) <= is.na(y)))
-    if (useC) {
-        .Call(updateThetaAndValueAgNormal_PoissonUseExp_R, object, y, exposure)
-    }
-    else {
-        theta <- object@theta
-        lower <- object@lower
-        upper <- object@upper
-        tolerance <- object@tolerance
-        mu <- object@mu
-        sigma <- object@sigma@.Data
-        value.ag <- object@valueAg@.Data
-        weight.ag <- object@weightAg
-        transform.ag <- object@transformAg
-        mean.ag <- object@meanAg@.Data
-        sd.ag <- object@sdAg@.Data
-        scale.ag <- object@scaleAg@.Data
-        max.attempt <- object@maxAttempt
-        n.failed.prop.value.ag <- 0L
-        n.accept.ag <- 0L
-        for (k in seq_along(value.ag)) {
-            ## Each cell 'k' in the benchmarks has a set of associated 'i' in 'theta'.
-            ## Construct vectors holding information on these 'theta'.  Use 'vec'
-            ## prefix to distinguish the (length > 1) vectors.
-            i.ag <- dembase::getIBefore(k, transform = transform.ag, useC = TRUE)
-            n.ag <- length(i.ag)
-            vec.th.curr <- theta[i.ag]
-            vec.log.th.curr <- log(vec.th.curr)
-            vec.th.prop <- numeric(length = n.ag)
-            vec.log.th.prop <- numeric(length = n.ag)
-            attempt <- 0L
-            found.prop <- FALSE
-            while (!found.prop && (attempt < max.attempt)) {
-                ## attempt to generate a new set of 'theta', and hence a new
-                ## value for benchmark[k] by adding random increments to
-                ## the 'theta' (on the log scale)
-                attempt <- attempt + 1L
-                for (i in seq_len(n.ag)) {
-                    increment <- stats::rnorm(n = 1L, mean = 0, sd = scale.ag)
-                    log.th.prop <- vec.log.th.curr[i] + increment
-                    inside.limits <- ((log.th.prop > (lower + tolerance))
-                                      && (log.th.prop < (upper - tolerance)))
-                    if (!inside.limits)
-                        break
-                    th.prop <- exp(log.th.prop)
-                    if (log.th.prop > 0)
-                        valid <- is.finite(th.prop)
-                    else
-                        valid <- th.prop > 0
-                    if (!valid)
-                        break
-                    vec.log.th.prop[i] <- log.th.prop
-                    vec.th.prop[i] <- th.prop
-                    found.prop <- i == n.ag
-                }
-            }
-            if (!found.prop) { ## if found.prop is FALSE, reached 'maxAttempt'
-                n.failed.prop.value.ag <- n.failed.prop.value.ag + 1L
-                next
-            }
-            vec.y <- y[i.ag]
-            is.observed <- !is.na(vec.y)
-            vec.exp <- exposure[i.ag]
-            vec.mu <- mu[i.ag]
-            vec.weight <- weight.ag[i.ag]
-            ag.curr <- value.ag[k]
-            ag.prop <- sum(vec.th.prop * vec.weight)
-            mean.k <- mean.ag[k]
-            sd.k <- sd.ag[k]
-            log.diff.lik <- (sum(stats::dpois(x = vec.y[is.observed],
-                                       lambda = vec.th.prop[is.observed] * vec.exp[is.observed],
-                                       log = TRUE))
-                             - sum(stats::dpois(x = vec.y[is.observed],
-                                         lambda = vec.th.curr[is.observed] * vec.exp[is.observed],
-                                         log = TRUE)))
-            ## do not include Jacobians, since they cancel with proposal densities
-            log.diff.prior <- (sum(stats::dnorm(x = vec.log.th.prop,
-                                         mean = vec.mu,
-                                         sd = sigma,
-                                         log = TRUE))
-                               - sum(stats::dnorm(x = vec.log.th.curr,
-                                           mean = vec.mu,
-                                           sd = sigma,
-                                           log = TRUE)))
-            log.diff.ag <- (stats::dnorm(x = mean.k, 
-                                  mean = ag.prop,
-                                  sd = sd.k,
-                                  log = TRUE)
-                            - stats::dnorm(x = mean.k, 
-                                    mean = ag.curr,
-                                    sd = sd.k,
-                                    log = TRUE))
-            log.diff <- log.diff.lik + log.diff.prior + log.diff.ag
-            accept <- (log.diff > 0) || (stats::runif(1) < exp(log.diff))
-            if (accept) {
-                n.accept.ag <- n.accept.ag + 1L
-                value.ag[k] <- ag.prop
-                theta[i.ag] <- vec.th.prop
-            }
-        }
-        object@theta <- theta
-        object@valueAg@.Data <- value.ag
-        object@nFailedPropValueAg@.Data <- n.failed.prop.value.ag
-        object@nAcceptAg@.Data <- n.accept.ag
-        object
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
-updateThetaAndValueAgPoisson_PoissonUseExp <- function(object, y, exposure, useC = FALSE) {
-    ## object
-    stopifnot(methods::is(object, "PoissonVaryingUseExp"))
-    stopifnot(methods::is(object, "AgPoisson"))
-    stopifnot(methods::validObject(object))
-    ## y
-    stopifnot(is.integer(y))
-    stopifnot(identical(length(y), length(object@theta)))
-    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
-    ## exposure
-    stopifnot(is.double(exposure))
-    stopifnot(all(exposure@.Data[!is.na(exposure@.Data)] >= 0))
-    ## y and exposure
-    stopifnot(identical(length(exposure), length(y)))
-    stopifnot(all(is.na(exposure) <= is.na(y)))
-    if (useC) {
-        .Call(updateThetaAndValueAgPoisson_PoissonUseExp_R, object, y, exposure)
-    }
-    else {
-        theta <- object@theta
-        lower <- object@lower
-        upper <- object@upper
-        tolerance <- object@tolerance
-        mu <- object@mu
-        sigma <- object@sigma@.Data
-        value.ag <- object@valueAg@.Data
-        weight.ag <- object@weightAg
-        transform.ag <- object@transformAg
-        mean.ag <- object@meanAg@.Data
-        scale.ag <- object@scaleAg@.Data
-        exposure.ag <- object@exposureAg@.Data
-        max.attempt <- object@maxAttempt
-        n.failed.prop.value.ag <- 0L
-        n.accept.ag <- 0L
-        for (k in seq_along(value.ag)) {
-            ## Each cell 'k' in the benchmarks has a set of associated 'i' in 'theta'.
-            ## Construct vectors holding information on these 'theta'.  Use 'vec'
-            ## prefix to distinguish the (length > 1) vectors.
-            i.ag <- dembase::getIBefore(k, transform = transform.ag, useC = TRUE)
-            n.ag <- length(i.ag)
-            vec.th.curr <- theta[i.ag]
-            vec.log.th.curr <- log(vec.th.curr)
-            vec.th.prop <- numeric(length = n.ag)
-            vec.log.th.prop <- numeric(length = n.ag)
-            attempt <- 0L
-            found.prop <- FALSE
-            while (!found.prop && (attempt < max.attempt)) {
-                ## attempt to generate a new set of 'theta', and hence a new
-                ## value for benchmark[k] by adding random increments to
-                ## the 'theta' (on the log scale)
-                attempt <- attempt + 1L
-                for (i in seq_len(n.ag)) {
-                    increment <- stats::rnorm(n = 1L, mean = 0, sd = scale.ag)
-                    log.th.prop <- vec.log.th.curr[i] + increment
-                    inside.limits <- ((log.th.prop > (lower + tolerance))
-                                      && (log.th.prop < (upper - tolerance)))
-                    if (!inside.limits)
-                        break
-                    th.prop <- exp(log.th.prop)
-                    if (log.th.prop > 0)
-                        valid <- is.finite(th.prop)
-                    else
-                        valid <- th.prop > 0
-                    if (!valid)
-                        break
-                    vec.log.th.prop[i] <- log.th.prop
-                    vec.th.prop[i] <- th.prop
-                    found.prop <- i == n.ag
-                }
-            }
-            if (!found.prop) { ## if found.prop is FALSE, reached 'maxAttempt'
-                n.failed.prop.value.ag <- n.failed.prop.value.ag + 1L
-                next
-            }
-            vec.y <- y[i.ag]
-            is.observed <- !is.na(vec.y)
-            vec.exp <- exposure[i.ag]
-            vec.mu <- mu[i.ag]
-            vec.weight <- weight.ag[i.ag]
-            ag.curr <- value.ag[k]
-            ag.prop <- sum(vec.th.prop * vec.weight)
-            mean.k <- mean.ag[k]
-            exposure.k <- exposure.ag[k]
-            log.diff.lik <- (sum(stats::dpois(x = vec.y[is.observed],
-                                       lambda = vec.th.prop[is.observed] * vec.exp[is.observed],
-                                       log = TRUE))
-                             - sum(stats::dpois(x = vec.y[is.observed],
-                                         lambda = vec.th.curr[is.observed] * vec.exp[is.observed],
-                                         log = TRUE)))
-            ## do not include Jacobians, since they cancel with proposal densities
-            log.diff.prior <- (sum(stats::dnorm(x = vec.log.th.prop,
-                                         mean = vec.mu,
-                                         sd = sigma,
-                                         log = TRUE))
-                               - sum(stats::dnorm(x = vec.log.th.curr,
-                                           mean = vec.mu,
-                                           sd = sigma,
-                                           log = TRUE)))
-            ## allow for mean.k * exposure.k to be non-integer
-            log.diff.ag <- (exposure.k * (ag.curr - ag.prop)
-                            + mean.k * exposure.k * (log(ag.prop) - log(ag.curr)))
-            log.diff <- log.diff.lik + log.diff.prior + log.diff.ag
-            accept <- (log.diff > 0) || (stats::runif(1) < exp(log.diff))
-            if (accept) {
-                n.accept.ag <- n.accept.ag + 1L
-                value.ag[k] <- ag.prop
-                theta[i.ag] <- vec.th.prop
-            }
-        }
-        object@theta <- theta
-        object@valueAg@.Data <- value.ag
-        object@nFailedPropValueAg@.Data <- n.failed.prop.value.ag
-        object@nAcceptAg@.Data <- n.accept.ag
         object
     }
 }
@@ -4459,6 +4488,7 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
@@ -4486,7 +4516,7 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
             contributes.to.ag <- i.ag > 0L
             y.is.missing <- is.na(y[i])
             th.curr <- theta[i]
-            log.th.curr <- log(th.curr)
+            log.th.curr <- theta.transformed[i]
             if (y.is.missing) {
                 mean <- mu[i]
                 sd <- sigma
@@ -4506,8 +4536,10 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
             if (found.prop) {
                 th.prop <- exp(log.th.prop)
                 draw.straight.from.prior <- y.is.missing && !contributes.to.ag
-                if (draw.straight.from.prior)
+                if (draw.straight.from.prior) {
                     theta[i] <- th.prop
+                    theta.transformed[i] <- log.th.prop
+                }
                 else {
                     if (y.is.missing)
                         log.diff <- 0
@@ -4538,6 +4570,7 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
                     if (accept) {
                         n.accept.theta <- n.accept.theta + 1L
                         theta[i] <- th.prop
+                        theta.transformed[i] <- log.th.prop
                         if (contributes.to.ag) {
                             x.args.ag[[i.ag]] <- x
                             value.ag[i.ag] <- ag.prop
@@ -4549,6 +4582,7 @@ updateThetaAndValueAgFun_PoissonUseExp <- function(object, y, exposure, useC = F
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@valueAg@.Data <- value.ag
         object@xArgsAg <- x.args.ag
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
@@ -4579,6 +4613,7 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
     }
     else {
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         scale <- object@scaleTheta
         scale.multiplier <- object@scaleThetaMultiplier
@@ -4608,7 +4643,7 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
             contributes.to.ag <- i.mx > 0L
             y.is.missing <- is.na(y[i])
             th.curr <- theta[i]
-            log.th.curr <- log(th.curr)
+            log.th.curr <- theta.transformed[i]
             if (y.is.missing) {
                 mean <- mu[i]
                 sd <- sigma
@@ -4628,8 +4663,10 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
             if (found.prop) {
                 th.prop <- exp(log.th.prop)
                 draw.straight.from.prior <- y.is.missing && !contributes.to.ag
-                if (draw.straight.from.prior)
+                if (draw.straight.from.prior) {
                     theta[i] <- th.prop
+                    theta.transformed[i] <- log.th.prop
+                }
                 else {
                     if (y.is.missing)
                         log.diff <- 0
@@ -4662,6 +4699,7 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
                     if (accept) {
                         n.accept.theta <- n.accept.theta + 1L
                         theta[i] <- th.prop
+                        theta.transformed[i] <- log.th.prop
                         if (contributes.to.ag)
                             value.ag[i.ag] <- ag.prop
                     }
@@ -4676,6 +4714,7 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
                 n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@valueAg@.Data <- value.ag
         object@mxAg <- mx
         object@nFailedPropTheta@.Data <- n.failed.prop.theta

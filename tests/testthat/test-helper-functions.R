@@ -2148,46 +2148,50 @@ test_that("R and C versions of betaHat give same answer with ExchFixed", {
     betaHat <- demest:::betaHat
     initialPrior <- demest:::initialPrior
     ## intercept
-    spec <- ExchFixed(mean = -3, sd = 3)
-    beta <- rnorm(n = 1)
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = NULL,
-                          sY = NULL,
-                          isSaturated = FALSE,
-                          margin = 0L,
-                          strucZeroArray = 1L)
-    expect_is(prior, "ExchFixed")
-    ans.R <- betaHat(prior, useC = FALSE)
-    ans.C <- betaHat(prior, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    for (seed in seq_len(n.test)) {
+        spec <- ExchFixed(mean = -3, sd = 3)
+        beta <- rnorm(n = 1)
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = NULL,
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              margin = 0L,
+                              strucZeroArray = 1L)
+        expect_is(prior, "ExchFixed")
+        ans.R <- betaHat(prior, useC = FALSE)
+        ans.C <- betaHat(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
     ## non-intercept
-    spec <- ExchFixed(sd = 3)
-    beta <- rnorm(10)
-    strucZeroArray <- Counts(array(1L,
-                                   dim = 10,
-                                   dimnames = list(region = letters[1:10])))
-    metadata <- new("MetaData",
-                    nms = "region",
-                    dimtypes = "state",
-                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    prior <- initialPrior(spec,
-                          beta = beta,
-                          metadata = metadata,
-                          sY = NULL,
-                          isSaturated = FALSE,
-                          margin = 1,
-                          strucZeroArray = strucZeroArray)
-    expect_is(prior, "ExchFixed")
-    ans.R <- betaHat(prior, useC = FALSE)
-    ans.C <- betaHat(prior, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
+    for (seed in seq_len(n.test)) {
+        spec <- ExchFixed(sd = 3)
+        beta <- rnorm(10)
+        strucZeroArray <- Counts(array(1L,
+                                       dim = 10,
+                                       dimnames = list(region = letters[1:10])))
+        metadata <- new("MetaData",
+                        nms = "region",
+                        dimtypes = "state",
+                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
+        prior <- initialPrior(spec,
+                              beta = beta,
+                              metadata = metadata,
+                              sY = NULL,
+                              isSaturated = FALSE,
+                              margin = 1,
+                              strucZeroArray = strucZeroArray)
+        expect_is(prior, "ExchFixed")
+        ans.R <- betaHat(prior, useC = FALSE)
+        ans.C <- betaHat(prior, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
 })
 
 test_that("betaHat gives valid answer with prior of class Exch - no covariates", {
