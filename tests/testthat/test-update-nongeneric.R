@@ -6847,6 +6847,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(theta.prop)
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -6874,6 +6875,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             + model@betas[[2]]
             + rep(model@betas[[3]], each = 2))
         ans.expected@theta[1:5] <- exp(rnorm(n = 5, mean = mu[1:5], sd = model@sigma))
+        ans.expected@thetaTransformed[1:5] <- log(ans.expected@theta[1:5])
         for (i in 6:20) {
             theta.curr <- model@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
@@ -6885,6 +6887,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(theta.prop)
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -6924,9 +6927,11 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(theta.prop)
             }
         }
         ans.expected@theta[11:12] <- exp(rnorm(n = 2, mean = mu[11:12], sd = model@sigma))
+        ans.expected@thetaTransformed[11:12] <- log(ans.expected@theta[11:12])
         for (i in 13:20) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
@@ -6938,6 +6943,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(theta.prop)
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -6983,6 +6989,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(theta.prop)
             }
         }
         for (i in 9:10) {
@@ -6996,9 +7003,11 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(theta.prop)
             }
         }
         ans.expected@theta[11:12] <- exp(rnorm(n = 2, mean = mu[11:12], sd = model@sigma))
+        ans.expected@thetaTransformed[11:12] <- log(ans.expected@theta[11:12])
         for (i in 13:20) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
@@ -7010,6 +7019,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(theta.prop)
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -7060,6 +7070,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- g(theta.prop)
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -7094,6 +7105,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(theta.prop)
             }
         }
         if (test.identity)
@@ -7266,6 +7278,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(ans.expected@theta[i])
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -7296,6 +7309,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
             + model@betas[[2]]
             + rep(model@betas[[3]], each = 5))
         ans.expected@theta[1:5] <- exp(rnorm(n = 5, mean = mu[1:5], sd = model@sigma))
+        ans.expected@thetaTransformed[1:5] <- log(ans.expected@theta[1:5])
         for (i in 6:20) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
@@ -7307,6 +7321,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(ans.expected@theta[i])
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -7353,9 +7368,11 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(ans.expected@theta[i])
             }
         }
         ans.expected@theta[11:12] <- exp(rnorm(n = 2, mean = mu[11:12], sd = ans.expected@sigma))
+        ans.expected@thetaTransformed[11:12] <- log(ans.expected@theta[11:12])
         for (i in 13:20) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
@@ -7367,6 +7384,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(ans.expected@theta[i])
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -7419,6 +7437,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(ans.expected@theta[i])
             }
         }
         for (i in 9:10) {
@@ -7432,9 +7451,11 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(ans.expected@theta[i])
             }
         }
         ans.expected@theta[11:12] <- exp(rnorm(n = 2, mean = mu[11:12], sd = ans.expected@sigma))
+        ans.expected@thetaTransformed[11:12] <- log(ans.expected@theta[11:12])
         for (i in 13:20) {
             theta.curr <- ans.expected@theta[i]
             theta.prop <- exp(rnorm(1, mean = log(theta.curr),
@@ -7446,6 +7467,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- log(ans.expected@theta[i])
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -7486,8 +7508,6 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
         ans.obtained <- updateTheta_PoissonVaryingUseExp(model, y = y, exposure = exposure)
         set.seed(seed + 1)
         ans.expected <- model
-        ## CURRENTLY FAILS. WE MAY NEED TO CHANGE 'lower' and 'upper' TO PREVENT THIS
-        ## FROM HAPPENING WITH BOX-COX MODELS
         g <- function(x) (x^(0.9) - 1)/0.9
         g.inv <- function(x) (0.9*x + 1)^(1/0.9)
         mu <- (model@betas[[1]]
@@ -7504,6 +7524,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
             if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                 ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                 ans.expected@theta[i] <- theta.prop
+                ans.expected@thetaTransformed[i] <- g(ans.expected@theta[i])
             }
         }
         if (ans.expected@nAcceptTheta == 0L)
@@ -7542,6 +7563,7 @@ test_that("updateTheta_PoissonVaryingUseExp gives valid answer", {
                 if ((log.diff >= 0) || (runif(1) < exp(log.diff))) {
                     ans.expected@nAcceptTheta <- ans.expected@nAcceptTheta + 1L
                     ans.expected@theta[i] <- theta.prop
+                    ans.expected@thetaTransformed[i] <- log(ans.expected@theta[i])
                 }
             }
         }

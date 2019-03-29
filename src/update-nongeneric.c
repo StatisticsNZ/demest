@@ -4617,186 +4617,187 @@ updateThetaAndValueAgFun_Normal(SEXP object, SEXP y_R)
 void
 updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
 {
-    double boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
-    int usesBoxCoxTransformation = (boxCoxParam > 0);
+  double boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
+  int usesBoxCoxTransformation = (boxCoxParam > 0);
 
-    SEXP theta_R = GET_SLOT(object, theta_sym);
-    double *theta = REAL(theta_R);
-    int n_theta = LENGTH(theta_R);
-    int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
-    /* n_theta and length of y_R and cellInLik are all identical */
+  SEXP theta_R = GET_SLOT(object, theta_sym);
+  double *theta = REAL(theta_R);
+  int n_theta = LENGTH(theta_R);
+  double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
+  int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
+  /* n_theta and length of y_R and cellInLik are all identical */
 
-    double *mu = REAL(GET_SLOT(object, mu_sym));
+  double *mu = REAL(GET_SLOT(object, mu_sym));
     
-    double lower = *REAL(GET_SLOT(object, lower_sym));
-    double upper = *REAL(GET_SLOT(object, upper_sym));
-    double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
-    int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
+  double lower = *REAL(GET_SLOT(object, lower_sym));
+  double upper = *REAL(GET_SLOT(object, upper_sym));
+  double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
+  int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
 
-    double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
-    double scale_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym));
+  double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
+  double scale_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym));
 
-    double sigma = *REAL(GET_SLOT(object, sigma_sym));
+  double sigma = *REAL(GET_SLOT(object, sigma_sym));
 
-    int *y = INTEGER(y_R); /* length n_theta */
+  int *y = INTEGER(y_R); /* length n_theta */
     
-    /* make an array that has 0's if y is there, 1s if missing */
-    int *yMissing = (int *)R_alloc(n_theta, sizeof(int));
-    memset(yMissing, 0, n_theta * sizeof(int)); 
+  /* make an array that has 0's if y is there, 1s if missing */
+  int *yMissing = (int *)R_alloc(n_theta, sizeof(int));
+  memset(yMissing, 0, n_theta * sizeof(int)); 
     
-    for (int i = 0; i < n_theta; ++i) {
-        int this_y = y[i];
-        if ( this_y == NA_INTEGER || ISNA(this_y) ) {
-            yMissing[i] = 1;
-        }
+  for (int i = 0; i < n_theta; ++i) {
+    int this_y = y[i];
+    if ( this_y == NA_INTEGER || ISNA(this_y) ) {
+      yMissing[i] = 1;
     }
+  }
     
-    SEXP transformSubtotals_R = NULL;
+  SEXP transformSubtotals_R = NULL;
         
-    int has_subtotals = ( R_has_slot(y_R, subtotals_sym) );
-    if (has_subtotals) {
+  int has_subtotals = ( R_has_slot(y_R, subtotals_sym) );
+  if (has_subtotals) {
             
-        transformSubtotals_R = GET_SLOT(y_R, transformSubtotals_sym);
-    }
+    transformSubtotals_R = GET_SLOT(y_R, transformSubtotals_sym);
+  }
     
-    int n_accept_theta = 0;
-    int n_failed_prop_theta = 0;
+  int n_accept_theta = 0;
+  int n_failed_prop_theta = 0;
 
-    scale = scale * scale_multiplier;
+  scale = scale * scale_multiplier;
 
-    for (int i = 0; i < n_theta; ++i) {
+  for (int i = 0; i < n_theta; ++i) {
 
-        int this_y = y[i];
-        int y_is_missing = yMissing[i];
+    int this_y = y[i];
+    int y_is_missing = yMissing[i];
         
     int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
 
     if (!is_struc_zero) {
     
-        int ir = i + 1; /* R index */
+      int ir = i + 1; /* R index */
         
-        double mean = 0;
-        double sd = 0;
-        double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
-        double transformedThetaCurr = log_th_curr;
+      double mean = 0;
+      double sd = 0;
+      double theta_curr = theta[i];
+      double transformedThetaCurr = thetaTransformed[i];
             
-        int use_subtotal = 0;
-        int ir_after = 0;
-        if (y_is_missing && has_subtotals) {
-            
-        ir_after = dembase_getIAfter(ir, transformSubtotals_R);
-        use_subtotal = (ir_after > 0);
-        }
+      int use_subtotal = 0;
+      int ir_after = 0;
+      if (y_is_missing && has_subtotals) {
+	ir_after = dembase_getIAfter(ir, transformSubtotals_R);
+	use_subtotal = (ir_after > 0);
+      }
         
-        int draw_straight_from_prior = (y_is_missing && !use_subtotal);
+      int draw_straight_from_prior = (y_is_missing && !use_subtotal);
         
-        if (draw_straight_from_prior) {
-        mean = mu[i];
-        sd = sigma;
-        }
-        else {
-        if (usesBoxCoxTransformation) {
-            transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
-        }
-        mean = transformedThetaCurr;
+      if (draw_straight_from_prior) {
 
-        if (y_is_missing) {
-            sd = scale / scale_multiplier;
-        }
-        else {
-            sd = scale / sqrt(1 + this_y);
-        }
-        
-        }
+	mean = mu[i];
+	sd = sigma;
 
-        double transformedThetaProp = 0.0;
-        
-        int attempt = 0;
-        int found_prop = 0;
+      }
+      else {
 
-        while( (!found_prop) && (attempt < maxAttempt) ) {
+	mean = transformedThetaCurr;
+
+	if (y_is_missing) {
+	  sd = scale / scale_multiplier;
+	}
+	else {
+	  sd = scale / sqrt(1 + this_y);
+	}
+        
+      }
+
+      double transformedThetaProp = 0.0;
+        
+      int attempt = 0;
+      int found_prop = 0;
+
+      while( (!found_prop) && (attempt < maxAttempt) ) {
 
         ++attempt;
             
         transformedThetaProp = rnorm(mean, sd);
         found_prop = ( (transformedThetaProp > lower + tolerance) &&
-                   (transformedThetaProp < upper - tolerance));
-        }
+		       (transformedThetaProp < upper - tolerance));
+      }
 
-        if (found_prop) {
+      if (found_prop) {
             
         double theta_prop = 0;
         if (usesBoxCoxTransformation) {
-            theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
+	  theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
         }
         else {
-            theta_prop = exp(transformedThetaProp);
+	  theta_prop = exp(transformedThetaProp);
         }
            
         if (draw_straight_from_prior) {
-            theta[i] = theta_prop;
+	  theta[i] = theta_prop;
+	  thetaTransformed[i] = transformedThetaProp;
         }
         else {
                 
-            double log_lik_prop = 0;
-            double log_lik_curr = 0;
+	  double log_lik_prop = 0;
+	  double log_lik_curr = 0;
                 
-            if(use_subtotal) {
+	  if (use_subtotal) {
             
-            int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
-            int i_after = ir_after -1;
-            int subtotal = subtotals[i_after];
+	    int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
+	    int i_after = ir_after -1;
+	    int subtotal = subtotals[i_after];
                     
-            SEXP ir_shared_R;
-            PROTECT( ir_shared_R 
-                 = dembase_getIShared(ir, transformSubtotals_R) ); 
+	    SEXP ir_shared_R;
+	    PROTECT( ir_shared_R 
+		     = dembase_getIShared(ir, transformSubtotals_R) ); 
                 
-            int n_ir_shared = LENGTH(ir_shared_R);
-            int *ir_shared = INTEGER(ir_shared_R);
+	    int n_ir_shared = LENGTH(ir_shared_R);
+	    int *ir_shared = INTEGER(ir_shared_R);
         
-            double lambda_curr = 0;
-            for (int j = 0; j < n_ir_shared; ++j) {
-                int shared_index = ir_shared[j] - 1;
-                if (yMissing[shared_index]) {
-                lambda_curr += theta[shared_index];
-                }
-            }
+	    double lambda_curr = 0;
+	    for (int j = 0; j < n_ir_shared; ++j) {
+	      int shared_index = ir_shared[j] - 1;
+	      if (yMissing[shared_index]) {
+		lambda_curr += theta[shared_index];
+	      }
+	    }
                     
-            UNPROTECT(1); /* ir_shared_R */
+	    UNPROTECT(1); /* ir_shared_R */
                     
-            double lambda_prop = lambda_curr + theta_prop - theta_curr;
-            log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
-            log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
+	    double lambda_prop = lambda_curr + theta_prop - theta_curr;
+	    log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
+	    log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
                     
-            }
-            else {
+	  }
+	  else {
                 
-            log_lik_prop = dpois(this_y, theta_prop, USE_LOG);
-            log_lik_curr = dpois(this_y, theta_curr, USE_LOG);
-            }
+	    log_lik_prop = dpois(this_y, theta_prop, USE_LOG);
+	    log_lik_curr = dpois(this_y, theta_curr, USE_LOG);
+	  }
                 
-            double log_dens_prop = dnorm(transformedThetaProp, mu[i], sigma, USE_LOG);
-            double log_dens_curr = dnorm(transformedThetaCurr, mu[i], sigma, USE_LOG);
-            double log_diff = (log_lik_prop + log_dens_prop
-                       - log_lik_curr - log_dens_curr);
+	  double log_dens_prop = dnorm(transformedThetaProp, mu[i], sigma, USE_LOG);
+	  double log_dens_curr = dnorm(transformedThetaCurr, mu[i], sigma, USE_LOG);
+	  double log_diff = (log_lik_prop + log_dens_prop
+			     - log_lik_curr - log_dens_curr);
                 
-            int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
-            if (accept) {
-            ++n_accept_theta;
-            theta[i] = theta_prop;
-            }
+	  int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+	  if (accept) {
+	    ++n_accept_theta;
+	    theta[i] = theta_prop;
+	    thetaTransformed[i] = transformedThetaProp;
+	  }
         }
-        }
-        else { /* not found prop */
-        ++n_failed_prop_theta;
-        }
+      }
+      else { /* not found prop */
+	++n_failed_prop_theta;
+      }
 
     } /* end if (!is_struc_zero) */
-    } /* end loop through thetas */
+  } /* end loop through thetas */
 
-    SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
-    SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
+  SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
+  SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
 
 }
 
@@ -4807,136 +4808,131 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
 void
 updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
 {
-    double boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
-    int usesBoxCoxTransformation = (boxCoxParam > 0);
+  double boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
+  int usesBoxCoxTransformation = (boxCoxParam > 0);
     
-    SEXP theta_R = GET_SLOT(object, theta_sym);
-    double *theta = REAL(theta_R);
-    int n_theta = LENGTH(theta_R);
-    int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
-    /* n_theta and length of y_R, cellInLik, and exposure_R are all identical */
+  SEXP theta_R = GET_SLOT(object, theta_sym);
+  double *theta = REAL(theta_R);
+  int n_theta = LENGTH(theta_R);
+  double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
+  int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
+  /* n_theta and length of y_R, cellInLik, and exposure_R are all identical */
 
-    double *mu = REAL(GET_SLOT(object, mu_sym));
+  double *mu = REAL(GET_SLOT(object, mu_sym));
     
-    double lower = *REAL(GET_SLOT(object, lower_sym));
-    double upper = *REAL(GET_SLOT(object, upper_sym));
-    double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
-    int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
+  double lower = *REAL(GET_SLOT(object, lower_sym));
+  double upper = *REAL(GET_SLOT(object, upper_sym));
+  double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
+  int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
 
-    double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
-    double scale_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym));
+  double scale = *REAL(GET_SLOT(object, scaleTheta_sym));
+  double scale_multiplier = *REAL(GET_SLOT(object, scaleThetaMultiplier_sym));
 
-    double sigma = *REAL(GET_SLOT(object, sigma_sym));
+  double sigma = *REAL(GET_SLOT(object, sigma_sym));
     
-    int *y = INTEGER(y_R);
+  int *y = INTEGER(y_R);
     
-    /* make an array that has 0's if y is there, 1s if missing */
-    int *yMissing = (int *)R_alloc(n_theta, sizeof(int));
-    memset(yMissing, 0, n_theta * sizeof(int)); 
+  /* make an array that has 0's if y is there, 1s if missing */
+  int *yMissing = (int *)R_alloc(n_theta, sizeof(int));
+  memset(yMissing, 0, n_theta * sizeof(int)); 
     
-    for (int i = 0; i < n_theta; ++i) {
-        int this_y = y[i];
-        if ( this_y == NA_INTEGER || ISNA(this_y) ) {
-            yMissing[i] = 1;
-        }
+  for (int i = 0; i < n_theta; ++i) {
+    int this_y = y[i];
+    if ( this_y == NA_INTEGER || ISNA(this_y) ) {
+      yMissing[i] = 1;
     }
+  }
     
-    double *exposure = REAL(exposure_R);
+  double *exposure = REAL(exposure_R);
 
-    SEXP transformSubtotals_R = NULL;
+  SEXP transformSubtotals_R = NULL;
         
-    int has_subtotals = ( R_has_slot(y_R, subtotals_sym) );
-    if (has_subtotals) {
-        transformSubtotals_R = GET_SLOT(y_R, transformSubtotals_sym);
-    }
+  int has_subtotals = ( R_has_slot(y_R, subtotals_sym) );
+  if (has_subtotals) {
+    transformSubtotals_R = GET_SLOT(y_R, transformSubtotals_sym);
+  }
 
-    int n_accept_theta = 0;
-    int n_failed_prop_theta = 0;
+  int n_accept_theta = 0;
+  int n_failed_prop_theta = 0;
 
-    scale = scale * scale_multiplier;
+  scale = scale * scale_multiplier;
     
-    for (int i = 0; i < n_theta; ++i) {
+  for (int i = 0; i < n_theta; ++i) {
 
-        int this_y = y[i];
-        int y_is_missing = yMissing[i];
+    int this_y = y[i];
+    int y_is_missing = yMissing[i];
         
     int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
 
     if (!is_struc_zero) {
     
-        int ir = i + 1; /* R index */
+      int ir = i + 1; /* R index */
         
-        double mean = 0;
-        double sd = 0;
-        double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
-        double transformedThetaCurr = log_th_curr;
+      double mean = 0;
+      double sd = 0;
+      double theta_curr = theta[i];
+      double transformedThetaCurr = thetaTransformed[i];
             
-        int use_subtotal = 0;
-        int ir_after = 0;
-        if (y_is_missing && has_subtotals) {
-            ir_after = dembase_getIAfter(ir, transformSubtotals_R);
-            use_subtotal = (ir_after > 0);
-        }
+      int use_subtotal = 0;
+      int ir_after = 0;
+      if (y_is_missing && has_subtotals) {
+	ir_after = dembase_getIAfter(ir, transformSubtotals_R);
+	use_subtotal = (ir_after > 0);
+      }
         
-        int draw_straight_from_prior = (y_is_missing && !use_subtotal);
+      int draw_straight_from_prior = (y_is_missing && !use_subtotal);
         
-        if (draw_straight_from_prior) {
-            mean = mu[i];
-            sd = sigma;
-        }
-        else {
-            
-        if (usesBoxCoxTransformation) {
-            transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
-        }
-            
+      if (draw_straight_from_prior) {
+	mean = mu[i];
+	sd = sigma;
+      }
+      else {
         mean = transformedThetaCurr;
-            
         if (y_is_missing) {
-            sd = scale / scale_multiplier;
+	  sd = scale / scale_multiplier;
         }
         else {
-            sd = scale / sqrt(1 + this_y);
+	  sd = scale / sqrt(1 + this_y);
         }
-        }
+      }
 
-        int attempt = 0;
-        int found_prop = 0;
+      int attempt = 0;
+      int found_prop = 0;
         
-        double transformedThetaProp = 0.0;
+      double transformedThetaProp = 0.0;
         
-        while( (!found_prop) && (attempt < maxAttempt) ) {
+      while( (!found_prop) && (attempt < maxAttempt) ) {
 
         ++attempt;
             
         transformedThetaProp = rnorm(mean, sd);
         found_prop = ( (transformedThetaProp > lower + tolerance) &&
-                   (transformedThetaProp < upper - tolerance));
+		       (transformedThetaProp < upper - tolerance));
  
-        }
+      }
                     
-        if (found_prop) {
+      if (found_prop) {
             
         double theta_prop = 0;
         if (usesBoxCoxTransformation) {
-            theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
+	  theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
         }
         else {
-            theta_prop = exp(transformedThetaProp);
+	  theta_prop = exp(transformedThetaProp);
         }
             
         if (draw_straight_from_prior) {
-            theta[i] = theta_prop;
+	  theta[i] = theta_prop;
+	  thetaTransformed[i] = transformedThetaProp;
         }
         else {
                 
-            double log_lik_prop = 0;
-            double log_lik_curr = 0;
+	  double log_lik_prop = 0;
+	  double log_lik_curr = 0;
                 
-            double this_exposure = exposure[i];
+	  double this_exposure = exposure[i];
                 
-            if(use_subtotal) {
+	  if (use_subtotal) {
             
             int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
             int i_after = ir_after -1;
@@ -4944,55 +4940,56 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
                     
             SEXP ir_shared_R;
             PROTECT( ir_shared_R 
-                 = dembase_getIShared(ir, transformSubtotals_R) ); 
+		     = dembase_getIShared(ir, transformSubtotals_R) ); 
             int n_ir_shared = LENGTH(ir_shared_R);
             int *ir_shared = INTEGER(ir_shared_R);
                     
             double lambda_curr = 0;
             for (int j = 0; j < n_ir_shared; ++j) {
-                int shared_index = ir_shared[j] - 1;
-                if (yMissing[shared_index]) {
+	      int shared_index = ir_shared[j] - 1;
+	      if (yMissing[shared_index]) {
                 lambda_curr += theta[shared_index] 
-                    * exposure[ shared_index ];
-                }
+		  * exposure[ shared_index ];
+	      }
             }
                     
             UNPROTECT(1); /* ir_shared_R */
                     
             double lambda_prop = lambda_curr 
-                + (theta_prop - theta_curr) * this_exposure;
+	      + (theta_prop - theta_curr) * this_exposure;
             log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
             log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
                     
-            }
-            else {
+	  }
+	  else {
                     
             log_lik_prop = dpois(this_y, theta_prop*this_exposure, USE_LOG);
             log_lik_curr = dpois(this_y, theta_curr*this_exposure, USE_LOG);
-            }
+	  }
                 
-            double log_dens_prop = dnorm(transformedThetaProp, mu[i], sigma, USE_LOG);
-            double log_dens_curr = dnorm(transformedThetaCurr, mu[i], sigma, USE_LOG);
+	  double log_dens_prop = dnorm(transformedThetaProp, mu[i], sigma, USE_LOG);
+	  double log_dens_curr = dnorm(transformedThetaCurr, mu[i], sigma, USE_LOG);
                 
-            double log_diff = (log_lik_prop + log_dens_prop
-                       - log_lik_curr - log_dens_curr);
+	  double log_diff = (log_lik_prop + log_dens_prop
+			     - log_lik_curr - log_dens_curr);
                 
-            int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
-            if (accept) {
+	  int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+	  if (accept) {
             ++n_accept_theta;
             theta[i] = theta_prop;
-            }
+	    thetaTransformed[i] = transformedThetaProp;
+	  }
         }
-        }
-        else { /* not found prop */
+      }
+      else { /* not found prop */
         ++n_failed_prop_theta;
-        }
+      }
 
     } /* end if (!is_struc_zero) */
-    } /* end loop through thetas */
+  } /* end loop through thetas */
 
-    SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
-    SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
+  SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
+  SET_INTSCALE_SLOT(object, nFailedPropTheta_sym, n_failed_prop_theta);
 }
 
 

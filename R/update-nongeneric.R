@@ -3269,6 +3269,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
             transform <- y@transformSubtotals
         }
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         box.cox.param <- object@boxCoxParam
         cell.in.lik <- object@cellInLik
@@ -3304,10 +3305,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
                 }
                 else {
                     th.curr <- theta[i]
-                    if (box.cox.param > 0)
-                        tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
-                    else
-                        tr.th.curr <- log(th.curr)
+                    tr.th.curr <- theta.transformed[i]
                     mean <- tr.th.curr
                     if (y.is.missing)
                         sd <- scale / scale.multiplier
@@ -3325,8 +3323,10 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
                     else
                         th.prop <- exp(tr.th.prop)
-                    if (draw.straight.from.prior)
+                    if (draw.straight.from.prior) {
                         theta[i] <- th.prop
+                        theta.transformed[i] <- tr.th.prop
+                    }
                     else {
                         if (use.subtotal) {
                             subtotal <- subtotals[i.after]
@@ -3351,6 +3351,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         if (accept) {
                             n.accept.theta <- n.accept.theta + 1L
                             theta[i] <- th.prop
+                            theta.transformed[i] <- tr.th.prop
                         }
                     }
                 }
@@ -3359,6 +3360,7 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object@nAcceptTheta@.Data <- n.accept.theta
         object
@@ -3402,6 +3404,7 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
             transform <- y@transformSubtotals
         }
         theta <- object@theta
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         box.cox.param <- object@boxCoxParam
         cell.in.lik <- object@cellInLik
@@ -3437,10 +3440,7 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
                 }
                 else {
                     th.curr <- theta[i]
-                    if (box.cox.param > 0)
-                        tr.th.curr <- (th.curr ^ box.cox.param - 1) / box.cox.param # ('tr' short for 'transformed')
-                    else
-                        tr.th.curr <- log(th.curr)
+                    tr.th.curr <- theta.transformed[i]
                     mean <- tr.th.curr
                     if (y.is.missing)
                         sd <- scale / scale.multiplier
@@ -3458,8 +3458,10 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
                         th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
                     else
                         th.prop <- exp(tr.th.prop)
-                    if (draw.straight.from.prior)
+                    if (draw.straight.from.prior) {
                         theta[i] <- th.prop
+                        theta.transformed[i] <- tr.th.prop
+                    }
                     else {
                         if (use.subtotal) {
                             subtotal <- subtotals[i.after]
@@ -3484,6 +3486,7 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
                         if (accept) {
                             n.accept.theta <- n.accept.theta + 1L
                             theta[i] <- th.prop
+                            theta.transformed[i] <- tr.th.prop
                         }
                     }
                 }
@@ -3492,6 +3495,7 @@ updateTheta_PoissonVaryingUseExp <- function(object, y, exposure, useC = FALSE) 
             }
         }
         object@theta <- theta
+        object@thetaTransformed <- theta.transformed
         object@nFailedPropTheta@.Data <- n.failed.prop.theta
         object@nAcceptTheta@.Data <- n.accept.theta
         object

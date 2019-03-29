@@ -416,7 +416,8 @@ setMethod("decomposition",
               if (is.null(max))
                   max <- n - 1L
               else
-                  checkNonNegativeInteger(max)
+                  checkNonNegativeInteger(x = max,
+                                          name = "max")
               intercept <- mean(.Data)
               ans <- list("(Intercept)" = intercept)
               if (n > 1L) {
