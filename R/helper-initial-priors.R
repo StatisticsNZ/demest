@@ -1080,7 +1080,7 @@ makeScaleMax <- function(scaleMax, A, nu, isSpec = FALSE) {
 ## described in Gelman, A., Jakulin, A., Pittau, M. G., and Su, Y.-S.
 ## (2008). A weakly informative default prior distribution
 ## for logistic and other regression models.
-## The Annals of Applied Statistics, pages 1360–1383.
+## The Annals of Applied Statistics, pages 1360-1383.
 makeStandardizedVariables <- function(formula, inputs, namePrior, contrastsArg, allStrucZero) { ## NEW
     if (identical(contrastsArg, list()))
         contrastsArg <- NULL
