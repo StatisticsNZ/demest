@@ -3831,14 +3831,14 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, main ef
     spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     x <- initialModel(spec, y = y, exposure = NULL)
     ## iBeta = 1L
-    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L)
     other.betas <- x@betas[[2]] + rep(x@betas[[3]], each = 5)
     g.theta <- log(x@theta)
     ans.expected <- list(sum(g.theta - other.betas) / length(x@theta),
                          20L)
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 2L
-    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L)
     other.betas <- x@betas[[1]] + rep(x@betas[[3]], each = 5)
     g.theta <- log(x@theta)
     ans <- g.theta - other.betas
@@ -3846,7 +3846,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, main ef
                          rep(4L, 5))
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 3L
-    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L)
     other.betas <- x@betas[[1]] + x@betas[[2]]
     g.theta <- log(x@theta)
     ans.expected <- g.theta - other.betas
@@ -3868,8 +3868,8 @@ test_that("R and C versions of makeVBarAndN give same answer with PoissonVarying
         x <- initialModel(spec, y = y, exposure = NULL)
         save_x <- x
         for (iBeta in seq.int(from = 1, to = 3)) {
-            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = FALSE)
-            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = TRUE)
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, useC = TRUE)
             expect_identical(x, save_x)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
@@ -3889,7 +3889,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, main ef
     spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE))
     x <- initialModel(spec, y = y, exposure = NULL)
     ## iBeta = 1L
-    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L)
     other.betas <- x@betas[[2]] + rep(x@betas[[3]], each = 5)
     other.betas <- other.betas[-1]
     g.theta <- log(x@theta)
@@ -3898,7 +3898,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, main ef
                          19L)
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 2L
-    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L)
     other.betas <- x@betas[[1]] + rep(x@betas[[3]], each = 5)
     g.theta <- log(x@theta)
     vbar <- matrix(g.theta - other.betas, nr = 5)
@@ -3909,7 +3909,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, main ef
     ans.expected <- list(vbar, n)
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 3L
-    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L)
     other.betas <- x@betas[[1]] + x@betas[[2]]
     g.theta <- log(x@theta)
     vbar <- matrix(g.theta - other.betas, nr = 5)
@@ -3934,8 +3934,8 @@ test_that("R and C versions of makeVBarAndN give same answer with PoissonVarying
         x <- initialModel(spec, y = y, exposure = NULL)
         save_x <- x
         for (iBeta in seq.int(from = 1, to = 3)) {
-            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = FALSE)
-            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = TRUE)
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, useC = TRUE)
             expect_identical(x, save_x)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
@@ -3956,14 +3956,14 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, with Bo
                               boxcox = 0.6))
     x <- initialModel(spec, y = y, exposure = NULL)
     ## iBeta = 1L
-    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L)
     other.betas <- x@betas[[2]] + rep(x@betas[[3]], each = 5)
     f.theta <- (x@theta^0.6 - 1)/0.6
     ans.expected <- list(sum(f.theta - other.betas) / length(x@theta),
                          20L)
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 2L
-    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L)
     other.betas <- x@betas[[1]] + rep(x@betas[[3]], each = 5)
     f.theta <- (x@theta^0.6 - 1)/0.6
     ans <- f.theta - other.betas
@@ -3971,7 +3971,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, with Bo
                          rep(4L, 5))
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 3L
-    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L)
     other.betas <- x@betas[[1]] + x@betas[[2]]
     f.theta <- (x@theta^0.6 - 1)/0.6
     ans.expected <- f.theta - other.betas
@@ -3995,8 +3995,8 @@ test_that("R and C versions of makeVBarAndN give same answer with PoissonVarying
         x <- initialModel(spec, y = y, exposure = NULL)
         save_x <- x
         for (iBeta in seq.int(from = 1, to = 3)) {
-            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = FALSE)
-            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = TRUE)
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, useC = TRUE)
             expect_identical(x, save_x)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
@@ -4015,7 +4015,7 @@ test_that("makeVBarAndN gives valid answer with PoissonVaryingNotUseExp, interce
     y[3] <- NA
     spec <- Model(y ~ Poisson(mean ~ 1, useExpose = FALSE))
     x <- initialModel(spec, y = y, exposure = NULL)
-    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = log)
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L)
     g.theta <- log(x@theta)
     ans.expected <- list(mean(g.theta[-3]),
                          19L)
@@ -4039,7 +4039,7 @@ test_that("makeVBarAndN gives valid answer with Binomial, terms out of order", {
     spec <- Model(y ~ Binomial(mean ~ age:region + region + age))
     x <- initialModel(spec, y = y, exposure = exposure)
     ## iBeta = 1L
-    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = logit)
+    ans.obtained <- makeVBarAndN(x, iBeta = 1Lit)
     other.betas <- (rep(matrix(x@betas[[4]], nrow = 3), each = 2)
                     + rep(x@betas[[3]], each = 2)
                     + rep(x@betas[[2]], each = 6))
@@ -4048,7 +4048,7 @@ test_that("makeVBarAndN gives valid answer with Binomial, terms out of order", {
                          23L)
     expect_equal(ans.obtained, ans.expected) 
     ## iBeta = 2L
-    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = logit)
+    ans.obtained <- makeVBarAndN(x, iBeta = 2Lit)
     other.betas <- (x@betas[[1]]
                     + rep(x@betas[[3]], each = 2)
                     + rep(x@betas[[4]], each = 2))
@@ -4061,7 +4061,7 @@ test_that("makeVBarAndN gives valid answer with Binomial, terms out of order", {
                          c(6L, 5L, 6L, 6L))
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 3L
-    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = logit)
+    ans.obtained <- makeVBarAndN(x, iBeta = 3Lit)
     other.betas <- (x@betas[[1]]
                     + rep(x@betas[[2]], each = 6)
                     + rep(x@betas[[4]], each = 2))
@@ -4074,7 +4074,7 @@ test_that("makeVBarAndN gives valid answer with Binomial, terms out of order", {
                          c(8L, 8L, 7L))
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 4L
-    ans.obtained <- makeVBarAndN(x, iBeta = 4L, g = logit)
+    ans.obtained <- makeVBarAndN(x, iBeta = 4Lit)
     other.betas <- (x@betas[[1]]
                     + rep(x@betas[[2]], each = 6)
                     + rep(x@betas[[3]], each = 2))
@@ -4147,8 +4147,8 @@ test_that("R and C versions of makeVBarAndN give same answer with Poisson, inter
         x <- initialModel(spec, y = y, exposure = NULL)
         save_x <- x
         iBeta <- 1L
-        ans.R <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = FALSE)
-        ans.C <- makeVBarAndN(x, iBeta = iBeta, g = log, useC = TRUE)
+        ans.R <- makeVBarAndN(x, iBeta = iBeta, useC = FALSE)
+        ans.C <- makeVBarAndN(x, iBeta = iBeta, useC = TRUE)
         expect_identical(x, save_x)
         if (test.identity)
             expect_identical(ans.R, ans.C)
@@ -4177,8 +4177,8 @@ test_that("R and C versions of makeVBarAndN give same answer with Binomial, term
         x <- initialModel(spec, y = y, exposure = exposure)
         save_x <- x
         for (iBeta in seq.int(from = 1, to = 4)) {
-            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = logit, useC = FALSE)
-            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = logit, useC = TRUE)
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, useC = TRUE)
             expect_identical(x, save_x)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
@@ -4210,8 +4210,8 @@ test_that("R and C versions of makeVBarAndN give same answer with Normal, main e
         x <- initialModel(spec, y = y, weights = weights)
         save_x <- x
         for (iBeta in seq.int(from = 1, to = 2)) {
-            ans.R <- makeVBarAndN(x, iBeta = iBeta, g = identity, useC = FALSE)
-            ans.C <- makeVBarAndN(x, iBeta = iBeta, g = identity, useC = TRUE)
+            ans.R <- makeVBarAndN(x, iBeta = iBeta, useC = FALSE)
+            ans.C <- makeVBarAndN(x, iBeta = iBeta, useC = TRUE)
             expect_identical(x, save_x)
             if (test.identity)
                 expect_identical(ans.R, ans.C)

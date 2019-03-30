@@ -527,21 +527,20 @@ updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-updateBetasAndPriorsBetas <- function(object, g, useC = FALSE) {
+updateBetasAndPriorsBetas <- function(object, useC = FALSE) {
     ## object
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
-    ## g
-    stopifnot(is.function(g))
     if (useC) {
-        .Call(updateBetasAndPriorsBetas_R, object) ## drop g
+        .Call(updateBetasAndPriorsBetas_R, object)
     }
     else {
         theta <- object@theta
+        thetaTransformed <- object@thetaTransformed
         betas <- object@betas
         sigma <- object@sigma
         for (b in seq_along(betas)) {
-            l <- makeVBarAndN(object, iBeta = b, g = g)
+            l <- makeVBarAndN(object, iBeta = b)
             vbar <- l[[1L]]
             n <- l[[2L]]
             l <- updateBetaAndPriorBeta(prior = object@priorsBetas[[b]],

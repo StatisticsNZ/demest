@@ -2495,7 +2495,7 @@ setMethod("updateModelNotUseExp",
               else {
                   object <- updateThetaAndNu_CMPVaryingNotUseExp(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2518,13 +2518,12 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  identity <- function(x) x
                   varsigmaSetToZero <- object@varsigmaSetToZero@.Data
                   if (!varsigmaSetToZero) {
                       object <- updateTheta_NormalVarying(object, y = y)
                   }
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2547,11 +2546,10 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  identity <- function(x) x
                   object <- updateTheta_NormalVarying(object, y = y)
                   object <- updateVarsigma(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2577,7 +2575,7 @@ setMethod("updateModelNotUseExp",
               else {
                   object <- updateTheta_PoissonVaryingNotUseExp(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2601,10 +2599,9 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  identity <- function(x) x
                   object <- updateTheta_NormalVaryingAgCertain(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2627,11 +2624,10 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  identity <- function(x) x
                   object <- updateTheta_NormalVaryingAgCertain(object, y = y)
                   object <- updateVarsigma(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2657,7 +2653,7 @@ setMethod("updateModelNotUseExp",
               else {
                   object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2680,11 +2676,10 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  identity <- function(x) x
                   object <- updateTheta_NormalVaryingAgCertain(object, y = y)
                   object <- updateThetaAndValueAgNormal_Normal(object = object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2707,12 +2702,11 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  identity <- function(x) x
                   object <- updateTheta_NormalVaryingAgCertain(object, y = y)
                   object <- updateThetaAndValueAgNormal_Normal(object = object, y = y)
                   object <- updateVarsigma(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2735,10 +2729,9 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  identity <- function(x) x
                   object <- updateThetaAndValueAgFun_Normal(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2761,11 +2754,10 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  identity <- function(x) x
                   object <- updateThetaAndValueAgFun_Normal(object, y = y)
                   object <- updateVarsigma(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = identity)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2792,7 +2784,7 @@ setMethod("updateModelNotUseExp",
                   object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
                   object <- updateThetaAndValueAgNormal_PoissonNotUseExp(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2818,7 +2810,7 @@ setMethod("updateModelNotUseExp",
               else {
                   object <- updateThetaAndValueAgFun_PoissonNotUseExp(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2845,7 +2837,7 @@ setMethod("updateModelNotUseExp",
                   object <- updateTheta_PoissonVaryingNotUseExpAgCertain(object, y = y)
                   object <- updateThetaAndValueAgPoisson_PoissonNotUseExp(object, y = y)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2925,12 +2917,11 @@ setMethod("updateModelUseExp",
                       .Call(updateModelUseExp_R, object, y, exposure)
               }
               else {
-                  logit <- function(x) log(x / (1 - x))
                   object <- updateTheta_BinomialVarying(object,
                                                         y = y,
                                                         exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = logit)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2963,7 +2954,7 @@ setMethod("updateModelUseExp",
               else {
                   object <- updateThetaAndNu_CMPVaryingUseExp(object, y = y, exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -2997,7 +2988,7 @@ setMethod("updateModelUseExp",
               else {
                   object <- updateTheta_PoissonVaryingUseExp(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -3086,10 +3077,9 @@ setMethod("updateModelUseExp",
                       .Call(updateModelUseExp_R, object, y, exposure)
               }
               else {
-                  logit <- function(x) log(x / (1 - x))
                   object <- updateTheta_BinomialVaryingAgCertain(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = logit)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -3122,7 +3112,7 @@ setMethod("updateModelUseExp",
               else {
                   object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -3154,11 +3144,10 @@ setMethod("updateModelUseExp",
                       .Call(updateModelUseExp_R, object, y, exposure)
               }
               else { 
-                  logit <- function(x) log(x / (1 - x))
                   object <- updateTheta_BinomialVaryingAgCertain(object, y = y, exposure = exposure)
                   object <- updateThetaAndValueAgNormal_Binomial(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = logit)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -3193,7 +3182,7 @@ setMethod("updateModelUseExp",
                   logit <- function(x) log(x / (1 - x)) 
                   object <- updateThetaAndValueAgFun_Binomial(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = logit)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -3227,7 +3216,7 @@ setMethod("updateModelUseExp",
                   object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
                   object <- updateThetaAndValueAgNormal_PoissonUseExp(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -3260,7 +3249,7 @@ setMethod("updateModelUseExp",
               else {
                   object <- updateThetaAndValueAgFun_PoissonUseExp(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -3293,7 +3282,7 @@ setMethod("updateModelUseExp",
               else {
                   object <- updateThetaAndValueAgLife_PoissonUseExp(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }
@@ -3328,7 +3317,7 @@ setMethod("updateModelUseExp",
                   object <- updateTheta_PoissonVaryingUseExpAgCertain(object, y = y, exposure = exposure)
                   object <- updateThetaAndValueAgPoisson_PoissonUseExp(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
-                  object <- updateBetasAndPriorsBetas(object, g = log)
+                  object <- updateBetasAndPriorsBetas(object)
                   object <- updateMu(object)
                   object
               }

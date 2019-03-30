@@ -2204,7 +2204,6 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(findOneRootLogPostSigmaRobust_R, 9),
   CALLDEF(getV_R, 1),
   
-  CALLDEF(makeVBar_R, 2),
   CALLDEF(makeVBarAndN_R, 2),
   CALLDEF(logPostPhiMix_R, 6),
   CALLDEF(logPostPhiFirstOrderMix_R, 6),

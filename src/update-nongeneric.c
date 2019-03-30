@@ -1180,27 +1180,6 @@ updateComponentWeightMix(SEXP prior_R)
 void
 updateBetasAndPriorsBetas(SEXP object_R)
 {
-        int i_method_model = *(INTEGER(GET_SLOT(object_R, iMethodModel_sym)));
-
-        switch(i_method_model)
-        {
-            case 4: case 5: case 12: case 13: case 14: case 15:/*Normal */
-                updateBetasAndPriorsBetas_General(object_R, identity);
-                break;
-            case 6: case 10: case 16: case 17: case 20: case 21: case 22: case 23:/* Poisson */
-                updateBetasAndPriorsBetas_General(object_R, log);
-                break;
-            case 9: case 18: case 19:/* Binomial */
-                updateBetasAndPriorsBetas_General(object_R, logit);
-                break;
-            default:
-                error("unknown iMethodModel: %d", i_method_model);
-                break;
-        }
-}
-
-void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
-{
     SEXP priors_R = GET_SLOT(object_R, priorsBetas_sym);
     SEXP betas_R = GET_SLOT(object_R, betas_sym);
     int n_betas =  LENGTH(betas_R);
@@ -1210,6 +1189,7 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
     SEXP theta_R = GET_SLOT(object_R, theta_sym);
     int n_theta = LENGTH(theta_R);
     double *theta = REAL(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object_R, thetaTransformed_sym));
 
     int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
     
@@ -1240,21 +1220,16 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
     double * vbar = (double *)R_alloc(max_len_beta, sizeof(double));
     int * n_vec = (int *)R_alloc(max_len_beta, sizeof(int));
     
-    double boxCoxParam = 0;
-    if (g == log) {
-        boxCoxParam = *REAL(GET_SLOT(object_R, boxCoxParam_sym));
-    }
-    int usesBoxCoxTransform = ((boxCoxParam > 0)? 1: 0);
-    
     for (int iBeta = 0; iBeta < n_betas; ++iBeta) {
 
         int len_beta = len_beta_array[iBeta];
 
         getVBarAndN(vbar, n_vec,
-                len_beta, cellInLik,
-                betas_R, iteratorBetas_R,
-                theta, n_theta, n_betas,
-                iBeta, g, usesBoxCoxTransform, boxCoxParam);
+		    len_beta, cellInLik,
+		    betas_R, iteratorBetas_R,
+		    theta, n_theta,
+		    thetaTransformed,
+		    n_betas, iBeta);
 
         double *beta = REAL(VECTOR_ELT(betas_R, iBeta));
         SEXP prior_R = VECTOR_ELT(priors_R, iBeta);

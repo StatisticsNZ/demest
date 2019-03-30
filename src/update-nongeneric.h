@@ -13,7 +13,7 @@
 
     void updateSigma_Varying(SEXP object);
     
-    void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double));
+    void updateBetasAndPriorsBetas(SEXP object_R);
 
 	
 #endif

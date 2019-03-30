@@ -1520,161 +1520,24 @@ makeLifeExpBirth(double *mx, double *nx, double *ax, int iAge0_r, int nAge)
     return ans;
 }
 
-/* only here for testing makeVBar_General: 
- * the uber update model function effectively duplicates this */
+/* This is not called directly by the C code. 
+   Instead, the function 'getVBarAndN' is */
 SEXP
-makeVBar_R(SEXP object, SEXP iBeta_R) 
-{
-    int iBeta = *(INTEGER(iBeta_R))-1;
-        
-    SEXP vbar_R = NULL;
-        
-    int i_method_model = *(INTEGER(GET_SLOT(object, iMethodModel_sym)));
-        
-    switch(i_method_model)
-    {
-        case 4: case 5: /*Normal */
-            PROTECT(vbar_R = makeVBar_General(object, iBeta, identity));
-            break;
-        case 6: case 10: /* Poisson */
-            PROTECT(vbar_R =  makeVBar_General(object, iBeta, log));
-            break;
-        case 9: /* Binomial */
-            PROTECT(vbar_R = makeVBar_General(object, iBeta, logit));
-            break;
-        default:
-            error("unknown iMethodModel: %d", i_method_model);
-            break;
-    }
-    
-    UNPROTECT(1); /* vbar_R */
-    return vbar_R;
-}
-
-/* only used when testing makeVBar from R */
-SEXP
-makeVBar_General(SEXP object, int iBeta, double (*g)(double))
+makeVBarAndN_R(SEXP object, int iBeta)
 {
     SEXP theta_R = GET_SLOT(object, theta_sym);
     int n_theta = LENGTH(theta_R);
     double *theta = REAL(theta_R);
-    
-    SEXP betas_R = GET_SLOT(object, betas_sym);
-    int n_betas = LENGTH(betas_R);
-
-    SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym); 
-    
-    int len_vbar = LENGTH(VECTOR_ELT(betas_R, iBeta));
-    
-    SEXP vbar_R;
-    PROTECT(vbar_R = allocVector(REALSXP, len_vbar));
-    double *vbar = REAL(vbar_R);
-    
-    getVBar(vbar, len_vbar,
-                betas_R, iteratorBetas_R,
-                theta, n_theta, n_betas,
-                iBeta, g);
-                
-    UNPROTECT(1); /* vbar_R */
-    return vbar_R;
-}
-
-void
-getVBar(double *vbar, int len_vbar, 
-        SEXP betas_R, SEXP iteratorBetas_R, 
-                double *theta, int n_theta, int n_betas,
-                int iBeta, double (*g)(double))
-{
-    resetB(iteratorBetas_R);
-    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
-    
-    double* betas[n_betas]; /* array of pointers */
-    for (int b = 0; b < n_betas; ++b) {
-        betas[b] = REAL(VECTOR_ELT(betas_R, b));
-    }
-    
-    /* zero contents of vbar */
-    memset(vbar, 0, len_vbar * sizeof(double));
-    
-    double mult = len_vbar/(1.0*n_theta);
-    
-    for (int i = 0; i < n_theta; ++i) {
-        
-        int pos_ans = indices[iBeta] - 1;
-        
-        double set_pos = g( theta[i] );
-        
-        for (int b = 0; b < n_betas; ++b) {
-            
-            if (b == iBeta) continue; /* skip b == iBeta */
-            int pos_other_beta = indices[b] - 1;
-            
-            set_pos -= betas[b][pos_other_beta];
-        }
-        
-        /* ans[pos.ans] <- ans[pos.ans] - other.beta[pos.other.beta]
- */
-        vbar[pos_ans] += set_pos * mult;
-        
-        advanceB(iteratorBetas_R);
-    }
-}
-
-
-/* only here for testing makeVBarAndN_General: 
- * the uber update model function effectively duplicates this */
-SEXP
-makeVBarAndN_R(SEXP object, SEXP iBeta_R) 
-{
-    int iBeta = *(INTEGER(iBeta_R))-1;
-        
-    SEXP ans_R = NULL; 
-    /* ans_R will become a list holding vbar and n,
-     * where n is a vector of integers */
-        
-    int i_method_model = *(INTEGER(GET_SLOT(object, iMethodModel_sym)));
-        
-    switch(i_method_model)
-    {
-        case 4: case 5: /*Normal */
-            PROTECT(ans_R = makeVBarAndN_General(object, iBeta, identity));
-            break;
-        case 6: case 10: /* Poisson */
-            PROTECT(ans_R =  makeVBarAndN_General(object, iBeta, log));
-            break;
-        case 9: /* Binomial */
-            PROTECT(ans_R = makeVBarAndN_General(object, iBeta, logit));
-            break;
-        default:
-            error("unknown iMethodModel: %d", i_method_model);
-            break;
-    }
-    
-    UNPROTECT(1); /* ans_R */
-    return ans_R;
-}
-
-
-/* only used when testing makeVBarAndN from R */
-SEXP
-makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
-{
-    SEXP theta_R = GET_SLOT(object, theta_sym);
-    int n_theta = LENGTH(theta_R);
-    double *theta = REAL(theta_R);
+    double *thetaTransformed = REAL(GET_SLOT(object, thetaTransformed_sym));
     
     SEXP betas_R = GET_SLOT(object, betas_sym);
     int n_betas = LENGTH(betas_R);
 
     SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym); 
 
-    double boxCoxParam = 0;
-    if (g == log) {
-        boxCoxParam = *REAL(GET_SLOT(object, boxCoxParam_sym));
-    }
-    int usesBoxCoxTransform = ((boxCoxParam > 0)? 1: 0);
-    
-    int len_vbar = LENGTH(VECTOR_ELT(betas_R, iBeta));
+    int iBeta_c = iBeta - 1;
+
+    int len_vbar = LENGTH(VECTOR_ELT(betas_R, iBeta_c));
     
     int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
     
@@ -1684,12 +1547,13 @@ makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
     PROTECT(n_vec_R = allocVector(INTSXP, len_vbar));
     double *vbar = REAL(vbar_R);
     int *n_vec = INTEGER(n_vec_R);
-    
+
     getVBarAndN(vbar, n_vec,  
                 len_vbar, cellInLik,
                 betas_R, iteratorBetas_R,
-                theta, n_theta, n_betas,
-                iBeta, g, usesBoxCoxTransform, boxCoxParam);
+                theta, n_theta,
+		thetaTransformed,
+		n_betas, iBeta_c);
     
     SEXP ans_R = PROTECT(allocVector(VECSXP, 2));
     SET_VECTOR_ELT(ans_R, 0, vbar_R);
@@ -1699,16 +1563,17 @@ makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double))
                 
 }
 
+
 void
 getVBarAndN(double *vbar, int *n_vec, 
-        int len_vbar, int *cellInLik, 
-        SEXP betas_R, SEXP iteratorBetas_R, 
-                double *theta, int n_theta, int n_betas,
-                int iBeta, double (*g)(double),
-                int usesBoxCoxTransform, double boxCoxParam)
+	    int len_vbar, int *cellInLik, 
+	    SEXP betas_R, SEXP iteratorBetas_R, 
+	    double *theta, int n_theta,
+	    double *thetaTransformed,
+	    int n_betas, int iBeta)
 {
-    resetB(iteratorBetas_R);
-    int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
+  resetB(iteratorBetas_R);
+  int *indices = INTEGER(GET_SLOT(iteratorBetas_R, indices_sym));
     
     double* betas[n_betas]; /* array of pointers */
     for (int b = 0; b < n_betas; ++b) {
@@ -1728,12 +1593,8 @@ getVBarAndN(double *vbar, int *n_vec,
             int pos_ans = indices[iBeta] - 1;
         
             double set_pos = 0;
-            if(usesBoxCoxTransform) {
-                set_pos += ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
-            }
-            else {
-                set_pos += g( theta[i] );
-            }
+
+	    set_pos += thetaTransformed[i];
         
             for (int b = 0; b < n_betas; ++b) {
             
@@ -1750,18 +1611,14 @@ getVBarAndN(double *vbar, int *n_vec,
         advanceB(iteratorBetas_R);
     }
     
-    /* for (int i = 0; i < len_vbar; ++i) { */
-        
-    /*     vbar[i] /= n_vec[i]; */
-    /* } */
-
     for (int i = 0; i < len_vbar; ++i) {
-        if (n_vec[i] > 0L) {    /* added by JB 2017-07-08 */
+        if (n_vec[i] > 0L) { 
             vbar[i] /= n_vec[i];
         }
     }
 
 }
+
 
 
 

@@ -60,21 +60,14 @@
                                 
     void diff(double *in_out, int n, int order);
     
-    void getVBar(double *vbar, int len_vbar, 
-        SEXP betas_R, SEXP iteratorBetas_R, 
-                double *theta, int n_theta, int n_betas,
-                int iBeta, double (*g)(double));
-    
-    SEXP makeVBar_General(SEXP object, int iBeta, double (*g)(double));
-    
     void getVBarAndN(double *vbar, int *n_vec, 
-        int len_vbar, int *cellInLik, 
-        SEXP betas_R, SEXP iteratorBetas_R, 
-                double *theta, int n_theta, int n_betas,
-                int iBeta, double (*g)(double),
-                int usesBoxCoxTransform, double boxCoxParam);
+		     int len_vbar, int *cellInLik, 
+		     SEXP betas_R, SEXP iteratorBetas_R, 
+		     double *theta, int n_theta,
+		     double *thetaTransformed,
+		     int n_betas, int iBeta);
     
-    SEXP makeVBarAndN_General(SEXP object, int iBeta, double (*g)(double));
+    SEXP makeVBarAndN_R(SEXP object, int iBeta);
     
     double logit(double x);
     

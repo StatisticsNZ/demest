@@ -578,7 +578,7 @@ updateModelNotUseExp_CMPVaryingNotUseExp_i(SEXP object, SEXP y_R)
 {
     updateThetaAndNu_CMPVaryingNotUseExp(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -591,7 +591,7 @@ updateModelNotUseExp_NormalVaryingVarsigmaKnown_i(SEXP object, SEXP y_R)
       updateTheta_NormalVarying(object, y_R);
     }
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, identity);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -601,7 +601,7 @@ updateModelNotUseExp_NormalVaryingVarsigmaUnknown_i(SEXP object, SEXP y_R)
     updateTheta_NormalVarying(object, y_R);
     updateVarsigma(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, identity);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -610,7 +610,7 @@ updateModelNotUseExp_PoissonVaryingNotUseExp_i(SEXP object, SEXP y_R)
 {
     updateTheta_PoissonVaryingNotUseExp(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -619,7 +619,7 @@ updateModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain_i(SEXP object, SEXP y_R
 {
     updateTheta_NormalVaryingAgCertain(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, identity);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -629,7 +629,7 @@ updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain_i(SEXP object, SEXP y
     updateTheta_NormalVaryingAgCertain(object, y_R);
     updateVarsigma(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, identity);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -638,7 +638,7 @@ updateModelNotUseExp_PoissonVaryingNotUseExpAgCertain_i(SEXP object, SEXP y_R)
 {
     updateTheta_PoissonVaryingNotUseExpAgCertain(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -648,7 +648,7 @@ updateModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal_i(SEXP object, SEXP y_R)
     updateTheta_NormalVaryingAgCertain(object, y_R);
     updateThetaAndValueAgNormal_Normal(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, identity);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -659,7 +659,7 @@ updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_i(SEXP object, SEXP y_
     updateThetaAndValueAgNormal_Normal(object, y_R);
     updateVarsigma(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, identity);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -668,7 +668,7 @@ updateModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_i(SEXP object, SEXP y_R)
 {
     updateThetaAndValueAgFun_Normal(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, identity);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -678,7 +678,7 @@ updateModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_i(SEXP object, SEXP y_R)
     updateThetaAndValueAgFun_Normal(object, y_R);
     updateVarsigma(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, identity);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -688,7 +688,7 @@ updateModelNotUseExp_PoissonVaryingNotUseExpAgNormal_i(SEXP object, SEXP y_R)
     updateTheta_PoissonVaryingNotUseExpAgCertain(object, y_R);
     updateThetaAndValueAgNormal_PoissonNotUseExp(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -698,7 +698,7 @@ updateModelNotUseExp_PoissonVaryingNotUseExpAgFun_i(SEXP object, SEXP y_R)
 {
     updateThetaAndValueAgFun_PoissonNotUseExp(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -708,7 +708,7 @@ updateModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_i(SEXP object, SEXP y_R)
     updateTheta_PoissonVaryingNotUseExpAgCertain(object, y_R);
     updateThetaAndValueAgPoisson_PoissonNotUseExp(object, y_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -731,7 +731,7 @@ updateModelUseExp_CMPVaryingUseExp_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateThetaAndNu_CMPVaryingUseExp(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -742,7 +742,7 @@ updateModelUseExp_BinomialVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateTheta_BinomialVarying(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, logit);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -752,7 +752,7 @@ updateModelUseExp_PoissonVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateTheta_PoissonVaryingUseExp(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -774,7 +774,7 @@ updateModelUseExp_BinomialVaryingAgCertain_i(SEXP object, SEXP y_R, SEXP exposur
 {
     updateTheta_BinomialVaryingAgCertain(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, logit);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -784,7 +784,7 @@ updateModelUseExp_BinomialVaryingAgNormal_i(SEXP object, SEXP y_R, SEXP exposure
     updateTheta_BinomialVaryingAgCertain(object, y_R, exposure_R);
     updateThetaAndValueAgNormal_Binomial(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, logit);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -793,7 +793,7 @@ updateModelUseExp_BinomialVaryingAgFun_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateThetaAndValueAgFun_Binomial(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, logit);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -802,7 +802,7 @@ updateModelUseExp_PoissonVaryingUseExpAgCertain_i(SEXP object, SEXP y_R, SEXP ex
 {
     updateTheta_PoissonVaryingUseExpAgCertain(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -812,7 +812,7 @@ updateModelUseExp_PoissonVaryingUseExpAgNormal_i(SEXP object, SEXP y_R, SEXP exp
     updateTheta_PoissonVaryingUseExpAgCertain(object, y_R, exposure_R);
     updateThetaAndValueAgNormal_PoissonUseExp(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -822,7 +822,7 @@ updateModelUseExp_PoissonVaryingUseExpAgFun_i(SEXP object, SEXP y_R, SEXP exposu
 {
     updateThetaAndValueAgFun_PoissonUseExp(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -833,7 +833,7 @@ updateModelUseExp_PoissonVaryingUseExpAgPoisson_i(SEXP object, SEXP y_R, SEXP ex
     updateTheta_PoissonVaryingUseExpAgCertain(object, y_R, exposure_R);
     updateThetaAndValueAgPoisson_PoissonUseExp(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
@@ -843,7 +843,7 @@ updateModelUseExp_PoissonVaryingUseExpAgLife_i(SEXP object, SEXP y_R, SEXP expos
 {
     updateThetaAndValueAgLife_PoissonUseExp(object, y_R, exposure_R);
     updateSigma_Varying(object);
-    updateBetasAndPriorsBetas_General(object, log);
+    updateBetasAndPriorsBetas(object);
     updateMu(object);
 }
 
