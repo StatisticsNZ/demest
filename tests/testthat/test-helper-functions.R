@@ -4039,7 +4039,7 @@ test_that("makeVBarAndN gives valid answer with Binomial, terms out of order", {
     spec <- Model(y ~ Binomial(mean ~ age:region + region + age))
     x <- initialModel(spec, y = y, exposure = exposure)
     ## iBeta = 1L
-    ans.obtained <- makeVBarAndN(x, iBeta = 1Lit)
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L)
     other.betas <- (rep(matrix(x@betas[[4]], nrow = 3), each = 2)
                     + rep(x@betas[[3]], each = 2)
                     + rep(x@betas[[2]], each = 6))
@@ -4048,7 +4048,7 @@ test_that("makeVBarAndN gives valid answer with Binomial, terms out of order", {
                          23L)
     expect_equal(ans.obtained, ans.expected) 
     ## iBeta = 2L
-    ans.obtained <- makeVBarAndN(x, iBeta = 2Lit)
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L)
     other.betas <- (x@betas[[1]]
                     + rep(x@betas[[3]], each = 2)
                     + rep(x@betas[[4]], each = 2))
@@ -4061,7 +4061,7 @@ test_that("makeVBarAndN gives valid answer with Binomial, terms out of order", {
                          c(6L, 5L, 6L, 6L))
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 3L
-    ans.obtained <- makeVBarAndN(x, iBeta = 3Lit)
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L)
     other.betas <- (x@betas[[1]]
                     + rep(x@betas[[2]], each = 6)
                     + rep(x@betas[[4]], each = 2))
@@ -4074,7 +4074,7 @@ test_that("makeVBarAndN gives valid answer with Binomial, terms out of order", {
                          c(8L, 8L, 7L))
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 4L
-    ans.obtained <- makeVBarAndN(x, iBeta = 4Lit)
+    ans.obtained <- makeVBarAndN(x, iBeta = 4L)
     other.betas <- (x@betas[[1]]
                     + rep(x@betas[[2]], each = 6)
                     + rep(x@betas[[3]], each = 2))
@@ -4105,14 +4105,14 @@ test_that("makeVBarAndN gives valid answer with Normal, main effects", {
     x <- initialModel(spec, y = y, weights = weights)
     identity <- function(x) x
     ## iBeta = 1L
-    ans.obtained <- makeVBarAndN(x, iBeta = 1L, g = identity)
+    ans.obtained <- makeVBarAndN(x, iBeta = 1L)
     other.betas <- rep(x@betas[[2]], times = 12) + rep(x@betas[[3]], each = 2)
     g.theta <- x@theta
     ans.expected <- mean(g.theta - other.betas)
     ans.expected <- list(ans.expected, 24L)
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 2L
-    ans.obtained <- makeVBarAndN(x, iBeta = 2L, g = identity)
+    ans.obtained <- makeVBarAndN(x, iBeta = 2L)
     other.betas <- rep(x@betas[[1]], times = 24) + rep(x@betas[[3]], each = 2)
     g.theta <- x@theta
     ans.expected <- g.theta - other.betas
@@ -4122,7 +4122,7 @@ test_that("makeVBarAndN gives valid answer with Normal, main effects", {
                          c(12L, 12L))
     expect_equal(ans.obtained, ans.expected)
     ## iBeta = 3L
-    ans.obtained <- makeVBarAndN(x, iBeta = 3L, g = identity)
+    ans.obtained <- makeVBarAndN(x, iBeta = 3L)
     other.betas <- rep(x@betas[[1]], times = 24) + x@betas[[2]]
     g.theta <- x@theta
     ans.expected <- g.theta - other.betas
@@ -5006,6 +5006,7 @@ test_that("R and C versions of diffLogLik give same answer, part 2", {
     getIAfter <- dembase::getIAfter
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     logLikelihood <- demest:::logLikelihood
+    safeLogProp_Poisson <- demest:::safeLogProp_Poisson
     set.seed(100)
     yProp <- as.integer(rpois(n = 1, lambda = 10))
     y <- Counts(array(as.integer(rpois(24, lambda = 10)),
@@ -5036,7 +5037,7 @@ test_that("R and C versions of diffLogLik give same answer, part 2", {
     scale <- runif(1, 0.01, 2)
     weight <- runif(1, 0.1, 2)
     weight.other <- runif(1, 0.1, 2)
-    ans.obtained <- safeLogProp_Poisson(log.th.new = log.th.new,
+    ans.obtained <- safeLogProp_Poisson (log.th.new = log.th.new,
                                         log.th.other.new = log.th.other.new,
                                         log.th.old = log.th.old,
                                         log.th.other.old = log.th.other.old,

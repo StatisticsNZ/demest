@@ -67,7 +67,7 @@
 		     double *thetaTransformed,
 		     int n_betas, int iBeta);
     
-    SEXP makeVBarAndN_R(SEXP object, int iBeta);
+    SEXP makeVBarAndN_R(SEXP object, SEXP iBeta_R);
     
     double logit(double x);
     

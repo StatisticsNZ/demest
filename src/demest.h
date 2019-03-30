@@ -526,7 +526,7 @@ double findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
 
 SEXP getV_R(SEXP prior_R);
 
-SEXP makeVBarAndN_R(SEXP object, int iBeta);
+SEXP makeVBarAndN_R(SEXP object, SEXP iBeta_R);
 double logPostPhiMix(double phi, double *level, double meanLevel, 
                 int nAlong, int indexClassMax_r, double omega);
 double logPostPhiFirstOrderMix(double phi, double *level, double meanLevel, 

@@ -1485,11 +1485,11 @@ test_that("updateBetasAndPriorsBetas works", {
     spec <- Model(y ~ Poisson(mean ~ age * sex + region))
     model <- initialModel(spec, y = y, exposure = exposure)
     set.seed(1)
-    ans.obtained <- updateBetasAndPriorsBetas(model, g = log)
+    ans.obtained <- updateBetasAndPriorsBetas(model)
     set.seed(1)
     ans.expected <- model
     for (i in 1:5) {
-        vbar <- makeVBarAndN(ans.expected, iBeta = i, g = log)[[1]]
+        vbar <- makeVBarAndN(ans.expected, iBeta = i)[[1]]
         l <- updateBetaAndPriorBeta(prior = ans.expected@priorsBetas[[i]],
                                     vbar = vbar,
                                     n = rep(length(y) %/% length(vbar), length(vbar)),
@@ -1517,9 +1517,9 @@ test_that("R and C versions of updateBetasAndPriorsBetas give same answer", {
     spec <- Model(y ~ Poisson(mean ~ age * sex + region))
     model <- initialModel(spec, y = y, exposure = exposure)
     set.seed(1)
-    ans.R <- updateBetasAndPriorsBetas(model, g = log, useC = FALSE)
+    ans.R <- updateBetasAndPriorsBetas(model, useC = FALSE)
     set.seed(1)
-    ans.C <- updateBetasAndPriorsBetas(model, g = log, useC = TRUE)
+    ans.C <- updateBetasAndPriorsBetas(model, useC = TRUE)
     if (test.identity)
         expect_identical(ans.R, ans.C)
     else
@@ -1542,9 +1542,9 @@ test_that("R and C versions of updateBetasAndPriorsBetas give same answer with B
         model <- initialModel(spec, y = y, exposure = exposure)
         logit <- function(x) log(x/(1-x))
         set.seed(seed)
-        ans.R <- updateBetasAndPriorsBetas(model, g = logit, useC = FALSE)
+        ans.R <- updateBetasAndPriorsBetas(model, useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetasAndPriorsBetas(model, g = logit, useC = TRUE)
+        ans.C <- updateBetasAndPriorsBetas(model, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else

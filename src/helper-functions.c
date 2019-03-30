@@ -1523,8 +1523,11 @@ makeLifeExpBirth(double *mx, double *nx, double *ax, int iAge0_r, int nAge)
 /* This is not called directly by the C code. 
    Instead, the function 'getVBarAndN' is */
 SEXP
-makeVBarAndN_R(SEXP object, int iBeta)
+makeVBarAndN_R(SEXP object, SEXP iBeta_R)
 {
+
+    int iBeta = *(INTEGER(iBeta_R))-1;
+        
     SEXP theta_R = GET_SLOT(object, theta_sym);
     int n_theta = LENGTH(theta_R);
     double *theta = REAL(theta_R);
@@ -1535,9 +1538,7 @@ makeVBarAndN_R(SEXP object, int iBeta)
 
     SEXP iteratorBetas_R = GET_SLOT(object, iteratorBetas_sym); 
 
-    int iBeta_c = iBeta - 1;
-
-    int len_vbar = LENGTH(VECTOR_ELT(betas_R, iBeta_c));
+    int len_vbar = LENGTH(VECTOR_ELT(betas_R, iBeta));
     
     int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
     
@@ -1553,12 +1554,13 @@ makeVBarAndN_R(SEXP object, int iBeta)
                 betas_R, iteratorBetas_R,
                 theta, n_theta,
 		thetaTransformed,
-		n_betas, iBeta_c);
+		n_betas, iBeta);
     
     SEXP ans_R = PROTECT(allocVector(VECSXP, 2));
     SET_VECTOR_ELT(ans_R, 0, vbar_R);
     SET_VECTOR_ELT(ans_R, 1, n_vec_R);
     UNPROTECT(3);
+
     return ans_R;
                 
 }
