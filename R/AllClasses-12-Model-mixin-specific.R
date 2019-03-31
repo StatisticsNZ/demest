@@ -118,6 +118,7 @@ setClass("Margins",
 ## HAS_TESTS
 setClass("Betas",
          slots = c(betas = "list",
+                   momentumBetas = "list",
                    namesBetas = "character",
                    priorsBetas = "list",
                    iteratorBetas = "BetaIterator",
@@ -126,6 +127,7 @@ setClass("Betas",
          contains = c("VIRTUAL", "Margins"),
          validity = function(object) {
              betas <- object@betas
+             momentumBetas <- object@momentumBetas
              names <- object@namesBetas
              margins <- object@margins
              priors <- object@priorsBetas
@@ -149,6 +151,14 @@ setClass("Betas",
              ## first element of 'betas' has length 1
              if (!identical(length(betas[[1L]]), 1L))
                  return(gettextf("first element of '%s' does not have length 1", "betas"))
+             ## all elements of 'momentumBetas' have type "double"
+             if (!all(sapply(momentumBetas, is.double)))
+                 return(gettextf("'%s' has elements not of type \"%s\"",
+                                 "momentumBetas", "double"))
+             ## 'momentumBetas' does not have names
+             if (!is.null(names(momentumBetas)))
+                 return(gettextf("'%s' has names",
+                                 "momentumBetas"))
              ## 'namesBetas' has no missing values
              if (any(is.na(names)))
                  return(gettextf("'%s' has missing values", "namesBetas"))
@@ -197,6 +207,20 @@ setClass("Betas",
              if (!is.double(mu))
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "mu", "double"))
+             ## 'betas' and 'momentumBetas' have same length
+             if (!identical(length(betas), length(momentumBetas)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "betas", "momentumBetas"))
+             ## corresponding elements of 'momentumBetas' and 'betas' have same length
+             for (i in seq_along(momentumBetas))
+                 if (!identical(length(momentumBetas[[i]]), length(betas[[i]])))
+                     return(gettextf("element %d of '%s' and element %d of '%s' have different lengths",
+                                     i, "momentumBetas", i, "betas"))
+             ## 'momentumBetas' has missing values iff beta has missing values
+             for (i in seq_along(momentumBetas))
+                 if (!identical(is.na(momentumBetas[[i]]), is.na(betas[[i]])))
+                     return(gettextf("element %d of '%s' and element %d of '%s' have different patterns of missingness",
+                                     i, "momentumBetas", i, "betas"))
              ## 'betas' and 'namesBetas' have same length
              if (!identical(length(betas), length(names)))
                  return(gettextf("'%s' and '%s' have different lengths",

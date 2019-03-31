@@ -4941,8 +4941,8 @@ test_that("R and C versions of updateTheta_BinomialVarying give same answer", {
 test_that("updateTheta_BinomialVaryingAgCertain gives valid answer - single aggregate value", {
     updateTheta_BinomialVaryingAgCertain <- demest:::updateTheta_BinomialVaryingAgCertain
     initialModel <- demest:::initialModel
+    was.updated <- FALSE
     for (seed in seq_len(n.test)) {
-        was.updated <- FALSE
         set.seed(seed)
         aggregate <- AgCertain(value = 0.5)
         theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
@@ -4961,16 +4961,16 @@ test_that("updateTheta_BinomialVaryingAgCertain gives valid answer - single aggr
         }
         else
             expect_identical(x0@theta, x1@theta)
-        if (!was.updated)
-            warning("theta was not updated")
     }
+    if (!was.updated)
+        warning("theta was not updated")
 })
 
 test_that("R and C versions of updateTheta_BinomialVaryingAgCertain same answer - single aggregate value", {
     updateTheta_BinomialVaryingAgCertain <- demest:::updateTheta_BinomialVaryingAgCertain
     initialModel <- demest:::initialModel
-    for (seed in seq_len(n.test * 2)) { # if don't multiply by 2, theta is not updated
-        was.updated <- FALSE
+    was.updated <- FALSE
+    for (seed in seq_len(n.test * 2)) {
         set.seed(seed)
         aggregate <- AgCertain(value = 0.5)
         theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
@@ -4991,9 +4991,9 @@ test_that("R and C versions of updateTheta_BinomialVaryingAgCertain same answer 
             expect_equal(x.R, x.C)
         if (x.R@nAcceptTheta > 0L)
             was.updated <- TRUE
-        if (!was.updated)
-            warning("theta was not updated")
     }
+    if (!was.updated)
+        warning("theta was not updated")
 })
 
 test_that("updateTheta_BinomialVaryingAgCertain gives valid answer - multiple aggregate values", {

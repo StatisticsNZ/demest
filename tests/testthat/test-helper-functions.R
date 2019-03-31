@@ -5237,6 +5237,7 @@ test_that("initialModelPredictHelper works", {
                                               covariates = NULL)
     set.seed(1)
     betas <- list(mod@betas[[1]], rep(0, 4), mod@betas[[3]])
+    momentumBetas <- list(0, rep(0, 4), rep(0, 4))
     iteratorBetas <- BetaIterator(dim = c(4L, 4L),
                                   margins = c(0L, 1L, 2L))
     mu = rep(0, 16)
@@ -5251,6 +5252,7 @@ test_that("initialModelPredictHelper works", {
                                                           new("Categories", dimvalues = as.character(1:4)))),
                          cellInLik = rep(FALSE, 16),
                          betas = betas,
+                         momentumBetas = momentumBetas,
                          strucZeroArray = strucZeroArray,
                          priorsBetas = list(new("TimeInvariant", J = new("Length", 1L),
                                                 isSaturated = new("LogicalFlag", FALSE)),
