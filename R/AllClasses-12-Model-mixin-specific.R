@@ -123,6 +123,8 @@ setClass("Betas",
                    priorsBetas = "list",
                    iteratorBetas = "BetaIterator",
                    dims = "list",
+                   logLikBetas = "Parameter",
+                   logLikPriorsBetas = "Parameter",
                    mu = "numeric"),
          contains = c("VIRTUAL", "Margins"),
          validity = function(object) {
@@ -664,7 +666,8 @@ setClass("SigmaMaxMixin",
 
 ## NO_TESTS
 setClass("SigmaMixin",
-         slots = c(sigma = "Scale"),
+         slots = c(sigma = "Scale",
+                   logLikSigma = "Parameter"),
          contains = "VIRTUAL")
 
 ## HAS_TESTS
@@ -810,11 +813,13 @@ setClass("StrucZeroArrayMixin",
 ## HAS_TESTS
 setClass("Theta",
          slots = c(theta = "numeric",
-                   thetaTransformed = "numeric"),
+                   thetaTransformed = "numeric",
+                   logLikTheta = "Parameter"),
          contains = "VIRTUAL",
          validity = function(object) {
              theta <- object@theta
              thetaTransformed <- object@thetaTransformed
+             logLikTheta <- object@logLikTheta
              metadataY <- object@metadataY
              ## 'theta' is double
              if (!is.double(theta))
@@ -841,7 +846,8 @@ setClass("UseExposeMixin",
 
 ## NO_TESTS
 setClass("VarsigmaMixin",
-         slots = c(varsigma = "Scale"),
+         slots = c(varsigma = "Scale",
+                   logLikVarsigma = "Parameter"),
          contains = "VIRTUAL")
 
 ## NO_TESTS

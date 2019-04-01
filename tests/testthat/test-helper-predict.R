@@ -84,6 +84,7 @@ test_that("initialModelPredictHelper works", {
                                                           new("Categories", dimvalues = as.character(1:4)))),
                          cellInLik = rep(FALSE, 16),
                          betas = list(mod@betas[[1]], rep(0, 4), mod@betas[[3]]),
+                         momentumBetas = list(0, rep(0, 4), rep(0, 4)),
                          strucZeroArray = strucZeroArray,
                          priorsBetas = list(new("TimeInvariant", J = new("Length", 1L),
                                                 isSaturated = new("LogicalFlag", FALSE)),
