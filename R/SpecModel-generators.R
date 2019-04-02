@@ -630,6 +630,8 @@ Model <- function(formula, ..., lower = NULL, upper = NULL,
     kValidDistributions <- c("Poisson", "Binomial", "Normal", "CMP",
                              "PoissonBinomial", "NormalFixed", "TFixed",
                              "Round3")
+    kValidDistributions <- c(kValidDistributions,
+                             paste0("demest::", kValidDistributions))
     call <- match.call()
     dots <- list(...)
     correct.length <- identical(length(formula), 3L)
