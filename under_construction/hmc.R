@@ -1,17 +1,5 @@
 
 
-## NO_TESTS
-setClass("MomentumMixin",
-         slots = c(momentum = "list"),
-         contains = "VIRTUAL", 
-         validity = function(object) {
-             momentum <- object@momentum
-             betas <- object@momentum
-             TRUE
-         })
-
-
-
 updatePriorsBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
