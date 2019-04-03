@@ -1982,7 +1982,7 @@ test_that("rhalft works", {
                  "'scale' is non-numeric")
     ## scale positive
     expect_error(rhalft(1, 7, -1),
-                 "'scale' is non-positive")
+                 "'scale' is negative")
 })
 
 test_that("qhalft works", {
@@ -1998,14 +1998,18 @@ test_that("qhalft works", {
     ans.obtained <- qhalft(p, df = df, scale = 0.5)
     ans.expected <- 0.5 * qt(p = (p+1)/2, df = df)
     expect_equal(ans.obtained, ans.expected)
+    ## scale = 0
+    p <- runif(10)
+    df <- rpois(10, lambda = 3) + 1
+    ans.obtained <- qhalft(p, df = df, scale = 0)
+    ans.expected <- rep(0, 10)
+    expect_equal(ans.obtained, ans.expected)
     ## scale numeric
     expect_error(qhalft(0.5, 7, "wrong"),
                  "'scale' is non-numeric")
-    ## scale positive
+    ## scale non-negative
     expect_error(qhalft(0.5, 7, -1),
-                 "'scale' is non-positive")
-    expect_error(qhalft(0.5, 7, 0),
-                 "'scale' is non-positive")
+                 "'scale' is negative")
 })
 
 test_that("phalft works", {
@@ -2021,7 +2025,7 @@ test_that("phalft works", {
                  "'scale' is non-numeric")
     ## scale positive
     expect_error(phalft(0.5, 7, -1),
-                 "'scale' is non-positive")
+                 "'scale' is negative")
 })
 
 test_that("dhalft works", {
@@ -2037,7 +2041,7 @@ test_that("dhalft works", {
                  "'scale' is non-numeric")
     ## scale positive
     expect_error(dhalft(0.5, 7, -1),
-                 "'scale' is non-positive")
+                 "'scale' is negative")
 })
 
 

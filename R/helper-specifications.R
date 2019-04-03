@@ -649,7 +649,7 @@ checkAndTidySpecScale <- function(x, name) {
     if (is.null(x))
         x <- as.double(NA)
     else {
-        checkPositiveNumeric(x = x, name = name)
+        checkNonNegativeNumeric(x = x, name = name)
         x <- as.double(x)
     }
     methods::new("SpecScale", x)
