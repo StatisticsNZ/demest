@@ -236,7 +236,7 @@ setClass("SpecScale",
                                  "double"))
              ## if 'object' is not missing, 'object is non-negative
              if (!is.na(object) && (object < 0))
-                 return(gettext("non-positive"))
+                 return(gettext("negative"))
              TRUE
          })
 
@@ -255,7 +255,7 @@ setClass("SpecScaleVec",
              }
              else {
                  if (any(object < 0))
-                     return(gettext("non-positive"))
+                     return(gettext("negative"))
              }
              TRUE
          })

@@ -316,8 +316,8 @@ rhalft <- function(n, df, scale = 1) {
     if (!is.numeric(scale))
         stop(gettextf("'%s' is non-numeric",
                       "scale"))
-    if (any(scale[!is.na(scale)] <= 0))
-        stop(gettextf("'%s' is non-positive",
+    if (any(scale[!is.na(scale)] < 0))
+        stop(gettextf("'%s' is negative",
                       "scale"))
     ans <- stats::rt(n = n, df = df)
     scale * abs(ans)
@@ -330,8 +330,8 @@ qhalft <- function(p, df, scale = 1) {
     if (!is.numeric(scale))
         stop(gettextf("'%s' is non-numeric",
                       "scale"))
-    if (any(scale[!is.na(scale)] <= 0))
-        stop(gettextf("'%s' is non-positive",
+    if (any(scale[!is.na(scale)] < 0))
+        stop(gettextf("'%s' is negative",
                       "scale"))
     p <- (p + 1) / 2
     ans <- stats::qt(p = p,
@@ -346,8 +346,8 @@ phalft <- function(q, df, scale = 1) {
     if (!is.numeric(scale))
         stop(gettextf("'%s' is non-numeric",
                       "scale"))
-    if (any(scale[!is.na(scale)] <= 0))
-        stop(gettextf("'%s' is non-positive",
+    if (any(scale[!is.na(scale)] < 0))
+        stop(gettextf("'%s' is negative",
                       "scale"))
     q <- q / scale
     ans <- stats::pt(q = q,
@@ -362,8 +362,8 @@ dhalft <- function(x, df, scale = 1) {
     if (!is.numeric(scale))
         stop(gettextf("'%s' is non-numeric",
                       "scale"))
-    if (any(scale[!is.na(scale)] <= 0))
-        stop(gettextf("'%s' is non-positive",
+    if (any(scale[!is.na(scale)] < 0))
+        stop(gettextf("'%s' is negative",
                       "scale"))
     x <- x / scale
     (2/scale) * stats::dt(x = x, df = df, log = FALSE)
@@ -420,7 +420,7 @@ rhalftTrunc1 <- function(df, scale, max, useC = FALSE) {
     stopifnot(is.double(scale))
     stopifnot(identical(length(scale), 1L))
     stopifnot(!is.na(scale))
-    stopifnot(scale > 0)
+    stopifnot(scale >= 0)
     ## max
     stopifnot(is.double(max))
     stopifnot(identical(length(max), 1L))
