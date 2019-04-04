@@ -82,8 +82,8 @@ setMethod("drawCombined",
                   data.models.use.ag <- object@dataModelsUseAg@.Data
                   for (i in seq_len(nUpdate)) {
                       if (system.models.use.ag) {
-                          object <- updateSystemModels(object)
-                          object <- updateExpectedExposure(object)
+                          object <- updateSystemModels(object, useC = TRUE)
+                          object <- updateExpectedExposure(object, useC = TRUE)
                       }
                       object <- updateAccount(object, useC = TRUE)
                       if (data.models.use.ag)
