@@ -74,6 +74,48 @@ setMethod("checkPriorSDInformative",
           })
 
 
+## HAS_TESTS
+setMethod("checkPriorSDInformative",
+          signature(object = "SpecVarying"),
+          function(object) {
+              name.model <- object@nameY[[1L]]
+              value.mult.sigma <- checkPriorInform_prohibited(object = object,
+                                                              nameSlot = "multSigma",
+                                                              nameArg = "mult",
+                                                              nameFun = "HalfT")
+              ## no need to allow for partial matching, since 'priorSD'
+              ## argument follows '...'
+              i.prior.sd <- match("priorSD", names(object@call), nomatch = 0L)
+              specified.prior.sd <- i.prior.sd > 0L
+              if (specified.prior.sd) {
+                  ## the following is only a weak test, since 'ASigma' has
+                  ## a default value
+                  value.A.sigma <- checkPriorInform_required(object = object,
+                                                             name = "ASigma",
+                                                             nameArg = "scale",
+                                                             nameFun = "HalfT")
+                  ## apply a stronger test if function 'HalfT' was called
+                  spec.prior.sd <- object@call[[i.prior.sd]]
+                  halft.fun.called <- grepl("^HalfT", deparse(spec.prior.sd))
+                  if (halft.fun.called) {
+                      i.scale.prior.sd <- pmatch(names(spec.prior.sd), "scale", nomatch = 0L)
+                      if (any(i.scale.prior.sd > 0L))
+                          value.A.sigma <- NULL
+                      else
+                          value.A.sigma <- gettextf("'%s' argument not supplied in call to '%s'",
+                                                    "scale", "HalfT")
+                  }
+              }
+              else
+                  value.A.sigma <- gettextf("'%s' argument not supplied in call to '%s'",
+                                            "priorSD", "Model")
+              for (value in list(value.mult.sigma, value.A.sigma))
+                  if (!is.null(value))
+                      stop(gettextf("problem with specification of '%s' in model for '%s' : %s",
+                                    "priorSD", name.model, value))
+              NULL
+          })
+
 ## SpecBinomialVarying does not have multSigma slot
 ## HAS_TESTS
 setMethod("checkPriorSDInformative",
@@ -85,14 +127,24 @@ setMethod("checkPriorSDInformative",
               i.prior.sd <- match("priorSD", names(object@call), nomatch = 0L)
               specified.prior.sd <- i.prior.sd > 0L
               if (specified.prior.sd) {
+                  ## the following is only a weak test, since 'ASigma' has
+                  ## a default value
+                  value <- checkPriorInform_required(object = object,
+                                                     name = "ASigma",
+                                                     nameArg = "scale",
+                                                     nameFun = "HalfT")
+                  ## apply a stronger test if function 'HalfT' was called
                   spec.prior.sd <- object@call[[i.prior.sd]]
-                  ## allow for partial matching of 'scale' parameter
-                  i.scale.prior.sd <- pmatch(names(spec.prior.sd), "scale", nomatch = 0L)
-                  if (any(i.scale.prior.sd > 0L))
-                      value <- NULL
-                  else
-                      value <- gettextf("'%s' argument not supplied in call to '%s'",
-                                        "scale", "HalfT")
+                  halft.fun.called <- grepl("^HalfT", deparse(spec.prior.sd))
+                  if (halft.fun.called) {
+                      ## allow for partial matching of 'scale' parameter
+                      i.scale.prior.sd <- pmatch(names(spec.prior.sd), "scale", nomatch = 0L)
+                      if (any(i.scale.prior.sd > 0L))
+                          value <- NULL
+                      else
+                          value <- gettextf("'%s' argument not supplied in call to '%s'",
+                                            "scale", "HalfT")
+                  }
               }
               else
                   value <- gettextf("'%s' argument not supplied in call to '%s'",

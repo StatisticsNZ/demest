@@ -90,6 +90,14 @@ test_that("checkPriorSDInformative works with SpecVarying", {
     expect_is(model, "SpecVarying")
     expect_identical(checkPriorSDInformative(model),
                      NULL)
+    priorSD <- HalfT(scale = 0.1)
+    model <- Model(y ~ Poisson(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = priorSD)
+    expect_is(model, "SpecVarying")
+    expect_identical(checkPriorSDInformative(model),
+                     NULL)
     model <- Model(y ~ Poisson(mean ~ region),
                    `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
                    region ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
@@ -116,6 +124,14 @@ test_that("checkPriorSDInformative works with SpecVaryingBinomial", {
                    region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
                    priorSD = HalfT(scale = 0.1))
     expect_is(model, "SpecBinomialVarying")
+    expect_identical(checkPriorSDInformative(model),
+                     NULL)
+    priorSD <- HalfT(scale = 0.1)
+    model <- Model(y ~ Binomial(mean ~ region),
+                   `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.2),
+                   region ~ Exch(error = Error(scale = HalfT(scale = 0.3))),
+                   priorSD = priorSD)
+    expect_is(model, "SpecVarying")
     expect_identical(checkPriorSDInformative(model),
                      NULL)
     model <- Model(y ~ Binomial(mean ~ region),
@@ -221,6 +237,7 @@ test_that("drawModelNotUseExp works with NormalVaryingVarsigmaUnknown", {
     drawPriors <- demest:::drawPriors
     drawBetas <- demest:::drawBetas
     drawSigma_Varying <- demest:::drawSigma_Varying
+    drawVarsigma <- demest:::drawVarsigma
     updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
