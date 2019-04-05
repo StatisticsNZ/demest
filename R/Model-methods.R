@@ -91,7 +91,7 @@ setMethod("checkPriorSDInformative",
                   ## the following is only a weak test, since 'ASigma' has
                   ## a default value
                   value.A.sigma <- checkPriorInform_required(object = object,
-                                                             name = "ASigma",
+                                                             nameSlot = "ASigma",
                                                              nameArg = "scale",
                                                              nameFun = "HalfT")
                   ## apply a stronger test if function 'HalfT' was called
@@ -130,7 +130,7 @@ setMethod("checkPriorSDInformative",
                   ## the following is only a weak test, since 'ASigma' has
                   ## a default value
                   value <- checkPriorInform_required(object = object,
-                                                     name = "ASigma",
+                                                     nameSlot = "ASigma",
                                                      nameArg = "scale",
                                                      nameFun = "HalfT")
                   ## apply a stronger test if function 'HalfT' was called
