@@ -36,13 +36,16 @@ updateGradientBetas <- function(object, useC = FALSE) {
         gradient.betas <- object@gradientBetas
         mu <- object@mu
         iterator <- object@iteratorBetas
+        iterator <- resestB(iterator)
         n <- length(mu)
         for (i.mu in seq_len(n)) {
-            indices <- iterator@indices
             include.cell <- cell.in.lik[i.mu]
             if (include.cell) {
                 indices <- iterator@indices
                 for (i.beta in seq_along(gradient.betas)) {
+                    gradient <- gradient.betas[[i.beta]]
+                    
+                    
                     gradient.betas[[i.beta]][indices[i.beta]] <- (gradient.betas[[i.beta]][indices.i.beta]
                         + mu[i] - transformed.theta[i]
                     }
