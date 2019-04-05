@@ -202,7 +202,7 @@ setClass("DiffPropMixin",
              ## if 'diffProp' not missing, is not equal to 0
              if (!is.na(diffProp) && (diffProp == 0L))
                  return(gettextf("'%s' equals %d",
-                                 name, 0L))
+                                 "diffProp", 0L))
              TRUE
          })
 
@@ -786,6 +786,7 @@ setClass("ModelUsesExposureMixin",
              ## if a model has class "Normal", the corresponding
              ## element of modelUsesExposure is FALSE
              for (i in seq_along(namesComponents)) {
+                 name <- namesComponents[i]
                  model <- systemModels[[i + 1L]]
                  if (methods::is(model, "Normal") && modelUsesExposure[i + 1L])
                      return(gettextf("system model for '%s' uses exposure but has class \"%s\"",
@@ -984,7 +985,6 @@ setClass("SystemMovementsMixin",
              for (i in seq_along(components)) {
                  model <- systemModels[[i + 1L]]
                  component <- components[[i]]
-                 name <- namesComponents[i]
                  is.net <- (methods::is(component, "NetMovements")
                      || methods::is(component, "InternalMovementsNet"))
                  is.poisson <- methods::is(model, "Poisson")

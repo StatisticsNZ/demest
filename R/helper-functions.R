@@ -693,20 +693,29 @@ rpoisTrunc1 <- function(lambda, lower, upper, maxAttempt, useC = FALSE) {
         finite.upper <- !is.na(upper)
         if (finite.upper && (lower == upper))
             return(lower)
+        if ((lower == 0L) && !finite.upper) {
+            ans <- stats::rpois(n = 1L, lambda = lambda)
+            return(ans)
+        }
         n.attempt <- 0L
         found <- FALSE
-        if (finite.upper) {
-            while (!found && (n.attempt < maxAttempt)) {
-                n.attempt <- n.attempt + 1L
+        while (!found && (n.attempt < maxAttempt)) {
+            n.attempt <- n.attempt + 1L
+            if (lower == 0L) {
                 prop.value <- stats::rpois(n = 1L, lambda = lambda)
-                found <- (prop.value >= lower) && (prop.value <= upper)
+                found <- prop.value <= upper
             }
-        }
-        else {
-            while (!found && (n.attempt < maxAttempt)) {
-                n.attempt <- n.attempt + 1L
-                prop.value <- stats::rpois(n = 1L, lambda = lambda)
-                found <- prop.value >= lower
+            else {
+                ## modified from algorithm presented in Geyer (2006)
+                ## "The K-Truncated Poisson Distribution"
+                ## http://www.stat.umn.edu/geyer/aster/library/aster/doc/ktp.pdf
+                ## (downloaded 5 April 2019)
+                m <- max(ceiling(lower - lambda), 0L)
+                prop.value <- stats::rpois(n = 1L, lambda) + m
+                found <- ((prop.value >= lower)
+                    && (stats::runif(n = 1L) < (lower / prop.value)))
+                if (finite.upper)
+                    found <- found && (prop.value <= upper)
             }
         }
         if (found)
