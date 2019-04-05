@@ -103,6 +103,9 @@ updateProposalAccountMovePopn(SEXP combined_R)
         diffProp = valProp - valCurr;
         generatedNewProposal = (diffProp != 0);
     }
+    else
+      generatedNewProposal = 0;
+    
     } /* end isStrucZero */
     
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
@@ -246,6 +249,8 @@ updateProposalAccountMoveBirths(SEXP combined_R)
         diffProp = valProp - valCurr;
         generatedNewProposal = (diffProp != 0);
       }
+      else
+	generatedNewProposal = 0;
 
     } /* end generatedNewProposal */
     
@@ -413,6 +418,8 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
         diffProp = valProp - valCurr;
         generatedNewProposal = (diffProp != 0);
     }
+    else
+      generatedNewProposal = 0;
 
     } /* end isStrucZero */
     
@@ -585,6 +592,8 @@ updateProposalAccountMovePool(SEXP combined_R)
         diffProp = valPropOut - valCurrOut;
         generatedNewProposal = (diffProp != 0);
     }
+    else
+      generatedNewProposal = 0;
 
     } /* end isStrucZero */
     
@@ -741,6 +750,8 @@ updateProposalAccountMoveNet(SEXP combined_R)
         diffProp = valPropAdd - valCurrAdd;
         generatedNewProposal = (diffProp != 0);
     }
+    else
+      generatedNewProposal = 0;
     
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     
@@ -915,6 +926,8 @@ updateProposalAccountMoveComp(SEXP combined_R)
         diffProp = valProp - valCurr;
         generatedNewProposal = (diffProp != 0);
     }
+    else
+      generatedNewProposal = 0;
 
     } /* end isStrucZero */
     

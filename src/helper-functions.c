@@ -473,37 +473,52 @@ int
 rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
 {
     if (lower == NA_INTEGER)
-    lower = 0;
+      lower = 0;
 
     if (lower < 0)
-    lower = 0;
+      lower = 0;
     
     int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1);
-    
+
+    int found = 0;
     int retValue = NA_INTEGER;
     
     if ( finite_upper && (upper == lower) ) {
-        retValue = lower;
+      found = 1;
+      retValue = lower;
     }
-    else { /* non-finite upper or finite with lower < upper */
+
+    if ( (lower == 0) && !finite_upper ) {
+      found = 1;
+      retValue = rpois(lambda);
+    }
+
+    if (!found) {
     
-        int found = 0;
         int n_attempt = 0;
-    
         double prop_value = 0;
     
         while ( !found && (n_attempt < maxAttempt) ) {
-            n_attempt += 1;
-            prop_value = rpois(lambda);
-            if (finite_upper) {
-     
-                found = !( (prop_value < lower) || (prop_value > upper));
-            }
-            else { /* non finite upper */
-                
-              found = !(prop_value < lower);
-              
-            }
+
+	  n_attempt += 1;
+
+	  prop_value = rpois(lambda);
+	  
+	  if (lower == 0) { 	/* must have finite_upper is TRUE */
+	    found = !(prop_value > upper);
+	  }
+	  else {
+	    int m = ceil(lower - lambda);
+	    if (m < 0)
+	      m = 0;
+	    prop_value += m;
+	    found = ( !(prop_value < lower)
+		      && (runif(0, 1) < (lower / prop_value)) );
+	    if (finite_upper)
+	      found = found && !(prop_value > upper);
+	      
+	  }
+	  
         }
         if (found) {
             retValue = (int) prop_value;
@@ -513,6 +528,7 @@ rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
     
     return retValue;    
 }
+
 
 /* helper function to make two multinomial proposals, no exposure.
  * Results go into yProp, which must be at least 2 in length.
