@@ -113,8 +113,11 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                           "covariates", name, name))
     }
     dim <- dim(metadata.pred)
-    gradientBetas <- lapply(betas, function(x) rep(0, length(x)))
-    momentumBetas <- lapply(betas, function(x) rep(0, length(x)))
+    val.betas <- lapply(betas, function(x) rep(0, length(x)))
+    meansBetas <- val.betas
+    variancesBetas <- val.betas
+    gradientBetas <- val.betas
+    momentumBetas <- val.betas
     iterator.betas <- BetaIterator(dim = dim, margins = margins)
     offsets.betas <- makeOffsetsBetas(model, offsetModel = offsetModel)
     offsets.priors.betas <- makeOffsetsPriorsBetas(model, offsetModel = offsetModel)
@@ -126,6 +129,8 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
          metadataY = metadata.pred,
          cellInLik = cell.in.lik,
          betas = betas,
+         meansBetas = meansBetas,
+         variancesBetas = variancesBetas,
          gradientBetas = gradientBetas,
          momentumBetas = momentumBetas,
          strucZeroArray = struc.zero.array.pred,

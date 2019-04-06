@@ -118,6 +118,8 @@ setClass("Margins",
 ## HAS_TESTS
 setClass("Betas",
          slots = c(betas = "list",
+                   meansBetas = "list",
+                   variancesBetas = "list",
                    gradientBetas = "list",
                    momentumBetas = "list",
                    namesBetas = "character",
@@ -130,8 +132,6 @@ setClass("Betas",
          contains = c("VIRTUAL", "Margins"),
          validity = function(object) {
              betas <- object@betas
-             gradientBetas <- object@gradientBetas
-             momentumBetas <- object@momentumBetas
              names <- object@namesBetas
              margins <- object@margins
              priors <- object@priorsBetas
@@ -155,22 +155,18 @@ setClass("Betas",
              ## first element of 'betas' has length 1
              if (!identical(length(betas[[1L]]), 1L))
                  return(gettextf("first element of '%s' does not have length 1", "betas"))
-             ## all elements of 'gradientBetas' have type "double"
-             if (!all(sapply(gradientBetas, is.double)))
-                 return(gettextf("'%s' has elements not of type \"%s\"",
-                                 "gradientBetas", "double"))
-             ## 'gradientBetas' does not have names
-             if (!is.null(names(gradientBetas)))
-                 return(gettextf("'%s' has names",
-                                 "gradientBetas"))
-             ## all elements of 'momentumBetas' have type "double"
-             if (!all(sapply(momentumBetas, is.double)))
-                 return(gettextf("'%s' has elements not of type \"%s\"",
-                                 "momentumBetas", "double"))
-             ## 'momentumBetas' does not have names
-             if (!is.null(names(momentumBetas)))
-                 return(gettextf("'%s' has names",
-                                 "momentumBetas"))
+             ## gradientBetas, momentumBetas, meansBetas, variancesBetas:
+             for (name in c("gradientBetas", "momentumBetas", "meansBetas", "variancesBetas")) {
+                 value <- methods::slot(object, name)
+                 ## all elements have type "double"
+                 if (!all(sapply(value, is.double)))
+                     return(gettextf("'%s' has elements not of type \"%s\"",
+                                     name, "double"))
+                 ## does not have names
+                 if (!is.null(names(value)))
+                     return(gettextf("'%s' has names",
+                                     name))
+             }
              ## 'namesBetas' has no missing values
              if (any(is.na(names)))
                  return(gettextf("'%s' has missing values", "namesBetas"))
@@ -219,34 +215,24 @@ setClass("Betas",
              if (!is.double(mu))
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "mu", "double"))
-             ## 'betas' and 'gradientBetas' have same length
-             if (!identical(length(betas), length(gradientBetas)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "betas", "gradientBetas"))
-             ## corresponding elements of 'gradientBetas' and 'betas' have same length
-             for (i in seq_along(gradientBetas))
-                 if (!identical(length(gradientBetas[[i]]), length(betas[[i]])))
-                     return(gettextf("element %d of '%s' and element %d of '%s' have different lengths",
-                                     i, "gradientBetas", i, "betas"))
-             ## 'gradientBetas' has missing values iff beta has missing values
-             for (i in seq_along(gradientBetas))
-                 if (!identical(is.na(gradientBetas[[i]]), is.na(betas[[i]])))
-                     return(gettextf("element %d of '%s' and element %d of '%s' have different patterns of missingness",
-                                     i, "gradientBetas", i, "betas"))
-             ## 'betas' and 'momentumBetas' have same length
-             if (!identical(length(betas), length(momentumBetas)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "betas", "momentumBetas"))
-             ## corresponding elements of 'momentumBetas' and 'betas' have same length
-             for (i in seq_along(momentumBetas))
-                 if (!identical(length(momentumBetas[[i]]), length(betas[[i]])))
-                     return(gettextf("element %d of '%s' and element %d of '%s' have different lengths",
-                                     i, "momentumBetas", i, "betas"))
-             ## 'momentumBetas' has missing values iff beta has missing values
-             for (i in seq_along(momentumBetas))
-                 if (!identical(is.na(momentumBetas[[i]]), is.na(betas[[i]])))
-                     return(gettextf("element %d of '%s' and element %d of '%s' have different patterns of missingness",
-                                     i, "momentumBetas", i, "betas"))
+             ## gradientBetas, momentumBetas, meansBetas, variancesBetas:
+             for (name in c("gradientBetas", "momentumBetas", "meansBetas", "variancesBetas")) {
+                 value <- methods::slot(object, name)
+                 ## 'betas' and slot have same length
+                 if (!identical(length(betas), length(value)))
+                     return(gettextf("'%s' and '%s' have different lengths",
+                                     "betas", name))
+                 ## corresponding elements of slot and 'betas' have same length
+                 for (i in seq_along(value))
+                     if (!identical(length(value[[i]]), length(betas[[i]])))
+                         return(gettextf("element %d of '%s' and element %d of '%s' have different lengths",
+                                         i, name, i, "betas"))
+                 ## slot has missing values iff beta has missing values
+                 for (i in seq_along(value))
+                     if (!identical(is.na(value[[i]]), is.na(betas[[i]])))
+                         return(gettextf("element %d of '%s' and element %d of '%s' have different patterns of missingness",
+                                         i, name, i, "betas"))
+             }
              ## 'betas' and 'namesBetas' have same length
              if (!identical(length(betas), length(names)))
                  return(gettextf("'%s' and '%s' have different lengths",

@@ -34,28 +34,62 @@ updateGradientBetas <- function(object, useC = FALSE) {
     }
     else {
         gradient.betas <- object@gradientBetas
+        mean.betas <- object@meanBetas
+        variance.betas <- object@varianceBetas
+        sigma <- object@sigma
+        theta.transformed <- object@thetaTransformed
         mu <- object@mu
         iterator <- object@iteratorBetas
         iterator <- resestB(iterator)
-        n <- length(mu)
-        for (i.mu in seq_len(n)) {
-            include.cell <- cell.in.lik[i.mu]
+        sigma.sq <- sigma^2
+        n.theta <- length(theta.transformed)
+        n.beta <- length(betas)
+        n.i.beta <- sapply(betas, length)
+        ## reset gradient
+        for (i.beta in seq_len(n.beta)) {
+            for (j in seq_len(n.i.beta))
+                gradient.betas[[i.beta]][j] <- 0
+        }
+        for (i.theta in seq_len(n.theta)) {
+            include.cell <- cell.in.lik[i.theta]
             if (include.cell) {
                 indices <- iterator@indices
-                for (i.beta in seq_along(gradient.betas)) {
-                    gradient <- gradient.betas[[i.beta]]
-                    
-                    
-                    gradient.betas[[i.beta]][indices[i.beta]] <- (gradient.betas[[i.beta]][indices.i.beta]
-                        + mu[i] - transformed.theta[i]
-                    }
+                for (i.beta in seq_len(n.beta)) {
+                    j <- indices[i.beta]
+                    diff.theta <- theta.transformed[i.theta] - mu[i.theta]
+                    diff.beta <- betas[[i.beta]][j] - mean.betas[[i.beta]][j]
+                    var.beta <- variance.betas[[i.beta]][j] 
+                    gradient.betas[[i.beta]][j] <- (gradient.betas[[i.beta]][j]
+                        + diff.theta / sigma.sq
+                        + diff.beta / var.beta)
                 }
             }
         }
+        object@gradientBetas <- gradient.betas
     }
     object
 }
 
+updateLogPostBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateGradientBetas_R, object) 
+    }
+    else {
+        betas <- object@betas
+        mean.betas <- object@meanBetas
+        variance.betas <- object@varianceBetas
+        log.post <- 0
+        for (i in seq_along(betas))
+            log.post <- log.post + stats::dnorm(x = betas[[i]],
+                                                mean = mean.betas[[i]],
+                                                sd = sqrt(betas[[i]]),
+                                                log = TRUE)
+        object@logPostBetas@.Data <- log.post
+        object
+    }
+}
 
 updateBetas <- function(object) {
     betas.curr <- object@betas
@@ -88,13 +122,50 @@ updateBetas <- function(object) {
     object
 }
         
-initializeMomentum <- function(momentum, sdMomentum) {
-    for (i in seq_len(momentum)) {
-        n <- length(momentum[[i]])
-        momentum[[i]] <- rnorm(n = n, mean = 0, sd = sdMomentum)
+initializeMomentum <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(initializeMomentum_R, object)
     }
-    momentum
+    else {
+        momentum <- object@momentumBetas
+        for (i in seq_len(momentum)) {
+            n <- length(momentum[[i]])
+            momentum[[i]] <- rnorm(n = n,
+                                   mean = 0,
+                                   sd = 1)
+        }
+        object@momentum <- momentum
+        object
+    }
 }
+
+
+## updateMomentum <- function(object, firstLast, useC = FALSE) {
+##     ## object
+##     stopifnot(methods::is(object, "Varying"))
+##     stopifnot(methods::validObject(object))
+##     ## firstLast
+##     stopifnot(identical(length(firstLast), 1L))
+##     stopifnot(is.logical(firstLast))
+##     stopifnot(!is.na(firstLast))
+##     if (useC) {
+##         .Call(updateMomentum_R, object)
+##     }
+##     else {
+##         momentum <- object@momentumBetas
+##         for (i in seq_len(momentum)) {
+##             n <- length(momentum[[i]])
+##             momentum[[i]] <- rnorm(n = n,
+##                                    mean = 0,
+##                                    sd = 1)
+##         }
+##         object@momentum <- momentum
+##         object
+##     }
+## }
+
 
     
 

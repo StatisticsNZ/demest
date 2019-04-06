@@ -5241,6 +5241,8 @@ test_that("initialModelPredictHelper works", {
                                               covariates = NULL)
     set.seed(1)
     betas <- list(mod@betas[[1]], rep(0, 4), mod@betas[[3]])
+    meansBetas <- list(0, rep(0, 4), rep(0, 4))
+    variancesBetas <- list(0, rep(0, 4), rep(0, 4))
     gradientBetas <- list(0, rep(0, 4), rep(0, 4))
     momentumBetas <- list(0, rep(0, 4), rep(0, 4))
     iteratorBetas <- BetaIterator(dim = c(4L, 4L),
@@ -5257,6 +5259,8 @@ test_that("initialModelPredictHelper works", {
                                                           new("Categories", dimvalues = as.character(1:4)))),
                          cellInLik = rep(FALSE, 16),
                          betas = betas,
+                         meansBetas = meansBetas,
+                         variancesBetas = variancesBetas,
                          gradientBetas = gradientBetas,
                          momentumBetas = momentumBetas,
                          strucZeroArray = strucZeroArray,

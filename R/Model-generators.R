@@ -619,8 +619,7 @@ setMethod("initialModel",
               }
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
-              gradientBetas <- lapply(betas, function(x) rep(0, length(x)))
-              momentumBetas <- lapply(betas, function(x) rep(0, length(x)))
+              val.betas <- lapply(betas, function(x) rep(0, length(x)))
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -647,8 +646,10 @@ setMethod("initialModel",
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
                                     betas = betas,
-                                    gradientBetas = gradientBetas,
-                                    momentumBetas = momentumBetas,
+                                    meansBetas = val.betas,
+                                    variancesBetas = val.betas,
+                                    gradientBetas = val.betas,
+                                    momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
                                     namesBetas = names.betas,
                                     margins = margins,
@@ -797,8 +798,7 @@ setMethod("initialModel",
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas = betas,
                                    priorsBetas = priors.betas)
-              gradientBetas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
-              momentumBetas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
+              val.betas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -832,8 +832,10 @@ setMethod("initialModel",
                                     meanLogNuCMP = meanLogNuCMP,
                                     nuCMP = nuCMP,
                                     betas = betas,
-                                    gradientBetas = gradientBetas,
-                                    momentumBetas = momentumBetas,
+                                    meansBetas = val.betas,
+                                    variancesBetas = val.betas,
+                                    gradientBetas = val.betas,
+                                    momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
                                     namesBetas = names.betas,
                                     margins = margins,
@@ -941,8 +943,7 @@ setMethod("initialModel",
               }
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
-              momentumBetas <- lapply(betas, function(x) rep(0, length(x)))
-              gradientBetas <- lapply(betas, function(x) rep(0, length(x)))
+              val.betas <- lapply(betas, function(x) rep(0, length(x)))
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -971,8 +972,10 @@ setMethod("initialModel",
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
                                     betas = betas,
-                                    gradientBetas = gradientBetas,
-                                    momentumBetas = momentumBetas,
+                                    meansBetas = val.betas,
+                                    variancesBetas = val.betas,
+                                    gradientBetas = val.betas,
+                                    momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
                                     namesBetas = names.betas,
                                     margins = margins,
@@ -1075,8 +1078,7 @@ setMethod("initialModel",
               }
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
-              gradientBetas <- lapply(betas, function(x) rep(0, length(x)))
-              momentumBetas <- lapply(betas, function(x) rep(0, length(x)))
+              val.betas <- lapply(betas, function(x) rep(0, length(x)))
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -1107,8 +1109,10 @@ setMethod("initialModel",
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
                                     betas = betas,
-                                    gradientBetas = gradientBetas,
-                                    momentumBetas = momentumBetas,
+                                    meansBetas = val.betas,
+                                    variancesBetas = val.betas,
+                                    gradientBetas = val.betas,
+                                    momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
                                     namesBetas = names.betas,
                                     margins = margins,
@@ -1248,8 +1252,7 @@ setMethod("initialModel",
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas = betas,
                                    priorsBetas = priors.betas)
-              gradientBetas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
-              momentumBetas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
+              val.betas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -1279,8 +1282,10 @@ setMethod("initialModel",
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
                                     betas = betas,
-                                    gradientBetas = gradientBetas,
-                                    momentumBetas = momentumBetas,
+                                    meansBetas = val.betas,
+                                    variancesBetas = val.betas,
+                                    gradientBetas = val.betas,
+                                    momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
                                     namesBetas = names.betas,
                                     margins = margins,
@@ -1500,6 +1505,8 @@ setMethod("initialModelPredict",
                                   upper = upper,
                                   nFailedPropTheta = methods::new("Counter", 0L),
                                   betas = l$betas,
+                                  meansBetas = l$meansBetas,
+                                  variancesBetas = l$variancesBetas,
                                   gradientBetas = l$gradientBetas,
                                   momentumBetas = l$momentumBetas,
                                   priorsBetas = l$priorsBetas,
@@ -1566,6 +1573,8 @@ setMethod("initialModelPredict",
                                   upper = upper,
                                   nFailedPropTheta = methods::new("Counter", 0L),
                                   betas = l$betas,
+                                  meansBetas = l$meansBetas,
+                                  variancesBetas = l$variancesBetas,
                                   gradientBetas = l$gradientBetas,
                                   momentumBetas = l$momentumBetas,
                                   priorsBetas = l$priorsBetas,
@@ -1629,6 +1638,8 @@ setMethod("initialModelPredict",
                              upper = upper,
                              nFailedPropTheta = methods::new("Counter", 0L),
                              betas = l$betas,
+                             meansBetas = l$meansBetas,
+                             variancesBetas = l$variancesBetas,
                              gradientBetas = l$gradientBetas,
                              momentumBetas = l$momentumBetas,
                              priorsBetas = l$priorsBetas,
@@ -1653,6 +1664,8 @@ setMethod("initialModelPredict",
                              upper = upper,
                              nFailedPropTheta = methods::new("Counter", 0L),
                              betas = l$betas,
+                             meansBetas = l$meansBetas,
+                             variancesBetas = l$variancesBetas,
                              gradientBetas = l$gradientBetas,
                              momentumBetas = l$momentumBetas,
                              priorsBetas = l$priorsBetas,
@@ -1724,6 +1737,8 @@ setMethod("initialModelPredict",
                                   upper = upper,
                                   nFailedPropTheta = methods::new("Counter", 0L),
                                   betas = l$betas,
+                                  meansBetas = l$meansBetas,
+                                  variancesBetas = l$variancesBetas,
                                   gradientBetas = l$gradientBetas,
                                   momentumBetas = l$momentumBetas,
                                   priorsBetas = l$priorsBetas,
