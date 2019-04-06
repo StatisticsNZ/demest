@@ -2268,31 +2268,10 @@ joinFiles <- function(filenamesFirst, filenamesLast) {
     NULL
 }
 
-## ## NO_TESTS
-## estimateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
-##                              continuing, ...) {
-##     ## set seed if continuing
-##     if (!is.null(seed))
-##         assign(".Random.seed", seed, envir = .GlobalEnv)
-##     ## burnin
-##     combined <- updateCombined(combined, nUpdate = nBurnin, useC = TRUE)
-##     ## production
-##     con <- file(tempfile, open = "wb")
-##     n.prod <- nSim %/% nThin
-##     for (i in seq_len(n.prod)) {
-##         combined <- updateCombined(combined, nUpdate = nThin, useC = TRUE)
-##         values <- extractValues(combined)
-##         writeBin(values, con = con)
-##     }
-##     close(con)
-##     ## return final state
-##     combined
-## }
-
 ## We limit the number of updates in any one call to .Call, because R does
 ## not release memory until the end of the call.
 estimateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
-                             nUpdateMax, continuing, useC, ...) {
+                             nUpdateMax, useC, ...) {
     ## set seed if continuing
     if (!is.null(seed))
         assign(".Random.seed", seed, envir = .GlobalEnv)

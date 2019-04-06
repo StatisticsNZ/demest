@@ -176,8 +176,7 @@ estimateModel <- function(model, y, exposure = NULL, weights = NULL,
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
                   control.args,
-                  list(continuing = FALSE,
-                       useC = useC))
+                  list(useC = useC))
     if (parallel) {
         pseed <- sample.int(n = 100000, # so that RNG behaves the same whether or not
                             size = 1)   # seed has previously been set
@@ -385,77 +384,6 @@ predictModel <- function(filenameEst, filenamePred,
 }
 
 
-#' Draw parameters and data from a statistical model
-#'
-#' WARNING - THIS FUNCTION IS STILL UNDER DEVELOPMENT
-#' 
-#' @inheritParams estimateModel
-#' @param nDraw The number of random draws to make from the model.
-#' @export
-simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
-                          filename = NULL, nDraw = 10, 
-                          verbose = TRUE, useC = TRUE) {
-    call <- match.call()
-    methods::validObject(model)
-    model.uses.aggregate <- !methods::is(model@aggregate, "SpecAgPlaceholder")
-    if (model.uses.aggregate) {
-        stop(gettextf("function '%s' cannot be used if model includes aggregate values : consider using function '%s' instead",
-                      "simulateModel", "simulateModelAg"))
-    }
-    checkPositiveInteger(x = nDraw,
-                         name = "nDraw")
-    nDraw <- as.integer(nDraw)
-    if (is.null(filename))
-        filename <- tempfile()
-    else
-        checkFilename(filename)
-    tempfile <- paste(filename, "sim", sep = "_")
-    l <- checkAndTidySimulatedYExposureWeights(model = model,
-                                               y = y,
-                                               exposure = exposure,
-                                               weights = weights)
-    y <- l$y
-    exposure <- l$exposure
-    y <- castY(y = y,
-               spec = model)
-    checkForSubtotals(object = y,
-                      model = model,
-                      name = "y")
-    exposure <- castExposure(exposure = exposure,
-                             model = model)
-    weights <- checkAndTidyWeights(weights = weights,
-                                   y = y)
-    checkAllDimensionsHavePriors(model = model,
-                                 y = y)
-    checkPriorsAreInformative(model)
-    checkPriorSDInformative(model)
-    combined <- initialCombinedModelSimulate(model,
-                                             y = y,
-                                             exposure = exposure,
-                                             weights = weights)
-    combined <- simulateDirect(combined = combined,
-                               tempfile = tempfile,
-                               nDraw = nDraw,
-                               useC = useC)
-    seed <- list(.Random.seed)
-    control.args <- list(call = call,
-                         parallel = FALSE,
-                         lengthIter = length(extractValues(combined)),
-                         nUpdateMax = 1L)
-    results <- makeResultsModelSimDirect(combined = combined,
-                                         nDraw = nDraw,
-                                         controlArgs = control.args,
-                                         seed = seed)
-    makeResultsFile(filename = filename,
-                    results = results,
-                    tempfiles = tempfile)
-    rescaleInFile(filename)
-    finalMessage(filename = filename,
-                 verbose = verbose)
-}
-
-
-
 #' Estimate counts and model from one or more noisy datasets.
 #'
 #' Infer the contents of a demographic array, and fit a model describing
@@ -579,8 +507,7 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
                   control.args,
-                  list(continuing = FALSE,
-                       useC = useC))
+                  list(useC = useC))
     ## estimation
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
@@ -849,8 +776,7 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     MoreArgs <- c(list(seed = NULL),
                   mcmc.args,
                   control.args,
-                  list(continuing = FALSE,
-                       useC = useC))
+                  list(useC = useC))
     ## estimation
     if (parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
@@ -906,149 +832,6 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
                            upper = NULL, nBurnin = 0L,  parallel = TRUE, outfile = NULL,
                            verbose = FALSE, useC = TRUE) {
     stop("not written yet")
-}
-
-
-#' Create a synthetic demographic account
-#'
-#' WARNING - THIS FUNCTION IS STILL UNDER DEVELOPMENT
-#' 
-#' @inheritParams estimateAccount
-#' @export
-simulateAccount <- function(account, systemModels,
-                            datasets = list(), dataModels = list(), 
-                            concordances = list(), weights = list(),
-                            dominant = c("Female", "Male"),
-                            filename = NULL, nBurnin = 1000, nSim = 1000,
-                            nChain = 4, nThin = 1,
-                            parallel = TRUE, nCore = NULL,
-                            outfile = NULL, nUpdateMax = 50,
-                            verbose = TRUE, useC = TRUE) {
-    call <- match.call()
-    methods::validObject(account)
-    dominant <- match.arg(dominant)
-    ## make account consistent, if necessary
-    if (!all(dembase::isConsistent(account)))
-        account <- dembase::makeConsistent(account)
-    ## align system models to account
-    checkSystemModels(systemModels)
-    systemModels <- alignSystemModelsToAccount(systemModels = systemModels,
-                                               account = account)
-    ## align weights to system models
-    systemWeights <- checkAndTidySystemWeights(weights,
-                                               systemModels = systemModels)
-    ## check models are suitable for simulation
-    checkSystemModelsSuitableForSimulation(systemModels = systemModels,
-                                           account = account)
-    ## see if there are any data models, and process accordingly
-    has.data.models <- length(dataModels) > 0L
-    if (has.data.models) {
-        ## align to datasets
-        checkDataModels(dataModels = dataModels,
-                        needsNonDefaultSeriesArg = TRUE)
-        datasets <- checkAndTidyDatasets(datasets)
-        namesDatasets <- names(datasets)
-        names(datasets) <- NULL
-        dataModels <- alignDataModelsToDatasets(dataModels = dataModels,
-                                                datasets = datasets,
-                                                namesDatasets = namesDatasets)
-        ## check priors
-        checkDataModelsSuitableForSimulation(dataModels = dataModels,
-                                             datasets = datasets,
-                                             namesDatasets = namesDatasets)
-        ## make 'seriesIndices', mapping data models to account
-        seriesIndices <- makeSeriesIndices(dataModels = dataModels,
-                                           account = account)
-        ## make transforms from account to datasets
-        checkConcordancesDatasets(concordances = concordances,
-                                  datasets = datasets,
-                                  namesDatasets = namesDatasets)
-        transforms <- makeTransformsAccountToDatasets(account = account,
-                                                      datasets = datasets,
-                                                      concordances = concordances,
-                                                      namesDatasets = namesDatasets,
-                                                      seriesIndices = seriesIndices)
-    }
-    else {
-        if (length(datasets) > 0L)
-            stop(gettext("there are datasets, but no data models"))
-        seriesIndices <- integer()
-        namesDatasets <- character()
-        transforms <- list()
-    }
-    ## mcmc and control arguments
-    mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
-                              nSim = nSim,
-                              nChain = nChain,
-                              nThin = nThin,
-                              nCore = nCore)
-    if (is.null(filename))
-        filename <- tempfile()
-    else
-        checkFilename(filename)
-    control.args <- makeControlArgs(call = call,
-                                    parallel = parallel,
-                                    nUpdateMax = nUpdateMax)
-    ## initial values - unlike with estimateAccount,
-    ## all chains start from same initial values
-    combined <- initialCombinedAccountSimulate(account = account,
-                                               systemModels = systemModels,
-                                               systemWeights = systemWeights,
-                                               dataModels = dataModels,
-                                               seriesIndices = seriesIndices,
-                                               datasets = datasets,
-                                               namesDatasets = namesDatasets,
-                                               transforms = transforms,
-                                               dominant = dominant)
-    combineds <- rep(list(combined),
-                     times = mcmc.args$nChain)
-    parallel <- control.args$parallel
-    tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
-    MoreArgs <- c(list(seed = NULL),
-                  mcmc.args,
-                  control.args,
-                  list(continuing = FALSE,
-                       useC = useC))
-    ## estimation
-    if (parallel) {
-        if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
-            cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nCore))
-        else
-            cl <- parallel::makeCluster(getOption("cl.cores",
-                                                  default = mcmc.args$nCore),
-                                        outfile = outfile)
-        parallel::clusterSetRNGStream(cl)
-        final.combineds <- parallel::clusterMap(cl = cl,
-                                                fun = simulateOneChain,
-                                                tempfile = tempfiles,
-                                                combined = combineds,
-                                                MoreArgs = MoreArgs,
-                                                SIMPLIFY = FALSE,
-                                                USE.NAMES = FALSE)
-        seed <- parallel::clusterCall(cl, function() .Random.seed)
-        parallel::stopCluster(cl)
-    }
-    else {
-        final.combineds <- mapply(simulateOneChain,
-                                  tempfile = tempfiles,
-                                  combined = combineds,
-                                  MoreArgs = MoreArgs,
-                                  SIMPLIFY = FALSE,
-                                  USE.NAMES = FALSE)
-        seed <- list(.Random.seed)
-    }
-    ## results object
-    control.args$lengthIter <- length(extractValues(final.combineds[[1L]]))
-    results <- makeResultsAccount(finalCombineds = final.combineds,
-                                  mcmcArgs = mcmc.args,
-                                  controlArgs = control.args,
-                                  seed = seed)
-    makeResultsFile(filename = filename,
-                    results = results,
-                    tempfiles = tempfiles)
-    rescaleInFile(filename)
-    finalMessage(filename = filename, verbose = verbose)
 }
 
 
@@ -1223,7 +1006,7 @@ continueEstimation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NU
     }
     combineds <- object@final
     tempfiles.new <- paste(filename, "cont", seq_len(mcmc.args.new$nChain), sep = "_")
-    MoreArgs <- c(mcmc.args.new, control.args, list(continuing = TRUE, useC = useC))
+    MoreArgs <- c(mcmc.args.new, control.args, list(useC = useC))
     if (control.args$parallel) {
         if (is.null(outfile)) ## passing 'outfile' as an argument always causes redirection
             cl <- parallel::makeCluster(getOption("cl.cores",
