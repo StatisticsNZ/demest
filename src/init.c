@@ -1254,6 +1254,12 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateAlphaDLMNoTrend);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateAlphaDeltaDLMWithTrend);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 
+/* updateMeansBetas */
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateMeansBetas);
+
+/* updateVariancesBetas */
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateVariancesBetas);
+
 /* updateMu */
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateMu);
 
@@ -2280,6 +2286,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2), 
   CALLDEF(updateSeason_R, 2),
   
+  CALLDEF(updateMeansBetas_R, 1),
+  CALLDEF(updateVariancesBetas_R, 1),
   CALLDEF(updateMu_R, 1),
 
   CALLDEF(updateSigma_Varying_R, 1),
@@ -2641,10 +2649,13 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iteratorBetas);
   ADD_SYM(dims);
   ADD_SYM(prob);
-  
+  ADD_SYM(meansBetas);
+  ADD_SYM(variancesBetas);
+  ADD_SYM(gradientBetas);
+  ADD_SYM(momentumBetas);
+  ADD_SYM(betaEqualsMean);  
   ADD_SYM(tolerance);
   ADD_SYM(betaIsPredicted);
-  
   ADD_SYM(mean);
   ADD_SYM(sd);
   

@@ -2660,6 +2660,24 @@ get_log_gamma_dens(int n, double theta[],
     return result;
 }
 
+
+void
+updateMeansBetas(SEXP object_R)
+{
+    SEXP means_R = GET_SLOT(object_R, meansBetas_sym);
+    SEXP priors_R = GET_SLOT(object_R, priorsBetas_sym);
+    int n_beta =  LENGTH(means_R);
+
+    for (int i = 0; i < n_beta; ++i) {
+      SEXP mean_R = VECTOR_ELT(means_R, i);
+      double *mean = REAL(mean_R);
+      int J = LENGTH(mean_R);
+      SEXP prior_R = VECTOR_ELT(priors_R, i);
+      betaHat(mean, prior_R, J);
+    }
+}
+
+
 void
 updateMu(SEXP object_R)
 {
@@ -6744,6 +6762,22 @@ updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
     UNPROTECT(2); /* exposureMx_R and tmp of same */
 }
 
+
+void
+updateVariancesBetas(SEXP object_R)
+{
+    SEXP variances_R = GET_SLOT(object_R, variancesBetas_sym);
+    SEXP priors_R = GET_SLOT(object_R, priorsBetas_sym);
+    int n_beta =  LENGTH(variances_R);
+
+    for (int i = 0; i < n_beta; ++i) {
+      SEXP variance_R = VECTOR_ELT(variances_R, i);
+      double *variance = REAL(variance_R);
+      int J = LENGTH(variance_R);
+      SEXP prior_R = VECTOR_ELT(priors_R, i);
+      getV_Internal(variance, prior_R, J);
+    }
+}
 
 
 /* y_R is a demographic array, g'teed to be doubles */

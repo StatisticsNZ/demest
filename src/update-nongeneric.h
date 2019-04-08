@@ -11,6 +11,10 @@
 
     void updateMu(SEXP object_R);
 
+    void updateMeansBetas(SEXP object_R);
+
+    void updateVariancesBetas(SEXP object_R);
+
     void updateSigma_Varying(SEXP object);
     
     void updateBetasAndPriorsBetas(SEXP object_R);

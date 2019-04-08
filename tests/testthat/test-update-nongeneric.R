@@ -4611,6 +4611,44 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
+
+
+test_that("R version of updateMeansBetas works", {
+    updateMeansBetas <- demest:::updateMeansBetas
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    betaHat <- demest:::betaHat
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ DLM(trend = NULL, damp = NULL))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    ans.obtained <- updateMeansBetas(x)
+    ans.expected <- x
+    for (i in 1:3)
+        ans.expected@meansBetas[[i]] <- betaHat(x@priorsBetas[[i]])
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of updateMeansBetas give same answer", {
+    updateMeansBetas <- demest:::updateMeansBetas
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ DLM(trend = NULL, damp = NULL))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    ans.R <- updateMeansBetas(x, useC = FALSE)
+    ans.C <- updateMeansBetas(x, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
+
+
 test_that("R version of updateMu works", {
     updateMu <- demest:::updateMu
     initialModel <- demest:::initialModel
@@ -9716,7 +9754,42 @@ test_that("R and C versions of updateThetaAndValueAgFun_PoissonUseExp same answe
 })
 
 
+## updateVariancesBetas
 
+test_that("R version of updateVariancesBetas works", {
+    updateVariancesBetas <- demest:::updateVariancesBetas
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    getV <- demest:::getV
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch(error = Error(robust = TRUE)))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    ans.obtained <- updateVariancesBetas(x)
+    ans.expected <- x
+    for (i in 1:3)
+        ans.expected@variancesBetas[[i]] <- getV(x@priorsBetas[[i]])
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of updateVariancesBetas give same answer", {
+    updateVariancesBetas <- demest:::updateVariancesBetas
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch(error = Error(robust = TRUE)))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    ans.R <- updateVariancesBetas(x, useC = FALSE)
+    ans.C <- updateVariancesBetas(x, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
 
 ## updateVarsigma
 

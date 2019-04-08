@@ -61,7 +61,12 @@ SEXP
   dimAfter_sym,
   posDim_sym,
   lengthDim_sym,
-  iMethodModel_sym, 
+  iMethodModel_sym,
+  meansBetas_sym,
+  variancesBetas_sym,
+  gradientBetas_sym,
+  momentumBetas_sym,
+  betaEqualsMean_sym,  
   priorsBetas_sym, 
   theta_sym,
   thetaTransformed_sym,
@@ -701,6 +706,8 @@ void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
                     double *values, int nValues);
                     
 /* update-nongeneric */
+void updateMeansBetas(SEXP object);
+void updateVariancesBetas(SEXP object);
 void updateMu(SEXP object);
 
 double updateSDNorm(double sigma, double A, double nu, double V, int n, double max);

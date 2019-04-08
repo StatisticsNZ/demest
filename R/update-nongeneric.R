@@ -1915,6 +1915,27 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 ## UPDATING MODELS ##################################################################
 
+
+## TRANSLATED
+## HAS_TESTS
+updateMeansBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateMeansBetas_R, object)
+    }
+    else {
+        means <- object@meansBetas
+        priors <- object@priorsBetas
+        for (i in seq_along(means))
+            means[[i]] <- betaHat(priors[[i]])
+        object@meansBetas <- means
+        object
+    }
+}
+
+
+
 ## TRANSLATED
 ## HAS_TESTS
 updateMu <- function(object, useC = FALSE) {
@@ -4721,6 +4742,24 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
         object
     }
 }
+
+
+updateVariancesBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateVariancesBetas_R, object)
+    }
+    else {
+        variances <- object@variancesBetas
+        priors <- object@priorsBetas
+        for (i in seq_along(variances))
+            variances[[i]] <- getV(priors[[i]])
+        object@variancesBetas <- variances
+        object
+    }
+}
+
 
 
 ## TRANSLATED

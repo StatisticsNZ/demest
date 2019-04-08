@@ -37,32 +37,32 @@ updateGradientBetas <- function(object, useC = FALSE) {
         gradient.betas <- object@gradientBetas
         mean.betas <- object@meanBetas
         variance.betas <- object@varianceBetas
+        beta.equals.mean <- object@betaEqualsMean
         sigma <- object@sigma
         theta.transformed <- object@thetaTransformed
         mu <- object@mu
         iterator <- object@iteratorBetas
         iterator <- resestB(iterator)
-        sigma.sq <- sigma^2
+        var.theta <- sigma^2
         n.theta <- length(theta.transformed)
         n.beta <- length(betas)
-        n.i.beta <- sapply(betas, length)
         ## reset gradient
-        for (i.beta in seq_len(n.beta)) {
-            for (j in seq_len(n.i.beta))
-                gradient.betas[[i.beta]][j] <- 0
-        }
+        for (i.beta in seq_len(n.beta))
+            gradient.betas[[i.beta]] <- 0
         for (i.theta in seq_len(n.theta)) {
             include.cell <- cell.in.lik[i.theta]
             if (include.cell) {
                 indices <- iterator@indices
                 for (i.beta in seq_len(n.beta)) {
-                    j <- indices[i.beta]
-                    diff.theta <- theta.transformed[i.theta] - mu[i.theta]
-                    diff.beta <- betas[[i.beta]][j] - mean.betas[[i.beta]][j]
-                    var.beta <- variance.betas[[i.beta]][j] 
-                    gradient.betas[[i.beta]][j] <- (gradient.betas[[i.beta]][j]
-                        + diff.theta / sigma.sq
-                        + diff.beta / var.beta)
+                    if (!beta.equals.mean[i]) {
+                        j <- indices[i.beta]
+                        diff.theta <- theta.transformed[i.theta] - mu[i.theta]
+                        diff.beta <- betas[[i.beta]][j] - mean.betas[[i.beta]][j]
+                        var.beta <- variance.betas[[i.beta]][j] 
+                        gradient.betas[[i.beta]][j] <- (gradient.betas[[i.beta]][j]
+                            + diff.theta / var.theta
+                            - diff.beta / var.beta)
+                    }
                 }
             }
         }
@@ -252,36 +252,4 @@ updateMomentum <- function(object, stepSize, firstLast, useC = FALSE) {
 }
     
 
-updateMeansBetas <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateMeansBetas_R, object)
-    }
-    else {
-        means <- object@meansBetas
-        priors <- object@priorsBetas
-        for (i in seq_along(means))
-            means[[i]] <- betaHat(priors[[i]])
-        object@meansBetas <- means
-        object
-    }
-}
-
-
-updateVariancesBetas <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateVariancesBetas_R, object)
-    }
-    else {
-        variances <- object@variancesBetas
-        priors <- object@priorsBetas
-        for (i in seq_along(variances))
-            variances[[i]] <- getV(priors[[i]])
-        object@variancesBetas <- variances
-        object
-    }
-}
 
