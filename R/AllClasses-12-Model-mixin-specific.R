@@ -124,10 +124,11 @@ setClass("Betas",
                    momentumBetas = "list",
                    namesBetas = "character",
                    priorsBetas = "list",
+                   betaEqualsMean = "logical",
                    iteratorBetas = "BetaIterator",
                    dims = "list",
-                   logLikBetas = "Parameter",
-                   logLikPriorsBetas = "Parameter",
+                   logPostBetas = "Parameter",
+                   logPostPriorsBetas = "Parameter",
                    mu = "numeric"),
          contains = c("VIRTUAL", "Margins"),
          validity = function(object) {
@@ -135,6 +136,7 @@ setClass("Betas",
              names <- object@namesBetas
              margins <- object@margins
              priors <- object@priorsBetas
+             betaEqualsMean <- object@betaEqualsMean
              iteratorBetas <- object@iteratorBetas
              dims <- object@dims
              mu <- object@mu
@@ -191,6 +193,10 @@ setClass("Betas",
              if (!(methods::is(priors[[1L]], "ExchFixed") || methods::is(priors[[1L]], "TimeInvariant")))
                  return(gettextf("first element of '%s' has class \"%s\"",
                                  "priorsBetas", class(priors[[1L]])))
+             ## 'betaEqualsMean' has no missing values
+             if (any(is.na(betaEqualsMean)))
+                 return(gettextf("'%s' has missing values",
+                                 "betaEqualsMean"))
              ## all elements of 'dims' are integer
              if (!all(sapply(dims, is.integer)))
                  return(gettextf("'%s' has elements not of type \"%s\"",
@@ -233,6 +239,10 @@ setClass("Betas",
                          return(gettextf("element %d of '%s' and element %d of '%s' have different patterns of missingness",
                                          i, name, i, "betas"))
              }
+             ## 'betas' and 'betaEqualsMean' have same length
+             if (!identical(length(betas), length(betaEqualsMean)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "betas", "betaEqualsMean"))
              ## 'betas' and 'namesBetas' have same length
              if (!identical(length(betas), length(names)))
                  return(gettextf("'%s' and '%s' have different lengths",
@@ -677,7 +687,7 @@ setClass("SigmaMaxMixin",
 ## NO_TESTS
 setClass("SigmaMixin",
          slots = c(sigma = "Scale",
-                   logLikSigma = "Parameter"),
+                   logPostSigma = "Parameter"),
          contains = "VIRTUAL")
 
 ## HAS_TESTS
@@ -824,12 +834,12 @@ setClass("StrucZeroArrayMixin",
 setClass("Theta",
          slots = c(theta = "numeric",
                    thetaTransformed = "numeric",
-                   logLikTheta = "Parameter"),
+                   logPostTheta = "Parameter"),
          contains = "VIRTUAL",
          validity = function(object) {
              theta <- object@theta
              thetaTransformed <- object@thetaTransformed
-             logLikTheta <- object@logLikTheta
+             logPostTheta <- object@logPostTheta
              metadataY <- object@metadataY
              ## 'theta' is double
              if (!is.double(theta))
@@ -857,7 +867,7 @@ setClass("UseExposeMixin",
 ## NO_TESTS
 setClass("VarsigmaMixin",
          slots = c(varsigma = "Scale",
-                   logLikVarsigma = "Parameter"),
+                   logPostVarsigma = "Parameter"),
          contains = "VIRTUAL")
 
 ## NO_TESTS

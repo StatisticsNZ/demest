@@ -119,10 +119,10 @@ setClass("BinomialVarying",
                                                   "priorsBetas"),
                                iMethodModel = 9L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)),
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)),
          validity = function(object) {
              theta <- object@theta
              lower <- object@lower
@@ -159,10 +159,10 @@ setClass("NormalVaryingVarsigmaKnown",
                                                   "priorsBetas"),
                                iMethodModel = 4L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)),
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)),
          validity = function(object) {
              varsigmaSetToZero <- object@varsigmaSetToZero@.Data
              if (varsigmaSetToZero) {
@@ -191,11 +191,11 @@ setClass("NormalVaryingVarsigmaUnknown",
                                                   "priorsBetas"),
                                iMethodModel = 5L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikVarsigma = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostVarsigma = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 setClass("PoissonVarying",
@@ -270,10 +270,10 @@ setClass("PoissonVaryingNotUseExp",
                                                   "priorsBetas"),
                                iMethodModel = 6L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)),
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)),
          contains = c("PoissonVarying",
                       "NotUseExposure"))
 
@@ -285,10 +285,10 @@ setClass("PoissonVaryingUseExp",
                                                   "betas", "sigma", "priorsBetas"),
                                iMethodModel = 10L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)),
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)),
          contains = c("PoissonVarying",
                       "UseExposure"))
 
@@ -327,10 +327,10 @@ setClass("CMPVaryingNotUseExp",
                                                   "priorsBetas"),
                                iMethodModel = 32L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)),
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)),
          contains = c("CMPVarying",
                       "NotUseExposure"))
 
@@ -346,10 +346,10 @@ setClass("CMPVaryingUseExp",
                                                   "priorsBetas"),
                                iMethodModel = 33L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)),
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)),
          contains = c("CMPVarying",
                       "UseExposure"))
 
@@ -392,10 +392,10 @@ setClass("NormalVaryingVarsigmaKnownAgCertain",
                                                   "betas", "sigma", "priorsBetas"),
                                iMethodModel = 12L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -408,11 +408,11 @@ setClass("NormalVaryingVarsigmaUnknownAgCertain",
                                                   "priorsBetas"),
                                iMethodModel = 13L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikVarsigma = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostVarsigma = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -426,10 +426,10 @@ setClass("NormalVaryingVarsigmaKnownAgNormal",
                                                   "valueAg", "nFailedPropValueAg", "nAcceptAg"),
                                iMethodModel = 14L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -442,11 +442,11 @@ setClass("NormalVaryingVarsigmaUnknownAgNormal",
                                                   "valueAg", "nFailedPropValueAg", "nAcceptAg"),
                                iMethodModel = 15L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikVarsigma = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostVarsigma = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -458,10 +458,10 @@ setClass("PoissonVaryingNotUseExpAgCertain",
                                                   "betas", "sigma", "priorsBetas"),
                                iMethodModel = 16L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -474,10 +474,10 @@ setClass("PoissonVaryingNotUseExpAgNormal",
                                                   "valueAg", "nFailedPropValueAg", "nAcceptAg"),
                                iMethodModel = 17L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -489,10 +489,10 @@ setClass("BinomialVaryingAgCertain",
                                                   "betas", "sigma", "priorsBetas"),
                                iMethodModel = 18L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -505,10 +505,10 @@ setClass("BinomialVaryingAgNormal",
                                                   "valueAg", "nFailedPropValueAg", "nAcceptAg"),
                                iMethodModel = 19L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -520,10 +520,10 @@ setClass("PoissonVaryingUseExpAgCertain",
                                                   "betas", "sigma", "priorsBetas"),
                                iMethodModel = 20L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -536,10 +536,10 @@ setClass("PoissonVaryingUseExpAgNormal",
                                                   "valueAg", "nFailedPropValueAg", "nAcceptAg"),
                                iMethodModel = 21L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -552,10 +552,10 @@ setClass("PoissonVaryingNotUseExpAgPoisson",
                                                   "valueAg", "nFailedPropValueAg", "nAcceptAg"),
                                iMethodModel = 22L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -568,10 +568,10 @@ setClass("PoissonVaryingUseExpAgPoisson",
                                                   "valueAg", "nFailedPropValueAg", "nAcceptAg"),
                                iMethodModel = 23L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -585,10 +585,10 @@ setClass("NormalVaryingVarsigmaKnownAgFun",
                                                   "valueAg"),
                                iMethodModel = 24L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 ## HAS_UPDATE
@@ -601,10 +601,10 @@ setClass("NormalVaryingVarsigmaUnknownAgFun",
                                                   "priorsBetas", "valueAg"),
                                iMethodModel = 25L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 setClass("PoissonVaryingNotUseExpAgFun",
@@ -616,10 +616,10 @@ setClass("PoissonVaryingNotUseExpAgFun",
                                                   "valueAg"),
                                iMethodModel = 26L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 setClass("BinomialVaryingAgFun",
@@ -631,10 +631,10 @@ setClass("BinomialVaryingAgFun",
                                                   "valueAg"),
                                iMethodModel = 27L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## HAS_TESTS
 setClass("PoissonVaryingUseExpAgFun",
@@ -646,10 +646,10 @@ setClass("PoissonVaryingUseExpAgFun",
                                                   "valueAg"),
                                iMethodModel = 28L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 ## NO_TESTS
 setClass("PoissonVaryingUseExpAgLife",
@@ -661,10 +661,10 @@ setClass("PoissonVaryingUseExpAgLife",
                                                   "valueAg", "mxAg"),
                                iMethodModel = 29L,
                                nuSigma = methods::new("DegreesFreedom", 7),
-                               logLikTheta = methods::new("Parameter", 0),
-                               logLikSigma = methods::new("Parameter", 0),
-                               logLikBetas = methods::new("Parameter", 0),
-                               logLikPriorsBetas = methods::new("Parameter", 0)))
+                               logPostTheta = methods::new("Parameter", 0),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostBetas = methods::new("Parameter", 0),
+                               logPostPriorsBetas = methods::new("Parameter", 0)))
 
 
 

@@ -25,7 +25,8 @@ updatePriorsBetas <- function(object, useC = FALSE) {
     }
 }
 
-
+## easiest to update gradients even in cases
+## where beta equals mean
 updateGradientBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -74,52 +75,130 @@ updateLogPostBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
     if (useC) {
-        .Call(updateGradientBetas_R, object) 
+        .Call(updateLogPostBetas_R, object) 
     }
     else {
+        theta.transformed <- object@thetaTransformed
+        mu <- object@mu
+        sigma <- object@sigma
         betas <- object@betas
         mean.betas <- object@meanBetas
         variance.betas <- object@varianceBetas
-        log.post <- 0
-        for (i in seq_along(betas))
-            log.post <- log.post + stats::dnorm(x = betas[[i]],
-                                                mean = mean.betas[[i]],
-                                                sd = sqrt(betas[[i]]),
-                                                log = TRUE)
-        object@logPostBetas@.Data <- log.post
+        beta.equals.mean <- object@betaEqualsMean
+        log.likelihood <- sum(stats::dnorm(x = theta.transformed,
+                                           mean = mu,
+                                           sd = sigma,
+                                           log = TRUE))
+        log.prior <- 0
+        for (i.beta in seq_along(betas)) {
+            if (!beta.equals.mean[i.beta]) {
+                x <- betas[[i.beta]]
+                mean <- mean.betas[[i.beta]]
+                sd <- sqrt(variance.betas[[i.beta]])
+                log.post <- log.post + stats::dnorm(x = x,
+                                                    mean = mean,
+                                                    sd = sd,
+                                                    log = TRUE)
+            }
+        }
+        object@logPostBetas <- log.likelihood + log.prior
         object
     }
 }
 
-updateBetas <- function(object) {
-    betas.curr <- object@betas
-    n.step.beta.hmc <- object@nStepBetaHMC
-    object <- initializeMomentum(object)
-    log.post.betas.curr <- logPostBetas(object)
-    log.post.momentum.curr <- logPostMomentum(object)
-    object <- updateMomentumOneStep(object,
-                                    mult = 0.5)
-    for (i in seq_len(n.update.beta.hmc)) {
-        mult <- if (i < n.update.beta.hmc) 1 else 0.5
-        object <- updateBetasOneStep(object)
-        object <- updateMu(object)
-        object <- updateGradientBetas(object)
-        object <- updateMomentumOneStep(object,
-                                        mult = mult)
-    }
-    log.post.betas.prop <- logPostBetas(object)
-    log.post.momentum.prop <- logPostMomentum(object)
-    log.diff <- (log.post.betas.prop + log.post.momentum.prop
-        - log.post.betas.curr - log.post.momentum.curr)
-    accept <- (log.diff >= 0) || (stats::runif(n = 1L) > exp(log.diff))
-    if (accept) {
-        object@nAcceptBeta@.Data <- object@nAcceptBeta@.Data + 1L
+
+updateLogPostMomentum <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateLogPostMomentum_R, object) 
     }
     else {
-        object@betas <- betas.curr
-        object <- updateMu(object)
+        momentum <- object@momentumMetas
+        ans <- 0
+        for (i.beta in seq_along(momentum)) {
+            if (!beta.equals.mean[i.beta]) {
+                ans <- ans + sum(dnorm(momentum[[i.beta]],
+                                       mean = 0,
+                                       sd = 1,
+                                       log = TRUE))
+            }
+        }
+        object@logPostMomentum <- ans
+        object
     }
-    object
+}
+
+
+updateBetas <- function(object) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateBetas_R, object) 
+    }
+    else {
+        betas.curr <- object@betas
+        mean.step.size <- object@meanStepSize@.Data
+        object <- initializeMomentum(object)
+        log.post.betas.curr <- object@logPostBetas
+        log.post.momentum.curr <- object@logPostMomentum # must call 'initializeMomentum' first
+        step.size <- stats::runif(n = 1L,
+                                  min = 0,
+                                  max = 2 * mean.step.size)
+        n.step <- stats::runif(n = 1L,
+                               min = 0,
+                               max = 2 / step.size)
+        n.step <- as.integer(n.step) + 1L
+        object <- updateBetasWhereBetaEqualsMean(object)
+        object <- updateMomentum(object,
+                                 stepSize = step.size,
+                                 isFirstLast = TRUE)
+        for (i in seq_len(n.step)) {
+            is.first.last <- i == n.step
+            object <- updateBetasOneStep(object = object,
+                                         stepSize = step.size)
+            object <- updateMu(object)
+            object <- updateGradientBetas(object)
+            object <- updateMomentum(object = object,
+                                     stepSize = step.size,
+                                     isFirstLast = is.first.last)
+        }
+        object <- updateLogPostBetas(object)
+        object <- updateLogPostMomentum(object)
+        log.post.betas.prop <- object@logPostBetas
+        log.post.momentum.prop <- object@logPostMomentum
+        log.diff <- (log.post.betas.prop + log.post.momentum.prop
+            - log.post.betas.curr - log.post.momentum.curr)
+        accept <- (log.diff >= 0) || (stats::runif(n = 1L) > exp(log.diff))
+        if (accept) {
+            object@nAcceptBeta@.Data <- object@nAcceptBeta@.Data + 1L
+        }
+        else {
+            object@betas <- betas.curr
+            object <- updateMu(object)
+            object@logPostBetas <- log.post.betas.curr
+        }
+        object
+    }
+}
+
+updateBetasWhereBetaEqualsMean <- function(object) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateBetasWhereBetaEqualsMean_R, object)
+    }
+    else {
+        betas <- object@betas
+        means <- object@meansBetas
+        beta.equals.mean <- object@betaEqualsMean
+        for (i in seq_along(betas)) {
+            if (beta.equals.mean[i])
+                betas[[i]] <- means[[i]]
+        }
+        object@betas <- betas
+        object
+    }
 }
         
 initializeMomentum <- function(object, useC = FALSE) {
@@ -130,43 +209,79 @@ initializeMomentum <- function(object, useC = FALSE) {
     }
     else {
         momentum <- object@momentumBetas
+        beta.equals.mean <- object@betaEqualsMean
         for (i in seq_len(momentum)) {
-            n <- length(momentum[[i]])
-            momentum[[i]] <- rnorm(n = n,
-                                   mean = 0,
-                                   sd = 1)
+            if (!beta.equals.mean[i]) {
+                n <- length(momentum[[i]])
+                momentum[[i]] <- rnorm(n = n,
+                                       mean = 0,
+                                       sd = 1)
+            }
         }
         object@momentum <- momentum
         object
     }
 }
 
-
-## updateMomentum <- function(object, firstLast, useC = FALSE) {
-##     ## object
-##     stopifnot(methods::is(object, "Varying"))
-##     stopifnot(methods::validObject(object))
-##     ## firstLast
-##     stopifnot(identical(length(firstLast), 1L))
-##     stopifnot(is.logical(firstLast))
-##     stopifnot(!is.na(firstLast))
-##     if (useC) {
-##         .Call(updateMomentum_R, object)
-##     }
-##     else {
-##         momentum <- object@momentumBetas
-##         for (i in seq_len(momentum)) {
-##             n <- length(momentum[[i]])
-##             momentum[[i]] <- rnorm(n = n,
-##                                    mean = 0,
-##                                    sd = 1)
-##         }
-##         object@momentum <- momentum
-##         object
-##     }
-## }
-
-
+updateMomentum <- function(object, stepSize, firstLast, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    ## firstLast
+    stopifnot(identical(length(firstLast), 1L))
+    stopifnot(is.logical(firstLast))
+    stopifnot(!is.na(firstLast))
+    if (useC) {
+        .Call(updateMomentum_R, object)
+    }
+    else {
+        momentum <- object@momentumBetas
+        gradient <- object@gradientBetas
+        beta.equals.mean <- object@betaEqualsMean
+        for (i.beta in seq_len(momentum)) {
+            if (!beta.equals.mean[i]) {
+                J <- length(momentum[[i.beta]])
+                mult <- if (firstLast) 0.5 * stepSize else stepSize
+                for (j in seq_len(J))
+                    momentum[[i.beta]][j] <- momentum[[i.beta]][j] - mult * gradient[[i]]
+            }
+        }
+        object@momentum <- momentum
+        object
+    }
+}
     
 
-    
+updateMeansBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateMeansBetas_R, object)
+    }
+    else {
+        means <- object@meansBetas
+        priors <- object@priorsBetas
+        for (i in seq_along(means))
+            means[[i]] <- betaHat(priors[[i]])
+        object@meansBetas <- means
+        object
+    }
+}
+
+
+updateVariancesBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateVariancesBetas_R, object)
+    }
+    else {
+        variances <- object@variancesBetas
+        priors <- object@priorsBetas
+        for (i in seq_along(variances))
+            variances[[i]] <- getV(priors[[i]])
+        object@variancesBetas <- variances
+        object
+    }
+}
+
