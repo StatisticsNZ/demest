@@ -6,10 +6,10 @@
 \usage{
 simulateAccount(account, systemModels, datasets = list(),
   dataModels = list(), concordances = list(), weights = list(),
-  dominant = c("Female", "Male"), filename = NULL, nBurnin = 1000,
-  nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE,
-  nCore = NULL, outfile = NULL, nUpdateMax = 50, verbose = TRUE,
-  useC = TRUE)
+  dominant = c("Female", "Male"), scaleNoise = 0, filename = NULL,
+  nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
+  parallel = TRUE, nCore = NULL, outfile = NULL, nUpdateMax = 50,
+  verbose = TRUE, useC = TRUE)
 }
 \arguments{
 \item{account}{An object of class
@@ -38,6 +38,10 @@ providing weights for any Normal models among the system models.}
 \item{dominant}{Either \code{"Female"} (the default) or \code{"Male"}.
 Determines which sex is used to generate exposures in the system
 model for births.}
+
+\item{scaleNoise}{Governs noise added to Metropolis-Hastings
+ratio. Should be non-zero only when trying to generate
+initial values. Currently experimental, and may change.}
 
 \item{filename}{The name of a file where output is collected.}
 

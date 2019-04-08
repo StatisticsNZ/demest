@@ -383,7 +383,7 @@ updateCombined(SEXP object_R, int nUpdate)
             updateCombined_CombinedCountsBinomial(object_R, nUpdate);
             break;
         case 9: case 10: /* combined account movements (no age and has age) */
-            updateCombined_CombinedAccount(object_R, nUpdate);
+  	    updateCombined_CombinedAccount(object_R, nUpdate);
             break;
         case 11: /* CMP model, not has exposure */
             updateCombined_CombinedModelCMPNotHasExp(object_R, nUpdate);
@@ -806,10 +806,10 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
 void
 updateCombined_CombinedAccount(SEXP object_R, int nUpdate)
 {
-    for (int i = 0; i < nUpdate; ++i) {
-        updateAccount(object_R);
-        updateSystemModels(object_R);
-        updateExpectedExposure(object_R);
-        updateDataModelsAccount(object_R);
-    }
+  for (int i = 0; i < nUpdate; ++i) {
+    updateAccount(object_R);
+    updateSystemModels(object_R);
+    updateExpectedExposure(object_R);
+    updateDataModelsAccount(object_R);
+  }
 }

@@ -309,7 +309,8 @@ setClass("CombinedAccountMovementsNoAge",
                                                   "systemModels",
                                                   "dataModels"),
                                dataModelsUseAg = methods::new("LogicalFlag", FALSE),
-                               systemModelsUseAg = methods::new("LogicalFlag", FALSE)),
+                               systemModelsUseAg = methods::new("LogicalFlag", FALSE),
+                               scaleNoise = methods::new("Scale", 0)),
          contains = "CombinedAccountMovements")
 
 setClass("CombinedAccountMovementsHasAge",
@@ -318,7 +319,8 @@ setClass("CombinedAccountMovementsHasAge",
                                                   "systemModels",
                                                   "dataModels"),
                                dataModelsUseAg = methods::new("LogicalFlag", FALSE),
-                               systemModelsUseAg = methods::new("LogicalFlag", FALSE)),
+                               systemModelsUseAg = methods::new("LogicalFlag", FALSE),
+                               scaleNoise = methods::new("Scale", 0)),
          contains = c("CombinedAccountMovements",
                       "MovementsAgeMixin"))
 

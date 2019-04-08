@@ -892,6 +892,10 @@ setClass("DataModelsMixin",
              TRUE
          })
 
+setClass("ScaleNoiseMixin",
+         slots = c(scaleNoise = "Scale"),
+         contains = "VIRTUAL")
+
 ## NO_TESTS
 ## 'seriesIndices' is a mapping from dataModels models
 ## to demographic series.  'seriesIndices' equals 0L when

@@ -698,6 +698,9 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' @param dominant Either \code{"Female"} (the default) or \code{"Male"}.
 #' Determines which sex is used to generate exposures in the system
 #' model for births.
+#' @param scaleNoise Governs noise added to Metropolis-Hastings
+#' ratio. Should be non-zero only when trying to generate
+#' initial values. Currently experimental, and may change.
 #' 
 #' @seealso \code{\link{estimateModel}}, \code{\link{estimateCounts}}
 #'
@@ -707,7 +710,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' @export
 estimateAccount <- function(account, systemModels, datasets, dataModels, 
                             concordances = list(), weights = list(),
-                            dominant = c("Female", "Male"),
+                            dominant = c("Female", "Male"), scaleNoise = 0,
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
                             parallel = TRUE, nCore = NULL,
@@ -716,6 +719,8 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     call <- match.call()
     methods::validObject(account)
     dominant <- match.arg(dominant)
+    checkNonNegativeNumeric(x = scaleNoise,
+                            name = "scaleNoise")
     ## make account consistent, if necessary
     if (!all(dembase::isConsistent(account)))
         account <- dembase::makeConsistent(account)
@@ -770,7 +775,8 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
                                                   datasets = datasets,
                                                   namesDatasets = namesDatasets,
                                                   transforms = transforms,
-                                                  dominant = dominant))
+                                                  dominant = dominant,
+                                                  scaleNoise = scaleNoise))
     parallel <- control.args$parallel
     tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")
     MoreArgs <- c(list(seed = NULL),
@@ -886,6 +892,10 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 #' @inheritParams estimateModel
 #' @param filename The filename used by the original call.
 #' @param nSim Number of additional iterations.
+#' @param scaleNoise Governs noise added to Metropolis-Hastings
+#' ratio when updating accounts. Should only be used non-zero
+#' when generating initial values. Currently experimental,
+#' and may change.
 #' 
 #' @seealso \code{continueEstimation} is used together with
 #' \code{\link{estimateModel}}, \code{\link{estimateCounts}},
@@ -984,9 +994,21 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
 #' 
 #' @export
 continueEstimation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NULL,
-                               parallel = NULL, outfile = NULL, verbose = FALSE,
+                               scaleNoise = 0, parallel = NULL,
+                               outfile = NULL, verbose = FALSE,
                                useC = TRUE) {
     object <- fetchResultsObject(filename)
+    checkNonNegativeNumeric(scaleNoise)
+    if (methods::is(object, "ResultsAccount")) {
+        n.chain <- object@mcmc[["nChain"]]
+        for (i in seq_along(n.chain))
+            object@final[[i]]@scaleNoise@.Data <- as.double(scaleNoise)
+    }
+    else {
+        if (scaleNoise > 0)
+            stop(gettextf("not estimating a demographic account, but '%s' is non-zero",
+                          "scaleNoise"))
+    }
     mcmc.args.old <- object@mcmc
     control.args <- object@control
     seed.old <- object@seed

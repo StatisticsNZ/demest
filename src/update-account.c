@@ -10,6 +10,7 @@ void
 updateAccount(SEXP object_R)
 {
   int nCellAccount = *INTEGER(GET_SLOT(object_R, nCellAccount_sym));
+  double scaleNoise = *REAL(GET_SLOT(object_R, scaleNoise_sym));
   for (int i = 0; i < (2 * nCellAccount); ++i) {
     updateProposalAccount(object_R);
     int generatedNewProposal = *LOGICAL(GET_SLOT(object_R, generatedNewProposal_sym));
@@ -21,6 +22,8 @@ updateAccount(SEXP object_R)
 		       && ((diffLogLik > diffLogDens) || (diffLogLik < diffLogDens)));
       if (!isInvalid) {
 	double log_r = diffLogLik + diffLogDens;
+	if (scaleNoise > 0)
+	  log_r += scaleNoise * rt(1);
 	int accept = ( log_r > 0 ) || ( runif(0,1) < exp(log_r) );
 	if (accept) {
 	  updateValuesAccount(object_R);

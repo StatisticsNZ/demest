@@ -1680,7 +1680,7 @@ test_that("drawVarsigma gives valid answer", {
 })
 
 test_that("R and C versions of drawVarsigma give same answer", {
-    ## drawVarsigma <- demest:::drawVarsigma
+    drawVarsigma <- demest:::drawVarsigma
     initialModel <- demest:::initialModel
     I <- 20L
     for (seed in seq_len(n.test)) {

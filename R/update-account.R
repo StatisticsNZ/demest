@@ -67,6 +67,7 @@
 ## TRANSLATED
 ## HAS_TESTS
 updateAccount <- function(object, useC = FALSE) {
+    ## object
     stopifnot(methods::is(object, "CombinedAccount"))
     stopifnot(methods::validObject(object))
     if (useC) {
@@ -74,6 +75,7 @@ updateAccount <- function(object, useC = FALSE) {
     }
     else {
         n.cell.account <- object@nCellAccount@.Data
+        scale.noise <- object@scaleNoise@.Data
         for (i in seq_len(2L * n.cell.account)) {
             object <- updateProposalAccount(object)
             generated.new.proposal <- object@generatedNewProposal@.Data
@@ -85,6 +87,8 @@ updateAccount <- function(object, useC = FALSE) {
                     && ((diff.log.dens > diff.log.lik) || (diff.log.dens < diff.log.lik)))
                 if (!is.invalid) {
                     log.r <- diff.log.lik + diff.log.dens
+                    if (scale.noise > 0)
+                        log.r = log.r + scale.noise * stats::rt(n = 1L, df = 1)
                     accept <- (log.r > 0) || (stats::runif(n = 1L) < exp(log.r))
                     if (accept)
                         object <- updateValuesAccount(object)

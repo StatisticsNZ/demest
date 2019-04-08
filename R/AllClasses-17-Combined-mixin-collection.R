@@ -17,7 +17,8 @@ setClass("AccountMixin",
                       "IteratorsAccountMixin",
                       "MappingsAccountMixin",
                       "MaxAttemptMixin",
-                      "NCellAccountMixin"))
+                      "NCellAccountMixin",
+                      "ScaleNoiseMixin"))
 
 
 setClass("MovementsAgeMixin",

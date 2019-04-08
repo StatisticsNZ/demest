@@ -558,7 +558,8 @@ setMethod("initialCombinedAccount",
           function(account, systemModels, systemWeights,
                    dataModels, seriesIndices, 
                    datasets, namesDatasets, transforms,
-                   dominant = c("Female", "Male")) {
+                   dominant = c("Female", "Male"),
+                   scaleNoise = 0) {
               population <- account@population
               components <- account@components
               names.components <- account@namesComponents
@@ -719,6 +720,7 @@ setMethod("initialCombinedAccount",
                       datasets[[i]] <- dataset
                   }
               }
+              scaleNoise <- methods::new("Scale", as.double(scaleNoise))
               ## create flags showing whether system
               ## or data models use aggregates
               uses.ag.system.models <- sapply(systemModels, methods::is, "Aggregate")
@@ -780,6 +782,7 @@ setMethod("initialCombinedAccount",
                                namesDatasets = namesDatasets,                           
                                nCellAccount = n.cell.account,
                                probPopn = prob.popn,
+                               scaleNoise = scaleNoise,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
                                systemModelsUseAg = system.models.use.ag,
@@ -827,6 +830,7 @@ setMethod("initialCombinedAccount",
                                namesDatasets = namesDatasets,
                                nCellAccount = n.cell.account,
                                probPopn = prob.popn,
+                               scaleNoise = scaleNoise,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
                                systemModelsUseAg = system.models.use.ag,
@@ -850,7 +854,8 @@ setMethod("initialCombinedAccountSimulate",
           function(account, systemModels, systemWeights,
                    dataModels, seriesIndices, 
                    datasets, namesDatasets, transforms,
-                   dominant = c("Female", "Male")) {
+                   dominant = c("Female", "Male"),
+                   scaleNoise = 0) {
               combined <- initialCombinedAccount(account = account,
                                                  systemModels = systemModels,
                                                  systemWeights = systemWeights,
@@ -859,7 +864,8 @@ setMethod("initialCombinedAccountSimulate",
                                                  datasets = datasets,
                                                  namesDatasets = namesDatasets,
                                                  transforms = transforms,
-                                                 dominant = dominant)
+                                                 dominant = dominant,
+                                                 scaleNoise = scaleNoise)
               combined <- setDatasetsToMissing(combined)
               combined <- drawDataModels(combined)
               combined <- drawSystemModels(combined)
