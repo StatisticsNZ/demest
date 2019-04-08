@@ -706,6 +706,7 @@ void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
                     double *values, int nValues);
                     
 /* update-nongeneric */
+void updateBetasWhereBetaEqualsMean(SEXP object);
 void updateMeansBetas(SEXP object);
 void updateVariancesBetas(SEXP object);
 void updateMu(SEXP object);

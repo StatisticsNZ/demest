@@ -4612,6 +4612,47 @@ test_that("R and C versions of updateWeightMix give same answer", {
 ## UPDATING MODELS ################################################################
 
 
+test_that("R version of updateBetasWhereBetaEqualsMean works", {
+    updateBetasWhereBetaEqualsMean <- demest:::updateBetasWhereBetaEqualsMean
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    betaHat <- demest:::betaHat
+    updateMeansBetas <- demest:::updateMeansBetas
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age * region, useExpose = FALSE),
+                  age ~ Exch(),
+                  age:region ~ DLM(trend = NULL, damp = NULL))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    x@betas[[4]][] <- -100
+    x <- updateMeansBetas(x)
+    ans.obtained <- updateBetasWhereBetaEqualsMean(x)
+    ans.expected <- x
+    ans.expected@betas[[4]] <- betaHat(x@priorsBetas[[4]])
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of updateBetasWhereBetaEqualsMean give same answer", {
+    updateBetasWhereBetaEqualsMean <- demest:::updateBetasWhereBetaEqualsMean
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    updateMeansBetas <- demest:::updateMeansBetas
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age * region, useExpose = FALSE),
+                  age ~ Exch(),
+                  age:region ~ DLM(trend = NULL, damp = NULL))
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    x@betas[[4]][] <- -100
+    x <- updateMeansBetas(x)
+    ans.R <- updateBetasWhereBetaEqualsMean(x, useC = FALSE)
+    ans.C <- updateBetasWhereBetaEqualsMean(x, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+})
 
 test_that("R version of updateMeansBetas works", {
     updateMeansBetas <- demest:::updateMeansBetas

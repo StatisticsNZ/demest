@@ -137,11 +137,12 @@ updateBetas <- function(object) {
         .Call(updateBetas_R, object) 
     }
     else {
-        betas.curr <- object@betas
-        mean.step.size <- object@meanStepSize@.Data
+        object <- updateBetasWhereBetaEqualsMean(object)
         object <- initializeMomentum(object)
+        betas.curr <- object@betas # call 'updateBetasWhereBetaEqualsMean' first
+        log.post.momentum.curr <- object@logPostMomentum # call 'initializeMomentum' first
+        mean.step.size <- object@meanStepSize@.Data
         log.post.betas.curr <- object@logPostBetas
-        log.post.momentum.curr <- object@logPostMomentum # must call 'initializeMomentum' first
         step.size <- stats::runif(n = 1L,
                                   min = 0,
                                   max = 2 * mean.step.size)
@@ -149,7 +150,6 @@ updateBetas <- function(object) {
                                min = 0,
                                max = 2 / step.size)
         n.step <- as.integer(n.step) + 1L
-        object <- updateBetasWhereBetaEqualsMean(object)
         object <- updateMomentum(object,
                                  stepSize = step.size,
                                  isFirstLast = TRUE)
@@ -178,25 +178,6 @@ updateBetas <- function(object) {
             object <- updateMu(object)
             object@logPostBetas <- log.post.betas.curr
         }
-        object
-    }
-}
-
-updateBetasWhereBetaEqualsMean <- function(object) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateBetasWhereBetaEqualsMean_R, object)
-    }
-    else {
-        betas <- object@betas
-        means <- object@meansBetas
-        beta.equals.mean <- object@betaEqualsMean
-        for (i in seq_along(betas)) {
-            if (beta.equals.mean[i])
-                betas[[i]] <- means[[i]]
-        }
-        object@betas <- betas
         object
     }
 }

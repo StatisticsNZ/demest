@@ -1254,16 +1254,11 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateAlphaDLMNoTrend);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateAlphaDeltaDLMWithTrend);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 
-/* updateMeansBetas */
+/* updating betas */
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateBetasWhereBetaEqualsMean);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateMeansBetas);
-
-/* updateVariancesBetas */
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateVariancesBetas);
-
-/* updateMu */
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateMu);
-
-/* wrap update betas and zetas*/
 UPDATEOBJECT_WRAPPER_R(updateBetasAndPriorsBetas);
 
 /* wrap update sigma generic functions */
@@ -2285,7 +2280,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateAlphaDLMNoTrend_R, 2), 
   CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2), 
   CALLDEF(updateSeason_R, 2),
-  
+
+  CALLDEF(updateBetasWhereBetaEqualsMean_R, 1),
   CALLDEF(updateMeansBetas_R, 1),
   CALLDEF(updateVariancesBetas_R, 1),
   CALLDEF(updateMu_R, 1),

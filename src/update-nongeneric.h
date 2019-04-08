@@ -11,6 +11,8 @@
 
     void updateMu(SEXP object_R);
 
+    void updateBetasWhereBetaEqualsMean(SEXP object_R);
+
     void updateMeansBetas(SEXP object_R);
 
     void updateVariancesBetas(SEXP object_R);

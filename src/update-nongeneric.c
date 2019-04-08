@@ -2660,6 +2660,27 @@ get_log_gamma_dens(int n, double theta[],
     return result;
 }
 
+void
+updateBetasWhereBetaEqualsMean(SEXP object_R)
+{
+    SEXP betas_R = GET_SLOT(object_R, betas_sym);
+    SEXP means_R = GET_SLOT(object_R, meansBetas_sym);
+    int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+    int n_beta =  LENGTH(betas_R);
+
+    for (int i = 0; i < n_beta; ++i) {
+      if (betaEqualsMean[i]) {
+	SEXP beta_R = VECTOR_ELT(betas_R, i);
+	SEXP mean_R = VECTOR_ELT(means_R, i);
+	double *beta = REAL(beta_R);
+	double *mean = REAL(mean_R);
+	int J = LENGTH(beta_R);
+	for (int j = 0; j < J; ++j)
+	  beta[j] = mean[j];
+      }
+    }
+}
+
 
 void
 updateMeansBetas(SEXP object_R)

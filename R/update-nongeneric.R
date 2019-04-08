@@ -1916,6 +1916,28 @@ updateWeightMix <- function(prior, useC = FALSE) {
 ## UPDATING MODELS ##################################################################
 
 
+
+updateBetasWhereBetaEqualsMean <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateBetasWhereBetaEqualsMean_R, object)
+    }
+    else {
+        betas <- object@betas
+        means <- object@meansBetas
+        beta.equals.mean <- object@betaEqualsMean
+        for (i in seq_along(betas)) {
+            if (beta.equals.mean[i])
+                betas[[i]] <- means[[i]]
+        }
+        object@betas <- betas
+        object
+    }
+}
+
+
+
 ## TRANSLATED
 ## HAS_TESTS
 updateMeansBetas <- function(object, useC = FALSE) {
