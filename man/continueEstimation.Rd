@@ -5,8 +5,8 @@
 \title{Add extra iterations to burnin or output.}
 \usage{
 continueEstimation(filename, nBurnin = NULL, nSim = 1000,
-  nThin = NULL, parallel = NULL, outfile = NULL, verbose = FALSE,
-  useC = TRUE)
+  nThin = NULL, scaleNoise = 0, parallel = NULL, outfile = NULL,
+  verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{filename}{The filename used by the original call.}
@@ -16,6 +16,11 @@ continueEstimation(filename, nBurnin = NULL, nSim = 1000,
 \item{nSim}{Number of additional iterations.}
 
 \item{nThin}{Thinning interval.}
+
+\item{scaleNoise}{Governs noise added to Metropolis-Hastings
+ratio when updating accounts. Should only be used non-zero
+when generating initial values. Currently experimental,
+and may change.}
 
 \item{parallel}{Logical.  If \code{TRUE} (the default), parallel processing
 is used.}

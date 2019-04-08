@@ -1,0 +1,169 @@
+
+## HAS_TESTS
+alignDataModelsToDatasets <- function(dataModels, datasets, namesDatasets) {
+    names.obs.mod <- sapply(dataModels, methods::slot, "nameY")
+    obs.not.in.data <- setdiff(names.obs.mod, namesDatasets)
+    data.not.in.obs <- setdiff(namesDatasets, names.obs.mod)
+    ## no data models without datasets
+    if (length(obs.not.in.data) > 0L)
+        stop(gettextf("'%s' contains a model for '%s', but there is no dataset called '%s' in '%s'",
+                      "dataModels", obs.not.in.data[1L], obs.not.in.data[1L], "datasets"))
+    ## no datasets without data models
+    if (length(data.not.in.obs) > 0L)
+        stop(gettextf("'%s' contains a dataset called '%s', but '%s' does not contain a model for '%s'",
+                      "datasets", data.not.in.obs[1L], "dataModels", data.not.in.obs[1L]))
+    ans <- vector(mode = "list", length = length(datasets))
+    for (i in seq_along(datasets)) {
+        name.dataset <- namesDatasets[i]
+        i.obs <- match(name.dataset, names.obs.mod)
+        ans[[i]] <- dataModels[[i.obs]]
+    }
+    ans
+}
+
+## HAS_TESTS
+alignSystemModelsToAccount <- function(systemModels, account) {
+    names.sys.mod <- sapply(systemModels, methods::slot, "nameY")
+    names.components <- account@namesComponents
+    names.series <- c("population", names.components)
+    sys.not.in.series <- setdiff(names.sys.mod, names.series)
+    series.not.in.sys <- setdiff(names.series, names.sys.mod)
+    ## no system models without series
+    if (length(sys.not.in.series) > 0L)
+        stop(gettextf("'%s' contains a system model for '%s', but there is no series called '%s' in '%s'",
+                      "systemModels", sys.not.in.series[1L], sys.not.in.series[1L], "account"))
+    ## no series without system models
+    if (length(series.not.in.sys) > 0L)
+        stop(gettextf("'%s' does not contain a model for series '%s' in '%s'",
+                      "systemModels", series.not.in.sys[1L], "account"))
+    ans <- vector(mode = "list", length = length(names.series))
+    for (i in seq_along(names.series)) {
+        name.series <- names.series[i]
+        i.sys <- match(name.series, names.sys.mod)
+        ans[[i]] <- systemModels[[i.sys]]
+    }
+    ## system model for 'population' does not have exposure term
+    popn.uses.exposure <- ans[[1L]]@useExpose@.Data
+    if (popn.uses.exposure)
+        stop(gettextf("system model for '%s' uses exposure",
+                      "population"))
+    ans
+}
+
+
+## HAS_TESTS
+checkAndTidySystemWeights <- function(weights, systemModels) {
+    if (identical(weights, list())) {
+        ans <- vector(mode = "list", length = length(systemModels))
+        return(ans)
+    }
+    names.weights <- names(weights)
+    checkListNames(names = names.weights,
+                   listName = "weights")
+    names.sys.mod <- sapply(systemModels, methods::slot, "nameY")
+    weights.not.in.sys <- setdiff(names.weights, names.sys.mod)
+    ## no weights without system models (system models without weights are OK)
+    if (length(weights.not.in.sys) > 0L)
+        stop(gettextf("'%s' contains weights for '%s', but '%s' does not contain a model for '%s'",
+                      "weights", weights.not.in.sys[1L], "systemModels", weights.not.in.sys[1L]))
+    ans <- vector(mode = "list", length = length(systemModels))
+    for (i in seq_along(ans)) {
+        spec <- systemModels[[i]]
+        name.y <- spec@nameY
+        i.weights <- match(name.y, names.weights, nomatch = 0L)
+        has.weights <- i.weights > 0L
+        if (has.weights) {
+            uses.weights <- modelUsesWeights(spec)
+            if (uses.weights)
+                ans[[i]] <- weights[[i.weights]]
+            else ## weights supplied only if system model needs them
+                stop(gettextf("'%s' contains weights for '%s', but system model for '%s' does not use weights",
+                              "weights", name.y, name.y))
+        }
+        else
+            ans[[i]] <- NULL
+    }
+    ans
+}
+
+## HAS_TESTS
+checkSystemModels <- function(systemModels) {
+    ## 'systemModels' is a list
+    if (!is.list(systemModels))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "systemModels", class(systemModels)))
+    for (i in seq_along(systemModels)) {
+        spec <- systemModels[[i]]
+        ## element has class "SpecModel"
+        if (!methods::is(spec, "SpecModel"))
+            stop(gettextf("element %d of '%s' has class \"%s\"",
+                          i, "systemModels", class(spec)))
+        ## specification is valid
+        return.value <- tryCatch(methods::validObject(spec),
+                                 error = function(e) e)
+        if (methods::is(return.value, "error"))
+            stop(gettextf("element %d of '%s' is invalid : %s",
+                          i, "systemModels", return.value$message))
+        ## no 'series' argument supplied
+        if (!identical(spec@series@.Data, "y"))
+            stop(gettextf("element %d of '%s' has value for '%s' [\"%s\"] : in system models, series should instead be specified via response variable",
+                          i, "systemModels", "series", spec@series@.Data))
+    }
+    NULL
+}
+
+## HAS_TESTS
+## Note that every data model has to relate to one series,
+## but every series does not have to have a data model.
+makeSeriesIndices <- function(dataModels, account) {
+    names.obs.mod <- sapply(dataModels, methods::slot, "series")
+    names.components <- account@namesComponents
+    names.series <- c("population", names.components)
+    obs.not.in.series <- setdiff(names.obs.mod, names.series)
+    if (length(obs.not.in.series) > 0L)
+        stop(gettextf("'%s' contains a model for '%s', but '%s' does not have a series called '%s'",
+                      "dataModels", obs.not.in.series[1L], "account", obs.not.in.series[1L]))
+    ans <- integer(length = length(dataModels))
+    for (i in seq_along(dataModels)) {
+        name.obs <- names.obs.mod[i]
+        i.series <- match(name.obs, names.series)
+        ans[i] <- i.series - 1L # 'population' has index 0; first component has index 1
+    }
+    ans
+}
+
+## HAS_TESTS
+makeTransformsAccountToDatasets <- function(account, datasets, concordances,
+                                            namesDatasets, seriesIndices) {
+    population <- account@population
+    components <- account@components
+    series <- c(list(population), components)
+    names.components <- account@namesComponents
+    names.series <- c("population", names.components)
+    names.concordances <- names(concordances)
+    ans <- vector(mode = "list", length = length(datasets))
+    for (i in seq_along(ans)) {
+        dataset <- datasets[[i]]
+        index <- seriesIndices[i] + 1L
+        name.dataset <- namesDatasets[i]
+        i.concordances <- match(name.dataset, names.concordances, nomatch = 0L)
+        has.concordances <- i.concordances > 0L
+        if (has.concordances)
+            concordances.dataset <- concordances[[i.concordances]]
+        else
+            concordances.dataset <- list()
+        transform <- tryCatch(dembase::makeTransform(x = series[[index]],
+                                                     y = dataset,
+                                                     concordances = concordances.dataset,
+                                                     subset = TRUE,
+                                                     check = TRUE),
+                              error = function(e) e)
+        if (methods::is(transform, "error"))
+            stop(gettextf("unable to collapse series '%s' to make it compatible with dataset '%s' : %s",
+                          names.series[index], namesDatasets[i], transform$message))
+        transform <- dembase::makeCollapseTransformExtra(transform)
+        ans[[i]] <- transform
+    }
+    ans
+}
+

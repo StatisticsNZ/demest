@@ -2937,6 +2937,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(generatedNewProposal);
   ADD_SYM(probPopn);
   ADD_SYM(cumProbComp);
+  ADD_SYM(scaleNoise);
   ADD_SYM(nCellAccount);
     
   

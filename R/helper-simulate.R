@@ -707,7 +707,7 @@ simulateDirect <- function(combined, tempfile, nDraw, useC) {
 
 ## HAS_TESTS
 simulateOneChain <- function(combined, seed, tempfile, nBurnin, nSim, nThin,
-                             nUpdateMax, continuing, useC, ...) {
+                             nUpdateMax, useC, ...) {
     ## set seed if continuing
     if (!is.null(seed))
         assign(".Random.seed", seed, envir = .GlobalEnv)

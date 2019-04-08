@@ -32,7 +32,8 @@ setMethod("getSeriesForDataset",
 ## HAS_TESTS
 setMethod("drawCombined",
           signature(object = "CombinedModelBinomial"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               methods::validObject(object)
               ## nUpdate
@@ -63,7 +64,8 @@ setMethod("drawCombined",
 ## HAS_TESTS - though only for unbenchmarked version
 setMethod("drawCombined",
           signature(object = "CombinedAccountMovements"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               methods::validObject(object)
               ## nUpdate
@@ -401,7 +403,8 @@ setMethod("predictCombined",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedModelNormal"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               methods::validObject(object)
               ## nUpdate
@@ -429,7 +432,8 @@ setMethod("updateCombined",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedModelPoissonNotHasExp"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               methods::validObject(object)
               ## nUpdate
@@ -457,7 +461,8 @@ setMethod("updateCombined",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedModelBinomial"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               methods::validObject(object)
               ## nUpdate
@@ -486,7 +491,8 @@ setMethod("updateCombined",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedModelPoissonHasExp"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               methods::validObject(object)
               ## nUpdate
@@ -515,7 +521,8 @@ setMethod("updateCombined",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedModelCMPNotHasExp"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               methods::validObject(object)
               ## nUpdate
@@ -543,7 +550,8 @@ setMethod("updateCombined",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedModelCMPHasExp"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               methods::validObject(object)
               ## nUpdate
@@ -575,7 +583,8 @@ setMethod("updateCombined",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedCountsPoissonNotHasExp"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
               ## nUpdate
@@ -619,7 +628,8 @@ setMethod("updateCombined",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedCountsPoissonHasExp"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
               ## nUpdate
@@ -666,7 +676,8 @@ setMethod("updateCombined",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedCountsBinomial"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
               ## nUpdate
@@ -963,7 +974,8 @@ setMethod("updateSystemModels",
 ## HAS_TESTS
 setMethod("updateCombined",
           signature(object = "CombinedAccountMovements"),
-          function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE) {
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
               ## object
               stopifnot(methods::validObject(object))
               ## nUpdate

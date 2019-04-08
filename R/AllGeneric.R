@@ -379,14 +379,16 @@ setGeneric("initialCombinedAccount",
            function(account, systemModels, systemWeights,
                     dataModels, seriesIndices, 
                     datasets, namesDatasets, transforms,
-                    dominant = c("Female", "Male"))
+                    dominant = c("Female", "Male"),
+                    scaleNoise = 0)
                standardGeneric("initialCombinedAccount"))
 
 setGeneric("initialCombinedAccountSimulate",
           function(account, systemModels, systemWeights,
                    dataModels, seriesIndices, 
                    datasets, namesDatasets, transforms,
-                   dominant = c("Female", "Male"))
+                   dominant = c("Female", "Male"),
+                   scaleNoise = 0)
               standardGeneric("initialCombinedAccountSimulate"))
 
 setGeneric("initialCombinedCounts",
@@ -585,7 +587,8 @@ setGeneric("updateBetaAndPriorBeta",
                standardGeneric("updateBetaAndPriorBeta"))
 
 setGeneric("updateCombined",
-           function(object, nUpdate = 1L, useC = FALSE, useSpecific = FALSE)
+           function(object, nUpdate = 1L,
+                    useC = FALSE, useSpecific = FALSE)
            standardGeneric("updateCombined"))
 
 setGeneric("updateExpectedExposure",
