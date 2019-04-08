@@ -135,7 +135,7 @@ setClass("TimeInvariant",
                                isKnownUncertain = methods::new("LogicalFlag", FALSE),
                                isNorm = methods::new("LogicalFlag", FALSE),
                                isRobust = methods::new("LogicalFlag", FALSE),
-                               isZeroVar = methods::new("LogicalFlag", FALSE),
+                               isZeroVar = methods::new("LogicalFlag", TRUE),
                                isSaturated = methods::new("LogicalFlag", FALSE)),
          contains = "Prior",
          validity = function(object) {

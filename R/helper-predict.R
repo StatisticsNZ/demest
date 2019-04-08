@@ -118,6 +118,8 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     variancesBetas <- val.betas
     gradientBetas <- val.betas
     momentumBetas <- val.betas
+    fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
+    beta.equals.mean <- sapply(priors.betas, fun)
     iterator.betas <- BetaIterator(dim = dim, margins = margins)
     offsets.betas <- makeOffsetsBetas(model, offsetModel = offsetModel)
     offsets.priors.betas <- makeOffsetsPriorsBetas(model, offsetModel = offsetModel)
@@ -135,6 +137,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
          momentumBetas = momentumBetas,
          strucZeroArray = struc.zero.array.pred,
          priorsBetas = priors.betas,
+         betaEqualsMean = beta.equals.mean,
          iteratorBetas = iterator.betas,
          dims = dims,
          betaIsPredicted = beta.is.predicted,

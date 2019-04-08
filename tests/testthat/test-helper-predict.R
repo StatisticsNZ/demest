@@ -105,6 +105,7 @@ test_that("initialModelPredictHelper works", {
                                                                 strucZeroArray = strucZeroArray),
                                             new("TimeInvariant", J = new("Length", 4L),
                                                 isSaturated = new("LogicalFlag", FALSE))),
+                         betaEqualsMean = rep(FALSE, 3),
                          iteratorBetas = BetaIterator(dim = c(4L, 4L),
                                                       margins = c(0L, 1L, 2L)),
                          dims = list(0L, 4L, 4L),

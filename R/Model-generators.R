@@ -620,6 +620,8 @@ setMethod("initialModel",
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
               val.betas <- lapply(betas, function(x) rep(0, length(x)))
+              fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
+              beta.equals.mean <- sapply(priors.betas, fun)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -651,6 +653,7 @@ setMethod("initialModel",
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
+                                    betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
@@ -799,6 +802,8 @@ setMethod("initialModel",
               betas <- jitterBetas(betas = betas,
                                    priorsBetas = priors.betas)
               val.betas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
+              fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
+              beta.equals.mean <- sapply(priors.betas, fun)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -837,6 +842,7 @@ setMethod("initialModel",
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
+                                    betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
@@ -944,6 +950,8 @@ setMethod("initialModel",
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
               val.betas <- lapply(betas, function(x) rep(0, length(x)))
+              fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
+              beta.equals.mean <- sapply(priors.betas, fun)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -977,6 +985,7 @@ setMethod("initialModel",
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
+                                    betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
@@ -1079,6 +1088,8 @@ setMethod("initialModel",
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
               val.betas <- lapply(betas, function(x) rep(0, length(x)))
+              fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
+              beta.equals.mean <- sapply(priors.betas, fun)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -1114,6 +1125,7 @@ setMethod("initialModel",
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
+                                    betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
@@ -1253,6 +1265,8 @@ setMethod("initialModel",
               betas <- jitterBetas(betas = betas,
                                    priorsBetas = priors.betas)
               val.betas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
+              fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
+              beta.equals.mean <- sapply(priors.betas, fun)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -1287,6 +1301,7 @@ setMethod("initialModel",
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
                                     priorsBetas = priors.betas,
+                                    betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
