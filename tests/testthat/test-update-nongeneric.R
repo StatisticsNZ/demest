@@ -4699,8 +4699,11 @@ test_that("R and C versions of updateLogPostBetas give same answer", {
     x <- updateVariancesBetas(x)
     x@logPostBetas@.Data <- 0
     ans.R <- updateLogPostBetas(x, useC = FALSE)
-    ans.C <- updateLogPostBetas(x, useC = FALSE)
-    expect_identical(ans.R, ans.C)
+    ans.C <- updateLogPostBetas(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
 })
 
 test_that("R version of updateMeansBetas works", {

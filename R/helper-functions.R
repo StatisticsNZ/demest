@@ -1219,6 +1219,30 @@ getV <- function(prior, useC = FALSE) {
     }
 }
 
+
+initializeMomentum <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(initializeMomentum_R, object)
+    }
+    else {
+        momentum <- object@momentumBetas
+        beta.equals.mean <- object@betaEqualsMean
+        for (i in seq_len(momentum)) {
+            if (!beta.equals.mean[i]) {
+                J <- length(momentum[[i]])
+                momentum[[i]] <- rnorm(n = J,
+                                       mean = 0,
+                                       sd = 1)
+            }
+        }
+        object@momentum <- momentum
+        object
+    }
+}
+
+
 ## TRANSLATED
 ## HAS_TESTS
 logPostPhiMix <- function(phi, level, meanLevel, nAlong, indexClassMaxMix, omega,

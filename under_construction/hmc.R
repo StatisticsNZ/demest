@@ -145,27 +145,6 @@ updateBetas <- function(object) {
     }
 }
         
-initializeMomentum <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(initializeMomentum_R, object)
-    }
-    else {
-        momentum <- object@momentumBetas
-        beta.equals.mean <- object@betaEqualsMean
-        for (i in seq_len(momentum)) {
-            if (!beta.equals.mean[i]) {
-                n <- length(momentum[[i]])
-                momentum[[i]] <- rnorm(n = n,
-                                       mean = 0,
-                                       sd = 1)
-            }
-        }
-        object@momentum <- momentum
-        object
-    }
-}
 
 updateMomentum <- function(object, stepSize, firstLast, useC = FALSE) {
     ## object
@@ -194,6 +173,3 @@ updateMomentum <- function(object, stepSize, firstLast, useC = FALSE) {
         object
     }
 }
-    
-
-
