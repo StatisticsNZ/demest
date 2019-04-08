@@ -2622,6 +2622,11 @@ R_init_demest(DllInfo *info)
   ADD_SYM(posDim);
   ADD_SYM(lengthDim);
   /* models */
+  ADD_SYM(logPostPriorsBetas);
+  ADD_SYM(logPostBetas);
+  ADD_SYM(logPostSigma);
+  ADD_SYM(logPostTheta);
+  ADD_SYM(logPostVarsigma);
   ADD_SYM(iMethodModel);
   ADD_SYM(priorsBetas);
   ADD_SYM(theta);

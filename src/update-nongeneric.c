@@ -2681,6 +2681,50 @@ updateBetasWhereBetaEqualsMean(SEXP object_R)
     }
 }
 
+void
+updateLogPostBetas(SEXP object_R)
+{
+  /* likelihood */
+  SEXP thetaTransformed_R = GET_SLOT(object_R, thetaTransformed_sym);
+  double *thetaTransformed = REAL(thetaTransformed_R);
+  double *mu = REAL(GET_SLOT(object_R, mu_sym));
+  double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
+  int n_theta = LENGTH(thetaTransformed_R);
+  double log_likelihood = 0;
+  for (int i_theta = 0; i_theta < n_theta; ++i_theta) {
+    log_likelihood += dnorm(thetaTransformed[i_theta],
+			    mu[i_theta],
+			    sigma,
+			    USE_LOG);
+  }
+  /* prior */
+  SEXP betas_R = GET_SLOT(object_R, betas_sym);
+  SEXP means_R = GET_SLOT(object_R, meansBetas_sym);
+  SEXP variances_R = GET_SLOT(object_R, variancesBetas_sym);
+  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  int n_beta = LENGTH(betas_R);
+  double log_prior = 0;
+  for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+    if (!betaEqualsMean[i_beta]) {
+      SEXP beta_R = VECTOR_ELT(betas_R, i_beta);
+      double *beta = REAL(beta_R);
+      double *mean = REAL(VECTOR_ELT(means_R, i_beta));
+      double *variance = REAL(VECTOR_ELT(variances_R, i_beta));
+      int J = LENGTH(beta_R);
+      for (int j = 0; j < J; ++j) {
+	log_prior += dnorm(beta[j],
+			   mean[j],
+			   sqrt(variance[j]),
+			   USE_LOG);
+      }
+    }
+  }
+  /* combine */
+  double logPostBetas = log_likelihood + log_prior;
+  SET_DOUBLESCALE_SLOT(object_R, logPostBetas_sym, logPostBetas);
+}
+
+
 
 void
 updateMeansBetas(SEXP object_R)

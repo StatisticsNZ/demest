@@ -4654,6 +4654,55 @@ test_that("R and C versions of updateBetasWhereBetaEqualsMean give same answer",
     expect_identical(ans.R, ans.C)
 })
 
+test_that("R version of updateLogPostBetas works", {
+    updateLogPostBetas <- demest:::updateLogPostBetas
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    updateMeansBetas <- demest:::updateMeansBetas
+    updateVariancesBetas <- demest:::updateVariancesBetas
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch())
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    x <- updateMeansBetas(x)
+    x <- updateVariancesBetas(x)
+    x@logPostBetas@.Data <- 0
+    ans.obtained <- updateLogPostBetas(x)
+    ans.expected <- x
+    ans.expected@logPostBetas@.Data <- sum(dnorm(x@thetaTransformed,
+                                mean = x@mu,
+                                sd = x@sigma,
+                                log = TRUE)) +
+        sum(dnorm(x@betas[[1]], x@meansBetas[[1]], sqrt(x@variancesBetas[[1]]), log = TRUE)) +
+        sum(dnorm(x@betas[[2]], x@meansBetas[[2]], sqrt(x@variancesBetas[[2]]), log = TRUE)) +
+        sum(dnorm(x@betas[[3]], x@meansBetas[[3]], sqrt(x@variancesBetas[[3]]), log = TRUE))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of updateLogPostBetas give same answer", {
+    updateLogPostBetas <- demest:::updateLogPostBetas
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    updateMeansBetas <- demest:::updateMeansBetas
+    updateVariancesBetas <- demest:::updateVariancesBetas
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch())
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    x <- updateMeansBetas(x)
+    x <- updateVariancesBetas(x)
+    x@logPostBetas@.Data <- 0
+    ans.R <- updateLogPostBetas(x, useC = FALSE)
+    ans.C <- updateLogPostBetas(x, useC = FALSE)
+    expect_identical(ans.R, ans.C)
+})
+
 test_that("R version of updateMeansBetas works", {
     updateMeansBetas <- demest:::updateMeansBetas
     initialModel <- demest:::initialModel

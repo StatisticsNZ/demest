@@ -1915,8 +1915,8 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 ## UPDATING MODELS ##################################################################
 
-
-
+## TRANSLATED
+## HAS_TESTS
 updateBetasWhereBetaEqualsMean <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -1935,6 +1935,44 @@ updateBetasWhereBetaEqualsMean <- function(object, useC = FALSE) {
         object
     }
 }
+
+## TRANSLATED
+## HAS_TESTS
+updateLogPostBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateLogPostBetas_R, object) 
+    }
+    else {
+        theta.transformed <- object@thetaTransformed
+        mu <- object@mu
+        sigma <- object@sigma
+        betas <- object@betas
+        means.betas <- object@meansBetas
+        variances.betas <- object@variancesBetas
+        beta.equals.mean <- object@betaEqualsMean
+        log.likelihood <- sum(stats::dnorm(x = theta.transformed,
+                                           mean = mu,
+                                           sd = sigma,
+                                           log = TRUE))
+        log.prior <- 0
+        for (i.beta in seq_along(betas)) {
+            if (!beta.equals.mean[i.beta]) {
+                x <- betas[[i.beta]]
+                mean <- means.betas[[i.beta]]
+                sd <- sqrt(variances.betas[[i.beta]])
+                log.prior <- log.prior + sum(stats::dnorm(x = x,
+                                                          mean = mean,
+                                                          sd = sd,
+                                                          log = TRUE))
+            }
+        }
+        object@logPostBetas@.Data <- log.likelihood + log.prior
+        object
+    }
+}
+
 
 
 

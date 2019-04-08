@@ -25,8 +25,6 @@ updatePriorsBetas <- function(object, useC = FALSE) {
     }
 }
 
-## easiest to update gradients even in cases
-## where beta equals mean
 updateGradientBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -69,41 +67,6 @@ updateGradientBetas <- function(object, useC = FALSE) {
         object@gradientBetas <- gradient.betas
     }
     object
-}
-
-updateLogPostBetas <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateLogPostBetas_R, object) 
-    }
-    else {
-        theta.transformed <- object@thetaTransformed
-        mu <- object@mu
-        sigma <- object@sigma
-        betas <- object@betas
-        mean.betas <- object@meanBetas
-        variance.betas <- object@varianceBetas
-        beta.equals.mean <- object@betaEqualsMean
-        log.likelihood <- sum(stats::dnorm(x = theta.transformed,
-                                           mean = mu,
-                                           sd = sigma,
-                                           log = TRUE))
-        log.prior <- 0
-        for (i.beta in seq_along(betas)) {
-            if (!beta.equals.mean[i.beta]) {
-                x <- betas[[i.beta]]
-                mean <- mean.betas[[i.beta]]
-                sd <- sqrt(variance.betas[[i.beta]])
-                log.post <- log.post + stats::dnorm(x = x,
-                                                    mean = mean,
-                                                    sd = sd,
-                                                    log = TRUE)
-            }
-        }
-        object@logPostBetas <- log.likelihood + log.prior
-        object
-    }
 }
 
 
