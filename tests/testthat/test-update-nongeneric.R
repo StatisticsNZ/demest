@@ -4663,6 +4663,7 @@ test_that("R version of updateLogPostBetas works", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
+    y[1] <- NA
     spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                   age ~ Exch())
     x <- initialModel(spec, y = y, exposure = NULL)
@@ -4672,14 +4673,38 @@ test_that("R version of updateLogPostBetas works", {
     x@logPostBetas@.Data <- 0
     ans.obtained <- updateLogPostBetas(x)
     ans.expected <- x
-    ans.expected@logPostBetas@.Data <- sum(dnorm(x@thetaTransformed,
-                                mean = x@mu,
+    ans.expected@logPostBetas@.Data <- sum(dnorm(x@thetaTransformed[-1],
+                                mean = x@mu[-1],
                                 sd = x@sigma,
                                 log = TRUE)) +
         sum(dnorm(x@betas[[1]], x@meansBetas[[1]], sqrt(x@variancesBetas[[1]]), log = TRUE)) +
         sum(dnorm(x@betas[[2]], x@meansBetas[[2]], sqrt(x@variancesBetas[[2]]), log = TRUE)) +
         sum(dnorm(x@betas[[3]], x@meansBetas[[3]], sqrt(x@variancesBetas[[3]]), log = TRUE))
     expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of updateGadientBetas give same answer", {
+    updateGradientBetas <- demest:::updateGradientBetas
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    updateMeansBetas <- demest:::updateMeansBetas
+    updateVariancesBetas <- demest:::updateVariancesBetas
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    y[1] <- NA
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch())
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    x <- updateMeansBetas(x)
+    x <- updateVariancesBetas(x)
+    ans.R <- updateGradientBetas(x, useC = FALSE)
+    ans.C <- updateGradientBetas(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
 })
 
 test_that("R and C versions of updateLogPostBetas give same answer", {
@@ -4691,6 +4716,7 @@ test_that("R and C versions of updateLogPostBetas give same answer", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
+    y[1] <- NA
     spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
                   age ~ Exch())
     x <- initialModel(spec, y = y, exposure = NULL)

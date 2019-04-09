@@ -1186,6 +1186,8 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
     }
 }
 
+## TRANSLATED
+## HAS_TESTS
 ## Don't store results in object, since values
 ## for momentum, and hence value for log posterior,
 ## are thrown away at the end of each update.

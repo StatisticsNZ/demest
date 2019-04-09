@@ -1937,6 +1937,59 @@ updateBetasWhereBetaEqualsMean <- function(object, useC = FALSE) {
 }
 
 ## TRANSLATED
+## HAS_TESTS (by comparing with C version)
+updateGradientBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateGradientBetas_R, object) 
+    }
+    else {
+        gradient.betas <- object@gradientBetas
+        theta.transformed <- object@thetaTransformed
+        mu <- object@mu
+        sigma <- object@sigma
+        cell.in.lik <- object@cellInLik
+        iterator <- object@iteratorBetas
+        betas <- object@betas
+        means.betas <- object@meansBetas
+        variances.betas <- object@variancesBetas
+        beta.equals.mean <- object@betaEqualsMean
+        n.theta <- length(theta.transformed)
+        n.beta <- length(betas)
+        var.theta <- sigma^2
+        iterator <- resetB(iterator)
+        ## reset gradient
+        for (i.beta in seq_len(n.beta))
+            gradient.betas[[i.beta]][] <- 0
+        ## contribution from likelihood
+        for (i.theta in seq_len(n.theta)) {
+            include.cell <- cell.in.lik[i.theta]
+            if (include.cell) {
+                indices <- iterator@indices
+                diff <- (theta.transformed[i.theta] - mu[i.theta]) / var.theta
+                for (i.beta in seq_len(n.beta)) {
+                    if (!beta.equals.mean[i.beta]) {
+                        j <- indices[i.beta]
+                        gradient.betas[[i.beta]][j] <- gradient.betas[[i.beta]][j] + diff # add diff
+                    }
+                }
+            }
+            iterator <- advanceB(iterator)
+        }
+        ## contribution from prior
+        for (i.beta in seq_len(n.beta)) {
+            if (!beta.equals.mean[i.beta]) {
+                diff <- (betas[[i.beta]] - means.betas[[i.beta]]) / variances.betas[[i.beta]]
+                gradient.betas[[i.beta]] <- gradient.betas[[i.beta]] - diff # subtract diff
+            }
+        }
+        object@gradientBetas <- gradient.betas
+        object
+    }
+}
+
+## TRANSLATED
 ## HAS_TESTS
 updateLogPostBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
@@ -1947,13 +2000,14 @@ updateLogPostBetas <- function(object, useC = FALSE) {
     else {
         theta.transformed <- object@thetaTransformed
         mu <- object@mu
+        cell.in.lik <- object@cellInLik
         sigma <- object@sigma
         betas <- object@betas
         means.betas <- object@meansBetas
         variances.betas <- object@variancesBetas
         beta.equals.mean <- object@betaEqualsMean
-        log.likelihood <- sum(stats::dnorm(x = theta.transformed,
-                                           mean = mu,
+        log.likelihood <- sum(stats::dnorm(x = theta.transformed[cell.in.lik],
+                                           mean = mu[cell.in.lik],
                                            sd = sigma,
                                            log = TRUE))
         log.prior <- 0

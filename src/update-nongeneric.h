@@ -13,6 +13,8 @@
 
     void updateBetasWhereBetaEqualsMean(SEXP object_R);
 
+    void updateGradientBetas(SEXP object_R);
+
     void updateLogPostBetas(SEXP object_R);
 
     void updateMeansBetas(SEXP object_R);

@@ -24,51 +24,7 @@ updatePriorsBetas <- function(object, useC = FALSE) {
         object
     }
 }
-
-updateGradientBetas <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateGradientBetas_R, object) 
-    }
-    else {
-        gradient.betas <- object@gradientBetas
-        mean.betas <- object@meanBetas
-        variance.betas <- object@varianceBetas
-        beta.equals.mean <- object@betaEqualsMean
-        sigma <- object@sigma
-        theta.transformed <- object@thetaTransformed
-        mu <- object@mu
-        iterator <- object@iteratorBetas
-        iterator <- resestB(iterator)
-        var.theta <- sigma^2
-        n.theta <- length(theta.transformed)
-        n.beta <- length(betas)
-        ## reset gradient
-        for (i.beta in seq_len(n.beta))
-            gradient.betas[[i.beta]] <- 0
-        for (i.theta in seq_len(n.theta)) {
-            include.cell <- cell.in.lik[i.theta]
-            if (include.cell) {
-                indices <- iterator@indices
-                for (i.beta in seq_len(n.beta)) {
-                    if (!beta.equals.mean[i]) {
-                        j <- indices[i.beta]
-                        diff.theta <- theta.transformed[i.theta] - mu[i.theta]
-                        diff.beta <- betas[[i.beta]][j] - mean.betas[[i.beta]][j]
-                        var.beta <- variance.betas[[i.beta]][j] 
-                        gradient.betas[[i.beta]][j] <- (gradient.betas[[i.beta]][j]
-                            + diff.theta / var.theta
-                            - diff.beta / var.beta)
-                    }
-                }
-            }
-        }
-        object@gradientBetas <- gradient.betas
-    }
-    object
-}
-
+       
 
 updateBetas <- function(object) {
     stopifnot(methods::is(object, "Varying"))

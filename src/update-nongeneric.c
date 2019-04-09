@@ -2681,6 +2681,72 @@ updateBetasWhereBetaEqualsMean(SEXP object_R)
     }
 }
 
+
+void
+updateGradientBetas(SEXP object_R)
+{
+  SEXP thetaTransformed_R = GET_SLOT(object_R, thetaTransformed_sym);
+  double *thetaTransformed = REAL(thetaTransformed_R);
+  double *mu = REAL(GET_SLOT(object_R, mu_sym));
+  double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
+  int *cellInLik = INTEGER(GET_SLOT(object_R, cellInLik_sym));
+  SEXP iterator_R = GET_SLOT(object_R, iteratorBetas_sym);
+  SEXP betas_R = GET_SLOT(object_R, betas_sym);
+  SEXP gradientBetas_R = GET_SLOT(object_R, gradientBetas_sym);
+  SEXP meansBetas_R = GET_SLOT(object_R, meansBetas_sym);
+  SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
+  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));  
+  int n_theta = LENGTH(thetaTransformed_R);
+  int n_beta = LENGTH(betas_R);
+  double var_theta = sigma * sigma;
+  resetB(iterator_R);
+  /* arrays of pointers, plus array of lengths */
+  double *grad_ptr[n_beta];
+  double *beta_ptr[n_beta];
+  double *mean_ptr[n_beta];
+  double *var_ptr[n_beta];
+  int J_vec[n_beta];
+  for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+    SEXP gradient_R = VECTOR_ELT(gradientBetas_R, i_beta);
+    grad_ptr[i_beta] = REAL(gradient_R);
+    beta_ptr[i_beta] = REAL(VECTOR_ELT(betas_R, i_beta));
+    mean_ptr[i_beta] = REAL(VECTOR_ELT(meansBetas_R, i_beta));
+    var_ptr[i_beta] = REAL(VECTOR_ELT(variancesBetas_R, i_beta));
+    J_vec[i_beta] = LENGTH(gradient_R);
+  }
+  /* reset gradientThetas */
+  for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+    int J = J_vec[i_beta];
+    for (int j = 0; j < J; ++j)
+      grad_ptr[i_beta][j] = 0;
+  }
+  /* contribution from likelihood */
+  for (int i_theta = 0; i_theta < n_theta; ++i_theta) {
+    if (cellInLik[i_theta]) {
+      int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym));
+      double diff = (thetaTransformed[i_theta] - mu[i_theta]) / var_theta;
+      for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+	if (!betaEqualsMean[i_beta]) {
+	  int j = indices[i_beta] - 1;
+	  grad_ptr[i_beta][j] += diff; /* add diff */
+	}
+      }
+    }
+    advanceB(iterator_R);
+  }
+  /* contribution from prior */
+  for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+    if (!betaEqualsMean[i_beta]) {
+      int J = J_vec[i_beta];
+      for (int j = 0; j < J; ++j) {
+	double diff = ((beta_ptr[i_beta][j] - mean_ptr[i_beta][j])
+		       / var_ptr[i_beta][j]);
+	grad_ptr[i_beta][j] -= diff;
+      }
+    }
+  }
+}
+
 void
 updateLogPostBetas(SEXP object_R)
 {
@@ -2688,14 +2754,17 @@ updateLogPostBetas(SEXP object_R)
   SEXP thetaTransformed_R = GET_SLOT(object_R, thetaTransformed_sym);
   double *thetaTransformed = REAL(thetaTransformed_R);
   double *mu = REAL(GET_SLOT(object_R, mu_sym));
+  int *cellInLik = INTEGER(GET_SLOT(object_R, cellInLik_sym));
   double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
   int n_theta = LENGTH(thetaTransformed_R);
   double log_likelihood = 0;
   for (int i_theta = 0; i_theta < n_theta; ++i_theta) {
-    log_likelihood += dnorm(thetaTransformed[i_theta],
-			    mu[i_theta],
-			    sigma,
-			    USE_LOG);
+    if (cellInLik[i_theta]) {
+      log_likelihood += dnorm(thetaTransformed[i_theta],
+			      mu[i_theta],
+			      sigma,
+			      USE_LOG);
+    }
   }
   /* prior */
   SEXP betas_R = GET_SLOT(object_R, betas_sym);

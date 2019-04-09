@@ -716,6 +716,7 @@ void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
 
 void initializeMomentum(SEXP object);
 void updateBetasWhereBetaEqualsMean(SEXP object);
+void updateGradientBetas(SEXP object);
 void updateLogPostBetas(SEXP object);
 void updateMeansBetas(SEXP object);
 void updateMomentumOneStep(SEXP object, double stepSize, int isFirstLast);
