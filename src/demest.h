@@ -534,6 +534,8 @@ double findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
                             double nuBeta, double nuTau,
                             double V, int n, double min, double max);
 
+double getLogPostMomentum(SEXP object_R);
+
 SEXP getV_R(SEXP prior_R);
 
 SEXP makeVBarAndN_R(SEXP object, SEXP iBeta_R);

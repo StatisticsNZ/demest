@@ -682,6 +682,15 @@ findOneRootLogPostSigmaRobust_R(SEXP sigma0_R, SEXP z_R, SEXP A_R,
     return ScalarReal(ans);
 }
 
+
+SEXP getLogPostMomentum_R(SEXP object_R)
+{
+  double ans = getLogPostMomentum(object_R);
+  return ScalarReal(ans);
+}
+
+
+
 /* one off wrapper for modePhiMix */
 SEXP modePhiMix_R(SEXP level_R, SEXP meanLevel_R, SEXP nAlong_R,
               SEXP indexClassMax_R, SEXP omega_R, SEXP tolerance_R)
@@ -2217,6 +2226,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(betaHatSeason_R, 1),
   CALLDEF(findOneRootLogPostSigmaNorm_R, 8),
   CALLDEF(findOneRootLogPostSigmaRobust_R, 9),
+  CALLDEF(getLogPostMomentum_R, 1),
   CALLDEF(getV_R, 1),
   
   CALLDEF(makeVBarAndN_R, 2),

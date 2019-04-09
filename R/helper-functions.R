@@ -1186,6 +1186,31 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
     }
 }
 
+## Don't store results in object, since values
+## for momentum, and hence value for log posterior,
+## are thrown away at the end of each update.
+getLogPostMomentum <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(getLogPostMomentum_R, object) 
+    }
+    else {
+        momentum.betas <- object@momentumBetas
+        beta.equals.mean <- object@betaEqualsMean
+        ans <- 0
+        for (i in seq_along(momentum.betas)) {
+            if (!beta.equals.mean[i]) {
+                momentum <- momentum.betas[[i]]
+                ans <- ans + sum(dnorm(momentum,
+                                       mean = 0,
+                                       sd = 1,
+                                       log = TRUE))
+            }
+        }
+        ans
+    }
+}
 
 ## TRANSLATED
 ## HAS_TESTS

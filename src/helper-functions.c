@@ -1403,6 +1403,25 @@ double identity(double x)
 }
 
 
+double
+getLogPostMomentum(SEXP object_R)
+{
+  SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
+  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  int n_beta = LENGTH(momentumBetas_R);
+  double ans = 0;
+  for (int i = 0; i < n_beta; ++i) {
+    if (!betaEqualsMean[i]) {
+      SEXP momentum_R = VECTOR_ELT(momentumBetas_R, i);
+      double *momentum = REAL(momentum_R);
+      int J = LENGTH(momentum_R);
+      for (int j = 0; j < J; ++j)
+	ans += dnorm(momentum[j], 0, 1, USE_LOG);
+    }
+  }
+  return ans;
+}
+
 
 void
 initializeMomentum(SEXP object_R)

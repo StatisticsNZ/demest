@@ -70,29 +70,6 @@ updateGradientBetas <- function(object, useC = FALSE) {
 }
 
 
-updateLogPostMomentum <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateLogPostMomentum_R, object) 
-    }
-    else {
-        momentum <- object@momentumMetas
-        ans <- 0
-        for (i.beta in seq_along(momentum)) {
-            if (!beta.equals.mean[i.beta]) {
-                ans <- ans + sum(dnorm(momentum[[i.beta]],
-                                       mean = 0,
-                                       sd = 1,
-                                       log = TRUE))
-            }
-        }
-        object@logPostMomentum <- ans
-        object
-    }
-}
-
-
 updateBetas <- function(object) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -105,7 +82,7 @@ updateBetas <- function(object) {
         betas.curr <- object@betas # call 'updateBetasWhereBetaEqualsMean' first
         mean.step.size <- object@meanStepSize@.Data
         log.post.betas.curr <- object@logPostBetas
-        log.post.momentum.curr <- object@logPostMomentum # call 'initializeMomentum' first
+        log.post.momentum.curr <- getLogPostMomentum(object) # call 'initializeMomentum' first
         step.size <- stats::runif(n = 1L,
                                   min = 0,
                                   max = 2 * mean.step.size)
@@ -127,9 +104,8 @@ updateBetas <- function(object) {
                                      isFirstLast = is.last)
         }
         object <- updateLogPostBetas(object)
-        object <- updateLogPostMomentum(object)
         log.post.betas.prop <- object@logPostBetas
-        log.post.momentum.prop <- object@logPostMomentum
+        log.post.momentum.prop <- getLogPostMomentum(object)
         log.diff <- (log.post.betas.prop + log.post.momentum.prop
             - log.post.betas.curr - log.post.momentum.curr)
         accept <- (log.diff >= 0) || (stats::runif(n = 1L) > exp(log.diff))

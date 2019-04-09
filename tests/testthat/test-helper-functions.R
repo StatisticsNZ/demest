@@ -3088,6 +3088,49 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
     }
 })
 
+test_that("R version of getLogPostMomentum works", {
+    getLogPostMomentum <- demest:::getLogPostMomentum
+    initializeMomentum <- demest:::initializeMomentum
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch(),
+                  region ~ Zero())
+    set.seed(1)
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    x <- initializeMomentum(x)
+    ans.obtained <- getLogPostMomentum(x)
+    ans.expected <- sum(dnorm(x@momentumBetas[[1]], log = TRUE)) +
+        sum(dnorm(x@momentumBetas[[2]], log = TRUE))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of getLogPostMomentum give same answer", {
+    getLogPostMomentum <- demest:::getLogPostMomentum
+    initializeMomentum <- demest:::initializeMomentum
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch(),
+                  region ~ Zero())
+    set.seed(1)
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    x <- initializeMomentum(x)
+    ans.R <- getLogPostMomentum(x, useC = FALSE)
+    ans.C <- getLogPostMomentum(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
 
 test_that("R version of initializeMomentum works", {
     initializeMomentum <- demest:::initializeMomentum
