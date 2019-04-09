@@ -1219,7 +1219,8 @@ getV <- function(prior, useC = FALSE) {
     }
 }
 
-
+## TRANSLATED
+## HAS_TESTS
 initializeMomentum <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -1229,7 +1230,7 @@ initializeMomentum <- function(object, useC = FALSE) {
     else {
         momentum <- object@momentumBetas
         beta.equals.mean <- object@betaEqualsMean
-        for (i in seq_len(momentum)) {
+        for (i in seq_along(momentum)) {
             if (!beta.equals.mean[i]) {
                 J <- length(momentum[[i]])
                 momentum[[i]] <- rnorm(n = J,
@@ -1237,11 +1238,10 @@ initializeMomentum <- function(object, useC = FALSE) {
                                        sd = 1)
             }
         }
-        object@momentum <- momentum
+        object@momentumBetas <- momentum
         object
     }
 }
-
 
 ## TRANSLATED
 ## HAS_TESTS

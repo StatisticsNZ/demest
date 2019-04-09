@@ -1403,6 +1403,26 @@ double identity(double x)
 }
 
 
+
+void
+initializeMomentum(SEXP object_R)
+{
+    SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
+    int n_beta =  LENGTH(momentumBetas_R);
+    int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+    for (int i = 0; i < n_beta; ++i) {
+      if (!betaEqualsMean[i]) {
+	SEXP momentum_R = VECTOR_ELT(momentumBetas_R, i);
+	double *momentum = REAL(momentum_R);
+	int J = LENGTH(momentum_R);
+	for (int j = 0; j < J; ++j)
+	  momentum[j] = rnorm(0, 1);
+      }
+    }
+}
+
+
+
 double
 logPostPhiMix(double phi, double *level, double meanLevel, int nAlong, 
                 int indexClassMaxMix_r, double omega)

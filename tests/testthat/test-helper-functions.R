@@ -3088,6 +3088,50 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
     }
 })
 
+
+test_that("R version of initializeMomentum works", {
+    initializeMomentum <- demest:::initializeMomentum
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch(),
+                  region ~ Zero())
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    set.seed(1)
+    ans.obtained <- initializeMomentum(x)
+    set.seed(1)
+    ans.expected <- x
+    ans.expected@momentumBetas[[1]] <- rnorm(1)
+    ans.expected@momentumBetas[[2]] <- rnorm(5)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of initializeMomentum give same answer", {
+    initializeMomentum <- demest:::initializeMomentum
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch(),
+                  region ~ Zero())
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    set.seed(1)
+    ans.R <- initializeMomentum(x, useC = FALSE)
+    set.seed(1)
+    ans.C <- initializeMomentum(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
 test_that("logPostPhiMix works", {
     logPostPhiMix <- demest:::logPostPhiMix
     phi <- 0.5

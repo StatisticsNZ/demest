@@ -1255,6 +1255,7 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateAlphaDeltaDLMWithTrend);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 
 /* updating betas */
+UPDATEOBJECT_WRAPPER_R(initializeMomentum);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateBetasWhereBetaEqualsMean);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateLogPostBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateMeansBetas);
@@ -2282,6 +2283,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2), 
   CALLDEF(updateSeason_R, 2),
 
+  CALLDEF(initializeMomentum_R, 1),
   CALLDEF(updateBetasWhereBetaEqualsMean_R, 1),
   CALLDEF(updateLogPostBetas_R, 1),
   CALLDEF(updateMeansBetas_R, 1),
