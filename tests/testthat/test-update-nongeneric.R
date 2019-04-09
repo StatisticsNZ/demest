@@ -4741,6 +4741,56 @@ test_that("R and C versions of updateMeansBetas give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
+test_that("R version of updateMomentumOneStep works", {
+    updateMomentumOneStep <- demest:::updateMomentumOneStep
+    initializeMomentum <- demest:::initializeMomentum
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch(),
+                  region ~ Zero())
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    x@gradientBetas[[1]] <- rnorm(1)
+    x@gradientBetas[[2]] <- rnorm(5)
+    x@gradientBetas[[3]] <- rnorm(4)
+    x <- initializeMomentum(x)
+    ans.obtained <- updateMomentumOneStep(x, stepSize = 0.1, isFirstLast = FALSE)
+    ans.expected <- x
+    for (i in 1:2) {
+        ans.expected@momentumBetas[[i]] <- (ans.expected@momentumBetas[[i]]
+            - 0.1 * sqrt(ans.expected@variancesBetas[[i]]) * ans.expected@gradientBetas[[i]])
+    }
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R and C versions of updateMomentumOneStep give same answer", {
+    updateMomentumOneStep <- demest:::updateMomentumOneStep
+    initializeMomentum <- demest:::initializeMomentum
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch(),
+                  region ~ Zero())
+    x <- initialModel(spec, y = y, exposure = NULL)
+    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+    x@gradientBetas[[1]] <- rnorm(1)
+    x@gradientBetas[[2]] <- rnorm(5)
+    x@gradientBetas[[3]] <- rnorm(4)
+    x <- initializeMomentum(x)
+    ans.R <- updateMomentumOneStep(x, stepSize = 0.1, isFirstLast = FALSE, useC = FALSE)
+    ans.C <- updateMomentumOneStep(x, stepSize = 0.1, isFirstLast = FALSE, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
 
 test_that("R version of updateMu works", {
     updateMu <- demest:::updateMu

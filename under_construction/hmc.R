@@ -103,9 +103,9 @@ updateBetas <- function(object) {
         object <- updateBetasWhereBetaEqualsMean(object)
         object <- initializeMomentum(object)
         betas.curr <- object@betas # call 'updateBetasWhereBetaEqualsMean' first
-        log.post.momentum.curr <- object@logPostMomentum # call 'initializeMomentum' first
         mean.step.size <- object@meanStepSize@.Data
         log.post.betas.curr <- object@logPostBetas
+        log.post.momentum.curr <- object@logPostMomentum # call 'initializeMomentum' first
         step.size <- stats::runif(n = 1L,
                                   min = 0,
                                   max = 2 * mean.step.size)
@@ -113,18 +113,18 @@ updateBetas <- function(object) {
                                min = 0,
                                max = 2 / step.size)
         n.step <- as.integer(n.step) + 1L
-        object <- updateMomentum(object,
-                                 stepSize = step.size,
-                                 isFirstLast = TRUE)
+        object <- updateMomentumOneStep(object,
+                                        stepSize = step.size,
+                                        isFirstLast = TRUE)
         for (i in seq_len(n.step)) {
-            is.first.last <- i == n.step
+            is.last <- i == n.step
             object <- updateBetasOneStep(object = object,
                                          stepSize = step.size)
             object <- updateMu(object)
             object <- updateGradientBetas(object)
             object <- updateMomentum(object = object,
                                      stepSize = step.size,
-                                     isFirstLast = is.first.last)
+                                     isFirstLast = is.last)
         }
         object <- updateLogPostBetas(object)
         object <- updateLogPostMomentum(object)
@@ -145,31 +145,3 @@ updateBetas <- function(object) {
     }
 }
         
-
-updateMomentum <- function(object, stepSize, firstLast, useC = FALSE) {
-    ## object
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    ## firstLast
-    stopifnot(identical(length(firstLast), 1L))
-    stopifnot(is.logical(firstLast))
-    stopifnot(!is.na(firstLast))
-    if (useC) {
-        .Call(updateMomentum_R, object)
-    }
-    else {
-        momentum <- object@momentumBetas
-        gradient <- object@gradientBetas
-        beta.equals.mean <- object@betaEqualsMean
-        for (i.beta in seq_len(momentum)) {
-            if (!beta.equals.mean[i]) {
-                J <- length(momentum[[i.beta]])
-                mult <- if (firstLast) 0.5 * stepSize else stepSize
-                for (j in seq_len(J))
-                    momentum[[i.beta]][j] <- momentum[[i.beta]][j] - mult * gradient[[i]]
-            }
-        }
-        object@momentum <- momentum
-        object
-    }
-}

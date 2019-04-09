@@ -2742,6 +2742,28 @@ updateMeansBetas(SEXP object_R)
     }
 }
 
+void
+updateMomentumOneStep(SEXP object_R, double stepSize, int isFirstLast)
+{
+  SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
+  SEXP gradientBetas_R = GET_SLOT(object_R, gradientBetas_sym);
+  SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
+  int n_beta =  LENGTH(momentumBetas_R);
+  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  double mult = isFirstLast ? 0.5 * stepSize : stepSize;
+  for (int i = 0; i < n_beta; ++i) {
+    if (!betaEqualsMean[i]) {
+      SEXP momentum_R = VECTOR_ELT(momentumBetas_R, i);
+      double *momentum = REAL(momentum_R);
+      double *gradient = REAL(VECTOR_ELT(gradientBetas_R, i));
+      double *variances = REAL(VECTOR_ELT(variancesBetas_R, i));
+      int J = LENGTH(momentum_R);
+      for (int j = 0; j < J; ++j)
+	momentum[j] -= mult * sqrt(variances[j]) * gradient[j];
+    }
+  }
+}
+
 
 void
 updateMu(SEXP object_R)

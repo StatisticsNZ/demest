@@ -1246,6 +1246,18 @@ SEXP updateSDRobust_R(SEXP sigma_R,
 
 }
 
+SEXP
+updateMomentumOneStep_R(SEXP object_R, SEXP stepSize_R, SEXP isFirstLast_R)
+{
+  double stepSize = *REAL(stepSize_R);
+  int isFirstLast = *INTEGER(isFirstLast_R);
+  SEXP ans_R;
+  PROTECT(ans_R = duplicate(object_R));
+  updateMomentumOneStep(ans_R, stepSize, isFirstLast);
+  UNPROTECT(1); /* ans_R */
+  return ans_R;
+}
+
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateAlphaMix);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateEta);
 UPDATEOBJECT_WRAPPER_R(updateComponentWeightMix);
@@ -2287,6 +2299,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateBetasWhereBetaEqualsMean_R, 1),
   CALLDEF(updateLogPostBetas_R, 1),
   CALLDEF(updateMeansBetas_R, 1),
+  CALLDEF(updateMomentumOneStep_R, 3),
   CALLDEF(updateVariancesBetas_R, 1),
   CALLDEF(updateMu_R, 1),
 

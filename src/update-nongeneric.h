@@ -17,6 +17,8 @@
 
     void updateMeansBetas(SEXP object_R);
 
+    void updateMomentumOneStep(SEXP object_R, double stepSize, int isFirstLast);
+
     void updateVariancesBetas(SEXP object_R);
 
     void updateSigma_Varying(SEXP object);

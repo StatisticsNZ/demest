@@ -1973,9 +1973,6 @@ updateLogPostBetas <- function(object, useC = FALSE) {
     }
 }
 
-
-
-
 ## TRANSLATED
 ## HAS_TESTS
 updateMeansBetas <- function(object, useC = FALSE) {
@@ -1994,7 +1991,44 @@ updateMeansBetas <- function(object, useC = FALSE) {
     }
 }
 
-
+## TRANSLATED
+## HAS_TESTS
+updateMomentumOneStep <- function(object, stepSize, isFirstLast, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    ## stepSize
+    stopifnot(identical(length(stepSize), 1L))
+    stopifnot(is.numeric(stepSize))
+    stopifnot(!is.na(stepSize))
+    stopifnot(stepSize > 0)
+    ## isFirstLast
+    stopifnot(identical(length(isFirstLast), 1L))
+    stopifnot(is.logical(isFirstLast))
+    stopifnot(!is.na(isFirstLast))
+    if (useC) {
+        .Call(updateMomentumOneStep_R, object, stepSize, isFirstLast)
+    }
+    else {
+        momentum.betas <- object@momentumBetas
+        gradient.betas <- object@gradientBetas
+        variances.betas <- object@variancesBetas
+        beta.equals.mean <- object@betaEqualsMean
+        mult <- stepSize
+        if (isFirstLast)
+            mult <- 0.5 * mult
+        for (i in seq_along(momentum.betas)) {
+            if (!beta.equals.mean[i]) {
+                momentum <- momentum.betas[[i]]
+                gradient <- gradient.betas[[i]]
+                variances <- variances.betas[[i]]
+                momentum.betas[[i]] <- momentum - mult * sqrt(variances) * gradient
+            }
+        }
+        object@momentumBetas <- momentum.betas
+        object
+    }
+}
 
 ## TRANSLATED
 ## HAS_TESTS
