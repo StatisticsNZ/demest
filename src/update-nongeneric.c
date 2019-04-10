@@ -2661,13 +2661,103 @@ get_log_gamma_dens(int n, double theta[],
 }
 
 void
+updateBetas(SEXP object_R)
+{
+  /* set constant betas and draw new values for momentum */
+  updateBetasWhereBetaEqualsMean(object_R);
+  initializeMomentum(object_R);
+  /* get betas */
+  SEXP betas_R = GET_SLOT(object_R, betas_sym);
+  SEXP betasOld_R = GET_SLOT(object_R, betasOld_sym);
+  int n_beta = LENGTH(betas_R);
+  /* make arrays of pointers and array of lengths to simplify calculations later */
+  double *beta_ptr[n_beta];
+  double *beta_old_ptr[n_beta];
+  int J_vec[n_beta];
+  for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+    SEXP beta_R = VECTOR_ELT(betas_R, i_beta);
+    beta_ptr[i_beta] = REAL(beta_R);
+    beta_old_ptr[i_beta] = REAL(VECTOR_ELT(betasOld_R, i_beta));
+    J_vec[i_beta] = LENGTH(beta_R);
+  }
+  /* transfer current values of 'beta' to 'betaOld' */
+  for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+    int J = J_vec[i_beta];
+    for (int j = 0; j < J; ++j)
+      beta_old_ptr[i_beta][j] = beta_ptr[i_beta][j];
+  }
+  /* store current values for log posterior */
+  double log_post_betas_curr = *REAL(GET_SLOT(object_R, logPostBetas_sym));
+  double log_post_momentum_curr = getLogPostMomentum(object_R);
+  /* get step size and number of steps */
+  double mean_step_size = *REAL(GET_SLOT(object_R, stepSize_sym));
+  int mean_n_step = *INTEGER(GET_SLOT(object_R, nStep_sym));
+  double step_size = runif(0, 2 * mean_step_size);
+  int n_step = ceil(runif(0, 2 * mean_n_step));
+  /* take initial half step */
+  updateMomentumOneStep(object_R, step_size, 1);
+  /* take remaining steps */
+  for (int i_step = 0; i_step < n_step; ++i_step) {
+    int is_last = i_step == n_step - 1;
+    updateBetasOneStep(object_R, step_size);
+    updateMu(object_R);
+    updateGradientBetas(object_R);
+    updateMomentumOneStep(object_R, step_size, is_last);
+  }
+  /* get new values for log posterior */
+  updateLogPostBetas(object_R);
+  double log_post_betas_prop = *REAL(GET_SLOT(object_R, logPostBetas_sym));
+  double log_post_momentum_prop = getLogPostMomentum(object_R);
+  /* Metropolis step */
+  double log_diff = (log_post_betas_prop + log_post_momentum_prop
+		     - log_post_betas_curr - log_post_momentum_curr);
+  int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+  /* update accordingly */
+  if (accept) {
+    SET_INTSCALE_SLOT(object_R, acceptBeta_sym, 1);
+  }
+  else {
+    for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+      int J = J_vec[i_beta];
+      for (int j = 0; j < J; ++j)
+	beta_ptr[i_beta][j] = beta_old_ptr[i_beta][j];
+    }
+    updateMu(object_R);
+    SET_DOUBLESCALE_SLOT(object_R, logPostBetas_sym, log_post_betas_curr);
+    SET_INTSCALE_SLOT(object_R, acceptBeta_sym, 0);
+  }
+}
+
+ 
+void
+updateBetasOneStep(SEXP object_R, double stepSize)
+{
+  SEXP betas_R = GET_SLOT(object_R, betas_sym);
+  SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
+  SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
+  int n_beta =  LENGTH(betas_R);
+  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  for (int i = 0; i < n_beta; ++i) {
+    if (!betaEqualsMean[i]) {
+      SEXP beta_R = VECTOR_ELT(betas_R, i);
+      double *beta = REAL(beta_R);
+      double *momentum = REAL(VECTOR_ELT(momentumBetas_R, i));
+      double *variances = REAL(VECTOR_ELT(variancesBetas_R, i));
+      int J = LENGTH(beta_R);
+      for (int j = 0; j < J; ++j)
+	beta[j] += stepSize * sqrt(variances[j]) * momentum[j];
+    }
+  }
+}
+
+
+void
 updateBetasWhereBetaEqualsMean(SEXP object_R)
 {
     SEXP betas_R = GET_SLOT(object_R, betas_sym);
     SEXP means_R = GET_SLOT(object_R, meansBetas_sym);
     int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
     int n_beta =  LENGTH(betas_R);
-
     for (int i = 0; i < n_beta; ++i) {
       if (betaEqualsMean[i]) {
 	SEXP beta_R = VECTOR_ELT(betas_R, i);

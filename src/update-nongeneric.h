@@ -11,6 +11,10 @@
 
     void updateMu(SEXP object_R);
 
+    void updateBetas(SEXP object_R);
+
+    void updateBetasOneStep(SEXP object_R, double stepSize);
+
     void updateBetasWhereBetaEqualsMean(SEXP object_R);
 
     void updateGradientBetas(SEXP object_R);

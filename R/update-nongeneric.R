@@ -1915,6 +1915,92 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 ## UPDATING MODELS ##################################################################
 
+
+updateBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateBetas_R, object) 
+    }
+    else {
+        object <- updateBetasWhereBetaEqualsMean(object)
+        object <- initializeMomentum(object)
+        object@betasOld <- object@betas # call 'updateBetasWhereBetaEqualsMean' first
+        log.post.betas.curr <- object@logPostBetas
+        log.post.momentum.curr <- getLogPostMomentum(object) # call 'initializeMomentum' first
+        ## random selection of step.size and n.step based on code on
+        ## p603 of Gelman et al 2014 Bayesian Data Analysis, Third Edition
+        mean.step.size <- object@stepSize@.Data
+        mean.n.step <- object@nStep@.Data
+        step.size <- stats::runif(n = 1L,
+                                  min = 0,
+                                  max = 2 * mean.step.size)
+        n.step <- ceiling(stats::runif(n = 1L,
+                                       min = 0,
+                                       max = 2 * mean.n.step))
+        object <- updateMomentumOneStep(object,
+                                        stepSize = step.size,
+                                        isFirstLast = TRUE)
+        for (i in seq_len(n.step)) {
+            is.last <- i == n.step
+            object <- updateBetasOneStep(object = object,
+                                         stepSize = step.size)
+            object <- updateMu(object)
+            object <- updateGradientBetas(object)
+            object <- updateMomentumOneStep(object = object,
+                                            stepSize = step.size,
+                                            isFirstLast = is.last)
+        }
+        object <- updateLogPostBetas(object)
+        log.post.betas.prop <- object@logPostBetas
+        log.post.momentum.prop <- getLogPostMomentum(object)
+        log.diff <- (log.post.betas.prop + log.post.momentum.prop
+            - log.post.betas.curr - log.post.momentum.curr)
+        accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+        if (accept) {
+            object@acceptBeta <- 1L
+        }
+        else {
+            object@betas <- object@betasOld
+            object <- updateMu(object)
+            object@logPostBetas <- log.post.betas.curr
+            object@acceptBeta <- 0L
+        }
+        object
+    }
+}
+
+## TRANSLATED
+## HAS_TESTS
+updateBetasOneStep <- function(object, stepSize, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    ## stepSize
+    stopifnot(identical(length(stepSize), 1L))
+    stopifnot(is.numeric(stepSize))
+    stopifnot(!is.na(stepSize))
+    stopifnot(stepSize > 0)
+    if (useC) {
+        .Call(updateBetasOneStep_R, object, stepSize) 
+    }
+    else {
+        betas <- object@betas
+        momentum.betas <- object@momentumBetas
+        variances.betas <- object@variancesBetas
+        beta.equals.mean <- object@betaEqualsMean
+        for (i in seq_along(betas)) {
+            if (!beta.equals.mean[i]) {
+                momentum <- momentum.betas[[i]]
+                variances <- variances.betas[[i]]
+                betas[[i]] <- betas[[i]] + stepSize * sqrt(variances) * momentum
+            }
+        }
+        object@betas <- betas
+        object
+    }
+}
+
 ## TRANSLATED
 ## HAS_TESTS
 updateBetasWhereBetaEqualsMean <- function(object, useC = FALSE) {

@@ -122,6 +122,7 @@ setClass("Betas",
                    variancesBetas = "list",
                    gradientBetas = "list",
                    momentumBetas = "list",
+                   betasOld = "list",
                    namesBetas = "character",
                    priorsBetas = "list",
                    betaEqualsMean = "logical",
@@ -129,6 +130,9 @@ setClass("Betas",
                    dims = "list",
                    logPostBetas = "Parameter",
                    logPostPriorsBetas = "Parameter",
+                   stepSize = "Scale",
+                   nStep = "Length",
+                   acceptBeta = "integer",
                    mu = "numeric"),
          contains = c("VIRTUAL", "Margins"),
          validity = function(object) {
@@ -141,6 +145,8 @@ setClass("Betas",
              dims <- object@dims
              mu <- object@mu
              theta <- object@theta
+             stepSize <- object@stepSize@.Data
+             acceptBeta <- object@acceptBeta
              hasNonPositive <- function(x) any(x <= 0L)
              hasMissing <- function(x) any(is.na(x))
              I <- length(object@theta)
@@ -157,8 +163,10 @@ setClass("Betas",
              ## first element of 'betas' has length 1
              if (!identical(length(betas[[1L]]), 1L))
                  return(gettextf("first element of '%s' does not have length 1", "betas"))
-             ## gradientBetas, momentumBetas, meansBetas, variancesBetas:
-             for (name in c("gradientBetas", "momentumBetas", "meansBetas", "variancesBetas")) {
+             ## gradientBetas, momentumBetas, meansBetas, variancesBetas, betasOld:
+             for (name in c("gradientBetas", "momentumBetas",
+                            "meansBetas", "variancesBetas",
+                            "betasOld")) {
                  value <- methods::slot(object, name)
                  ## all elements have type "double"
                  if (!all(sapply(value, is.double)))
@@ -217,12 +225,26 @@ setClass("Betas",
              if (!identical(dims[[1L]], 0L))
                  return(gettextf("first element of '%s' is not %d",
                                  "dims", 0L))
+             ## 'acceptBeta' has length 1
+             if (!identical(length(acceptBeta), 1L))
+                 stop(gettext("'%s' does not have length %d",
+                              "acceptBeta", 1L))
+             ## 'acceptBeta' is 0 or 1
+             if (!(acceptBeta %in% 0:1))
+                 stop(gettextf("'%s' is not %d or %d",
+                               "acceptBeta", 0L, 1L))             
              ## 'mu' has type "double"
              if (!is.double(mu))
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "mu", "double"))
-             ## gradientBetas, momentumBetas, meansBetas, variancesBetas:
-             for (name in c("gradientBetas", "momentumBetas", "meansBetas", "variancesBetas")) {
+             ## 'stepSize' positive
+             if (!(stepSize > 0))
+                 return(gettextf("'%s' is non-positive",
+                                 "stepSize"))
+             ## gradientBetas, momentumBetas, meansBetas, variancesBetas, betasOld:
+             for (name in c("gradientBetas", "momentumBetas",
+                            "meansBetas", "variancesBetas",
+                            "betasOld")) {
                  value <- methods::slot(object, name)
                  ## 'betas' and slot have same length
                  if (!identical(length(betas), length(value)))

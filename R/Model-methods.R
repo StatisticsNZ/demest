@@ -1132,6 +1132,8 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               w <- model@w
               betas.obj <- model@betas
+              step.size <- model@stepSize@.Data
+              n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
               margins <- model@margins
@@ -1189,6 +1191,12 @@ setMethod("makeOutputModel",
                   }
               }
               names(betas) <- names.betas
+              ## make acceptBeta
+              first <- pos
+              pos <- first + 1L
+              accept.beta <- SkeletonAccept(first = first,
+                                            nChain = nChain,
+                                            nIteration = nIteration)
               ## make sigma
               first <- pos
               pos <- first + 1L
@@ -1211,7 +1219,12 @@ setMethod("makeOutputModel",
               hyper <- c(hyper,
                          list(sd = list(df = dfSigma, scale = scaleSigma)))
               ## assemble return value
-              prior <- c(betas, list(mean = mu), list(sd = sigma))
+              prior <- c(betas,
+                         list(mean = mu),
+                         list(acceptBeta = accept.beta,
+                              stepSize = step.size,
+                              nStep = n.step),
+                         list(sd = sigma))
               if (methods::is(model, "Aggregate")) {
                   likelihood <- list(mean = theta,
                                      jumpMean = scale.theta,
@@ -1248,6 +1261,8 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
+              step.size <- model@stepSize@.Data
+              n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
               margins <- model@margins
@@ -1295,6 +1310,12 @@ setMethod("makeOutputModel",
                   }
               }
               names(betas) <- names.betas
+              ## make acceptBeta
+              first <- pos
+              pos <- first + 1L
+              accept.beta <- SkeletonAccept(first = first,
+                                            nChain = nChain,
+                                            nIteration = nIteration)
               ## make sigma
               first <- pos
               pos <- first + 1L
@@ -1321,8 +1342,15 @@ setMethod("makeOutputModel",
                                  jumpProb = scale.theta,
                                  noProposal = fail.prop.theta,
                                  acceptProb = accept.theta)
-              prior <- c(betas, list(mean = mu), list(sd = sigma))
-              ans <- list(likelihood = likelihood, prior = prior, hyper = hyper)
+              prior <- c(betas,
+                         list(mean = mu),
+                         list(acceptBeta = accept.beta,
+                              stepSize = step.size,
+                              nStep = n.step),
+                         list(sd = sigma))
+                         ans <- list(likelihood = likelihood,
+                                     prior = prior,
+                                     hyper = hyper)
               if (methods::is(model, "Aggregate")) {
                   aggregate <- makeOutputAggregate(model = model,
                                                    pos = pos,
@@ -1341,6 +1369,8 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
+              step.size <- model@stepSize@.Data
+              n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
               margins <- model@margins
@@ -1404,6 +1434,12 @@ setMethod("makeOutputModel",
                   }
               }
               names(betas) <- names.betas
+              ## make acceptBeta
+              first <- pos
+              pos <- first + 1L
+              accept.beta <- SkeletonAccept(first = first,
+                                            nChain = nChain,
+                                            nIteration = nIteration)
               ## make sigma
               first <- pos
               pos <- first + 1L
@@ -1437,8 +1473,15 @@ setMethod("makeOutputModel",
               else
                   names <- c("count", "jumpCount", "noProposal", "acceptCount")
               names(likelihood) <- names
-              prior <- c(betas, list(mean = mu), list(sd = sigma))
-              ans <- list(likelihood = likelihood, prior = prior, hyper = hyper)
+              prior <- c(betas,
+                         list(mean = mu),
+                         list(acceptBeta = accept.beta,
+                              stepSize = step.size,
+                              nStep = n.step),
+                         list(sd = sigma))
+              ans <- list(likelihood = likelihood,
+                          prior = prior,
+                          hyper = hyper)
               if (methods::is(model, "Aggregate")) {
                   aggregate <- makeOutputAggregate(model = model,
                                                    pos = pos,
@@ -1464,6 +1507,8 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
+              step.size <- model@stepSize@.Data
+              n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
               margins <- model@margins
@@ -1548,6 +1593,12 @@ setMethod("makeOutputModel",
                   }
               }
               names(betas) <- names.betas
+              ## make acceptBeta
+              first <- pos
+              pos <- first + 1L
+              accept.beta <- SkeletonAccept(first = first,
+                                            nChain = nChain,
+                                            nIteration = nIteration)
               ## make sigma
               first <- pos
               pos <- first + 1L
@@ -1580,6 +1631,9 @@ setMethod("makeOutputModel",
                                      acceptRate = accept.theta,
                                      dispersion = nu.cmp)
                   prior <- c(betas,
+                             list(acceptBeta = accept.beta,
+                                  stepSize = step.size,
+                                  nStep = n.step),
                              list(rate = list(mean = mu,
                                               sd = sigma)),
                              list(dispersion = list(mean = mean.log.nu.cmp,
@@ -1593,6 +1647,9 @@ setMethod("makeOutputModel",
                                      acceptCount = accept.theta,
                                      dispersion = nu.cmp)
                   prior <- c(betas,
+                             list(acceptBeta = accept.beta,
+                                  stepSize = step.size,
+                                  nStep = n.step),
                              list(count = list(mean = mu,
                                                sd = sigma)),
                              list(dispersion = list(mean = mean.log.nu.cmp,

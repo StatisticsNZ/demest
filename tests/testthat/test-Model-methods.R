@@ -1720,19 +1720,27 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - no aggregate"
                       first = 35L,
                       last = 44L,
                       metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 45L)
+    accept.beta <- SkeletonAccept(first = 45L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 46L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 46L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
-    expect_identical(lengthValues(model) + pos - 1L, 46L)
+    expect_identical(lengthValues(model) + pos - 1L, 47L)
 })
 
 test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
@@ -1740,6 +1748,7 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
     initialModel <- demest:::initialModel
     makeOutputAggregate <- demest:::makeOutputAggregate
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     lengthValues <- demest:::lengthValues
     y <- Values(array(rnorm(20),
                       dim = c(2, 10),
@@ -1785,23 +1794,31 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
                             first = 36L,
                             last = 45L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 46L)
+    accept.beta <- SkeletonAccept(first = 46L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 47L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 48L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
                          prior = prior,
                          hyper = hyper,
                          aggregate = aggregate)
     expect_identical(ans.obtained, ans.expected)
-    expect_identical(lengthValues(model) + pos - 1L, 47L)
+    expect_identical(lengthValues(model) + pos - 1L, 48L)
 })
 
 test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
@@ -1809,6 +1826,7 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
     initialModel <- demest:::initialModel
     makeOutputAggregate <- demest:::makeOutputAggregate
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     lengthValues <- demest:::lengthValues
     y <- Values(array(rnorm(20),
                       dim = c(2, 10),
@@ -1855,18 +1873,26 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
                             first = 36L,
                             last = 45L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 46L)
+    accept.beta <- SkeletonAccept(first = 46L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 47L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 48L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     aggregate <- makeOutputAggregate(model,
-                                     pos = 48L,
+                                     pos = 49L,
                                      nChain = 2L,
                                      nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1881,6 +1907,7 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - no aggregat
     makeOutputPrior <- demest:::makeOutputPrior
     initialModel <- demest:::initialModel
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     makeOutputPrior <- demest:::makeOutputPrior
     lengthValues <- demest:::lengthValues
     y <- Counts(array(rnorm(20),
@@ -1920,12 +1947,20 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - no aggregat
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 45L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 45L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 46L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 46L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -1939,6 +1974,7 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgCertain",
     makeOutputPrior <- demest:::makeOutputPrior
     makeOutputAggregate <- demest:::makeOutputAggregate
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     initialModel <- demest:::initialModel
     makeOutputPrior <- demest:::makeOutputPrior
     lengthValues <- demest:::lengthValues
@@ -1986,12 +2022,20 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgCertain",
                             first = 36L,
                             last = 45L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 46L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 46L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 47L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 48L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2009,6 +2053,7 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgNormal", 
     makeOutputPrior <- demest:::makeOutputPrior
     makeOutputAggregate <- demest:::makeOutputAggregate
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     initialModel <- demest:::initialModel
     makeOutputPrior <- demest:::makeOutputPrior
     lengthValues <- demest:::lengthValues
@@ -2058,18 +2103,26 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgNormal", 
                             first = 37L,
                             last = 46L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 47L)
+    accept.beta <- SkeletonAccept(first = 47L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 48L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 48L),
+                                              first = 49L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     aggregate <- makeOutputAggregate(model,
-                                     pos = 49L,
+                                     pos = 50L,
                                      nChain = 2L,
                                      nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -2085,6 +2138,7 @@ test_that("makeOutputModel works with BinomialVarying - no aggregate", {
     initialModel <- demest:::initialModel
     makeOutputPrior <- demest:::makeOutputPrior
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     lengthValues <- demest:::lengthValues
     exposure <- Counts(array(rpois(20, lambda  = 10),
                              dim = c(2, 10),
@@ -2096,8 +2150,9 @@ test_that("makeOutputModel works with BinomialVarying - no aggregate", {
     model <- initialModel(spec, y = y, exposure = exposure)
     metadata <- y@metadata
     pos <- 10L
+    mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos,
-                                    mcmc = c(nChain = 2L, nIteration = 20L))
+                                    mcmc = mcmc)
     likelihood <- list(prob = new("SkeletonManyValues",
                                   first = 10L,
                                   last = 29L,
@@ -2122,12 +2177,20 @@ test_that("makeOutputModel works with BinomialVarying - no aggregate", {
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 45L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 45L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 46L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 46L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2143,6 +2206,7 @@ test_that("makeOutputModel works with BinomialVarying - AgCertain", {
     lengthValues <- demest:::lengthValues
     makeOutputAggregate <- demest:::makeOutputAggregate
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     exposure <- Counts(array(rpois(20, lambda  = 10),
                              dim = c(2, 10),
                              dimnames = list(sex = c("f", "m"), age = 0:9)))
@@ -2156,8 +2220,9 @@ test_that("makeOutputModel works with BinomialVarying - AgCertain", {
     model <- initialModel(spec, y = y, exposure = exposure)
     metadata <- y@metadata
     pos <- 10L
+    mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos,
-                                    mcmc = c(nChain = 2L, nIteration = 20L))
+                                    mcmc = mcmc)
     likelihood <- list(prob = new("SkeletonManyValues",
                                   first = 10L,
                                   last = 29L,
@@ -2182,12 +2247,20 @@ test_that("makeOutputModel works with BinomialVarying - AgCertain", {
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 45L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 45L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 46L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 46L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2205,6 +2278,7 @@ test_that("makeOutputModel works with BinomialVarying - AgNormal", {
     initialModel <- demest:::initialModel
     makeOutputPrior <- demest:::makeOutputPrior
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     lengthValues <- demest:::lengthValues
     makeOutputAggregate <- demest:::makeOutputAggregate
     exposure <- Counts(array(rpois(20, lambda  = 10),
@@ -2221,8 +2295,9 @@ test_that("makeOutputModel works with BinomialVarying - AgNormal", {
     model <- initialModel(spec, y = y, exposure = exposure)
     metadata <- y@metadata
     pos <- 11L
+    mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos,
-                                    mcmc = c(nChain = 2L, nIteration = 20L))
+                                    mcmc = mcmc)
     likelihood <- list(prob = new("SkeletonManyValues",
                                   first = 11L,
                                   last = 30L,
@@ -2246,12 +2321,20 @@ test_that("makeOutputModel works with BinomialVarying - AgNormal", {
                             first = 36L,
                             last = 45L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 46L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 46L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 47L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 48L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2270,6 +2353,7 @@ test_that("makeOutputModel works with PoissonVarying - no aggregate", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialModel <- demest:::initialModel
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     makeOutputPrior <- demest:::makeOutputPrior
     lengthValues <- demest:::lengthValues
     y <- Counts(array(rpois(20, lambda  = 10),
@@ -2279,8 +2363,9 @@ test_that("makeOutputModel works with PoissonVarying - no aggregate", {
     model <- initialModel(spec, y = y, exposure = NULL)
     metadata <- y@metadata
     pos <- 10L
+    mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos,
-                                    mcmc = c(nChain = 2L, nIteration = 20L))
+                                    mcmc = mcmc)
     likelihood <- list(count = new("SkeletonManyCounts",
                                    first = 10L,
                                    last = 29L,
@@ -2304,12 +2389,20 @@ test_that("makeOutputModel works with PoissonVarying - no aggregate", {
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 45L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 45L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 46L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 46L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2325,6 +2418,7 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgCertain", {
     initialModel <- demest:::initialModel
     lengthValues <- demest:::lengthValues
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     exposure <- Counts(array(as.double(rpois(20, lambda  = 10)),
                              dim = c(2, 10),
                              dimnames = list(sex = c("f", "m"), age = 0:9)))
@@ -2338,8 +2432,9 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgCertain", {
     model <- initialModel(spec, y = y, exposure = exposure)
     metadata <- y@metadata
     pos <- 10L
+    mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos,
-                                    mcmc = c(nChain = 2L, nIteration = 20L))
+                                    mcmc = mcmc)
     likelihood <- list(rate = new("SkeletonManyValues",
                                   first = 10L,
                                   last = 29L,
@@ -2363,12 +2458,20 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgCertain", {
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 45L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 45L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 46L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 46L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2388,6 +2491,7 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgNormal", {
     initialModel <- demest:::initialModel
     lengthValues <- demest:::lengthValues
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     exposure <- Counts(array(as.double(rpois(20, lambda  = 10)),
                              dim = c(2, 10),
                              dimnames = list(sex = c("f", "m"), age = 0:9)))
@@ -2402,8 +2506,9 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgNormal", {
     model <- initialModel(spec, y = y, exposure = exposure)
     metadata <- y@metadata
     pos <- 21L
+    mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos,
-                                    mcmc = c(nChain = 2L, nIteration = 20L))
+                                    mcmc = mcmc)
     likelihood <- list(rate = new("SkeletonManyValues",
                                   first = 21L,
                                   last = 40L,
@@ -2427,13 +2532,21 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgNormal", {
                             first = 46L,
                             last = 55L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 56L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 56L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 57L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                                         metadata = model@metadataY[2],
-                                        pos = 57L),
+                                        pos = 58L),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
@@ -2452,6 +2565,7 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgFun", {
     initialModel <- demest:::initialModel
     lengthValues <- demest:::lengthValues
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     exposure <- Counts(array(as.double(rpois(20, lambda  = 10)),
                              dim = c(2, 10),
                              dimnames = list(sex = c("f", "m"), age = 0:9)))
@@ -2466,8 +2580,9 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgFun", {
     model <- initialModel(spec, y = y, exposure = exposure)
     metadata <- y@metadata
     pos <- 21L
+    mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos,
-                                    mcmc = c(nChain = 2L, nIteration = 20L))
+                                    mcmc = mcmc)
     likelihood <- list(rate = new("SkeletonManyValues",
                                   first = 21L,
                                   last = 40L,
@@ -2491,13 +2606,21 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgFun", {
                             first = 46L,
                             last = 55L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 56L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 56L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 57L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                                         metadata = model@metadataY[2],
-                                        pos = 57L),
+                                        pos = 58L),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
@@ -2516,6 +2639,7 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgPoisson", {
     initialModel <- demest:::initialModel
     lengthValues <- demest:::lengthValues
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     exposure <- Counts(array(as.double(rpois(20, lambda  = 10)),
                              dim = c(2, 10),
                              dimnames = list(sex = c("f", "m"), age = 0:9)))
@@ -2529,8 +2653,9 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgPoisson", {
     model <- initialModel(spec, y = y, exposure = exposure)
     metadata <- y@metadata
     pos <- 21L
+    mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos,
-                                    mcmc = c(nChain = 2L, nIteration = 20L))
+                                    mcmc = mcmc)
     likelihood <- list(rate = new("SkeletonManyValues",
                        first = 21L,
                        last = 40L,
@@ -2554,13 +2679,21 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgPoisson", {
                       first = 46L,
                       last = 55L,
                       metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 56L)
-    prior <- c(betas, list(mean = mu), list(sd = sigma))
+    accept.beta <- SkeletonAccept(first = 56L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 57L)
+    prior <- c(betas,
+               list(mean = mu,
+                    acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                       metadata = model@metadataY[2],
-                      pos = 57L),
+                      pos = 58L),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
@@ -2577,6 +2710,7 @@ test_that("makeOutputModel works with CMP - no aggregate", {
     makeOutputPrior <- demest:::makeOutputPrior
     initialModel <- demest:::initialModel
     SkeletonMu <- demest:::SkeletonMu
+    SkeletonAccept <- demest:::SkeletonAccept
     Skeleton <- demest:::Skeleton
     makeOutputPrior <- demest:::makeOutputPrior
     lengthValues <- demest:::lengthValues
@@ -2587,8 +2721,9 @@ test_that("makeOutputModel works with CMP - no aggregate", {
     model <- initialModel(spec, y = y, exposure = NULL)
     metadata <- y@metadata
     pos <- 10L
+    mcmc <- c(nChain = 2L, nIteration = 20L)
     ans.obtained <- makeOutputModel(model = model, pos = pos,
-                                    mcmc = c(nChain = 2L, nIteration = 20L))
+                                    mcmc = mcmc)
     likelihood <- list(count = new("SkeletonManyCounts",
                                    first = 10L,
                                    last = 29L,
@@ -2618,15 +2753,21 @@ test_that("makeOutputModel works with CMP - no aggregate", {
                             first = 56L,
                             last = 65L,
                             metadata = metadata[2]))
-    sigma <- new("SkeletonOneValues", first = 66L)
+    accept.beta <- SkeletonAccept(first = 66L,
+                                  nChain = mcmc[["nChain"]],
+                                  nIteration = mcmc[["nIteration"]])
+    sigma <- new("SkeletonOneValues", first = 67L)
     prior <- c(betas,
-               list(count = list(mean = mu, sd = sigma)),
-               list(dispersion = list(mean = model@meanLogNuCMP@.Data, sd = model@sdLogNuCMP@.Data)))
+               list(acceptBeta = accept.beta,
+                    stepSize = 0.1,
+                    nStep = 10L,
+                    count = list(mean = mu, sd = sigma),
+                    dispersion = list(mean = model@meanLogNuCMP@.Data, sd = model@sdLogNuCMP@.Data)))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                                         metadata = model@metadataY[2],
-                                        pos = 67L),
+                                        pos = 68L),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)

@@ -1256,6 +1256,17 @@ SEXP updateSDRobust_R(SEXP sigma_R,
 }
 
 SEXP
+updateBetasOneStep_R(SEXP object_R, SEXP stepSize_R)
+{
+  double stepSize = *REAL(stepSize_R);
+  SEXP ans_R;
+  PROTECT(ans_R = duplicate(object_R));
+  updateBetasOneStep(ans_R, stepSize);
+  UNPROTECT(1); /* ans_R */
+  return ans_R;
+}
+
+SEXP
 updateMomentumOneStep_R(SEXP object_R, SEXP stepSize_R, SEXP isFirstLast_R)
 {
   double stepSize = *REAL(stepSize_R);
@@ -1277,6 +1288,7 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 
 /* updating betas */
 UPDATEOBJECT_WRAPPER_R(initializeMomentum);
+UPDATEOBJECT_WRAPPER_R(updateBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateBetasWhereBetaEqualsMean);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGradientBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateLogPostBetas);
@@ -2307,6 +2319,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateSeason_R, 2),
 
   CALLDEF(initializeMomentum_R, 1),
+  CALLDEF(updateBetas_R, 1),
+  CALLDEF(updateBetasOneStep_R, 2),
   CALLDEF(updateBetasWhereBetaEqualsMean_R, 1),
   CALLDEF(updateGradientBetas_R, 1),
   CALLDEF(updateLogPostBetas_R, 1),
@@ -2679,11 +2693,15 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iteratorBetas);
   ADD_SYM(dims);
   ADD_SYM(prob);
+  ADD_SYM(betasOld);
   ADD_SYM(meansBetas);
   ADD_SYM(variancesBetas);
   ADD_SYM(gradientBetas);
   ADD_SYM(momentumBetas);
-  ADD_SYM(betaEqualsMean);  
+  ADD_SYM(betaEqualsMean);
+  ADD_SYM(stepSize);
+  ADD_SYM(nStep);
+  ADD_SYM(acceptBeta);
   ADD_SYM(tolerance);
   ADD_SYM(betaIsPredicted);
   ADD_SYM(mean);

@@ -62,11 +62,15 @@ SEXP
   posDim_sym,
   lengthDim_sym,
   iMethodModel_sym,
+  betasOld_sym,
   meansBetas_sym,
   variancesBetas_sym,
   gradientBetas_sym,
   momentumBetas_sym,
-  betaEqualsMean_sym,  
+  betaEqualsMean_sym,
+  stepSize_sym,
+  nStep_sym,
+  acceptBeta_sym,
   priorsBetas_sym, 
   logPostPriorsBetas_sym,
   logPostBetas_sym,
@@ -715,6 +719,8 @@ void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
 /* update-nongeneric */
 
 void initializeMomentum(SEXP object);
+void updateBetas(SEXP object);
+void updateBetasOneStep(SEXP object, double stepSize);
 void updateBetasWhereBetaEqualsMean(SEXP object);
 void updateGradientBetas(SEXP object);
 void updateLogPostBetas(SEXP object);

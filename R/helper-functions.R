@@ -1204,10 +1204,10 @@ getLogPostMomentum <- function(object, useC = FALSE) {
         for (i in seq_along(momentum.betas)) {
             if (!beta.equals.mean[i]) {
                 momentum <- momentum.betas[[i]]
-                ans <- ans + sum(dnorm(momentum,
-                                       mean = 0,
-                                       sd = 1,
-                                       log = TRUE))
+                ans <- ans + sum(stats::dnorm(momentum,
+                                              mean = 0,
+                                              sd = 1,
+                                              log = TRUE))
             }
         }
         ans
@@ -1260,9 +1260,9 @@ initializeMomentum <- function(object, useC = FALSE) {
         for (i in seq_along(momentum)) {
             if (!beta.equals.mean[i]) {
                 J <- length(momentum[[i]])
-                momentum[[i]] <- rnorm(n = J,
-                                       mean = 0,
-                                       sd = 1)
+                momentum[[i]] <- stats::rnorm(n = J,
+                                              mean = 0,
+                                              sd = 1)
             }
         }
         object@momentumBetas <- momentum
