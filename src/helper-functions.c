@@ -144,24 +144,26 @@ rcateg1(double *cumProb)
 double
 rhalftTrunc1(double df, double scale, double max)
 {
+  if (scale > 0) {
     int kMaxAttempt = 1000;
     int i = 0;
     double ans = 0;
     int found = 0;
     while(!found && (i < kMaxAttempt)) {
-        
-        double t = rt(df);
-        ans = scale * fabs(t);
-        if (ans < max) {
-            found = 1;
-        }
-        ++i;
+      double t = rt(df);
+      ans = scale * fabs(t);
+      if (ans < max) {
+	found = 1;
+      }
+      ++i;
     }
     if (!found) {
-        error("unable to generate value for truncated half-t (consider using higher maximum value)");
-    
+      error("unable to generate value for truncated half-t (consider using higher maximum value)");
     }
     return ans;
+  }
+  else
+    return 0;
 }
 
 double
