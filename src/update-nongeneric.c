@@ -2661,7 +2661,7 @@ get_log_gamma_dens(int n, double theta[],
 }
 
 void
-updateBetas(SEXP object_R)
+updateBetasHMC(SEXP object_R)
 {
   /* set constant betas and draw new values for momentum */
   updateBetasWhereBetaEqualsMean(object_R);

@@ -1288,7 +1288,7 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 
 /* updating betas */
 UPDATEOBJECT_WRAPPER_R(initializeMomentum);
-UPDATEOBJECT_WRAPPER_R(updateBetas);
+UPDATEOBJECT_WRAPPER_R(updateBetasHMC);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateBetasWhereBetaEqualsMean);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGradientBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateLogPostBetas);

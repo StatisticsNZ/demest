@@ -11,7 +11,7 @@
 
     void updateMu(SEXP object_R);
 
-    void updateBetas(SEXP object_R);
+    void updateBetasHMC(SEXP object_R);
 
     void updateBetasOneStep(SEXP object_R, double stepSize);
 

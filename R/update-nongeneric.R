@@ -1917,11 +1917,11 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS (comparing R and C versions)
-updateBetas <- function(object, useC = FALSE) {
+updateBetasHMC <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
     if (useC) {
-        .Call(updateBetas_R, object) 
+        .Call(updateBetasHMC_R, object) 
     }
     else {
         object <- updateBetasWhereBetaEqualsMean(object)
