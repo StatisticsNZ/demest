@@ -425,19 +425,24 @@ rhalftTrunc1 <- function(df, scale, max, useC = FALSE) {
     stopifnot(is.double(max))
     stopifnot(identical(length(max), 1L))
     stopifnot(!is.na(max))
-    stopifnot(max > 0)
+    stopifnot(max >= 0)
     if (useC) {
         .Call(rhalftTrunc1_R, df, scale, max)
     }
     else {
-        kMaxAttempt <- 1000L
-        for (i in seq_len(kMaxAttempt)) {
-            ans <- stats::rt(n = 1L, df = df)
-            ans <- scale * abs(ans)
-            if (ans < max)
-                return(ans)
+        if (scale > 0) {
+            kMaxAttempt <- 1000L
+            for (i in seq_len(kMaxAttempt)) {
+                ans <- stats::rt(n = 1L, df = df)
+                ans <- scale * abs(ans)
+                if (ans < max)
+                    return(ans)
+            }
+            stop("unable to generate value for truncated half-t (consider using higher maximum value)")
         }
-        stop("unable to generate value for truncated half-t (consider using higher maximum value)")
+        else {
+            0
+        }
     }
 }
 
