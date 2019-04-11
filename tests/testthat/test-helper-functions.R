@@ -2128,7 +2128,7 @@ test_that("betaHat gives valid answer with prior of class ExchFixed", {
     ## non-intercept
     spec <- ExchFixed(sd = 3)
     beta <- rnorm(10)
-    strucZeroArray <- Counts(array(1L,
+    strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
                                    dim = 10,
                                    dimnames = list(region = letters[1:10])))
     metadata <- new("MetaData",
@@ -2144,7 +2144,7 @@ test_that("betaHat gives valid answer with prior of class ExchFixed", {
                           strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchFixed")
     ans.obtained <- betaHat(prior)
-    ans.expected <- rep(0, 10)
+    ans.expected <- c(NA, rep(0, 9))
     expect_identical(ans.obtained, ans.expected)    
 })
 
@@ -2174,7 +2174,7 @@ test_that("R and C versions of betaHat give same answer with ExchFixed", {
     for (seed in seq_len(n.test)) {
         spec <- ExchFixed(sd = 3)
         beta <- rnorm(10)
-        strucZeroArray <- Counts(array(1L,
+        strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
                                        dim = 10,
                                        dimnames = list(region = letters[1:10])))
         metadata <- new("MetaData",
@@ -2617,15 +2617,6 @@ test_that("R and C versions of betaHat give same answer with Zero", {
     ans.C <- betaHat(prior, useC = TRUE)
     expect_identical(ans.R, ans.C)
 })
-
-
-
-
-
-
-
-
-
 
 test_that("betaHatAlphaDLM works", {
     betaHatAlphaDLM <- demest:::betaHatAlphaDLM
@@ -3531,7 +3522,7 @@ test_that("getV gives valid answer with prior of class ExchFixed", {
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    strucZeroArray <- Counts(array(1L,
+    strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
                                    dim = 10,
                                    dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,
@@ -3543,7 +3534,7 @@ test_that("getV gives valid answer with prior of class ExchFixed", {
                           strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchFixed")
     ans.obtained <- getV(prior)
-    ans.expected <- rep(prior@tau@.Data^2, 10)
+    ans.expected <- c(NA, rep(prior@tau@.Data^2, 9))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3556,7 +3547,7 @@ test_that("R and C versions of getV give same answer with prior of class ExchFix
                     nms = "region",
                     dimtypes = "state",
                     DimScales = list(new("Categories", dimvalues = letters[1:10])))
-    strucZeroArray <- Counts(array(1L,
+    strucZeroArray <- Counts(array(c(0L, rep(1L, 9)),
                                    dim = 10,
                                    dimnames = list(region = letters[1:10])))
     prior <- initialPrior(spec,

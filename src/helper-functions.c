@@ -647,6 +647,7 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
     int hasCovariates = *LOGICAL(GET_SLOT(prior_R, hasCovariates_sym));
     int hasSeason = *LOGICAL(GET_SLOT(prior_R, hasSeason_sym));
     int hasAlphaKnown = *LOGICAL(GET_SLOT(prior_R, hasAlphaKnown_sym));
+    int *allStrucZero = LOGICAL(GET_SLOT(prior_R, allStrucZero_sym));
     
     memset(beta_hat, 0, J * sizeof(double));
     
@@ -691,7 +692,12 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
 
     if(hasAlphaKnown) {
         betaHat_AlphaKnownInternal(beta_hat, prior_R, J);
-    }   
+    }
+
+    for (int j = 0; j < J; ++j) {
+      if (allStrucZero[j])
+	beta_hat[j] = NA_REAL;
+    }
 }
 
 
@@ -1252,6 +1258,7 @@ getV_Internal(double *V, SEXP prior_R, int J)
     int isRobust = *INTEGER(GET_SLOT(prior_R, isRobust_sym));
     int isKnownUncertain = *INTEGER(GET_SLOT(prior_R, isKnownUncertain_sym));
     int isZeroVar = *INTEGER(GET_SLOT(prior_R, isZeroVar_sym));
+    int *allStrucZero = INTEGER(GET_SLOT(prior_R, allStrucZero_sym));
 
     if (isNorm) {
         double tau = *REAL(GET_SLOT(prior_R, tau_sym));
@@ -1277,6 +1284,11 @@ getV_Internal(double *V, SEXP prior_R, int J)
     }
     else {
         error("unable to calculate variances for this prior");
+    }
+
+    for (int j = 0; j < J; ++j) {
+      if (allStrucZero[j])
+	V[j] = NA_REAL;
     }
 }
 
@@ -1428,18 +1440,23 @@ getLogPostMomentum(SEXP object_R)
 void
 initializeMomentum(SEXP object_R)
 {
-    SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
-    int n_beta =  LENGTH(momentumBetas_R);
-    int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
-    for (int i = 0; i < n_beta; ++i) {
-      if (!betaEqualsMean[i]) {
-	SEXP momentum_R = VECTOR_ELT(momentumBetas_R, i);
-	double *momentum = REAL(momentum_R);
-	int J = LENGTH(momentum_R);
-	for (int j = 0; j < J; ++j)
+  SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
+  int n_beta =  LENGTH(momentumBetas_R);
+  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
+  for (int i = 0; i < n_beta; ++i) {
+    if (!betaEqualsMean[i]) {
+      double *momentum = REAL(VECTOR_ELT(momentumBetas_R, i));
+      SEXP prior_R = VECTOR_ELT(priorsBetas_R, i);
+      int J = *INTEGER(GET_SLOT(prior_R, J_sym));
+      int *allStrucZero = LOGICAL(GET_SLOT(prior_R, allStrucZero_sym));
+      for (int j = 0; j < J; ++j) {
+	if (!allStrucZero[j]) {
 	  momentum[j] = rnorm(0, 1);
+	}
       }
     }
+  }
 }
 
 

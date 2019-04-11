@@ -804,6 +804,7 @@ betaHat <- function(prior, useC = FALSE) {
         has.covariates <- prior@hasCovariates@.Data
         has.season <- prior@hasSeason@.Data
         has.known <- prior@hasAlphaKnown@.Data
+        all.struc.zero <- prior@allStrucZero
         ans <- rep(0, times = J)
         if (has.mean) {
             mean <- prior@mean@.Data
@@ -873,6 +874,7 @@ betaHat <- function(prior, useC = FALSE) {
             alpha.known <- prior@alphaKnown@.Data
             ans <- ans + alpha.known
         }
+        ans[all.struc.zero] <- NA
         ans
     }
 }
@@ -1232,22 +1234,25 @@ getV <- function(prior, useC = FALSE) {
         is.robust <- prior@isRobust@.Data
         is.known.uncertain <- prior@isKnownUncertain
         is.zero.var <- prior@isZeroVar
-        J <- prior@J@.Data        
+        J <- prior@J@.Data
+        all.struc.zero <- prior@allStrucZero@.Data
         if (is.norm) {
             tau <- prior@tau@.Data
-            rep(tau^2, times = J)
+            ans <- rep(tau^2, times = J)
         }            
         else if (is.robust)
-            prior@UBeta@.Data
+            ans <- prior@UBeta@.Data
         else if (is.known.uncertain) {
-            prior@AKnownVec@.Data^2
+            ans <- prior@AKnownVec@.Data^2
         }
         else if (is.zero.var) {
-            rep(0, times = J)
+            ans <- rep(0, times = J)
         }
         else {
             stop(gettext("unable to calculate variances for this prior"))
         }
+        ans[all.struc.zero] <- NA
+        ans
     }
 }
 
@@ -1262,12 +1267,14 @@ initializeMomentum <- function(object, useC = FALSE) {
     else {
         momentum <- object@momentumBetas
         beta.equals.mean <- object@betaEqualsMean
+        priors <- object@priorsBetas
         for (i in seq_along(momentum)) {
             if (!beta.equals.mean[i]) {
-                J <- length(momentum[[i]])
-                momentum[[i]] <- stats::rnorm(n = J,
-                                              mean = 0,
-                                              sd = 1)
+                all.struc.zero <- priors[[i]]@allStrucZero
+                n <- sum(!all.struc.zero)
+                momentum[[i]][!all.struc.zero] <- stats::rnorm(n = n,
+                                                               mean = 0,
+                                                               sd = 1)
             }
         }
         object@momentumBetas <- momentum

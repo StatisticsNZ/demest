@@ -2319,7 +2319,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateSeason_R, 2),
 
   CALLDEF(initializeMomentum_R, 1),
-  CALLDEF(updateBetas_R, 1),
+  CALLDEF(updateBetasHMC_R, 1),
   CALLDEF(updateBetasOneStep_R, 2),
   CALLDEF(updateBetasWhereBetaEqualsMean_R, 1),
   CALLDEF(updateGradientBetas_R, 1),

@@ -1989,12 +1989,15 @@ updateBetasOneStep <- function(object, stepSize, useC = FALSE) {
         betas <- object@betas
         momentum.betas <- object@momentumBetas
         variances.betas <- object@variancesBetas
+        priors.betas <- object@priorsBetas
         beta.equals.mean <- object@betaEqualsMean
         for (i in seq_along(betas)) {
             if (!beta.equals.mean[i]) {
                 momentum <- momentum.betas[[i]]
                 variances <- variances.betas[[i]]
-                betas[[i]] <- betas[[i]] + stepSize * sqrt(variances) * momentum
+                all.struc.zero <- priors.betas[[i]]@allStrucZero
+                betas[[i]][!all.struc.zero] <- (betas[[i]][!all.struc.zero]
+                    + stepSize * sqrt(variances[!all.struc.zero]) * momentum[!all.struc.zero])
             }
         }
         object@betas <- betas
@@ -2042,13 +2045,16 @@ updateGradientBetas <- function(object, useC = FALSE) {
         means.betas <- object@meansBetas
         variances.betas <- object@variancesBetas
         beta.equals.mean <- object@betaEqualsMean
+        priors <- object@priorsBetas
         n.theta <- length(theta.transformed)
         n.beta <- length(betas)
         var.theta <- sigma^2
         iterator <- resetB(iterator)
         ## reset gradient
-        for (i.beta in seq_len(n.beta))
-            gradient.betas[[i.beta]][] <- 0
+        for (i.beta in seq_len(n.beta)) {
+            all.struc.zero <- priors[[i.beta]]@allStrucZero
+            gradient.betas[[i.beta]][!all.struc.zero] <- 0
+        }
         ## contribution from likelihood
         for (i.theta in seq_len(n.theta)) {
             include.cell <- cell.in.lik[i.theta]
@@ -2057,8 +2063,10 @@ updateGradientBetas <- function(object, useC = FALSE) {
                 diff <- (theta.transformed[i.theta] - mu[i.theta]) / var.theta
                 for (i.beta in seq_len(n.beta)) {
                     if (!beta.equals.mean[i.beta]) {
+                        all.struc.zero <- priors[[i.beta]]@allStrucZero
                         j <- indices[i.beta]
-                        gradient.betas[[i.beta]][j] <- gradient.betas[[i.beta]][j] + diff # add diff
+                        if (!all.struc.zero[j])
+                            gradient.betas[[i.beta]][j] <- gradient.betas[[i.beta]][j] + diff # add diff
                     }
                 }
             }
@@ -2067,8 +2075,10 @@ updateGradientBetas <- function(object, useC = FALSE) {
         ## contribution from prior
         for (i.beta in seq_len(n.beta)) {
             if (!beta.equals.mean[i.beta]) {
+                all.struc.zero <- priors[[i.beta]]@allStrucZero
                 diff <- (betas[[i.beta]] - means.betas[[i.beta]]) / variances.betas[[i.beta]]
-                gradient.betas[[i.beta]] <- gradient.betas[[i.beta]] - diff # subtract diff
+                gradient.betas[[i.beta]][!all.struc.zero] <- (gradient.betas[[i.beta]][!all.struc.zero]
+                    - diff[!all.struc.zero]) # subtract diff
             }
         }
         object@gradientBetas <- gradient.betas
@@ -2093,6 +2103,7 @@ updateLogPostBetas <- function(object, useC = FALSE) {
         means.betas <- object@meansBetas
         variances.betas <- object@variancesBetas
         beta.equals.mean <- object@betaEqualsMean
+        priors.betas <- object@priorsBetas
         log.likelihood <- sum(stats::dnorm(x = theta.transformed[cell.in.lik],
                                            mean = mu[cell.in.lik],
                                            sd = sigma,
@@ -2100,9 +2111,10 @@ updateLogPostBetas <- function(object, useC = FALSE) {
         log.prior <- 0
         for (i.beta in seq_along(betas)) {
             if (!beta.equals.mean[i.beta]) {
-                x <- betas[[i.beta]]
-                mean <- means.betas[[i.beta]]
-                sd <- sqrt(variances.betas[[i.beta]])
+                all.struc.zero <- priors.betas[[i.beta]]@allStrucZero
+                x <- betas[[i.beta]][!all.struc.zero]
+                mean <- means.betas[[i.beta]][!all.struc.zero]
+                sd <- sqrt(variances.betas[[i.beta]][!all.struc.zero])
                 log.prior <- log.prior + sum(stats::dnorm(x = x,
                                                           mean = mean,
                                                           sd = sd,
@@ -2116,6 +2128,7 @@ updateLogPostBetas <- function(object, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
+## Relying on 'betaHat' to deal with 'allStrucZero'
 updateMeansBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -2155,6 +2168,7 @@ updateMomentumOneStep <- function(object, stepSize, isFirstLast, useC = FALSE) {
         gradient.betas <- object@gradientBetas
         variances.betas <- object@variancesBetas
         beta.equals.mean <- object@betaEqualsMean
+        priors.betas <- object@priorsBetas
         mult <- stepSize
         if (isFirstLast)
             mult <- 0.5 * mult
@@ -2163,7 +2177,9 @@ updateMomentumOneStep <- function(object, stepSize, isFirstLast, useC = FALSE) {
                 momentum <- momentum.betas[[i]]
                 gradient <- gradient.betas[[i]]
                 variances <- variances.betas[[i]]
-                momentum.betas[[i]] <- momentum - mult * sqrt(variances) * gradient
+                all.struc.zero <- priors.betas[[i]]@allStrucZero
+                momentum.betas[[i]][!all.struc.zero] <- (momentum[!all.struc.zero]
+                    - mult * sqrt(variances[!all.struc.zero]) * gradient[!all.struc.zero])
             }
         }
         object@momentumBetas <- momentum.betas
@@ -4978,7 +4994,9 @@ updateThetaAndValueAgLife_PoissonUseExp <- function(object, y, exposure, useC = 
     }
 }
 
-
+## TRANSLATED
+## HAS_TESTS
+## Relying on 'getV' to deal with 'allStrucZero'
 updateVariancesBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -4988,14 +5006,13 @@ updateVariancesBetas <- function(object, useC = FALSE) {
     else {
         variances <- object@variancesBetas
         priors <- object@priorsBetas
-        for (i in seq_along(variances))
-            variances[[i]] <- getV(priors[[i]])
+        for (i in seq_along(variances)) {
+            variances[[i]] <- getV(priors[[i]]) 
+        }
         object@variancesBetas <- variances
         object
     }
 }
-
-
 
 ## TRANSLATED
 ## HAS_TESTS

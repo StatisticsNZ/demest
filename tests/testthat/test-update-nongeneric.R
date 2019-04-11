@@ -4611,8 +4611,8 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
-test_that("R and C versions of updateBetas give same answer", {
-    updateBetas <- demest:::updateBetas
+test_that("R and C versions of updateBetasHMC give same answer", {
+    updateBetasHMC <- demest:::updateBetasHMC
     initializeMomentum <- demest:::initializeMomentum
     initialModel <- demest:::initialModel
     updateModelNotUseExp <- demest:::updateModelNotUseExp
@@ -4630,9 +4630,9 @@ test_that("R and C versions of updateBetas give same answer", {
         x <- updateVariancesBetas(x)
         x <- initializeMomentum(x)
         set.seed(seed)
-        ans.R <- updateBetas(x, useC = FALSE)
+        ans.R <- updateBetasHMC(x, useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetas(x, useC = TRUE)
+        ans.C <- updateBetasHMC(x, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -4640,7 +4640,7 @@ test_that("R and C versions of updateBetas give same answer", {
     }
 })
 
-test_that("R version of updateBetasOneStep works", {
+test_that("R version of updateBetasHMCOneStep works", {
     updateBetasOneStep <- demest:::updateBetasOneStep
     initializeMomentum <- demest:::initializeMomentum
     initialModel <- demest:::initialModel
@@ -4649,7 +4649,11 @@ test_that("R version of updateBetasOneStep works", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[1,] <- 0L
+    structuralZeros <- ValuesOne(c(0,1,1,1,1), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = structuralZeros),                              
                   age ~ Exch(),
                   region ~ Zero())
     x <- initialModel(spec, y = y, exposure = NULL)
@@ -4658,10 +4662,10 @@ test_that("R version of updateBetasOneStep works", {
     x <- initializeMomentum(x)
     ans.obtained <- updateBetasOneStep(x, stepSize = 0.1)
     ans.expected <- x
-    for (i in 1:2) {
-        ans.expected@betas[[i]] <- (ans.expected@betas[[i]]
-            + 0.1 * sqrt(ans.expected@variancesBetas[[i]]) * ans.expected@momentumBetas[[i]])
-    }
+    ans.expected@betas[[1]] <- (ans.expected@betas[[1]]
+        + 0.1 * sqrt(ans.expected@variancesBetas[[1]]) * ans.expected@momentumBetas[[1]])
+    ans.expected@betas[[2]][-1] <- (ans.expected@betas[[2]][-1]
+            + 0.1 * sqrt(ans.expected@variancesBetas[[2]][-1]) * ans.expected@momentumBetas[[2]][-1])
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -4671,10 +4675,14 @@ test_that("R and C versions of updateBetasOneStep give same answer", {
     initialModel <- demest:::initialModel
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     updateVariancesBetas <- demest:::updateVariancesBetas
+    structuralZeros <- ValuesOne(c(0,1,1,1,1), labels = 0:4, name = "age")
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[1,] <- 0L
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = structuralZeros),
                   age ~ Exch(),
                   region ~ Zero())
     x <- initialModel(spec, y = y, exposure = NULL)
@@ -4698,7 +4706,8 @@ test_that("R version of updateBetasWhereBetaEqualsMean works", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age * region, useExpose = FALSE),
+    spec <- Model(y ~ Poisson(mean ~ age * region,
+                              useExpose = FALSE),
                   age ~ Exch(),
                   age:region ~ DLM(trend = NULL, damp = NULL))
     x <- initialModel(spec, y = y, exposure = NULL)
@@ -4741,7 +4750,11 @@ test_that("R version of updateLogPostBetas works", {
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
     y[1] <- NA
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[5,] <- 0L
+    structuralZeros <- ValuesOne(c(1,1,1,1,0), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = structuralZeros),
                   age ~ Exch())
     x <- initialModel(spec, y = y, exposure = NULL)
     x <- updateModelNotUseExp(x, y = y, useC = TRUE)
@@ -4750,12 +4763,12 @@ test_that("R version of updateLogPostBetas works", {
     x@logPostBetas@.Data <- 0
     ans.obtained <- updateLogPostBetas(x)
     ans.expected <- x
-    ans.expected@logPostBetas@.Data <- sum(dnorm(x@thetaTransformed[-1],
-                                mean = x@mu[-1],
+    ans.expected@logPostBetas@.Data <- sum(dnorm(x@thetaTransformed[-c(1, 5, 10, 15, 20)],
+                                mean = x@mu[-c(1, 5, 10, 15, 20)],
                                 sd = x@sigma,
                                 log = TRUE)) +
         sum(dnorm(x@betas[[1]], x@meansBetas[[1]], sqrt(x@variancesBetas[[1]]), log = TRUE)) +
-        sum(dnorm(x@betas[[2]], x@meansBetas[[2]], sqrt(x@variancesBetas[[2]]), log = TRUE)) +
+        sum(dnorm(x@betas[[2]][-5], x@meansBetas[[2]][-5], sqrt(x@variancesBetas[[2]][-5]), log = TRUE)) +
         sum(dnorm(x@betas[[3]], x@meansBetas[[3]], sqrt(x@variancesBetas[[3]]), log = TRUE))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -4770,7 +4783,11 @@ test_that("R and C versions of updateGadientBetas give same answer", {
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
     y[1] <- NA
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[5,] <- 0L
+    structuralZeros <- ValuesOne(c(1,1,1,1,0), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = structuralZeros),
                   age ~ Exch())
     x <- initialModel(spec, y = y, exposure = NULL)
     x <- updateModelNotUseExp(x, y = y, useC = TRUE)
@@ -4793,8 +4810,11 @@ test_that("R and C versions of updateLogPostBetas give same answer", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    y[1] <- NA
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[5,] <- 0L
+    structuralZeros <- ValuesOne(c(1,1,1,1,0), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = structuralZeros),
                   age ~ Exch())
     x <- initialModel(spec, y = y, exposure = NULL)
     x <- updateModelNotUseExp(x, y = y, useC = TRUE)
@@ -4817,14 +4837,19 @@ test_that("R version of updateMeansBetas works", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
-                  age ~ DLM(trend = NULL, damp = NULL))
+    y[5,] <- 0L
+    structuralZeros <- ValuesOne(c(1,1,1,1,0), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = structuralZeros),
+                  age ~ Exch())
     x <- initialModel(spec, y = y, exposure = NULL)
     x <- updateModelNotUseExp(x, y = y, useC = TRUE)
     ans.obtained <- updateMeansBetas(x)
     ans.expected <- x
-    for (i in 1:3)
+    for (i in c(1, 3))
         ans.expected@meansBetas[[i]] <- betaHat(x@priorsBetas[[i]])
+    ans.expected@meansBetas[[2]][1:4] <- betaHat(x@priorsBetas[[2]])[1:4]
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -4835,8 +4860,12 @@ test_that("R and C versions of updateMeansBetas give same answer", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
-                  age ~ DLM(trend = NULL, damp = NULL))
+    y[5,] <- 0L
+    structuralZeros <- ValuesOne(c(1,1,1,1,0), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = structuralZeros),
+                  age ~ Exch())
     x <- initialModel(spec, y = y, exposure = NULL)
     x <- updateModelNotUseExp(x, y = y, useC = TRUE)
     ans.R <- updateMeansBetas(x, useC = FALSE)
@@ -4881,13 +4910,17 @@ test_that("R and C versions of updateMomentumOneStep give same answer", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[5,] <- 0L
+    structuralZeros <- ValuesOne(c(1,1,1,1,0), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = structuralZeros),
                   age ~ Exch(),
                   region ~ Zero())
     x <- initialModel(spec, y = y, exposure = NULL)
     x <- updateModelNotUseExp(x, y = y, useC = TRUE)
     x@gradientBetas[[1]] <- rnorm(1)
-    x@gradientBetas[[2]] <- rnorm(5)
+    x@gradientBetas[[2]][1:4] <- rnorm(4)
     x@gradientBetas[[3]] <- rnorm(4)
     x <- initializeMomentum(x)
     x <- updateVariancesBetas(x)
