@@ -1916,6 +1916,8 @@ updateWeightMix <- function(prior, useC = FALSE) {
 ## UPDATING MODELS ##################################################################
 
 
+## TRANSLATED
+## HAS_TESTS (comparing R and C versions)
 updateBetasGibbs <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -1923,37 +1925,41 @@ updateBetasGibbs <- function(object, useC = FALSE) {
         .Call(updateBetasGibbs_R, object) 
     }
     else {
-        betas <- object@betas
+        ## work with 'object@betas', since betas
+        ## are updated within function, but
+        ## 'makeVBarAndN' is called on whole
+        ## object        
         means.betas <- object@meansBetas
         variances.betas <- object@variancesBetas
         priors.betas <- object@priorsBetas
         beta.equals.mean <- object@betaEqualsMean
-        sigma <- object@sigma
+        sigma <- object@sigma@.Data
         log.post <- 0
-        for (i.beta in seq_along(betas)) {
-            if (beta.equals.mean[i])
-                betas[[i.beta]] <- means.betas[[i.beta]]
+        for (i.beta in seq_along(object@betas)) {
+            if (beta.equals.mean[i.beta])
+                object@betas[[i.beta]] <- means.betas[[i.beta]]
             else {
-                J <- length(betas[[i.beta]])
+                J <- length(object@betas[[i.beta]])
                 l <- makeVBarAndN(object = object,
                                   iBeta = i.beta)
-                vbar <- l$vbar # vector of length J
-                n <- l$n # vector of length J
+                vbar <- l[[1L]] # vector of length J
+                n <- l[[2L]] # vector of length J
                 mean.beta <- means.betas[[i.beta]]
                 var.beta <- variances.betas[[i.beta]]
                 prior.beta <- priors.betas[[i.beta]]
                 all.struc.zero <- prior.beta@allStrucZero # vector of length J
                 for (j in seq_len(J)) {
-                    if (!all.struct.zero[j]) {
+                    if (!all.struc.zero[j]) {
                         prec.data <- n[j] / sigma^2
                         prec.prior <- 1 / var.beta[j]
                         var.post <- 1 / (prec.data + prec.prior)
                         mean.post <- (prec.data * vbar[j] + prec.prior * mean.beta[j]) * var.post
                         sd.post <- sqrt(var.post)
-                        betas[[i.beta]][j] <- stats::rnorm(n = 1L,
-                                                           mean = mean.post,
-                                                           sd = sd.post)
-                        log.post <- log.post + stats::dnorm(betas[[i.beta]][j],
+                        val.post <- stats::rnorm(n = 1L,
+                                                 mean = mean.post,
+                                                 sd = sd.post)
+                        object@betas[[i.beta]][j] <- val.post
+                        log.post <- log.post + stats::dnorm(val.post,
                                                             mean = mean.post,
                                                             sd = sd.post,
                                                             log = TRUE)
@@ -1961,8 +1967,7 @@ updateBetasGibbs <- function(object, useC = FALSE) {
                 }
             }
         }
-        object@betas <- betas
-        object@logPostBeas <- log.post
+        object@logPostBetas@.Data <- log.post
         object
     }
 }

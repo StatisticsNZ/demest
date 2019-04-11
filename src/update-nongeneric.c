@@ -2668,11 +2668,11 @@ updateBetasGibbs(SEXP object_R)
   SEXP meansBetas_R = GET_SLOT(object_R, meansBetas_sym);
   SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
   SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
-  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));
   SEXP theta_R = GET_SLOT(object_R, theta_sym);
   double *theta = REAL(theta_R);
   double *thetaTransformed = REAL(GET_SLOT(object_R, thetaTransformed_sym));
-  int *cellInLik = INTEGER(GET_SLOT(object_R, cellInLik_sym));
+  int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
   SEXP iteratorBetas_R = GET_SLOT(object_R, iteratorBetas_sym);
   double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
   double sigma_sq = sigma * sigma;
@@ -2696,6 +2696,8 @@ updateBetasGibbs(SEXP object_R)
     if (J > max_J)
       max_J = J;
   }
+  double *vbar = (double *)R_alloc(max_J, sizeof(double));
+  int *n_vec = (int *)R_alloc(max_J, sizeof(int));
   for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
     int J = J_vec[i_beta];
     if (betaEqualsMean[i_beta]) {
@@ -2704,10 +2706,8 @@ updateBetasGibbs(SEXP object_R)
       }
     }
     else {
-      double *vbar = (double *)R_alloc(max_J, sizeof(double));
-      int *n_vec = (int *)R_alloc(max_J, sizeof(int));
       getVBarAndN(vbar, n_vec,
-		  n_beta, cellInLik,
+		  J, cellInLik,
 		  betas_R, iteratorBetas_R,
 		  theta, n_theta,
 		  thetaTransformed,
@@ -2729,6 +2729,7 @@ updateBetasGibbs(SEXP object_R)
       }
     }
   }
+  SET_DOUBLESCALE_SLOT(object_R, logPostBetas_sym, log_post);
 }
 
 
