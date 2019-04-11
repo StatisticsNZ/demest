@@ -720,6 +720,7 @@ void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
 
 void initializeMomentum(SEXP object);
 void updateBetasHMC(SEXP object);
+void updateBetasGibbs(SEXP object);
 void updateBetasOneStep(SEXP object, double stepSize);
 void updateBetasWhereBetaEqualsMean(SEXP object);
 void updateGradientBetas(SEXP object);
