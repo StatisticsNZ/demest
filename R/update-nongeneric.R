@@ -1916,6 +1916,24 @@ updateWeightMix <- function(prior, useC = FALSE) {
 ## UPDATING MODELS ##################################################################
 
 
+
+updateBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateBetas_R, object)
+    }
+    else {
+        use.hmc <- object@useHMCToUpdateBetas@.Data
+        if (use.hmc)
+            object <- updateBetasHMC(object)
+        else
+            object <- updateBetasGibbs(object)
+        object
+    }
+}
+
+
 ## TRANSLATED
 ## HAS_TESTS (comparing R and C versions)
 updateBetasGibbs <- function(object, useC = FALSE) {

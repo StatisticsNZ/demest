@@ -1288,6 +1288,7 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 
 /* updating betas */
 UPDATEOBJECT_WRAPPER_R(initializeMomentum);
+UPDATEOBJECT_WRAPPER_R(updateBetas);
 UPDATEOBJECT_WRAPPER_R(updateBetasGibbs);
 UPDATEOBJECT_WRAPPER_R(updateBetasHMC);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateBetasWhereBetaEqualsMean);
@@ -2320,6 +2321,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateSeason_R, 2),
 
   CALLDEF(initializeMomentum_R, 1),
+  CALLDEF(updateBetas_R, 1),
   CALLDEF(updateBetasGibbs_R, 1),
   CALLDEF(updateBetasHMC_R, 1),
   CALLDEF(updateBetasOneStep_R, 2),
@@ -2704,6 +2706,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(stepSize);
   ADD_SYM(nStep);
   ADD_SYM(acceptBeta);
+  ADD_SYM(useHMCToUpdateBetas);
   ADD_SYM(tolerance);
   ADD_SYM(betaIsPredicted);
   ADD_SYM(mean);

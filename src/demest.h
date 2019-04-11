@@ -71,6 +71,7 @@ SEXP
   stepSize_sym,
   nStep_sym,
   acceptBeta_sym,
+  useHMCToUpdateBetas_sym,
   priorsBetas_sym, 
   logPostPriorsBetas_sym,
   logPostBetas_sym,
@@ -719,8 +720,9 @@ void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
 /* update-nongeneric */
 
 void initializeMomentum(SEXP object);
-void updateBetasHMC(SEXP object);
+void updateBetas(SEXP object);
 void updateBetasGibbs(SEXP object);
+void updateBetasHMC(SEXP object);
 void updateBetasOneStep(SEXP object, double stepSize);
 void updateBetasWhereBetaEqualsMean(SEXP object);
 void updateGradientBetas(SEXP object);

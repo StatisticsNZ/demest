@@ -2662,6 +2662,17 @@ get_log_gamma_dens(int n, double theta[],
 
 
 void
+updateBetas(SEXP object_R)
+{
+  int useHMC = *LOGICAL(GET_SLOT(object_R, useHMCToUpdateBetas_sym));
+  if (useHMC)
+    updateBetasHMC(object_R);
+  else
+    updateBetasGibbs(object_R);
+}
+
+
+void
 updateBetasGibbs(SEXP object_R)
 {
   SEXP betas_R = GET_SLOT(object_R, betas_sym);

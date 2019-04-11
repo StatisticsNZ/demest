@@ -4611,6 +4611,36 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
+test_that("R and C versions of updateBetas give same answer", {
+    updateBetas <- demest:::updateBetas
+    initializeMomentum <- demest:::initializeMomentum
+    initialModel <- demest:::initialModel
+    updateModelNotUseExp <- demest:::updateModelNotUseExp
+    updateMeansBetas <- demest:::updateMeansBetas
+    updateVariancesBetas <- demest:::updateVariancesBetas
+    y <- Counts(array(rpois(n = 20, lambda = 30),
+                      dim = 5:4,
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+                  age ~ Exch(),
+                  region ~ Zero())
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        x <- initialModel(spec, y = y, exposure = NULL)
+        x <- updateModelNotUseExp(x, y = y, useC = TRUE)
+        x <- updateMeansBetas(x)
+        x <- updateVariancesBetas(x)
+        set.seed(seed)
+        ans.R <- updateBetas(x, useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateBetas(x, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 test_that("R and C versions of updateBetasGibbs give same answer - no structural zeros", {
     updateBetasGibbs <- demest:::updateBetasGibbs
     initializeMomentum <- demest:::initializeMomentum

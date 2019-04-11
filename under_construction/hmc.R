@@ -15,7 +15,6 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  useHMC <- object@useHMC@.Data
                   object <- updateTheta_PoissonVaryingNotUseExp(object, y = y)
                   object <- updateSigma_Varying(object)
                   object <- updateBetas(object)
@@ -27,21 +26,6 @@ setMethod("updateModelNotUseExp",
               }
           })
 
-
-updateBetas <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateBetas_R, object)
-    }
-    else {
-    use.hmc <- object@useHMC@.Data
-    if (use.hmc)
-        object <- updateBetasHMC(object)
-    else
-        object <- updateBetasGibbs(object)
-    object
-}
 
 
 
