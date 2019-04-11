@@ -133,6 +133,7 @@ setClass("Betas",
                    stepSize = "Scale",
                    nStep = "Length",
                    acceptBeta = "integer",
+                   useHMC = "LogicalFlag",
                    mu = "numeric"),
          contains = c("VIRTUAL", "Margins"),
          validity = function(object) {

@@ -28,7 +28,13 @@ setMethod("updateModelNotUseExp",
           })
 
 
-updateBetas <- function(object) {
+updateBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateBetas_R, object)
+    }
+    else {
     use.hmc <- object@useHMC@.Data
     if (use.hmc)
         object <- updateBetasHMC(object)
