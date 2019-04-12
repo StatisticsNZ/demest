@@ -27,7 +27,6 @@ test_that("updatePriorBeta works with ExchFixed - not saturated", {
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchFixed")
         vbar <- rnorm(2)
-        n <- rep(10L, 2)
         sigma <- runif(1)
         set.seed(seed)
         ans.obtained <- updatePriorBeta(prior0,
@@ -176,7 +175,6 @@ test_that("updatePriorBeta works with ExchNormZero - is saturated", {
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.obtained <- updatePriorBeta(prior0,
@@ -255,24 +253,20 @@ test_that("updatePriorBeta works with ExchRobustZero", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchRobustZero")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "ExchRobustZero")
-        expect_true(all(beta1 != beta0))
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta@.Data != prior0@UBeta@.Data))
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "ExchRobustZero")
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta@.Data != prior0@UBeta@.Data))
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
     }
 })
 
@@ -298,21 +292,20 @@ test_that("R and C versions of updatePriorBeta give same answer with ExchRobustZ
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchRobustZero")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -351,30 +344,25 @@ test_that("updatePriorBeta works with ExchNormCov - not saturated", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "ExchNormCov")
-        ## beta
-        expect_true(all(beta1 != beta0))
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "ExchNormCov")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
 })
 
@@ -409,21 +397,20 @@ test_that("R and C versions of updatePriorBeta give same answer with ExchNormCov
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -464,29 +451,24 @@ test_that("updatePriorBeta works with ExchNormCov - is saturated", {
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "ExchNormCov")
-        ## beta
-        expect_equal(beta1, betaHat(prior1))
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "ExchNormCov")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_identical(prior1@tau@.Data, sigma)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_identical(ans.obtained@tau@.Data, sigma)
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
 })
 
@@ -523,34 +505,29 @@ test_that("updatePriorBeta works with ExchRobustCov", {
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "ExchRobustCov")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "ExchRobustCov")
-        ## beta
-        expect_true(all(beta1 != beta0))
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "ExchRobustCov")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@nuEtaCoef, prior0@nuEtaCoef)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@nuEtaCoef, prior0@nuEtaCoef)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
         ## robust
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta != prior0@UBeta))
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta != prior0@UBeta))
     }
 })
 
@@ -586,21 +563,20 @@ test_that("R and C versions of updatePriorBeta give same answer with ExchRobustC
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "ExchRobustCov")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -634,35 +610,30 @@ test_that("updatePriorBeta works with DLMNoTrendNormZeroNoSeason - is not satura
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
+        ans.obtained <- updatePriorBeta(prior0,
+                             beta = beta0,
                                     thetaTransformed = thetaTransformed,
-                                    n = n,
                                     sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMNoTrendNormZeroNoSeason")
+        expect_is(ans.obtained, "DLMNoTrendNormZeroNoSeason")
         phi.updated <- FALSE
         if (!phi.updated)
-            phi.updated <- prior1@phi != prior0@phi
-        ## beta
-        expect_true(all(beta1 != beta0))
+            phi.updated <- ans.obtained@phi != prior0@phi
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
     }
     expect_true(phi.updated)
 })
@@ -690,21 +661,20 @@ test_that("R and C version updatePriorBeta give same answer with DLMNoTrendNormZ
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -738,34 +708,29 @@ test_that("updatePriorBeta works with DLMNoTrendNormZeroNoSeason - is saturated"
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMNoTrendNormZeroNoSeason")
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMNoTrendNormZeroNoSeason")
         phi.updated <- FALSE
         if (!phi.updated)
-            phi.updated <- prior1@phi != prior0@phi
-        ## beta
-        expect_equal(beta1, betaHat(prior1))
+            phi.updated <- ans.obtained@phi != prior0@phi
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
     }
     expect_true(phi.updated)
 })
@@ -794,20 +759,19 @@ test_that("R and C version updatePriorBeta give same answer with DLMNoTrendNormZ
                                margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -838,44 +802,39 @@ test_that("updatePriorBeta works with DLMWithTrendNormZeroNoSeason - is not satu
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMWithTrendNormZeroNoSeason")
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMWithTrendNormZeroNoSeason")
         phi.updated <- FALSE
         if (!phi.updated)
-            phi.updated <- prior1@phi != prior0@phi
-        ## beta
-        expect_true(all(beta1 != beta0))
+            phi.updated <- ans.obtained@phi != prior0@phi
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## Trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
     }
     expect_true(phi.updated)
 })
@@ -904,20 +863,19 @@ test_that("R and C version updatePriorBeta give same answer with DLMWithTrendNor
                                margin = 1L)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -951,42 +909,37 @@ test_that("updatePriorBeta works with DLMWithTrendNormZeroNoSeason - is saturate
                                margin = 1L)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMWithTrendNormZeroNoSeason")
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMWithTrendNormZeroNoSeason")
         if (!phi.updated)
-            phi.updated <- prior1@phi != prior0@phi
-        ## beta
-        expect_equal(beta1, betaHat(prior1))
+            phi.updated <- ans.obtained@phi != prior0@phi
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## Trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
     }
     expect_true(phi.updated)
 })
@@ -1015,20 +968,19 @@ test_that("R and C version updatePriorBeta give same answer with DLMWithTrendNor
                                margin = 1L)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -1060,45 +1012,39 @@ test_that("updatePriorBeta works with DLMNoTrendNormZeroWithSeason - is not satu
                                margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
         for (i in 1:5) {
-            l <- updatePriorBeta(prior1,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-            prior1 <- l[[2]]
+            ans.obtained <- updatePriorBeta(ans.obtained,
+                                            beta = beta0,
+                                            thetaTransformed = thetaTransformed,
+                                            sigma = sigma)
         }
-        expect_is(prior1, "DLMNoTrendNormZeroWithSeason")
-        ## beta
-        expect_true(all(beta1 != beta0))
+        expect_is(ans.obtained, "DLMNoTrendNormZeroWithSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
 })
 
@@ -1126,20 +1072,19 @@ test_that("R and C version updatePriorBeta give same answer with DLMNoTrendNormZ
                                margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -1172,46 +1117,39 @@ test_that("updatePriorBeta works with DLMNoTrendNormZeroWithSeason - is saturate
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
         for (i in 1:5) {
-            l <- updatePriorBeta(prior1,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-            beta1 <- l[[1]]
-            prior1 <- l[[2]]
+            ans.obtained <- updatePriorBeta(ans.obtained,
+                                            beta = beta0,
+                                            thetaTransformed = thetaTransformed,
+                                            sigma = sigma)
         }
-        expect_is(prior1, "DLMNoTrendNormZeroWithSeason")
-        ## beta
-        expect_equal(beta1, betaHat(prior1))
+        expect_is(ans.obtained, "DLMNoTrendNormZeroWithSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
 })
 
@@ -1239,20 +1177,19 @@ test_that("R and C version updatePriorBeta give same answer with DLMNoTrendNormZ
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -1283,62 +1220,55 @@ test_that("updatePriorBeta works with DLMWithTrendNormZeroWithSeason - is not sa
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
         for (i in 1:5) {
-            l <- updatePriorBeta(prior1,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-            prior1 <- l[[2]]
+            ans.obtained <- updatePriorBeta(ans.obtained,
+                                            beta = beta0,
+                                            thetaTransformed = thetaTransformed,
+                                            sigma = sigma)
         }
         for (i in 1:5) {
-            l <- updatePriorBeta(prior1,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-            prior1 <- l[[2]]
+            ans.obtained <- updatePriorBeta(ans.obtained,
+                                            beta = beta0,
+                                            thetaTransformed = thetaTransformed,
+                                            sigma = sigma)
         }
-        expect_is(prior1, "DLMWithTrendNormZeroWithSeason")
-        ## beta
-        expect_true(all(beta1 != beta0))
+        expect_is(ans.obtained, "DLMWithTrendNormZeroWithSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_false(identical(ans.obtained@GWithTrend, prior0@GWithTrend))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
 })
 
@@ -1365,21 +1295,20 @@ test_that("R and C version updatePriorBeta give same answer with DLMWithTrendNor
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -1412,55 +1341,48 @@ test_that("updatePriorBeta works with DLMWithTrendNormZeroWithSeason - is satura
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        for (i in 1:5) {
-            l <- updatePriorBeta(prior1,
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
                                         thetaTransformed = thetaTransformed,
-                                        n = n,
                                         sigma = sigma)
-            beta1 <- l[[1]]
-            prior1 <- l[[2]]
+        for (i in 1:5) {
+            ans.obtained <- updatePriorBeta(ans.obtained,
+                                            beta = rnorm(10),
+                                            thetaTransformed = thetaTransformed,
+                                            sigma = sigma)
         }
-        expect_is(prior1, "DLMWithTrendNormZeroWithSeason")
-        ## beta
-        expect_equal(beta1, betaHat(prior1))
+        expect_is(ans.obtained, "DLMWithTrendNormZeroWithSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_false(identical(ans.obtained@GWithTrend, prior0@GWithTrend))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
 })
 
@@ -1488,20 +1410,19 @@ test_that("R and C version updatePriorBeta give same answer with DLMWithTrendNor
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -1549,41 +1470,36 @@ test_that("updatePriorBeta works with DLMNoTrendNormCovNoSeason - is not saturat
                                isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMNoTrendNormCovNoSeason")
-        if (!updated.phi && prior1@phi != prior0@phi)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMNoTrendNormCovNoSeason")
+        if (!updated.phi && ans.obtained@phi != prior0@phi)
             updated.phi <- TRUE
-        ## beta
-        expect_true(all(beta1 != beta0))
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
     expect_true(updated.phi)
 })
@@ -1622,28 +1538,27 @@ test_that("R and C versions of updatePriorBeta give same answer with DLMNoTrendN
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C.specific <- updatePriorBeta(prior0,
-                                                 thetaTransformed = thetaTransformed,
-                                                 n = n,
-                                                 sigma = sigma, 
-                                                 useC = TRUE,
-                                                 useSpecific = TRUE)
+                                          beta = beta0,
+                                          thetaTransformed = thetaTransformed,
+                                          sigma = sigma, 
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
         set.seed(seed)
         ans.C.generic <- updatePriorBeta(prior0,
-                                                thetaTransformed = thetaTransformed,
-                                                n = n,
-                                                sigma = sigma, 
-                                                useC = TRUE,
-                                                useSpecific = FALSE)
+                                         beta = beta0,
+                                         thetaTransformed = thetaTransformed,
+                                         sigma = sigma, 
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
         if (test.identity)
             expect_identical(ans.R, ans.C.specific)
         else
@@ -1689,41 +1604,36 @@ test_that("updatePriorBeta works with DLMNoTrendNormCovNoSeason - is saturated",
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMNoTrendNormCovNoSeason")
-        if (!updated.phi && prior1@phi != prior0@phi)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMNoTrendNormCovNoSeason")
+        if (!updated.phi && ans.obtained@phi != prior0@phi)
             updated.phi <- TRUE
-        ## beta
-        expect_equal(beta1, betaHat(prior1))
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
     expect_true(updated.phi)
 })
@@ -1762,28 +1672,27 @@ test_that("R and C versions of updatePriorBeta give same answer with DLMNoTrendN
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C.specific <- updatePriorBeta(prior0,
-                                                 thetaTransformed = thetaTransformed,
-                                                 n = n,
-                                                 sigma = sigma, 
-                                                 useC = TRUE,
-                                                 useSpecific = TRUE)
+                                          beta = beta0,
+                                          thetaTransformed = thetaTransformed,
+                                          sigma = sigma, 
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
         set.seed(seed)
         ans.C.generic <- updatePriorBeta(prior0,
-                                                thetaTransformed = thetaTransformed,
-                                                n = n,
-                                                sigma = sigma, 
-                                                useC = TRUE,
-                                                useSpecific = FALSE)
+                                         beta = beta0,
+                                         thetaTransformed = thetaTransformed,
+                                         sigma = sigma, 
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
         if (test.identity)
             expect_identical(ans.R, ans.C.specific)
         else
@@ -1825,56 +1734,49 @@ test_that("updatePriorBeta works with DLMWithTrendNormCovNoSeason - is not satur
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
         for (i in 1:5) {
-            l <- updatePriorBeta(prior1,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-            beta1 <- l[[1]]
-            prior1 <- l[[2]]
+            ans.obtained <- updatePriorBeta(ans.obtained,
+                                            beta = rnorm(10),
+                                            thetaTransformed = thetaTransformed,
+                                            sigma = sigma)
         }
-        expect_is(prior1, "DLMWithTrendNormCovNoSeason")
-        ## beta
-        expect_true(all(beta1 != beta0))
+        expect_is(ans.obtained, "DLMWithTrendNormCovNoSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## Trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_false(identical(ans.obtained@GWithTrend, prior0@GWithTrend))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
 })
 
@@ -1911,28 +1813,27 @@ test_that("R and C versions of updatePriorBeta give same answer with DLMWithTren
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C.specific <- updatePriorBeta(prior0,
-                                                 thetaTransformed = thetaTransformed,
-                                                 n = n,
-                                                 sigma = sigma, 
-                                                 useC = TRUE,
-                                                 useSpecific = TRUE)
+                                          beta = beta0,
+                                          thetaTransformed = thetaTransformed,
+                                          sigma = sigma, 
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
         set.seed(seed)
         ans.C.generic <- updatePriorBeta(prior0,
-                                                thetaTransformed = thetaTransformed,
-                                                n = n,
-                                                sigma = sigma, 
-                                                useC = TRUE,
-                                                useSpecific = FALSE)
+                                         beta = beta0,
+                                         thetaTransformed = thetaTransformed,
+                                         sigma = sigma, 
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
         if (test.identity)
             expect_identical(ans.R, ans.C.specific)
         else
@@ -1975,56 +1876,49 @@ test_that("updatePriorBeta works with DLMWithTrendNormCovNoSeason - is saturated
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
         for (i in 1:5) {
-            l <- updatePriorBeta(prior1,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-            beta1 <- l[[1]]
-            prior1 <- l[[2]]
+            ans.obtained <- updatePriorBeta(ans.obtained,
+                                            beta = rnorm(10),
+                                            thetaTransformed = thetaTransformed,
+                                            sigma = sigma)
         }
-        expect_is(prior1, "DLMWithTrendNormCovNoSeason")
-        ## beta
-        expect_equal(beta1, betaHat(prior1))
+        expect_is(ans.obtained, "DLMWithTrendNormCovNoSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## Trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_false(identical(ans.obtained@GWithTrend, prior0@GWithTrend))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
 })
 
@@ -2061,28 +1955,27 @@ test_that("R and C versions of updatePriorBeta give same answer with DLMWithTren
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C.specific <- updatePriorBeta(prior0,
-                                                 thetaTransformed = thetaTransformed,
-                                                 n = n,
-                                                 sigma = sigma, 
-                                                 useC = TRUE,
-                                                 useSpecific = TRUE)
+                                          beta = beta0,
+                                          thetaTransformed = thetaTransformed,
+                                          sigma = sigma, 
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
         set.seed(seed)
         ans.C.generic <- updatePriorBeta(prior0,
-                                                thetaTransformed = thetaTransformed,
-                                                n = n,
-                                                sigma = sigma, 
-                                                useC = TRUE,
-                                                useSpecific = FALSE)
+                                         beta = beta0,
+                                         thetaTransformed = thetaTransformed,
+                                         sigma = sigma, 
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
         if (test.identity)
             expect_identical(ans.R, ans.C.specific)
         else
@@ -2126,47 +2019,42 @@ test_that("updatePriorBeta works with DLMNoTrendNormCovWithSeason - is not satur
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMNoTrendNormCovWithSeason")
-        if (!updated.phi && (prior1@phi != prior0@phi))
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMNoTrendNormCovWithSeason")
+        if (!updated.phi && (ans.obtained@phi != prior0@phi))
             updated.phi <- TRUE
-        ## beta
-        expect_true(all(beta1 != beta0))
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
     expect_true(updated.phi)
 })
@@ -2205,29 +2093,28 @@ test_that("R and C versions of updatePriorBeta give same answer with DLMNoTrendN
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C.specific <- updatePriorBeta(prior0,
-                                                 thetaTransformed = thetaTransformed,
-                                                 n = n,
-                                                 sigma = sigma, 
-                                                 useC = TRUE,
-                                                 useSpecific = TRUE)
+                                          beta = beta0,
+                                          thetaTransformed = thetaTransformed,
+                                          sigma = sigma, 
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
         set.seed(seed)
         ans.C.generic <- updatePriorBeta(prior0,
-                                                thetaTransformed = thetaTransformed,
-                                                n = n,
-                                                sigma = sigma, 
-                                                useC = TRUE,
-                                                useSpecific = FALSE)
+                                         beta = beta0,
+                                         thetaTransformed = thetaTransformed,
+                                         sigma = sigma, 
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
         if (test.identity)
             expect_identical(ans.R, ans.C.specific)
         else
@@ -2273,46 +2160,41 @@ test_that("updatePriorBeta works with DLMNoTrendNormCovWithSeason - is saturated
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMNoTrendNormCovWithSeason")
-        if (!updated.phi && (prior1@phi != prior0@phi))
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMNoTrendNormCovWithSeason")
+        if (!updated.phi && (ans.obtained@phi != prior0@phi))
             updated.phi <- TRUE
-        ## beta
-        expect_equal(beta1, betaHat(prior1))
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
     expect_true(updated.phi)
 })
@@ -2352,28 +2234,27 @@ test_that("R and C versions of updatePriorBeta give same answer with DLMNoTrendN
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C.specific <- updatePriorBeta(prior0,
-                                                 thetaTransformed = thetaTransformed,
-                                                 n = n,
-                                                 sigma = sigma, 
-                                                 useC = TRUE,
-                                                 useSpecific = TRUE)
+                                          beta = beta0,
+                                          thetaTransformed = thetaTransformed,
+                                          sigma = sigma, 
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
         set.seed(seed)
         ans.C.generic <- updatePriorBeta(prior0,
-                                                thetaTransformed = thetaTransformed,
-                                                n = n,
-                                                sigma = sigma, 
-                                                useC = TRUE,
-                                                useSpecific = FALSE)
+                                         beta = beta0,
+                                         thetaTransformed = thetaTransformed,
+                                         sigma = sigma, 
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
         if (test.identity)
             expect_identical(ans.R, ans.C.specific)
         else
@@ -2381,7 +2262,6 @@ test_that("R and C versions of updatePriorBeta give same answer with DLMNoTrendN
         expect_identical(ans.C.specific, ans.C.generic)
     }
 })
-
 
 test_that("updatePriorBeta works with DLMWithTrendNormCovWithSeason - is not saturated", {
     updatePriorBeta <- demest:::updatePriorBeta
@@ -2417,54 +2297,54 @@ test_that("updatePriorBeta works with DLMWithTrendNormCovWithSeason - is not sat
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMWithTrendNormCovWithSeason")
-        ## beta
-        expect_true(all(beta1 != beta0))
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        for (i in 1:5)
+            ans.obtained <- updatePriorBeta(ans.obtained,
+                                            beta = rnorm(10),
+                                            thetaTransformed = thetaTransformed,
+                                            sigma = sigma)
+        expect_is(ans.obtained, "DLMWithTrendNormCovWithSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## Trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_false(identical(ans.obtained@GWithTrend, prior0@GWithTrend))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
 })
 
@@ -2502,29 +2382,28 @@ test_that("R and C versions of updatePriorBeta give same answer with DLMWithTren
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C.specific <- updatePriorBeta(prior0,
-                                                 thetaTransformed = thetaTransformed,
-                                                 n = n,
-                                                 sigma = sigma, 
-                                                 useC = TRUE,
-                                                 useSpecific = TRUE)
+                                          beta = beta0,
+                                          thetaTransformed = thetaTransformed,
+                                          sigma = sigma, 
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
         set.seed(seed)
         ans.C.generic <- updatePriorBeta(prior0,
-                                                thetaTransformed = thetaTransformed,
-                                                n = n,
-                                                sigma = sigma, 
-                                                useC = TRUE,
-                                                useSpecific = FALSE)
+                                         beta = beta0,
+                                         thetaTransformed = thetaTransformed,
+                                         sigma = sigma, 
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
         if (test.identity)
             expect_identical(ans.R, ans.C.specific)
         else
@@ -2569,53 +2448,48 @@ test_that("updatePriorBeta works with DLMWithTrendNormCovWithSeason - is saturat
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMWithTrendNormCovWithSeason")
-        ## beta
-        expect_equal(beta1, betaHat(prior1))
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMWithTrendNormCovWithSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_true(prior1@omegaAlpha != prior0@omegaAlpha)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_true(ans.obtained@omegaAlpha != prior0@omegaAlpha)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## Trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_false(identical(prior1@GWithTrend, prior0@GWithTrend))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_false(identical(ans.obtained@GWithTrend, prior0@GWithTrend))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
 })
 
@@ -2654,28 +2528,27 @@ test_that("R and C versions of updatePriorBeta give same answer with DLMWithTren
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C.specific <- updatePriorBeta(prior0,
-                                                 thetaTransformed = thetaTransformed,
-                                                 n = n,
-                                                 sigma = sigma, 
-                                                 useC = TRUE,
-                                                 useSpecific = TRUE)
+                                          beta = beta0,
+                                          thetaTransformed = thetaTransformed,
+                                          sigma = sigma, 
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
         set.seed(seed)
         ans.C.generic <- updatePriorBeta(prior0,
-                                                thetaTransformed = thetaTransformed,
-                                                n = n,
-                                                sigma = sigma, 
-                                                useC = TRUE,
-                                                useSpecific = FALSE)
+                                         beta = beta0,
+                                         thetaTransformed = thetaTransformed,
+                                         sigma = sigma, 
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
         if (test.identity)
             expect_identical(ans.R, ans.C.specific)
         else
@@ -2713,39 +2586,34 @@ test_that("updatePriorBeta works with DLMNoTrendRobustZeroNoSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMNoTrendRobustZeroNoSeason")
-        if (!updated.phi && prior1@phi != prior0@phi)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMNoTrendRobustZeroNoSeason")
+        if (!updated.phi && ans.obtained@phi != prior0@phi)
             updated.phi <- TRUE
-        ## beta
-        expect_true(all(beta1 != beta0))
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
         expect_false(prior0@phiKnown@.Data)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## robust
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta != prior0@UBeta))
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta != prior0@UBeta))
     }
     expect_true(updated.phi)
 })
@@ -2774,21 +2642,20 @@ test_that("R and C version updatePriorBeta give same answer with DLMNoTrendRobus
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -2821,45 +2688,40 @@ test_that("updatePriorBeta works with DLMWithTrendRobustZeroNoSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMWithTrendRobustZeroNoSeason")
-        if (!updated.phi && prior1@phi != prior0@phi)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMWithTrendRobustZeroNoSeason")
+        if (!updated.phi && ans.obtained@phi != prior0@phi)
             updated.phi <- TRUE
-        ## beta
-        expect_true(all(beta1 != beta0))
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## Trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## robust
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta != prior0@UBeta))
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta != prior0@UBeta))
     }
     expect_true(updated.phi)
 })
@@ -2889,20 +2751,19 @@ test_that("R and C version updatePriorBeta give same answer with DLMWithTrendRob
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -2933,50 +2794,44 @@ test_that("updatePriorBeta works with DLMNoTrendRobustZeroWithSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
         for (i in 1:5) {
-            l <- updatePriorBeta(prior1,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-            prior1 <- l[[2]]
+            ans.obtained <- updatePriorBeta(ans.obtained,
+                                            beta = rnorm(10),
+                                            thetaTransformed = thetaTransformed,
+                                            sigma = sigma)
         }
-        expect_is(prior1, "DLMNoTrendRobustZeroWithSeason")
-        ## beta
-        expect_true(all(beta1 != beta0))
+        expect_is(ans.obtained, "DLMNoTrendRobustZeroWithSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
         expect_false(prior0@phiKnown@.Data)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## robust
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta != prior0@UBeta))
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta != prior0@UBeta))
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
 })
 
@@ -3003,21 +2858,20 @@ test_that("R and C version updatePriorBeta give same answer with DLMNoTrendRobus
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -3048,48 +2902,43 @@ test_that("updatePriorBeta works with DLMWithTrendRobustZeroWithSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMWithTrendRobustZeroWithSeason")
-        ## beta
-        expect_true(all(beta1 != beta0))
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMWithTrendRobustZeroWithSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## Trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## robust
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta != prior0@UBeta))
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta != prior0@UBeta))
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
     }
 })
 
@@ -3098,7 +2947,7 @@ test_that("R and C version updatePriorBeta give same answer with DLMWithTrendRob
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-          spec <- DLM(season = Season(n = 4), error = Error(robust = TRUE))
+        spec <- DLM(season = Season(n = 4), error = Error(robust = TRUE))
         beta0 <- rnorm(10)
         metadata <- new("MetaData",
                         nms = "time",
@@ -3116,21 +2965,20 @@ test_that("R and C version updatePriorBeta give same answer with DLMWithTrendRob
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -3174,44 +3022,39 @@ test_that("updatePriorBeta works with DLMNoTrendRobustCovNoSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMNoTrendRobustCovNoSeason")
-        ## beta
-        expect_true(all(beta1 != beta0))
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMNoTrendRobustCovNoSeason")
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
         expect_false(prior0@phiKnown@.Data)
-        expect_true(prior1@phi != prior0@phi)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_true(ans.obtained@phi != prior0@phi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## robust
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta != prior0@UBeta))
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta != prior0@UBeta))
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
 })
 
@@ -3249,20 +3092,19 @@ test_that("R and C version updatePriorBeta give same answer with DLMNoTrendRobus
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
         thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -3305,52 +3147,47 @@ test_that("updatePriorBeta works with DLMWithTrendRobustCovNoSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMWithTrendRobustCovNoSeason")
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMWithTrendRobustCovNoSeason")
         if (!phi.updated)
-          phi.updated <- prior1@phi != prior0@phi
-        ## beta
-        expect_true(all(beta1 != beta0))
+            phi.updated <- ans.obtained@phi != prior0@phi
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
         expect_false(prior0@phiKnown@.Data)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
-        # trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
+                                        # trend
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## robust
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta != prior0@UBeta))
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta != prior0@UBeta))
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
     expect_true(phi.updated)
 })
@@ -3388,21 +3225,20 @@ test_that("R and C version updatePriorBeta give same answer with DLMWithTrendRob
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -3445,50 +3281,45 @@ test_that("updatePriorBeta works with DLMNoTrendRobustCovWithSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMNoTrendRobustCovWithSeason")
-        if (!updated.phi && prior1@phi != prior0@phi)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMNoTrendRobustCovWithSeason")
+        if (!updated.phi && ans.obtained@phi != prior0@phi)
             updated.phi <- TRUE
-        ## beta
-        expect_true(all(beta1 != beta0))
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
         expect_false(prior0@phiKnown@.Data)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
         ## robust
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta != prior0@UBeta))
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta != prior0@UBeta))
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
     expect_true(updated.phi)
 })
@@ -3527,21 +3358,20 @@ test_that("R and C version updatePriorBeta give same answer with DLMNoTrendRobus
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -3585,57 +3415,52 @@ test_that("updatePriorBeta works with DLMWithTrendRobustCovWithSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "DLMWithTrendRobustCovWithSeason")
-        if (!updated.phi && prior1@phi != prior0@phi)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "DLMWithTrendRobustCovWithSeason")
+        if (!updated.phi && ans.obtained@phi != prior0@phi)
             updated.phi <- TRUE
-        ## beta
-        expect_true(all(beta1 != beta0))
         ## basic
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        expect_true(prior1@tau@.Data != prior0@tau@.Data)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
+        expect_true(ans.obtained@tau@.Data != prior0@tau@.Data)
         ## DLM
-        expect_identical(prior1@AAlpha, prior0@AAlpha)
-        expect_true(all(prior1@alphaDLM[-1] != prior0@alphaDLM[-1]))
-        expect_identical(prior1@K, prior0@K)
-        expect_identical(prior1@L, prior0@L)
-        expect_identical(prior1@nuAlpha, prior0@nuAlpha)
+        expect_identical(ans.obtained@AAlpha, prior0@AAlpha)
+        expect_true(all(ans.obtained@alphaDLM[-1] != prior0@alphaDLM[-1]))
+        expect_identical(ans.obtained@K, prior0@K)
+        expect_identical(ans.obtained@L, prior0@L)
+        expect_identical(ans.obtained@nuAlpha, prior0@nuAlpha)
         expect_false(prior0@phiKnown@.Data)
-        expect_identical(prior1@phiKnown, prior0@phiKnown)
-        expect_identical(prior1@minPhi, prior0@minPhi)
-        expect_identical(prior1@maxPhi, prior0@maxPhi)
-        # trend
-        expect_identical(prior1@ADelta, prior0@ADelta)
-        expect_true(all(prior1@deltaDLM != prior0@deltaDLM))
-        expect_identical(prior1@nuDelta, prior0@nuDelta)
-        expect_true(prior1@omegaDelta != prior0@omegaDelta)
-        expect_false(identical(prior1@WSqrt, prior0@WSqrt))
-        expect_false(identical(prior1@WSqrtInvG, prior0@WSqrtInvG))
+        expect_identical(ans.obtained@phiKnown, prior0@phiKnown)
+        expect_identical(ans.obtained@minPhi, prior0@minPhi)
+        expect_identical(ans.obtained@maxPhi, prior0@maxPhi)
+                                        # trend
+        expect_identical(ans.obtained@ADelta, prior0@ADelta)
+        expect_true(all(ans.obtained@deltaDLM != prior0@deltaDLM))
+        expect_identical(ans.obtained@nuDelta, prior0@nuDelta)
+        expect_true(ans.obtained@omegaDelta != prior0@omegaDelta)
+        expect_false(identical(ans.obtained@WSqrt, prior0@WSqrt))
+        expect_false(identical(ans.obtained@WSqrtInvG, prior0@WSqrtInvG))
         ## robust
-        expect_identical(prior1@nuBeta, prior0@nuBeta)
-        expect_true(all(prior1@UBeta != prior0@UBeta))
+        expect_identical(ans.obtained@nuBeta, prior0@nuBeta)
+        expect_true(all(ans.obtained@UBeta != prior0@UBeta))
         ## season
-        expect_identical(prior1@ASeason, prior0@ASeason)
-        expect_true(all(unlist(prior1@s@.Data) != unlist(prior0@s@.Data)))
-        expect_identical(prior1@nSeason, prior0@nSeason)
-        expect_identical(prior1@nuSeason, prior0@nuSeason)
+        expect_identical(ans.obtained@ASeason, prior0@ASeason)
+        expect_true(all(unlist(ans.obtained@s@.Data) != unlist(prior0@s@.Data)))
+        expect_identical(ans.obtained@nSeason, prior0@nSeason)
+        expect_identical(ans.obtained@nuSeason, prior0@nuSeason)
         ## covariates
-        expect_identical(prior1@P, prior0@P)
-        expect_identical(prior1@AEtaIntercept, prior0@AEtaIntercept)
-        expect_identical(prior1@AEtaCoef, prior0@AEtaCoef)
-        expect_true(all(prior1@UEtaCoef != prior0@UEtaCoef))
-        expect_identical(prior1@Z, prior0@Z)
+        expect_identical(ans.obtained@P, prior0@P)
+        expect_identical(ans.obtained@AEtaIntercept, prior0@AEtaIntercept)
+        expect_identical(ans.obtained@AEtaCoef, prior0@AEtaCoef)
+        expect_true(all(ans.obtained@UEtaCoef != prior0@UEtaCoef))
+        expect_identical(ans.obtained@Z, prior0@Z)
     }
     expect_true(updated.phi)
 })
@@ -3674,21 +3499,20 @@ test_that("R and C version updatePriorBeta give same answer with DLMWithTrendRob
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
-        thetaTransformed <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -3722,20 +3546,15 @@ test_that("updatePriorBeta works with KnownCertain", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownCertain")
-        thetaTransformed <- rnorm(2)
-        n <- 9:10
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
         set.seed(seed)
-        beta2 <- as.numeric(mean)
-        expect_identical(prior1, prior0)
-        expect_equal(beta2, beta1)
+        expect_identical(ans.obtained, prior0)
     }
 })
 
@@ -3762,21 +3581,20 @@ test_that("R and C versions of updatePriorBeta give same answer with KnownCertai
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownCertain")
-        thetaTransformed <- rnorm(2)
-        n <- 9:10
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -3807,23 +3625,15 @@ test_that("updatePriorBeta works with KnownUncertain", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownUncertain")
-        thetaTransformed <- rnorm(2)
-        n <- 9:10
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
         set.seed(seed)
-        beta2 <- rnorm(2,
-                       mean = ((n*thetaTransformed/sigma^2 + prior0@alphaKnown@.Data/prior0@AKnownVec@.Data^2)
-                           /(n/sigma^2+1/prior0@AKnownVec@.Data^2)),
-                       sd = 1/sqrt(n/sigma^2+1/prior0@AKnownVec@.Data^2))
-        expect_identical(prior1, prior0)
-        expect_equal(beta2, beta1)
+        expect_identical(ans.obtained, prior0)
     }
 })
 
@@ -3850,21 +3660,20 @@ test_that("R and C versions of updatePriorBeta give same answer with KnownUncert
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownUncertain")
-        thetaTransformed <- rnorm(2)
-        n <- 9:10
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -3903,69 +3712,64 @@ test_that("updatePriorBeta updates correct slots with MixNormZero - is not satur
                            isSaturated = FALSE,
                            margin = 1:3,
                            strucZeroArray = strucZeroArray)
-    thetaTransformed <- rnorm(200)
-    n <- rep(5L, 200)
+    thetaTransformed <- rnorm(1000)
     sigma <- runif(1)
-    l <- updatePriorBeta(prior = prior0,
-                                thetaTransformed = thetaTransformed,
-                                n = n,
-                                sigma = sigma)
-    beta1 <- l[[1]]
-    prior1 <- l[[2]]
-    expect_is(prior1, "MixNormZero")
-    ## beta
-    expect_true(all(beta0 != beta1))
+    ans.obtained <- updatePriorBeta(prior = prior0,
+                                    beta = beta0,
+                                    thetaTransformed = thetaTransformed,
+                                    sigma = sigma)
+    expect_is(ans.obtained, "MixNormZero")
     ## u
     u0 <- prior0@latentWeightMix@.Data
-    u1 <- prior1@latentWeightMix@.Data
+    u1 <- ans.obtained@latentWeightMix@.Data
     expect_true(all(u0 != u1))
     ## k
     k0 <- prior0@indexClassMix
-    k1 <- prior1@indexClassMix
+    k1 <- ans.obtained@indexClassMix
     expect_true(!all(k0 == k1))
     ## z 
     z0 <- prior0@latentComponentWeightMix@.Data
-    z1 <- prior1@latentComponentWeightMix@.Data
+    z1 <- ans.obtained@latentComponentWeightMix@.Data
     expect_true(!all(z0 == z1))
     ## W
     W0 <- prior0@componentWeightMix@.Data
-    W1 <- prior1@componentWeightMix@.Data
+    W1 <- ans.obtained@componentWeightMix@.Data
     expect_true(all(W0 != W1))
     ## v
     v0 <- prior0@weightMix@.Data
-    v1 <- prior1@weightMix@.Data
+    v1 <- ans.obtained@weightMix@.Data
     expect_true(all(v0 != v1))
     ## psi
     psi0 <- unlist(prior0@vectorsMix)
-    psi1 <- unlist(prior1@vectorsMix)
+    psi1 <- unlist(ans.obtained@vectorsMix)
     expect_true(!all(psi0 == psi1))
     ## sigma_delta
     sdelta0 <- prior0@tau@.Data
-    sdelta1 <- prior1@tau@.Data
+    sdelta1 <- ans.obtained@tau@.Data
     expect_true(sdelta0 != sdelta1)
     ## sigma_e
     se0 <- prior0@omegaVectorsMix@.Data
-    se1 <- prior1@omegaVectorsMix@.Data
+    se1 <- ans.obtained@omegaVectorsMix@.Data
     expect_true(se0 != se1)
     ## sigma_epsilon
     sepsilon0 <- prior0@omegaComponentWeightMix@.Data
-    sepsilon1 <- prior1@omegaComponentWeightMix@.Data
+    sepsilon1 <- ans.obtained@omegaComponentWeightMix@.Data
     expect_true(sepsilon0 != sepsilon1)
     ## sigma_eta
     seta0 <- prior0@omegaLevelComponentWeightMix@.Data
-    seta1 <- prior1@omegaLevelComponentWeightMix@.Data
+    seta1 <- ans.obtained@omegaLevelComponentWeightMix@.Data
     expect_true(seta0 != seta1)
     ## mu
     mu0 <- prior0@meanLevelComponentWeightMix@.Data
-    mu1 <- prior1@meanLevelComponentWeightMix@.Data
+    mu1 <- ans.obtained@meanLevelComponentWeightMix@.Data
     expect_true(mu0 != mu1)
     ## alpha
     alpha0 <- prior0@levelComponentWeightMix@.Data
-    alpha1 <- prior1@levelComponentWeightMix@.Data
+    alpha1 <- ans.obtained@levelComponentWeightMix@.Data
     expect_true(all(alpha0 != alpha1))
     ## alphaMix
     alphaMix0 <- prior0@alphaMix@.Data
-    alphaMix1 <- prior1@alphaMix@.Data
+    alphaMix1 <- ans.obtained@alphaMix@.Data
     expect_true(all(alphaMix0 != alphaMix1))
 })
 
@@ -3996,21 +3800,20 @@ test_that("R and C versions of updatePriorBeta give same answer with MixNormZero
                                isSaturated = FALSE,
                                margin = 1:3,
                                strucZeroArray = strucZeroArray)
-        thetaTransformed <- rnorm(200)
-        n <- rep(5L, 200)
+        thetaTransformed <- rnorm(2000)
         sigma <- runif(1)
         set.seed(seed + 1)
         ans.R <- updatePriorBeta(prior = prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma,
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma,
+                                 useC = FALSE)
         set.seed(seed + 1)
         ans.C <- updatePriorBeta(prior = prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma,
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma,
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -4046,68 +3849,63 @@ test_that("updatePriorBeta updates correct slots with MixNormZero - is saturated
                            strucZeroArray = strucZeroArray,
                            margin = 1:3)
     thetaTransformed <- rnorm(200)
-    n <- rep(5L, 200)
     sigma <- runif(1)
-    l <- updatePriorBeta(prior = prior0,
-                                thetaTransformed = thetaTransformed,
-                                n = n,
-                                sigma = sigma)
-    beta1 <- l[[1]]
-    prior1 <- l[[2]]
-    expect_is(prior1, "MixNormZero")
-    ## beta
-    expect_equal(beta1, betaHat(prior1))
+    ans.obtained <- updatePriorBeta(prior = prior0,
+                                    beta = beta0,
+                                    thetaTransformed = thetaTransformed,
+                                    sigma = sigma)
+    expect_is(ans.obtained, "MixNormZero")
     ## u
     u0 <- prior0@latentWeightMix@.Data
-    u1 <- prior1@latentWeightMix@.Data
+    u1 <- ans.obtained@latentWeightMix@.Data
     expect_true(all(u0 != u1))
     ## k
     k0 <- prior0@indexClassMix
-    k1 <- prior1@indexClassMix
+    k1 <- ans.obtained@indexClassMix
     expect_true(!all(k0 == k1))
     ## z 
     z0 <- prior0@latentComponentWeightMix@.Data
-    z1 <- prior1@latentComponentWeightMix@.Data
+    z1 <- ans.obtained@latentComponentWeightMix@.Data
     expect_true(!all(z0 == z1))
     ## W
     W0 <- prior0@componentWeightMix@.Data
-    W1 <- prior1@componentWeightMix@.Data
+    W1 <- ans.obtained@componentWeightMix@.Data
     expect_true(all(W0 != W1))
     ## v
     v0 <- prior0@weightMix@.Data
-    v1 <- prior1@weightMix@.Data
+    v1 <- ans.obtained@weightMix@.Data
     expect_true(all(v0 != v1))
     ## psi
     psi0 <- unlist(prior0@vectorsMix)
-    psi1 <- unlist(prior1@vectorsMix)
+    psi1 <- unlist(ans.obtained@vectorsMix)
     expect_true(!all(psi0 == psi1))
     ## sigma_delta
     sdelta0 <- prior0@tau@.Data
-    sdelta1 <- prior1@tau@.Data
+    sdelta1 <- ans.obtained@tau@.Data
     expect_true(sdelta0 != sdelta1)
     ## sigma_e
     se0 <- prior0@omegaVectorsMix@.Data
-    se1 <- prior1@omegaVectorsMix@.Data
+    se1 <- ans.obtained@omegaVectorsMix@.Data
     expect_true(se0 != se1)
     ## sigma_epsilon
     sepsilon0 <- prior0@omegaComponentWeightMix@.Data
-    sepsilon1 <- prior1@omegaComponentWeightMix@.Data
+    sepsilon1 <- ans.obtained@omegaComponentWeightMix@.Data
     expect_true(sepsilon0 != sepsilon1)
     ## sigma_eta
     seta0 <- prior0@omegaLevelComponentWeightMix@.Data
-    seta1 <- prior1@omegaLevelComponentWeightMix@.Data
+    seta1 <- ans.obtained@omegaLevelComponentWeightMix@.Data
     expect_true(seta0 != seta1)
     ## mu
     mu0 <- prior0@meanLevelComponentWeightMix@.Data
-    mu1 <- prior1@meanLevelComponentWeightMix@.Data
+    mu1 <- ans.obtained@meanLevelComponentWeightMix@.Data
     expect_true(mu0 != mu1)
     ## alpha
     alpha0 <- prior0@levelComponentWeightMix@.Data
-    alpha1 <- prior1@levelComponentWeightMix@.Data
+    alpha1 <- ans.obtained@levelComponentWeightMix@.Data
     expect_true(all(alpha0 != alpha1))
     ## alphaMix
     alphaMix0 <- prior0@alphaMix@.Data
-    alphaMix1 <- prior1@alphaMix@.Data
+    alphaMix1 <- ans.obtained@alphaMix@.Data
     expect_true(all(alphaMix0 != alphaMix1))
 })
 
@@ -4139,20 +3937,19 @@ test_that("R and C versions of updatePriorBeta give same answer with MixNormZero
                                margin = 1:3,
                                strucZeroArray = strucZeroArray)
         thetaTransformed <- rnorm(200)
-        n <- rep(5L, 200)
         sigma <- runif(1)
         set.seed(seed + 1)
         ans.R <- updatePriorBeta(prior = prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma,
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma,
+                                 useC = FALSE)
         set.seed(seed + 1)
         ans.C <- updatePriorBeta(prior = prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma,
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma,
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -4185,20 +3982,15 @@ test_that("updatePriorBeta works with Zero", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "Zero")
-        thetaTransformed <- rnorm(2)
-        n <- 9:10
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updatePriorBeta(prior0,
-                                    thetaTransformed = thetaTransformed,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
         set.seed(seed)
-        beta2 <- rep(0, 2)
-        expect_identical(prior1, prior0)
-        expect_equal(beta2, beta1)
+        expect_identical(ans.obtained, prior0)
     }
 })
 
@@ -4224,21 +4016,20 @@ test_that("R and C versions of updatePriorBeta give same answer with Zero", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "Zero")
-        thetaTransformed <- rnorm(2)
-        n <- 9:10
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
         ans.R <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
         ans.C <- updatePriorBeta(prior0,
-                                        thetaTransformed = thetaTransformed,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
