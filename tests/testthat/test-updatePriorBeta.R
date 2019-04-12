@@ -1,12 +1,12 @@
 
-context("updateBetaAndPriorBeta")
+context("updatePriorBeta")
 
 n.test <- 5
 test.identity <- FALSE
 test.extended <- FALSE
 
-test_that("updateBetaAndPriorBeta works with ExchFixed - not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with ExchFixed - not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     ## 'allStrucZero' all FALSE
     for (seed in seq_len(n.test)) {
@@ -30,144 +30,54 @@ test_that("updateBetaAndPriorBeta works with ExchFixed - not saturated", {
         n <- rep(10L, 2)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        set.seed(seed)
-        beta2 <- rep(0, 2)
-        for (i in 1:2) {
-            beta2[i] <- rnorm(1,
-                              mean = (n[i]*vbar[i]/sigma^2)/(n[i]/sigma^2+1/prior0@tau@.Data^2),
-                              sd = 1/sqrt(n[i]/sigma^2+1/prior0@tau@.Data^2))
-        }
-        expect_identical(prior1, prior0)
-        expect_equal(beta2, beta1)
-    }
-    ## 'allStrucZero' has TRUE
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        spec <- ExchFixed()
-        beta0 <- rnorm(2)
-        metadata <- new("MetaData",
-                        nms = "sex",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = c("f", "m"))))
-        strucZeroArray <- ValuesOne(c(1L, 0L), labels = c("f", "m"), name = "sex")
-        prior0 <- initialPrior(spec,
-                               beta = beta0,
-                               metadata = metadata,
-                               sY = NULL,
-                               isSaturated = FALSE,
-                               margin = 1L,
-                               strucZeroArray = strucZeroArray)
-        expect_is(prior0, "ExchFixed")
-        vbar <- c(rnorm(1), 0)
-        n <- c(10L, 0L)
-        sigma <- runif(1)
-        set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        set.seed(seed)
-        beta2 <- c(rnorm(1,
-                         mean = (n[1]*vbar[1]/sigma^2)/(n[1]/sigma^2+1/prior0@tau@.Data^2),
-                         sd = 1/sqrt(n[1]/sigma^2+1/prior0@tau@.Data^2)),
-                   0)
-        expect_identical(prior1, prior0)
-        expect_equal(beta2, beta1)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = rnorm(20),
+                                        sigma = sigma)
+        ans.expected <- prior0
+        expect_identical(ans.obtained, ans.expected)
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchFixed - not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with ExchFixed - not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
-    for (seed in seq_len(n.test)) {
-        ## 'allStrucZero' all FALSE
-        set.seed(seed)
-        spec <- ExchFixed()
-        beta0 <- rnorm(2)
-        metadata <- new("MetaData",
-                        nms = "sex",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = c("f", "m"))))
-        strucZeroArray <- ValuesOne(c(1L, 1L), labels = c("f", "m"), name = "sex")
-        prior0 <- initialPrior(spec,
-                               beta = beta0,
-                               metadata = metadata,
-                               sY = NULL,
-                               isSaturated = FALSE,
-                               margin = 1L,
-                               strucZeroArray = strucZeroArray)
-        expect_is(prior0, "ExchFixed")
-        vbar <- rnorm(2)
-        n <- rep(10L, 2)
-        sigma <- runif(1)
-        set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-        ## some 'allStrucZero' TRUE
-        set.seed(seed)
-        spec <- ExchFixed()
-        beta0 <- rnorm(2)
-        metadata <- new("MetaData",
-                        nms = "sex",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = c("f", "m"))))
-        strucZeroArray <- ValuesOne(c(1L, 0L), labels = c("f", "m"), name = "sex")
-        prior0 <- initialPrior(spec,
-                               beta = beta0,
-                               metadata = metadata,
-                               sY = NULL,
-                               isSaturated = FALSE,
-                               margin = 1L,
-                               strucZeroArray = strucZeroArray)
-        expect_is(prior0, "ExchFixed")
-        vbar <- rnorm(2)
-        n <- rep(10L, 2)
-        sigma <- runif(1)
-        set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
+    spec <- ExchFixed()
+    beta0 <- rnorm(2)
+    metadata <- new("MetaData",
+                    nms = "sex",
+                    dimtypes = "state",
+                    DimScales = list(new("Categories", dimvalues = c("f", "m"))))
+    strucZeroArray <- ValuesOne(c(1L, 1L), labels = c("f", "m"), name = "sex")
+    prior0 <- initialPrior(spec,
+                           beta = beta0,
+                           metadata = metadata,
+                           sY = NULL,
+                           isSaturated = FALSE,
+                           margin = 1L,
+                           strucZeroArray = strucZeroArray)
+    expect_is(prior0, "ExchFixed")
+    sigma <- runif(1)
+    ans.R <- updatePriorBeta(prior0,
+                             beta = beta0,
+                             thetaTransformed = rnorm(20),
+                             sigma = sigma, 
+                             useC = FALSE)
+    ans.C <- updatePriorBeta(prior0,
+                             beta = beta0,
+                             thetaTransformed = rnorm(20),
+                             sigma = sigma, 
+                             useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
 })
 
-test_that("updateBetaAndPriorBeta works with ExchNormZero - not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with ExchNormZero - not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
-        ## no max
         set.seed(seed)
         spec <- Exch()
         beta0 <- rnorm(10)
@@ -186,63 +96,24 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero - not saturated", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "ExchNormZero")
-        expect_true(all(beta1 != beta0))
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        ## with max
-        set.seed(seed)
-        spec <- Exch(error = Error(scale = HalfT(max = 0.5)))
-        beta0 <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        strucZeroArray <- Counts(array(1L,
-                                       dim = 10,
-                                       dimnames = list(region = letters[1:10])))
-        prior0 <- initialPrior(spec,
-                               beta = beta0,
-                               metadata = metadata,
-                               sY = NULL,
-                               isSaturated = FALSE,
-                               margin = 1L,
-                               strucZeroArray = strucZeroArray)
-        expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- rep(5L, 10)
-        sigma <- runif(1)
-        set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "ExchNormZero")
-        expect_true(all(beta1 != beta0))
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_is(ans.obtained, "ExchNormZero")
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with ExchNormZero - not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same ansewr with ExchNormZero - not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
-        ## no max
         set.seed(seed)
         spec <- Exch()
         beta0 <- rnorm(10)
@@ -261,59 +132,20 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(20)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+        ans.R <- updatePriorBeta(prior0,
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-        ## with max
-        set.seed(seed)
-        spec <- Exch(error = Error(scale = HalfT(max = 0.5)))
-        beta0 <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        strucZeroArray <- Counts(array(1L,
-                                       dim = 10,
-                                       dimnames = list(region = letters[1:10])))
-        prior0 <- initialPrior(spec,
-                               beta = beta0,
-                               metadata = metadata,
-                               sY = NULL,
-                               isSaturated = FALSE,
-                               margin = 1L,
-                               strucZeroArray = strucZeroArray)
-        expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- rep(5L, 10)
-        sigma <- runif(1)
-        set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+        ans.C <- updatePriorBeta(prior0,
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -321,11 +153,10 @@ test_that("R and C versions of updateBetaAndPriorBeta give same ansewr with Exch
     }
 })
 
-test_that("updateBetaAndPriorBeta works with ExchNormZero - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with ExchNormZero - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
-        ## no max
         set.seed(seed)
         spec <- Exch()
         beta0 <- rnorm(10)
@@ -344,65 +175,25 @@ test_that("updateBetaAndPriorBeta works with ExchNormZero - is saturated", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "ExchNormZero")
-        expect_equal(beta1, rep(0, 10))
-        expect_identical(prior1@tau@.Data, sigma)
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
-        ## with max
-        set.seed(seed)
-        spec <- Exch(error = Error(scale = HalfT(max = 0.5)))
-        beta0 <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        strucZeroArray <- Counts(array(1L,
-                                       dim = 10,
-                                       dimnames = list(region = letters[1:10])))
-        prior0 <- initialPrior(spec,
-                               beta = beta0,
-                               metadata = metadata,
-                               sY = NULL,
-                               isSaturated = TRUE,
-                               strucZeroArray = strucZeroArray,
-                               margin = 1L)
-        expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- rep(5L, 10)
-        sigma <- runif(1, max = 0.5)
-        set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
-                                    n = n,
-                                    sigma = sigma)
-        beta1 <- l[[1]]
-        prior1 <- l[[2]]
-        expect_is(prior1, "ExchNormZero")
-        expect_equal(beta1, rep(0, 10))
-        expect_identical(prior1@tau@.Data, sigma)
-        expect_identical(prior1@J, prior0@J)
-        expect_identical(prior1@ATau, prior0@ATau)
-        expect_identical(prior1@nuTau, prior0@nuTau)
+        ans.obtained <- updatePriorBeta(prior0,
+                                        beta = beta0,
+                                        thetaTransformed = thetaTransformed,
+                                        sigma = sigma)
+        expect_identical(ans.obtained@tau@.Data, sigma)
+        expect_identical(ans.obtained@J, prior0@J)
+        expect_identical(ans.obtained@ATau, prior0@ATau)
+        expect_identical(ans.obtained@nuTau, prior0@nuTau)
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchNormZero - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with ExchNormZero - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
-        ## no max
         set.seed(seed)
         spec <- Exch()
         beta0 <- rnorm(10)
@@ -421,59 +212,20 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- rep(5L, 10)
+        thetaTransformed <- rnorm(10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
+        ans.R <- updatePriorBeta(prior0,
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-        ## with max
-        set.seed(seed)
-        spec <- Exch(error = Error(scale = HalfT(max = 0.5)))
-        beta0 <- rnorm(10)
-        metadata <- new("MetaData",
-                        nms = "region",
-                        dimtypes = "state",
-                        DimScales = list(new("Categories", dimvalues = letters[1:10])))
-        strucZeroArray <- Counts(array(1L,
-                                       dim = 10,
-                                       dimnames = list(region = letters[1:10])))
-        prior0 <- initialPrior(spec,
-                               beta = beta0,
-                               metadata = metadata,
-                               sY = NULL,
-                               isSaturated = TRUE,
-                               margin = 1L,
-                               strucZeroArray = strucZeroArray)
-        expect_is(prior0, "ExchNormZero")
-        vbar <- rnorm(10)
-        n <- rep(5L, 10)
-        sigma <- runif(1)
-        set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma, 
-                                        useC = TRUE)
+        ans.C <- updatePriorBeta(prior0,
+                                 beta = beta0,
+                                 thetaTransformed = thetaTransformed,
+                                 sigma = sigma, 
+                                 useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -481,8 +233,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
     }
 })
 
-test_that("updateBetaAndPriorBeta works with ExchRobustZero", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with ExchRobustZero", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(100)
@@ -503,12 +255,12 @@ test_that("updateBetaAndPriorBeta works with ExchRobustZero", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchRobustZero")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -524,8 +276,8 @@ test_that("updateBetaAndPriorBeta works with ExchRobustZero", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchRobustZero", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with ExchRobustZero", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(100)
@@ -546,18 +298,18 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchRobustZero")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -568,8 +320,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
     }
 })
 
-test_that("updateBetaAndPriorBeta works with ExchNormCov - not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with ExchNormCov - not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -599,12 +351,12 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov - not saturated", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -626,8 +378,8 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov - not saturated", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchNormCov - not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with ExchNormCov - not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -657,18 +409,18 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -679,8 +431,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
     }
 })
 
-test_that("updateBetaAndPriorBeta works with ExchNormCov - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with ExchNormCov - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     for (seed in seq_len(n.test)) {
@@ -711,12 +463,12 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov - is saturated", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "ExchNormCov")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -738,8 +490,8 @@ test_that("updateBetaAndPriorBeta works with ExchNormCov - is saturated", {
     }
 })
 
-test_that("updateBetaAndPriorBeta works with ExchRobustCov", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with ExchRobustCov", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -771,12 +523,12 @@ test_that("updateBetaAndPriorBeta works with ExchRobustCov", {
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "ExchRobustCov")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -802,8 +554,8 @@ test_that("updateBetaAndPriorBeta works with ExchRobustCov", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with ExchRobustCov", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with ExchRobustCov", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -834,18 +586,18 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "ExchRobustCov")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -858,8 +610,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Exch
 
 ## DLM - Norm, Zero
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendNormZeroNoSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -882,12 +634,12 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is not
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -915,8 +667,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is not
     expect_true(phi.updated)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroNoSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMNoTrendNormZeroNoSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -938,18 +690,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -960,8 +712,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendNormZeroNoSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     for (seed in seq_len(n.test)) {
@@ -985,12 +737,12 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is sat
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -1018,8 +770,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroNoSeason - is sat
     expect_true(phi.updated)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroNoSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMNoTrendNormZeroNoSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1041,18 +793,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -1063,8 +815,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendNormZeroNoSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1086,12 +838,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is n
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -1128,8 +880,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is n
     expect_true(phi.updated)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroNoSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMWithTrendNormZeroNoSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1151,18 +903,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -1173,8 +925,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendNormZeroNoSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     phi.updated <- FALSE
@@ -1198,12 +950,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is s
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -1239,8 +991,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroNoSeason - is s
     expect_true(phi.updated)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroNoSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMWithTrendNormZeroNoSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1262,18 +1014,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "DLMWithTrendNormZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -1284,8 +1036,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendNormZeroWithSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1307,19 +1059,19 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is n
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         for (i in 1:5) {
-            l <- updateBetaAndPriorBeta(prior1,
-                                    vbar = vbar,
+            l <- updatePriorBeta(prior1,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
             prior1 <- l[[2]]
@@ -1350,8 +1102,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is n
     }
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroWithSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMNoTrendNormZeroWithSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1373,18 +1125,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                strucZeroArray = strucZeroArray,
                                margin = 1L)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -1395,8 +1147,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendNormZeroWithSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     for (seed in seq_len(n.test)) {
@@ -1419,19 +1171,19 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is s
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         for (i in 1:5) {
-            l <- updateBetaAndPriorBeta(prior1,
-                                    vbar = vbar,
+            l <- updatePriorBeta(prior1,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
             beta1 <- l[[1]]
@@ -1463,8 +1215,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormZeroWithSeason - is s
     }
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendNormZeroWithSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMNoTrendNormZeroWithSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1486,18 +1238,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -1508,8 +1260,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendNormZeroWithSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1531,26 +1283,26 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         for (i in 1:5) {
-            l <- updateBetaAndPriorBeta(prior1,
-                                    vbar = vbar,
+            l <- updatePriorBeta(prior1,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
             prior1 <- l[[2]]
         }
         for (i in 1:5) {
-            l <- updateBetaAndPriorBeta(prior1,
-                                    vbar = vbar,
+            l <- updatePriorBeta(prior1,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
             prior1 <- l[[2]]
@@ -1590,8 +1342,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is
     }
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroWithSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMWithTrendNormZeroWithSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1613,18 +1365,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -1635,8 +1387,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendNormZeroWithSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     for (seed in seq_len(n.test)) {
@@ -1659,19 +1411,19 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         for (i in 1:5) {
-            l <- updateBetaAndPriorBeta(prior1,
-                                        vbar = vbar,
+            l <- updatePriorBeta(prior1,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma)
             beta1 <- l[[1]]
@@ -1712,8 +1464,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormZeroWithSeason - is
     }
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendNormZeroWithSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMWithTrendNormZeroWithSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1735,18 +1487,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -1761,8 +1513,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
 
 ## DLM - Norm, Cov
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendNormCovNoSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
@@ -1796,12 +1548,12 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is not 
                                strucZeroArray = strucZeroArray,
                                isSaturated = FALSE)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -1836,8 +1588,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is not 
     expect_true(updated.phi)
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovNoSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with DLMNoTrendNormCovNoSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -1869,25 +1621,25 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C.specific <- updateBetaAndPriorBeta(prior0,
-                                                 vbar = vbar,
+        ans.C.specific <- updatePriorBeta(prior0,
+                                                 thetaTransformed = thetaTransformed,
                                                  n = n,
                                                  sigma = sigma, 
                                                  useC = TRUE,
                                                  useSpecific = TRUE)
         set.seed(seed)
-        ans.C.generic <- updateBetaAndPriorBeta(prior0,
-                                                vbar = vbar,
+        ans.C.generic <- updatePriorBeta(prior0,
+                                                thetaTransformed = thetaTransformed,
                                                 n = n,
                                                 sigma = sigma, 
                                                 useC = TRUE,
@@ -1900,8 +1652,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendNormCovNoSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     updated.phi <- FALSE
@@ -1936,12 +1688,12 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is satu
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -1976,8 +1728,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovNoSeason - is satu
     expect_true(updated.phi)
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovNoSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with DLMNoTrendNormCovNoSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2009,25 +1761,25 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C.specific <- updateBetaAndPriorBeta(prior0,
-                                                 vbar = vbar,
+        ans.C.specific <- updatePriorBeta(prior0,
+                                                 thetaTransformed = thetaTransformed,
                                                  n = n,
                                                  sigma = sigma, 
                                                  useC = TRUE,
                                                  useSpecific = TRUE)
         set.seed(seed)
-        ans.C.generic <- updateBetaAndPriorBeta(prior0,
-                                                vbar = vbar,
+        ans.C.generic <- updatePriorBeta(prior0,
+                                                thetaTransformed = thetaTransformed,
                                                 n = n,
                                                 sigma = sigma, 
                                                 useC = TRUE,
@@ -2040,8 +1792,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendNormCovNoSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2072,19 +1824,19 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is no
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         for (i in 1:5) {
-            l <- updateBetaAndPriorBeta(prior1,
-                                    vbar = vbar,
+            l <- updatePriorBeta(prior1,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
             beta1 <- l[[1]]
@@ -2126,8 +1878,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is no
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovNoSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with DLMWithTrendNormCovNoSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2158,25 +1910,25 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C.specific <- updateBetaAndPriorBeta(prior0,
-                                                 vbar = vbar,
+        ans.C.specific <- updatePriorBeta(prior0,
+                                                 thetaTransformed = thetaTransformed,
                                                  n = n,
                                                  sigma = sigma, 
                                                  useC = TRUE,
                                                  useSpecific = TRUE)
         set.seed(seed)
-        ans.C.generic <- updateBetaAndPriorBeta(prior0,
-                                                vbar = vbar,
+        ans.C.generic <- updatePriorBeta(prior0,
+                                                thetaTransformed = thetaTransformed,
                                                 n = n,
                                                 sigma = sigma, 
                                                 useC = TRUE,
@@ -2189,8 +1941,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendNormCovNoSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     for (seed in seq_len(n.test)) {
@@ -2222,19 +1974,19 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is sa
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         for (i in 1:5) {
-            l <- updateBetaAndPriorBeta(prior1,
-                                    vbar = vbar,
+            l <- updatePriorBeta(prior1,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
             beta1 <- l[[1]]
@@ -2276,8 +2028,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovNoSeason - is sa
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovNoSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with DLMWithTrendNormCovNoSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2308,25 +2060,25 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C.specific <- updateBetaAndPriorBeta(prior0,
-                                                 vbar = vbar,
+        ans.C.specific <- updatePriorBeta(prior0,
+                                                 thetaTransformed = thetaTransformed,
                                                  n = n,
                                                  sigma = sigma, 
                                                  useC = TRUE,
                                                  useSpecific = TRUE)
         set.seed(seed)
-        ans.C.generic <- updateBetaAndPriorBeta(prior0,
-                                                vbar = vbar,
+        ans.C.generic <- updatePriorBeta(prior0,
+                                                thetaTransformed = thetaTransformed,
                                                 n = n,
                                                 sigma = sigma, 
                                                 useC = TRUE,
@@ -2339,8 +2091,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendNormCovWithSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
@@ -2374,12 +2126,12 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is no
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -2419,8 +2171,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is no
     expect_true(updated.phi)
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovWithSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with DLMNoTrendNormCovWithSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2453,25 +2205,25 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C.specific <- updateBetaAndPriorBeta(prior0,
-                                                 vbar = vbar,
+        ans.C.specific <- updatePriorBeta(prior0,
+                                                 thetaTransformed = thetaTransformed,
                                                  n = n,
                                                  sigma = sigma, 
                                                  useC = TRUE,
                                                  useSpecific = TRUE)
         set.seed(seed)
-        ans.C.generic <- updateBetaAndPriorBeta(prior0,
-                                                vbar = vbar,
+        ans.C.generic <- updatePriorBeta(prior0,
+                                                thetaTransformed = thetaTransformed,
                                                 n = n,
                                                 sigma = sigma, 
                                                 useC = TRUE,
@@ -2484,8 +2236,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendNormCovWithSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     updated.phi <- FALSE
@@ -2520,12 +2272,12 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is sa
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -2565,8 +2317,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendNormCovWithSeason - is sa
     expect_true(updated.phi)
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMNoTrendNormCovWithSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with DLMNoTrendNormCovWithSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2599,25 +2351,25 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendNormCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C.specific <- updateBetaAndPriorBeta(prior0,
-                                                 vbar = vbar,
+        ans.C.specific <- updatePriorBeta(prior0,
+                                                 thetaTransformed = thetaTransformed,
                                                  n = n,
                                                  sigma = sigma, 
                                                  useC = TRUE,
                                                  useSpecific = TRUE)
         set.seed(seed)
-        ans.C.generic <- updateBetaAndPriorBeta(prior0,
-                                                vbar = vbar,
+        ans.C.generic <- updatePriorBeta(prior0,
+                                                thetaTransformed = thetaTransformed,
                                                 n = n,
                                                 sigma = sigma, 
                                                 useC = TRUE,
@@ -2631,8 +2383,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMN
 })
 
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendNormCovWithSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2665,12 +2417,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is 
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -2716,8 +2468,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is 
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovWithSeason - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with DLMWithTrendNormCovWithSeason - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2750,25 +2502,25 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C.specific <- updateBetaAndPriorBeta(prior0,
-                                                 vbar = vbar,
+        ans.C.specific <- updatePriorBeta(prior0,
+                                                 thetaTransformed = thetaTransformed,
                                                  n = n,
                                                  sigma = sigma, 
                                                  useC = TRUE,
                                                  useSpecific = TRUE)
         set.seed(seed)
-        ans.C.generic <- updateBetaAndPriorBeta(prior0,
-                                                vbar = vbar,
+        ans.C.generic <- updatePriorBeta(prior0,
+                                                thetaTransformed = thetaTransformed,
                                                 n = n,
                                                 sigma = sigma, 
                                                 useC = TRUE,
@@ -2781,8 +2533,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendNormCovWithSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     for (seed in seq_len(n.test)) {
@@ -2816,12 +2568,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is 
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -2867,8 +2619,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendNormCovWithSeason - is 
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMWithTrendNormCovWithSeason - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with DLMWithTrendNormCovWithSeason - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2901,25 +2653,25 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendNormCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C.specific <- updateBetaAndPriorBeta(prior0,
-                                                 vbar = vbar,
+        ans.C.specific <- updatePriorBeta(prior0,
+                                                 thetaTransformed = thetaTransformed,
                                                  n = n,
                                                  sigma = sigma, 
                                                  useC = TRUE,
                                                  useSpecific = TRUE)
         set.seed(seed)
-        ans.C.generic <- updateBetaAndPriorBeta(prior0,
-                                                vbar = vbar,
+        ans.C.generic <- updatePriorBeta(prior0,
+                                                thetaTransformed = thetaTransformed,
                                                 n = n,
                                                 sigma = sigma, 
                                                 useC = TRUE,
@@ -2937,8 +2689,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with DLMW
 
 ## DLM - Robust, Zero
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendRobustZeroNoSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
@@ -2961,12 +2713,12 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -2998,8 +2750,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroNoSeason", {
     expect_true(updated.phi)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendRobustZeroNoSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMNoTrendRobustZeroNoSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3022,18 +2774,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -3044,8 +2796,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendRobustZeroNoSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
@@ -3069,12 +2821,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -3112,8 +2864,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroNoSeason", {
     expect_true(updated.phi)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendRobustZeroNoSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMWithTrendRobustZeroNoSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3136,18 +2888,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -3158,8 +2910,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroWithSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendRobustZeroWithSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3181,19 +2933,19 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroWithSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         for (i in 1:5) {
-            l <- updateBetaAndPriorBeta(prior1,
-                                    vbar = vbar,
+            l <- updatePriorBeta(prior1,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
             prior1 <- l[[2]]
@@ -3228,8 +2980,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustZeroWithSeason", {
     }
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendRobustZeroWithSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMNoTrendRobustZeroWithSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3251,18 +3003,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -3273,8 +3025,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroWithSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendRobustZeroWithSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3296,12 +3048,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroWithSeason", 
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -3341,8 +3093,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustZeroWithSeason", 
     }
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendRobustZeroWithSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMWithTrendRobustZeroWithSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3364,18 +3116,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustZeroWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -3389,8 +3141,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
 
 ## DLM - Robust, Cov
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovNoSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendRobustCovNoSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3422,12 +3174,12 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovNoSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -3463,8 +3215,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovNoSeason", {
     }
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendRobustCovNoSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMNoTrendRobustCovNoSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3496,18 +3248,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -3518,8 +3270,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovNoSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendRobustCovNoSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     phi.updated <- FALSE
     for (seed in seq_len(n.test)) {
@@ -3553,12 +3305,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovNoSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -3603,8 +3355,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovNoSeason", {
     expect_true(phi.updated)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendRobustCovNoSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMWithTrendRobustCovNoSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3636,18 +3388,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovNoSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -3658,8 +3410,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMNoTrendRobustCovWithSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
@@ -3693,12 +3445,12 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -3741,8 +3493,8 @@ test_that("updateBetaAndPriorBeta works with DLMNoTrendRobustCovWithSeason", {
     expect_true(updated.phi)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTrendRobustCovWithSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMNoTrendRobustCovWithSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3775,18 +3527,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMNoTrendRobustCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -3797,8 +3549,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMNoTre
     }
 })
 
-test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with DLMWithTrendRobustCovWithSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     updated.phi <- FALSE
     for (seed in seq_len(n.test)) {
@@ -3833,12 +3585,12 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -3888,8 +3640,8 @@ test_that("updateBetaAndPriorBeta works with DLMWithTrendRobustCovWithSeason", {
     expect_true(updated.phi)
 })
 
-test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithTrendRobustCovWithSeason", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C version updatePriorBeta give same answer with DLMWithTrendRobustCovWithSeason", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3922,18 +3674,18 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "DLMWithTrendRobustCovWithSeason")
-        vbar <- rnorm(10)
+        thetaTransformed <- rnorm(10)
         n <- rep(5L, 10)
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -3947,8 +3699,8 @@ test_that("R and C version updateBetaAndPriorBeta give same answer with DLMWithT
 
 ## Known #################################################################################
 
-test_that("updateBetaAndPriorBeta works with KnownCertain", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with KnownCertain", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3970,12 +3722,12 @@ test_that("updateBetaAndPriorBeta works with KnownCertain", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownCertain")
-        vbar <- rnorm(2)
+        thetaTransformed <- rnorm(2)
         n <- 9:10
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -3987,8 +3739,8 @@ test_that("updateBetaAndPriorBeta works with KnownCertain", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with KnownCertain", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with KnownCertain", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -4010,18 +3762,18 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Know
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownCertain")
-        vbar <- rnorm(2)
+        thetaTransformed <- rnorm(2)
         n <- 9:10
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -4032,8 +3784,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Know
     }
 })
 
-test_that("updateBetaAndPriorBeta works with KnownUncertain", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with KnownUncertain", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -4055,19 +3807,19 @@ test_that("updateBetaAndPriorBeta works with KnownUncertain", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownUncertain")
-        vbar <- rnorm(2)
+        thetaTransformed <- rnorm(2)
         n <- 9:10
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
         prior1 <- l[[2]]
         set.seed(seed)
         beta2 <- rnorm(2,
-                       mean = ((n*vbar/sigma^2 + prior0@alphaKnown@.Data/prior0@AKnownVec@.Data^2)
+                       mean = ((n*thetaTransformed/sigma^2 + prior0@alphaKnown@.Data/prior0@AKnownVec@.Data^2)
                            /(n/sigma^2+1/prior0@AKnownVec@.Data^2)),
                        sd = 1/sqrt(n/sigma^2+1/prior0@AKnownVec@.Data^2))
         expect_identical(prior1, prior0)
@@ -4075,8 +3827,8 @@ test_that("updateBetaAndPriorBeta works with KnownUncertain", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with KnownUncertain", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with KnownUncertain", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -4098,18 +3850,18 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Know
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "KnownUncertain")
-        vbar <- rnorm(2)
+        thetaTransformed <- rnorm(2)
         n <- 9:10
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)
@@ -4125,8 +3877,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Know
 ## Mix #################################################################################
 
 
-test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta updates correct slots with MixNormZero - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     set.seed(1)
     beta0 <- rnorm(200)
@@ -4151,11 +3903,11 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is no
                            isSaturated = FALSE,
                            margin = 1:3,
                            strucZeroArray = strucZeroArray)
-    vbar <- rnorm(200)
+    thetaTransformed <- rnorm(200)
     n <- rep(5L, 200)
     sigma <- runif(1)
-    l <- updateBetaAndPriorBeta(prior = prior0,
-                                vbar = vbar,
+    l <- updatePriorBeta(prior = prior0,
+                                thetaTransformed = thetaTransformed,
                                 n = n,
                                 sigma = sigma)
     beta1 <- l[[1]]
@@ -4217,8 +3969,8 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is no
     expect_true(all(alphaMix0 != alphaMix1))
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixNormZero - is not saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with MixNormZero - is not saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -4244,18 +3996,18 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixN
                                isSaturated = FALSE,
                                margin = 1:3,
                                strucZeroArray = strucZeroArray)
-        vbar <- rnorm(200)
+        thetaTransformed <- rnorm(200)
         n <- rep(5L, 200)
         sigma <- runif(1)
         set.seed(seed + 1)
-        ans.R <- updateBetaAndPriorBeta(prior = prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior = prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma,
                                         useC = FALSE)
         set.seed(seed + 1)
-        ans.C <- updateBetaAndPriorBeta(prior = prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior = prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma,
                                         useC = TRUE)
@@ -4266,8 +4018,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixN
     }
 })
 
-test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta updates correct slots with MixNormZero - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     betaHat <- demest:::betaHat
     set.seed(1)
@@ -4293,11 +4045,11 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is sa
                            isSaturated = TRUE,
                            strucZeroArray = strucZeroArray,
                            margin = 1:3)
-    vbar <- rnorm(200)
+    thetaTransformed <- rnorm(200)
     n <- rep(5L, 200)
     sigma <- runif(1)
-    l <- updateBetaAndPriorBeta(prior = prior0,
-                                vbar = vbar,
+    l <- updatePriorBeta(prior = prior0,
+                                thetaTransformed = thetaTransformed,
                                 n = n,
                                 sigma = sigma)
     beta1 <- l[[1]]
@@ -4359,8 +4111,8 @@ test_that("updateBetaAndPriorBeta updates correct slots with MixNormZero - is sa
     expect_true(all(alphaMix0 != alphaMix1))
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixNormZero - is saturated", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with MixNormZero - is saturated", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -4386,18 +4138,18 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixN
                                isSaturated = TRUE,
                                margin = 1:3,
                                strucZeroArray = strucZeroArray)
-        vbar <- rnorm(200)
+        thetaTransformed <- rnorm(200)
         n <- rep(5L, 200)
         sigma <- runif(1)
         set.seed(seed + 1)
-        ans.R <- updateBetaAndPriorBeta(prior = prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior = prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma,
                                         useC = FALSE)
         set.seed(seed + 1)
-        ans.C <- updateBetaAndPriorBeta(prior = prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior = prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma,
                                         useC = TRUE)
@@ -4411,8 +4163,8 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with MixN
 
 ## Zero #################################################################################
 
-test_that("updateBetaAndPriorBeta works with Zero", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("updatePriorBeta works with Zero", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -4433,12 +4185,12 @@ test_that("updateBetaAndPriorBeta works with Zero", {
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "Zero")
-        vbar <- rnorm(2)
+        thetaTransformed <- rnorm(2)
         n <- 9:10
         sigma <- runif(1)
         set.seed(seed)
-        l <- updateBetaAndPriorBeta(prior0,
-                                    vbar = vbar,
+        l <- updatePriorBeta(prior0,
+                                    thetaTransformed = thetaTransformed,
                                     n = n,
                                     sigma = sigma)
         beta1 <- l[[1]]
@@ -4450,8 +4202,8 @@ test_that("updateBetaAndPriorBeta works with Zero", {
     }
 })
 
-test_that("R and C versions of updateBetaAndPriorBeta give same answer with Zero", {
-    updateBetaAndPriorBeta <- demest:::updateBetaAndPriorBeta
+test_that("R and C versions of updatePriorBeta give same answer with Zero", {
+    updatePriorBeta <- demest:::updatePriorBeta
     initialPrior <- demest:::initialPrior
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -4472,18 +4224,18 @@ test_that("R and C versions of updateBetaAndPriorBeta give same answer with Zero
                                margin = 1L,
                                strucZeroArray = strucZeroArray)
         expect_is(prior0, "Zero")
-        vbar <- rnorm(2)
+        thetaTransformed <- rnorm(2)
         n <- 9:10
         sigma <- runif(1)
         set.seed(seed)
-        ans.R <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.R <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetaAndPriorBeta(prior0,
-                                        vbar = vbar,
+        ans.C <- updatePriorBeta(prior0,
+                                        thetaTransformed = thetaTransformed,
                                         n = n,
                                         sigma = sigma, 
                                         useC = TRUE)

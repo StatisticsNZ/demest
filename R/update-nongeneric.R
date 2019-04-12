@@ -495,64 +495,6 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
     }
 }
 
-## TRANSLATED
-## HAS_TESTS
-updateBeta <- function(prior, vbar, n, sigma, useC = FALSE) {
-    checkUpdateBetaAndPriorBeta(prior = prior,
-                                vbar = vbar,
-                                n = n,
-                                sigma = sigma)
-    if (useC) {
-        .Call(updateBeta_R, prior, vbar, n, sigma)
-    }
-    else {
-        J <- prior@J@.Data
-        all.struct.zero <- prior@allStrucZero
-        v <- getV(prior)
-        beta.hat <- betaHat(prior)
-        ans <- numeric(length = J)
-        for (i in seq_len(J)) {
-            if (!all.struct.zero[i]) {
-                prec.data <- n[i] / sigma^2
-                prec.prior <- 1 / v[i]
-                var <- 1 / (prec.data + prec.prior)
-                mean <- (prec.data * vbar[i] + prec.prior * beta.hat[i]) * var
-                sd <- sqrt(var)
-                ans[i] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-            }
-        }
-        ans
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
-updateBetasAndPriorsBetas <- function(object, useC = FALSE) {
-    ## object
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(updateBetasAndPriorsBetas_R, object)
-    }
-    else {
-        theta <- object@theta
-        thetaTransformed <- object@thetaTransformed
-        betas <- object@betas
-        sigma <- object@sigma
-        for (b in seq_along(betas)) {
-            l <- makeVBarAndN(object, iBeta = b)
-            vbar <- l[[1L]]
-            n <- l[[2L]]
-            l <- updateBetaAndPriorBeta(prior = object@priorsBetas[[b]],
-                                        vbar = vbar,
-                                        n = n,
-                                        sigma = sigma)
-            object@betas[[b]] <- l[[1L]]
-            object@priorsBetas[[b]] <- l[[2L]]
-        }
-        object
-    }
-}
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -1915,8 +1857,8 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 ## UPDATING MODELS ##################################################################
 
-
-
+## TRANSLATED
+## HAS_TESTS (comparing R and C versions)
 updateBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))

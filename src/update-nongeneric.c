@@ -853,53 +853,6 @@ updateAlphaDLMNoTrend(SEXP prior_R, double *betaTilde, int J)
     /* only alphaDLM gets updated in the prior */
 }
 
-void
-updateBeta(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma)
-{
-    int *allStrucZero = INTEGER(GET_SLOT(prior_R, allStrucZero_sym));
-
-    double *work = (double*)R_alloc(2*J, sizeof(double));
-    
-    double *beta_hat = work;
-    double *v = work + J;
-    betaHat(beta_hat, prior_R, J);
-    
-    getV_Internal(v, prior_R, J);
-    
-    #ifdef DEBUGGING
-    PrintValue(mkString("in updateBeta"));
-    PrintValue(mkString("betaHat"));
-    printDblArray(beta_hat, J);
-    PrintValue(mkString("v"));
-    printDblArray(v, J);
-    #endif
-    
-    double sigmaSq = sigma*sigma;
-    double thisPrecPrior = 0;
-    double thisPrecData = 0;
-    double thisVar = 0;
-    double thisMean = 0;
-    double thisSD = 0;
-
-    for (int i = 0; i < J; ++i) {
-    if (!allStrucZero[i]) { /* leave elements with all structural zeros unchanged (at missing) */
-        thisPrecPrior =1/v[i];
-        thisPrecData = n_vec[i]/sigmaSq;
-        thisVar = 1/(thisPrecData + thisPrecPrior);
-        thisMean = (thisPrecData * vbar[i] + thisPrecPrior * beta_hat[i])*thisVar;
-        thisSD = sqrt(thisVar);
-        beta[i] = rnorm(thisMean, thisSD);
-    }
-    }
-#ifdef DEBUGGING
-    PrintValue(mkString("beta"));
-    printDblArray(beta, J);
-    PrintValue(mkString("end updateBeta"));
-    PrintValue(mkString(""));
-#endif
-    
-}
 
 void
 updateEta(SEXP prior_R, double* beta, int J)
@@ -1178,99 +1131,21 @@ updateComponentWeightMix(SEXP prior_R)
 
 
 void
-updateBetasAndPriorsBetas(SEXP object_R)
+updatePriorsBetas(SEXP object_R)
 {
-    SEXP priors_R = GET_SLOT(object_R, priorsBetas_sym);
-    SEXP betas_R = GET_SLOT(object_R, betas_sym);
-    int n_betas =  LENGTH(betas_R);
-
-    double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
-
-    SEXP theta_R = GET_SLOT(object_R, theta_sym);
-    int n_theta = LENGTH(theta_R);
-    double *theta = REAL(theta_R);
-    double *thetaTransformed = REAL(GET_SLOT(object_R, thetaTransformed_sym));
-
-    int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
-    
-    int len_beta_array[n_betas];
-    int max_len_beta = 0;
-    
-    SEXP iteratorBetas_R = GET_SLOT(object_R, iteratorBetas_sym); 
-    
-    #ifdef DEBUGGING
-            PrintValue(mkString("sigma"));
-            PrintValue(ScalarReal(sigma));
-            PrintValue(mkString("n_betas"));
-            PrintValue(ScalarInteger(n_betas));
-            PrintValue(mkString("theta"));
-            PrintValue(theta_R);
-             
-        #endif
-    
-    for (int iBeta = 0; iBeta < n_betas; ++iBeta) {
-        
-        int len_beta = LENGTH(VECTOR_ELT(betas_R, iBeta));
-        if (len_beta > max_len_beta) max_len_beta = len_beta;
-        len_beta_array[iBeta] = len_beta;
-    }
-    
-
-    /* one malloc for each*/
-    double * vbar = (double *)R_alloc(max_len_beta, sizeof(double));
-    int * n_vec = (int *)R_alloc(max_len_beta, sizeof(int));
-    
-    for (int iBeta = 0; iBeta < n_betas; ++iBeta) {
-
-        int len_beta = len_beta_array[iBeta];
-
-        getVBarAndN(vbar, n_vec,
-		    len_beta, cellInLik,
-		    betas_R, iteratorBetas_R,
-		    theta, n_theta,
-		    thetaTransformed,
-		    n_betas, iBeta);
-
-        double *beta = REAL(VECTOR_ELT(betas_R, iBeta));
-        SEXP prior_R = VECTOR_ELT(priors_R, iBeta);
-        
-        #ifdef DEBUGGING
-            PrintValue(mkString(""));
-            PrintValue(mkString("iBeta"));
-            PrintValue(ScalarInteger(iBeta));
-            PrintValue(mkString("len_beta"));
-            PrintValue(ScalarInteger(len_beta));
-            PrintValue(mkString("vbar"));
-            printDblArray(vbar, len_beta);
-            PrintValue(mkString("beta"));
-            printDblArray(beta, len_beta);
-            PrintValue(mkString("prior_R"));
-            PrintValue(prior_R);
-             
-        #endif
-        
-        
-
-        updateBetaAndPriorBeta(beta,
-                   len_beta, 
-                   prior_R,
-                   vbar, 
-                   n_vec,
-                   sigma);
-#ifdef DEBUGGING
-        PrintValue(mkString("after update"));
-        PrintValue(mkString("beta"));
-            printDblArray(beta, len_beta);
-            PrintValue(VECTOR_ELT(betas_R, iBeta));
-            PrintValue(mkString("prior_R"));
-            PrintValue(prior_R);
-            PrintValue(VECTOR_ELT(priors_R, iBeta));
-             
-        #endif
-             
-        /* beta and prior_R updated in place and hence object_R updated*/
-    }
+  SEXP priors_R = GET_SLOT(object_R, priorsBetas_sym);
+  SEXP betas_R = GET_SLOT(object_R, betas_sym);
+  int n_beta =  LENGTH(betas_R);
+  double *thetaTransformed = REAL(GET_SLOT(object_R, thetaTransformed_sym));
+  double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
+  for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+    double *beta = REAL(VECTOR_ELT(betas_R, i_beta));
+    SEXP prior_R = VECTOR_ELT(priors_R, i_beta);
+    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
+    updatePriorBeta(beta, J, prior_R, thetaTransformed, sigma);
+  }
 }
+
 
 void
 updateGWithTrend(SEXP prior_R)

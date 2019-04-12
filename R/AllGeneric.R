@@ -582,9 +582,9 @@ setGeneric("transferParamPrior",
            function(prior, values, useC = FALSE, useSpecific = FALSE)
            standardGeneric("transferParamPrior"))
 
-setGeneric("updateBetaAndPriorBeta",
-           function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE)
-               standardGeneric("updateBetaAndPriorBeta"))
+setGeneric("updatePriorBeta",
+           function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE)
+               standardGeneric("updatePriorBeta"))
 
 setGeneric("updateCombined",
            function(object, nUpdate = 1L,

@@ -768,17 +768,11 @@ centerA <- function(vec, iterator, useC = FALSE) {
 ## UPDATING ###########################################################################
 
 ## DOES_NOT_NEED_TESTS
-checkUpdateBetaAndPriorBeta <- function(prior, vbar, n, sigma) {
+checkUpdatePriorBeta <- function(prior, thetaTransformed, sigma) {
     ## prior
     stopifnot(methods::validObject(prior))
-    ## vbar
-    stopifnot(is.double(vbar))
-    stopifnot(!any(is.na(vbar)))
-    ## n
-    stopifnot(is.integer(n))
-    stopifnot(identical(length(n), length(vbar)))
-    stopifnot(!any(is.na(n)))
-    stopifnot(all(n >= 0L))
+    ## thetaTransformed
+    stopifnot(is.double(thetaTransformed))
     ## sigma
     stopifnot(is.double(sigma))
     stopifnot(identical(length(sigma), 1L))

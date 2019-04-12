@@ -402,9 +402,6 @@ SEXP
   
 /* Priors-methods */
 
-void updateBeta(double *beta, int J, SEXP prior, double *vbar, 
-                int *n, double sigma);
-
 void updateGWithTrend(SEXP prior_R);
 void updateLatentComponentWeightMix(SEXP prior_R);
 void updateLatentWeightMix(SEXP prior_R);
@@ -432,83 +429,83 @@ void updateTauRobust(SEXP prior_R, int J);
 void updateUBeta(SEXP prior_R, double *beta, int J);
 
 void
-updateBetaAndPriorBeta(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_ExchFixed(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_ExchFixed(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_ExchNormZero(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_ExchNormZero(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_ExchNormCov(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_ExchNormCov(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_ExchRobustZero(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_ExchRobustZero(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_ExchRobustCov(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_ExchRobustCov(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMNoTrendNormZeroNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMNoTrendNormZeroNoSeason(double *beta, int J, 
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMWithTrendNormZeroNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMWithTrendNormZeroNoSeason(double *beta, int J, 
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMNoTrendNormZeroWithSeason(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMNoTrendNormZeroWithSeason(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMWithTrendNormZeroWithSeason(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMWithTrendNormZeroWithSeason(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMNoTrendNormCovNoSeason(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMNoTrendNormCovNoSeason(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMWithTrendNormCovNoSeason(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMWithTrendNormCovNoSeason(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMNoTrendNormCovWithSeason(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMNoTrendNormCovWithSeason(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMWithTrendNormCovWithSeason(double *beta, int J, SEXP prior_R, 
-                        double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMWithTrendNormCovWithSeason(double *beta, int J, SEXP prior_R, 
+                        double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMNoTrendRobustZeroNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                   
+updatePriorBeta_DLMNoTrendRobustZeroNoSeason(double *beta, int J, 
+                    SEXP prior_R, double *thetaTransformed, double sigma);                   
 void
-updateBetaAndPriorBeta_DLMWithTrendRobustZeroNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);       
+updatePriorBeta_DLMWithTrendRobustZeroNoSeason(double *beta, int J, 
+                    SEXP prior_R, double *thetaTransformed, double sigma);       
 void
-updateBetaAndPriorBeta_DLMNoTrendRobustZeroWithSeason(double *beta, int J, 
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                   
+updatePriorBeta_DLMNoTrendRobustZeroWithSeason(double *beta, int J, 
+                    SEXP prior_R, double *thetaTransformed, double sigma);                   
 void
-updateBetaAndPriorBeta_DLMWithTrendRobustZeroWithSeason(double *beta, int J,
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMWithTrendRobustZeroWithSeason(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_DLMNoTrendRobustCovNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                   
+updatePriorBeta_DLMNoTrendRobustCovNoSeason(double *beta, int J, 
+                    SEXP prior_R, double *thetaTransformed, double sigma);                   
 void
-updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);       
+updatePriorBeta_DLMWithTrendRobustCovNoSeason(double *beta, int J, 
+                    SEXP prior_R, double *thetaTransformed, double sigma);       
 void
-updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason(double *beta, int J, 
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                   
+updatePriorBeta_DLMNoTrendRobustCovWithSeason(double *beta, int J, 
+                    SEXP prior_R, double *thetaTransformed, double sigma);                   
 void
-updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason(double *beta, int J,
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);
+updatePriorBeta_DLMWithTrendRobustCovWithSeason(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updateBetaAndPriorBeta_KnownCertain(double *beta, int J,
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                    
+updatePriorBeta_KnownCertain(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);                    
 void
-updateBetaAndPriorBeta_KnownUncertain(double *beta, int J,
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                    
+updatePriorBeta_KnownUncertain(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);                    
 void
-updateBetaAndPriorBeta_MixNormZero(double *beta, int J,
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                    
+updatePriorBeta_MixNormZero(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);                    
 void
-updateBetaAndPriorBeta_Zero(double *beta, int J,
-                    SEXP prior_R, double *vbar, int *n_vec, double sigma);                    
+updatePriorBeta_Zero(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);                    
 /* helper-functions */
 SEXP makeMu(int n, SEXP betas_R, SEXP iterator_R);
 double dpoibin1(int x, int size, double prob, int use_log);
@@ -881,7 +878,7 @@ void updateModelUseExp_TFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
-void updateBetasAndPriorsBetas(SEXP object_R);
+void updatePriorsBetas(SEXP object_R);
 
 /* predict combined models*/
 void predictCombined_CombinedModelNormal(SEXP object_R, 

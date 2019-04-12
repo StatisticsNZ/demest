@@ -49,58 +49,24 @@
     return ans_R;         \
     }
 
-
-/* Wrapper macro to use for the functions that return updated Betas.
+/* Wrapper macro to use for the functions that return updated prior.
  * The wrapper puts a _R suffix on end of function name,
  * and deals with RNGstate (relevant for prior update functions that
- * use prngs),
- * gets the beta as a vector of doubles, 
- * and ensures that the R version returns the beta as an SEXP */
-#define UPDATEBETA_WRAPPER_R(name)         \
-SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
-    double *vbar = REAL(vbar_R);    \
-    int *n_vec = INTEGER(n_R);    \
+ * use prngs) */
+#define UPDATE_PRIORBETA_WRAPPER_R(name)         \
+    SEXP name##_R(SEXP prior_R, SEXP beta_R, SEXP thetaTransformed_R, SEXP sigma_R) { \
+    double *beta = REAL(beta_R);    \
+    double *thetaTransformed = REAL(thetaTransformed_R);    \
     double sigma = *REAL(sigma_R);    \
     int J = *INTEGER(GET_SLOT(prior_R, J_sym));    \
-    SEXP beta_R;    \
-    PROTECT(beta_R = allocVector(REALSXP, J));    \
-    double *beta = REAL(beta_R);    \
+    SEXP ans_R;    \
+    PROTECT(ans_R = duplicate(prior_R));    \
     GetRNGstate();    \
-    name(beta, J, prior_R, vbar, n_vec, sigma);    \
+    name(beta, J, ans_R, thetaTransformed, sigma);    \
     PutRNGstate();    \
     UNPROTECT(1);    \
-    return beta_R;             \
-    }
-
-/* Wrapper macro to use for the functions that return updated Betas.
- * The wrapper puts a _R suffix on end of function name,
- * and deals with RNGstate (relevant for prior update functions that
- * use prngs),
- * gets the beta as a vector of doubles, 
- * and ensures that the R version returns list of beta, prior as an SEXP */
-#define UPDATEBETA_AND_PRIORBETA_WRAPPER_R(name)         \
-SEXP name##_R(SEXP prior_R, SEXP vbar_R, SEXP n_R, SEXP sigma_R) {    \
-    double *vbar = REAL(vbar_R);    \
-    int *n_vec = INTEGER(n_R);    \
-    double sigma = *REAL(sigma_R);    \
-    int J = *INTEGER(GET_SLOT(prior_R, J_sym));    \
-    SEXP beta_R;    \
-    PROTECT(beta_R = allocVector(REALSXP, J));    \
-    double *beta = REAL(beta_R);    \
-    SEXP priornew_R;    \
-    PROTECT(priornew_R = duplicate(prior_R));    \
-    GetRNGstate();    \
-    name(beta, J, priornew_R, vbar, n_vec, sigma);    \
-    PutRNGstate();    \
-    SEXP ans_R = PROTECT(allocVector(VECSXP, 2));    \
-    SET_VECTOR_ELT(ans_R, 0, beta_R);    \
-    SET_VECTOR_ELT(ans_R, 1, priornew_R);    \
-    UNPROTECT(3);    \
     return ans_R;             \
     }
-
-
-
 
 /* Wrapper macro to use for the functions that return predicted priors
  * or betas or models or thetas by updating in place.
@@ -763,35 +729,32 @@ BETAHAT_NOPRNG_WRAPPER_R(betaHatAlphaDLM);
 BETAHAT_NOPRNG_WRAPPER_R(betaHatCovariates);
 BETAHAT_NOPRNG_WRAPPER_R(betaHatSeason);
 
-/* wrap updateBeta functions */
-UPDATEBETA_WRAPPER_R(updateBeta);
-
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_ExchFixed);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_ExchNormZero);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_ExchNormCov);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_ExchRobustZero);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_ExchRobustCov);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendNormZeroNoSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendNormZeroNoSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendNormZeroWithSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendNormZeroWithSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendNormCovNoSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendNormCovNoSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendNormCovWithSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendNormCovWithSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustZeroNoSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustZeroNoSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustZeroWithSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustZeroWithSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovNoSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_KnownCertain);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_KnownUncertain);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_MixNormZero);
-UPDATEBETA_AND_PRIORBETA_WRAPPER_R(updateBetaAndPriorBeta_Zero);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_ExchFixed);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_ExchNormZero);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_ExchNormCov);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_ExchRobustZero);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_ExchRobustCov);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMNoTrendNormZeroNoSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMWithTrendNormZeroNoSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMNoTrendNormZeroWithSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMWithTrendNormZeroWithSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMNoTrendNormCovNoSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMWithTrendNormCovNoSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMNoTrendNormCovWithSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMWithTrendNormCovWithSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMNoTrendRobustZeroNoSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMWithTrendRobustZeroNoSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMNoTrendRobustZeroWithSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMWithTrendRobustZeroWithSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMNoTrendRobustCovNoSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMWithTrendRobustCovNoSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMNoTrendRobustCovWithSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_DLMWithTrendRobustCovWithSeason);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_KnownCertain);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_KnownUncertain);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_MixNormZero);
+UPDATE_PRIORBETA_WRAPPER_R(updatePriorBeta_Zero);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGWithTrend);
 UPDATEOBJECT_WRAPPER_R(updateLatentComponentWeightMix);
@@ -1297,7 +1260,7 @@ UPDATEOBJECT_NOPRNG_WRAPPER_R(updateLogPostBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateMeansBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateVariancesBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateMu);
-UPDATEOBJECT_WRAPPER_R(updateBetasAndPriorsBetas);
+UPDATEOBJECT_WRAPPER_R(updatePriorsBetas);
 
 /* wrap update sigma generic functions */
 UPDATEOBJECT_WRAPPER_R(updateSigma_Varying);
@@ -2166,8 +2129,6 @@ R_CallMethodDef callMethods[] = {
 
   /* update betas */
   
-  CALLDEF(updateBeta_R, 4),
-  
   CALLDEF(updateGWithTrend_R, 1),
   CALLDEF(updateLatentComponentWeightMix_R, 1),
   CALLDEF(updateLatentWeightMix_R, 1),
@@ -2194,32 +2155,32 @@ R_CallMethodDef callMethods[] = {
   
   CALLDEF(updateUBeta_R, 2),
   
-  CALLDEF(updateBetaAndPriorBeta_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_ExchFixed_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_ExchNormZero_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_ExchNormCov_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_ExchRobustZero_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_ExchRobustCov_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMNoTrendNormZeroNoSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMWithTrendNormZeroNoSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMNoTrendNormZeroWithSeason_R,4),
-  CALLDEF(updateBetaAndPriorBeta_DLMWithTrendNormZeroWithSeason_R,4),
-  CALLDEF(updateBetaAndPriorBeta_DLMNoTrendNormCovNoSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMWithTrendNormCovNoSeason_R,4),
-  CALLDEF(updateBetaAndPriorBeta_DLMNoTrendNormCovWithSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMWithTrendNormCovWithSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMNoTrendRobustZeroNoSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMWithTrendRobustZeroNoSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMNoTrendRobustZeroWithSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMWithTrendRobustZeroWithSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMNoTrendRobustCovNoSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_KnownCertain_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_KnownUncertain_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_MixNormZero_R, 4),
-  CALLDEF(updateBetaAndPriorBeta_Zero_R, 4),
+  CALLDEF(updatePriorBeta_R, 4),
+  CALLDEF(updatePriorBeta_ExchFixed_R, 4),
+  CALLDEF(updatePriorBeta_ExchNormZero_R, 4),
+  CALLDEF(updatePriorBeta_ExchNormCov_R, 4),
+  CALLDEF(updatePriorBeta_ExchRobustZero_R, 4),
+  CALLDEF(updatePriorBeta_ExchRobustCov_R, 4),
+  CALLDEF(updatePriorBeta_DLMNoTrendNormZeroNoSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMWithTrendNormZeroNoSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMNoTrendNormZeroWithSeason_R,4),
+  CALLDEF(updatePriorBeta_DLMWithTrendNormZeroWithSeason_R,4),
+  CALLDEF(updatePriorBeta_DLMNoTrendNormCovNoSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMWithTrendNormCovNoSeason_R,4),
+  CALLDEF(updatePriorBeta_DLMNoTrendNormCovWithSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMWithTrendNormCovWithSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMNoTrendRobustZeroNoSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMWithTrendRobustZeroNoSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMNoTrendRobustZeroWithSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMWithTrendRobustZeroWithSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMNoTrendRobustCovNoSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMWithTrendRobustCovNoSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMNoTrendRobustCovWithSeason_R, 4),
+  CALLDEF(updatePriorBeta_DLMWithTrendRobustCovWithSeason_R, 4),
+  CALLDEF(updatePriorBeta_KnownCertain_R, 4),
+  CALLDEF(updatePriorBeta_KnownUncertain_R, 4),
+  CALLDEF(updatePriorBeta_MixNormZero_R, 4),
+  CALLDEF(updatePriorBeta_Zero_R, 4),
   
   /* helper-functions */
   CALLDEF(makeMu_R, 3),
@@ -2435,7 +2396,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_TFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
   
-  CALLDEF(updateBetasAndPriorsBetas_R, 1),
+  CALLDEF(updatePriorsBetas_R, 1),
   
   /* predict combined */
   CALLDEF(predictCombined_CombinedModelNormal_R, 4),

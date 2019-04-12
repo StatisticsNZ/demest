@@ -3,43 +3,20 @@
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "ExchFixed"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_ExchFixed_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_ExchFixed_R, prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R, prior, beta, thetaTransformed, sigma)
               }
               else {
-                  J <- prior@J@.Data
-                  is.saturated <- prior@isSaturated@.Data
-                  if (is.saturated)
-                      beta <- rep(0, times = J)
-                  else {
-                      tau <- prior@tau@.Data
-                      all.struc.zero <- prior@allStrucZero
-                      J <- prior@J
-                      beta <- numeric(length = J)
-                      prec.prior <- 1 / tau^2
-                      for (i in seq_len(J)) {
-                          if (all.struc.zero[i])
-                              beta[i] <- 0
-                          else {
-                              prec.data <- n[i] / sigma^2
-                              var <- 1 / (prec.data + prec.prior) 
-                              mean <- prec.data * vbar[i] * var
-                              sd <- sqrt(var)
-                              beta[i] <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                          }
-                      }
-                  }
-                  list(beta, prior)
+                  prior
               }
           })
 
@@ -49,130 +26,108 @@ setMethod("updateBetaAndPriorBeta",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "ExchNormZero"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_ExchNormZero_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_ExchNormZero_R, prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R, prior, beta, thetaTransformed, sigma)
               }
               else {
                   J <- prior@J@.Data
                   is.saturated <- prior@isSaturated@.Data
                   if (is.saturated) {
-                      beta <- rep(0, times = J)
                       prior@tau@.Data <- sigma
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n  = n,
-                                         sigma = sigma)
                       prior <- updateTauNorm(prior = prior,
                                              beta = beta)
                   }
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "ExchRobustZero"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_ExchRobustZero_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_ExchRobustZero_R, prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R, prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n  = n,
-                                     sigma = sigma)
                   prior <- updateUBeta(prior = prior,
                                        beta = beta)
                   prior <- updateTauRobust(prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "ExchNormCov"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_ExchNormCov_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_ExchNormCov_R, prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R, prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data
                   if (is.saturated) {
                       prior@tau@.Data <- sigma
                       prior <- updateEta(prior = prior,
-                                         beta = vbar)
-                      beta <- betaHat(prior)
+                                         beta = thetaTransformed)
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       prior <- updateEta(prior = prior,
                                          beta = beta)
                       prior <- updateTauNorm(prior = prior,
                                              beta = beta)
                   }
                   prior <- updateUEtaCoef(prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "ExchRobustCov"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_ExchRobustCov_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_ExchRobustCov_R, prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R, prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R, prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
                   prior <- updateUBeta(prior = prior,
                                        beta = beta)
                   prior <- updateTauRobust(prior = prior)
                   prior <- updateEta(prior = prior,
                                      beta = beta)
                   prior <- updateUEtaCoef(prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
@@ -181,34 +136,28 @@ setMethod("updateBetaAndPriorBeta",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMNoTrendNormZeroNoSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMNoTrendNormZeroNoSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMNoTrendNormZeroNoSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data
                   if (is.saturated) {
                       prior <- updateAlphaDLMNoTrend(prior = prior,
-                                                     betaTilde = vbar)
-                      beta <- betaHat(prior)
+                                                     betaTilde = thetaTransformed)
                       prior@tau@.Data <- sigma
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       prior <- updateAlphaDLMNoTrend(prior = prior,
                                                      betaTilde = beta)
                       prior <- updateTauNorm(prior = prior,
@@ -218,40 +167,34 @@ setMethod("updateBetaAndPriorBeta",
                                      withTrend = FALSE)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMWithTrendNormZeroNoSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                          thetaTransformed = thetaTransformed,
                                           sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMWithTrendNormZeroNoSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMWithTrendNormZeroNoSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data 
                   if (is.saturated) {
                       prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
-                                                            betaTilde = vbar)
-                      beta <- betaHat(prior)
+                                                            betaTilde = thetaTransformed)
                       prior@tau@.Data <- sigma
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                             betaTilde = beta)
                       prior <- updateTauNorm(prior = prior,
@@ -265,44 +208,38 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateGWithTrend(prior = prior)
                   prior <- updateWSqrt(prior = prior)
                   prior <- updateWSqrtInvG(prior = prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMNoTrendNormZeroWithSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMNoTrendNormZeroWithSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMNoTrendNormZeroWithSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data 
                   if (is.saturated) {
-                      beta.tilde <- vbar - betaHatSeason(prior)
+                      beta.tilde <- thetaTransformed - betaHatSeason(prior)
                       prior <- updateAlphaDLMNoTrend(prior = prior,
                                                      betaTilde = beta.tilde)
-                      beta.tilde <- vbar - betaHatAlphaDLM(prior)
+                      beta.tilde <- thetaTransformed - betaHatAlphaDLM(prior)
                       prior <- updateSeason(prior = prior,
                                             betaTilde = beta.tilde)
-                      beta <- betaHat(prior)
                       prior@tau@.Data <- sigma
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       beta.tilde <- beta - betaHatSeason(prior)
                       prior <- updateAlphaDLMNoTrend(prior = prior,
                                                      betaTilde = beta.tilde)
@@ -317,44 +254,38 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
                   prior <- updateOmegaSeason(prior = prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMWithTrendNormZeroWithSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMWithTrendNormZeroWithSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMWithTrendNormZeroWithSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data 
                   if (is.saturated) {
-                      beta.tilde <- vbar - betaHatSeason(prior)
+                      beta.tilde <- thetaTransformed - betaHatSeason(prior)
                       prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                             betaTilde = beta.tilde)
-                      beta.tilde <- vbar - betaHatAlphaDLM(prior)
+                      beta.tilde <- thetaTransformed - betaHatAlphaDLM(prior)
                       prior <- updateSeason(prior = prior,
                                             betaTilde = beta.tilde)
-                      beta <- betaHat(prior)
                       prior@tau@.Data <- sigma
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       beta.tilde <- beta - betaHatSeason(prior)
                       prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                             betaTilde = beta.tilde)
@@ -373,7 +304,7 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateWSqrt(prior = prior)
                   prior <- updateWSqrtInvG(prior = prior)
                   prior <- updateOmegaSeason(prior = prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
@@ -381,38 +312,32 @@ setMethod("updateBetaAndPriorBeta",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMNoTrendNormCovNoSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMNoTrendNormCovNoSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMNoTrendNormCovNoSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data 
                   if (is.saturated) {
-                      beta.tilde <- vbar - betaHatCovariates(prior)
+                      beta.tilde <- thetaTransformed - betaHatCovariates(prior)
                       prior <- updateAlphaDLMNoTrend(prior = prior,
                                                      betaTilde = beta.tilde)
-                      beta.tilde <- vbar - betaHatAlphaDLM(prior)
+                      beta.tilde <- thetaTransformed - betaHatAlphaDLM(prior)
                       prior <- updateEta(prior = prior,
                                          beta = beta.tilde)
-                      beta <- betaHat(prior)
                       prior@tau@.Data <- sigma
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       beta.tilde <- beta - betaHatCovariates(prior)
                       prior <- updateAlphaDLMNoTrend(prior = prior,
                                                      betaTilde = beta.tilde)
@@ -427,44 +352,38 @@ setMethod("updateBetaAndPriorBeta",
                                      withTrend = FALSE)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMWithTrendNormCovNoSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMWithTrendNormCovNoSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMWithTrendNormCovNoSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data 
                   if (is.saturated) {
-                      beta.tilde <- vbar - betaHatCovariates(prior)
+                      beta.tilde <- thetaTransformed - betaHatCovariates(prior)
                       prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                             betaTilde = beta.tilde)
-                      beta.tilde <- vbar - betaHatAlphaDLM(prior)
+                      beta.tilde <- thetaTransformed - betaHatAlphaDLM(prior)
                       prior <- updateEta(prior = prior,
                                          beta = beta.tilde)
-                      beta <- betaHat(prior)
                       prior@tau@.Data <- sigma
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       beta.tilde <- beta - betaHatCovariates(prior)
                       prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                             betaTilde = beta.tilde)
@@ -483,47 +402,41 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateGWithTrend(prior = prior)
                   prior <- updateWSqrt(prior = prior)
                   prior <- updateWSqrtInvG(prior = prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMNoTrendNormCovWithSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                          thetaTransformed = thetaTransformed,
                                           sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMNoTrendNormCovWithSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMNoTrendNormCovWithSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data 
                   if (is.saturated) {
-                      beta.tilde <- vbar - betaHatSeason(prior) - betaHatCovariates(prior)
+                      beta.tilde <- thetaTransformed - betaHatSeason(prior) - betaHatCovariates(prior)
                       prior <- updateAlphaDLMNoTrend(prior = prior,
                                                      betaTilde = beta.tilde)
-                      beta.tilde <- vbar - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
+                      beta.tilde <- thetaTransformed - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
                       prior <- updateSeason(prior = prior,
                                             betaTilde = beta.tilde)
-                      beta.tilde <- vbar - betaHatAlphaDLM(prior) - betaHatSeason(prior) 
+                      beta.tilde <- thetaTransformed - betaHatAlphaDLM(prior) - betaHatSeason(prior) 
                       prior <- updateEta(prior = prior,
                                          beta = beta.tilde)
-                      beta <- betaHat(prior)
                       prior@tau@.Data <- sigma
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       beta.tilde <- beta - betaHatSeason(prior) - betaHatCovariates(prior)
                       prior <- updateAlphaDLMNoTrend(prior = prior,
                                                      betaTilde = beta.tilde)
@@ -542,47 +455,41 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
                   prior <- updateOmegaSeason(prior = prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMWithTrendNormCovWithSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMWithTrendNormCovWithSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMWithTrendNormCovWithSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data 
                   if (is.saturated) {
-                      beta.tilde <- vbar - betaHatSeason(prior) - betaHatCovariates(prior)
+                      beta.tilde <- thetaTransformed - betaHatSeason(prior) - betaHatCovariates(prior)
                       prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                             betaTilde = beta.tilde)
-                      beta.tilde <- vbar - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
+                      beta.tilde <- thetaTransformed - betaHatAlphaDLM(prior) - betaHatCovariates(prior)
                       prior <- updateSeason(prior = prior,
                                             betaTilde = beta.tilde)
-                      beta.tilde <- vbar - betaHatAlphaDLM(prior) - betaHatSeason(prior) 
+                      beta.tilde <- thetaTransformed - betaHatAlphaDLM(prior) - betaHatSeason(prior) 
                       prior <- updateEta(prior = prior,
                                          beta = beta.tilde)
-                      beta <- betaHat(prior)
                       prior@tau@.Data <- sigma
                   }
                   else {
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       beta.tilde <- beta - betaHatSeason(prior) - betaHatCovariates(prior)
                       prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                             betaTilde = beta.tilde)
@@ -605,7 +512,7 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateWSqrt(prior = prior)
                   prior <- updateWSqrtInvG(prior = prior)
                   prior <- updateOmegaSeason(prior = prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
@@ -614,26 +521,21 @@ setMethod("updateBetaAndPriorBeta",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMNoTrendRobustZeroNoSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMNoTrendRobustZeroNoSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMNoTrendRobustZeroNoSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
                   prior <- updateAlphaDLMNoTrend(prior = prior,
                                                  betaTilde = beta)
                   prior <- updatePhi(prior = prior,
@@ -643,32 +545,27 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateTauRobust(prior = prior)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMWithTrendRobustZeroNoSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                          thetaTransformed = thetaTransformed,
                                           sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMWithTrendRobustZeroNoSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMWithTrendRobustZeroNoSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
                   prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                         betaTilde = beta)
                   prior <- updatePhi(prior = prior,
@@ -682,32 +579,27 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateGWithTrend(prior = prior)
                   prior <- updateWSqrt(prior = prior)
                   prior <- updateWSqrtInvG(prior = prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMNoTrendRobustZeroWithSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMNoTrendRobustZeroWithSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMNoTrendRobustZeroWithSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
                   beta.tilde <- beta - betaHatSeason(prior)
                   prior <- updateAlphaDLMNoTrend(prior = prior,
                                                  betaTilde = beta.tilde)
@@ -722,32 +614,27 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
                   prior <- updateOmegaSeason(prior = prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMWithTrendRobustZeroWithSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMWithTrendRobustZeroWithSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMWithTrendRobustZeroWithSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
                   beta.tilde <- beta - betaHatSeason(prior)
                   prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                         betaTilde = beta.tilde)
@@ -765,8 +652,8 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateGWithTrend(prior = prior)
                   prior <- updateWSqrt(prior = prior)
                   prior <- updateWSqrtInvG(prior = prior)
-                  prior <- updateOmegaSeason(prior = prior )
-                  list(beta, prior)
+                  prior <- updateOmegaSeason(prior = prior)
+                  prior
               }
           })
 
@@ -775,26 +662,21 @@ setMethod("updateBetaAndPriorBeta",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMNoTrendRobustCovNoSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMNoTrendRobustCovNoSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMNoTrendRobustCovNoSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
                   beta.tilde <- beta - betaHatCovariates(prior)
                   prior <- updateAlphaDLMNoTrend(prior = prior,
                                                  betaTilde = beta.tilde)
@@ -809,32 +691,27 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateTauRobust(prior = prior)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMWithTrendRobustCovNoSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMWithTrendRobustCovNoSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMWithTrendRobustCovNoSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
                   beta.tilde <- beta - betaHatCovariates(prior)
                   prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                         betaTilde = beta.tilde)
@@ -853,32 +730,27 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateGWithTrend(prior = prior)
                   prior <- updateWSqrt(prior = prior)
                   prior <- updateWSqrtInvG(prior = prior)
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMNoTrendRobustCovWithSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                          thetaTransformed = thetaTransformed,
                                           sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMNoTrendRobustCovWithSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMNoTrendRobustCovWithSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
                   beta.tilde <- beta - betaHatSeason(prior) - betaHatCovariates(prior)
                   prior <- updateAlphaDLMNoTrend(prior = prior,
                                                  betaTilde = beta.tilde)
@@ -896,33 +768,28 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateTauRobust(prior = prior)
                   prior <- updateOmegaAlpha(prior = prior,
                                             withTrend = FALSE)
-                  prior <- updateOmegaSeason(prior = prior )
-                  list(beta, prior)
+                  prior <- updateOmegaSeason(prior = prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "DLMWithTrendRobustCovWithSeason"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_DLMWithTrendRobustCovWithSeason_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_DLMWithTrendRobustCovWithSeason_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  beta <- updateBeta(prior = prior,
-                                     vbar = vbar,
-                                     n = n,
-                                     sigma = sigma)
                   beta.tilde <- beta - betaHatSeason(prior) - betaHatCovariates(prior)
                   prior <- updateAlphaDeltaDLMWithTrend(prior = prior,
                                                         betaTilde = beta.tilde)
@@ -945,7 +812,7 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateWSqrt(prior = prior)
                   prior <- updateWSqrtInvG(prior = prior)
                   prior <- updateOmegaSeason(prior = prior )
-                  list(beta, prior)
+                  prior
               }
           })
 
@@ -958,56 +825,43 @@ setMethod("updateBetaAndPriorBeta",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "KnownCertain"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_KnownCertain_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_KnownCertain_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  alpha <- prior@alphaKnown@.Data
-                  beta <- alpha
-                  list(beta, prior)
+                  prior
               }
           })
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "KnownUncertain"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                          thetaTransformed = thetaTransformed,
                                           sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_KnownUncertain_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_KnownUncertain_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  alpha <- prior@alphaKnown@.Data # vector length J
-                  J <- prior@J@.Data 
-                  A <- prior@AKnownVec@.Data # vector length J
-                  prec.data <- n / sigma^2 # vector
-                  prec.prior <- 1 / A^2 # vector
-                  var <- 1 / (prec.data + prec.prior) # vector
-                  mean <- (prec.data * vbar + prec.prior * alpha) * var  # vector
-                  sd <- sqrt(var) # vector
-                  beta <- stats::rnorm(n = J, mean = mean, sd = sd)
-                  list(beta, prior)
+                  prior
               }
           })
 
@@ -1016,34 +870,28 @@ setMethod("updateBetaAndPriorBeta",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "MixNormZero"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_MixNormZero_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_MixNormZero_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
                   is.saturated <- prior@isSaturated@.Data 
                   if (is.saturated) {
                       ## tau
                       prior@tau@.Data <- sigma
-                      beta.tilde <- vbar
+                      beta.tilde <- thetaTransformed
                   }
                   else {
-                      ## beta
-                      beta <- updateBeta(prior = prior,
-                                         vbar = vbar,
-                                         n = n,
-                                         sigma = sigma)
                       ## tau
                       prior <- updateTauNorm(prior = prior,
                                              beta = beta) # sigma-delta
@@ -1068,10 +916,7 @@ setMethod("updateBetaAndPriorBeta",
                   prior <- updateMeanLevelComponentWeightMix(prior) # mu
                   prior <- updatePhiMix(prior) # phi
                   prior <- updateAlphaMix(prior)
-                  if (is.saturated)
-                      beta <- betaHat(prior)
-                  ## return
-                  list(beta, prior)
+                  prior
               }
           })
 
@@ -1081,24 +926,21 @@ setMethod("updateBetaAndPriorBeta",
 
 ## TRANSLATED
 ## HAS_TESTS
-setMethod("updateBetaAndPriorBeta",
+setMethod("updatePriorBeta",
           signature(prior = "Zero"),
-          function(prior, vbar, n, sigma, useC = FALSE, useSpecific = FALSE) {
-              checkUpdateBetaAndPriorBeta(prior = prior,
-                                          vbar = vbar,
-                                          n = n,
-                                          sigma = sigma)
+          function(prior, beta, thetaTransformed, sigma, useC = FALSE, useSpecific = FALSE) {
+              checkUpdatePriorBeta(prior = prior,
+                                   thetaTransformed = thetaTransformed,
+                                   sigma = sigma)
               if (useC) {
                   if (useSpecific)
-                      .Call(updateBetaAndPriorBeta_Zero_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_Zero_R,
+                            prior, beta, thetaTransformed, sigma)
                   else
-                      .Call(updateBetaAndPriorBeta_R,
-                            prior, vbar, n, sigma)
+                      .Call(updatePriorBeta_R,
+                            prior, beta, thetaTransformed, sigma)
               }
               else {
-                  J <- prior@J@.Data
-                  beta <- rep(0, times = J)
-                  list(beta, prior)
+                  prior
               }
           })
