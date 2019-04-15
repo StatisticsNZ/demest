@@ -2101,6 +2101,9 @@ updateSubsequentExpMove_R(SEXP combined_R)
 }
 
 
+/* helper_simulate */
+UPDATEOBJECT_WRAPPER_R(drawBetas);
+
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
 /* ******************************************************************************* */
@@ -2547,6 +2550,9 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateSubsequentAccMove_R, 1),
   CALLDEF(updateSubsequentExpMove_R, 1),
   
+  /* helper-simulate */
+  CALLDEF(drawBetas_R, 1),
+  
   {NULL}
 };
 
@@ -2947,7 +2953,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(cumProbComp);
   ADD_SYM(scaleNoise);
   ADD_SYM(nCellAccount);
-    
+  
   
 #undef ADD_SYM
 

@@ -395,6 +395,7 @@ test_that("R and C versions of drawBetas give same answer - no structural zeros"
     }
 })
 
+
 test_that("drawBetas works - with structural zeros", {
     initialModel <- demest:::initialModel
     drawBetas <- demest:::drawBetas

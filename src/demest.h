@@ -601,6 +601,9 @@ SEXP centerA(SEXP vec_R, SEXP iterator_R);
 SEXP diff_R(SEXP vec_R, SEXP order_R);
 int makeIOther(int i, SEXP transform_R);
 
+/* helper-simulate */
+void drawBetas(SEXP object_R);
+
 
 /* loglikelihood */
 double logLikelihood_Binomial(SEXP model_R, int count, 

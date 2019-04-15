@@ -261,7 +261,7 @@ checkSystemModelsSuitableForSimulation <- function(systemModels, account) {
     NULL
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
@@ -281,7 +281,7 @@ drawBetas <- function(object, useC = FALSE) {
             v <- getV(prior)
             for (j in seq_len(J)) {
                 if (!all.struc.zero[j]) {
-                    mean <- beta.hat[j]
+					mean <- beta.hat[j]
                     sd <- sqrt(v[j])
                     beta[j] <- stats::rnorm(n = 1L,
                                             mean = mean,
