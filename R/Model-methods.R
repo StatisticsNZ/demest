@@ -1132,7 +1132,7 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               w <- model@w
               betas.obj <- model@betas
-              step.size <- model@stepSize@.Data
+              size.step <- model@sizeStep@.Data
               n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
@@ -1222,7 +1222,7 @@ setMethod("makeOutputModel",
               prior <- c(betas,
                          list(mean = mu),
                          list(acceptBeta = accept.beta,
-                              stepSize = step.size,
+                              sizeStep = size.step,
                               nStep = n.step),
                          list(sd = sigma))
               if (methods::is(model, "Aggregate")) {
@@ -1261,7 +1261,7 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
-              step.size <- model@stepSize@.Data
+              size.step <- model@sizeStep@.Data
               n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
@@ -1345,7 +1345,7 @@ setMethod("makeOutputModel",
               prior <- c(betas,
                          list(mean = mu),
                          list(acceptBeta = accept.beta,
-                              stepSize = step.size,
+                              sizeStep = size.step,
                               nStep = n.step),
                          list(sd = sigma))
                          ans <- list(likelihood = likelihood,
@@ -1369,7 +1369,7 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
-              step.size <- model@stepSize@.Data
+              size.step <- model@sizeStep@.Data
               n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
@@ -1476,7 +1476,7 @@ setMethod("makeOutputModel",
               prior <- c(betas,
                          list(mean = mu),
                          list(acceptBeta = accept.beta,
-                              stepSize = step.size,
+                              sizeStep = size.step,
                               nStep = n.step),
                          list(sd = sigma))
               ans <- list(likelihood = likelihood,
@@ -1507,7 +1507,7 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
-              step.size <- model@stepSize@.Data
+              size.step <- model@sizeStep@.Data
               n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
@@ -1632,7 +1632,7 @@ setMethod("makeOutputModel",
                                      dispersion = nu.cmp)
                   prior <- c(betas,
                              list(acceptBeta = accept.beta,
-                                  stepSize = step.size,
+                                  sizeStep = size.step,
                                   nStep = n.step),
                              list(rate = list(mean = mu,
                                               sd = sigma)),
@@ -1648,7 +1648,7 @@ setMethod("makeOutputModel",
                                      dispersion = nu.cmp)
                   prior <- c(betas,
                              list(acceptBeta = accept.beta,
-                                  stepSize = step.size,
+                                  sizeStep = size.step,
                                   nStep = n.step),
                              list(count = list(mean = mu,
                                                sd = sigma)),
@@ -3748,6 +3748,19 @@ setMethod("whereAcceptance",
           function(object) list(NULL))
 
 
+## whereAcceptanceHMC ###################################################################
+
+## HAS_TESTS
+setMethod("whereAcceptanceHMC",
+          signature(object = "Varying"),
+          function(object) {
+              use.hmc <- object@useHMCBetas@.Data
+              if (use.hmc)
+                  list(c("prior", "acceptBeta"))
+              else
+                  list(NULL)
+          })
+
 ## whereAutocorr #####################################################################
 
 ## HAS_TESTS
@@ -3863,6 +3876,19 @@ setMethod("whereAutocorr",
           function(object) list(NULL))
 
 
+
+## whereAutocorrHMC ###################################################################
+
+## HAS_TESTS
+setMethod("whereAutocorrHMC",
+          signature(object = "Varying"),
+          function(object) {
+              use.hmc <- object@useHMCBetas@.Data
+              if (use.hmc)
+                  list(c("prior", "mean"))
+              else
+                  list(NULL)
+          })
 
 
 ## whereJump #########################################################################
@@ -4199,6 +4225,21 @@ setMethod("whereEstimated",
           function(object) list(NULL))
 
 
+
+## whereNStep ###################################################################
+
+## HAS_TESTS
+setMethod("whereNStep",
+          signature(object = "Varying"),
+          function(object) {
+              use.hmc <- object@useHMCBetas@.Data
+              if (use.hmc)
+                  list(c("prior", "nStep"))
+              else
+                  list(NULL)
+          })
+
+
 ## whereNoProposal ###################################################################
 
 ## HAS_TESTS
@@ -4349,7 +4390,18 @@ setMethod("whereNoProposal",
           function(object) list(NULL))
 
 
+## whereSizeStep ###################################################################
 
+## HAS_TESTS
+setMethod("whereSizeStep",
+          signature(object = "Varying"),
+          function(object) {
+              use.hmc <- object@useHMCBetas@.Data
+              if (use.hmc)
+                  list(c("prior", "sizeStep"))
+              else
+                  list(NULL)
+          })
 
 
 ## whereTheta #########################################################################

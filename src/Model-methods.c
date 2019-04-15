@@ -798,13 +798,13 @@ updateModelUseExp_BinomialVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
 static __inline__ void
 updateModelUseExp_PoissonVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
-    updateTheta_PoissonVaryingUseExp(object, y_R, exposure_R);
-    updateSigma_Varying(object);
-    updateBetas(object);
-    updateMu(object);
-    updatePriorsBetas(object);
-    updateMeansBetas(object);
-    updateVariancesBetas(object);
+  updateTheta_PoissonVaryingUseExp(object, y_R, exposure_R);
+  updateSigma_Varying(object);
+  updateBetas(object);
+  updateMu(object);
+  updatePriorsBetas(object);
+  updateMeansBetas(object);
+  updateVariancesBetas(object);
 }
 
 static __inline__ void

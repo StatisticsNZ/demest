@@ -311,6 +311,19 @@ printExchFixedEqns <- function(object, name) {
     cat(name, "[j] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
 }
 
+printHMC <- function(object) {
+    useHMC <- object@useHMC@.Data
+    if (useHMC) {
+        size.step <- object@sizeStep@.Data
+        n.step <- object@nStep@.Data
+        cat("\nHMC:\n")
+        cat("    sizeStep: ", size.step, "\n")
+        cat("       nStep: ", n.step, "\n")
+    }
+    else
+        invisible()
+}
+
 printJump <- function(object) {
     aggregate <- object@aggregate
     scale.theta <- stringScaleTheta(object)
@@ -318,7 +331,7 @@ printJump <- function(object) {
     print.scale.theta <- nzchar(scale.theta)
     print.scale.ag <- nzchar(scale.ag)
     if (print.scale.theta || print.scale.ag) {
-        cat("\njump:\n")
+        cat("\nMH jump:\n")
         if (print.scale.theta)
             cat(scale.theta)
         if (print.scale.ag)
@@ -338,7 +351,7 @@ printJumpAg <- function(object) {
     value.is.scalar <- identical(length(value), 1L)
     if (!value.is.scalar || has.weight)
         cat("\n")
-    cat("jump:", jump, "\n")
+    cat("MH jump:", jump, "\n")
 }
 
 printKnownEqns <- function(object, name) {

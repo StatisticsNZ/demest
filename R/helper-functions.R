@@ -3237,6 +3237,35 @@ makeMetropolis <- function(object, filename, nSample) {
     ans
 }
 
+
+## NO_TESTS
+makeHMC <- function(object, filename, nSample) {
+    if (!methods::is(object, "Results"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "object", class(object)))
+    if (identical(dembase::nIteration(object), 0L))
+        return(NULL)
+    use.hmc <- object@final[[1L]]@useHMCBeta@.Data
+    if (!use.hmc)
+        return(NULL)
+    where.size.step <- whereMetropStat(object, FUN = whereSizeStep)
+    where.n.step <- whereMetropStat(object, FUN = whereNStep)
+    where.acceptance <- whereMetropStat(object, FUN = whereAcceptanceHMC)
+    where.autocorr <- whereMetropStat(object, FUN = whereAutocorrHMC)
+    size.step <- sapply(where.size.step, function(where) fetch(filename, where))
+    n.step <- sapply(where.n.step, function(where) fetch(filename, where))
+    acceptance <- lapply(where.acceptance, function(where) fetch(filename, where))
+    acceptance <- sapply(acceptance, mean)
+    autocorr <- lapply(where.autocorr,
+                       function(where) fetchMCMC(filename, where, nSample = nSample))
+    autocorr <- sapply(autocorr, makeAutocorr)
+    ans <- data.frame(size.step, n.step, acceptance, autocorr)
+    rownames <- sapply(where.autocorr, function(x) paste(x, collapse = "."))
+    rownames(ans) <- rownames
+    ans
+}
+
+
 ## HAS_TESTS
 makeParameters <- function(object, filename) {
     n.iter.sample <- 100L

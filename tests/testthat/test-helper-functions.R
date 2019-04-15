@@ -271,38 +271,6 @@ test_that("checkAndTidyLevelComponentWeightMinMax works", {
                  "'minAR2' is greater than or equal to 'maxAR2'")
 })
 
-test_that("checkAndTidyJump works", {
-    checkAndTidyJump <- demest:::checkAndTidyJump
-    expect_identical(checkAndTidyJump(NULL),
-                     new("Scale", 0.1))
-    expect_identical(checkAndTidyJump(0.5),
-                     new("Scale", 0.5))
-    expect_identical(checkAndTidyJump(1L),
-                     new("Scale", 1.0))
-    expect_error(checkAndTidyJump(c(1, 1)),
-                 "'jump' does not have length 1")
-    expect_error(checkAndTidyJump(as.numeric(NA)),
-                 "'jump' is missing")
-    expect_error(checkAndTidyJump("a"),
-                 "'jump' is not numeric")
-    expect_error(checkAndTidyJump(-1),
-                 "'jump' is negative")
-})
-
-test_that("checkAndTidySeries works", {
-    checkAndTidySeries <- demest:::checkAndTidySeries
-    expect_identical(checkAndTidySeries("births"),
-                     new("SpecName", "births"))
-    expect_identical(checkAndTidySeries(NULL),
-                     new("SpecName", as.character(NA)))
-    expect_error(checkAndTidySeries(1),
-                 "'series' does not have type \"character\"")
-    expect_error(checkAndTidySeries(c("births", "births")),
-                 "'series' does not have length 1")
-    expect_error(checkAndTidySeries(""),
-                 "'series' is blank")
-})
-
 test_that("checkAndTidyStructuralZeros works", {
     checkAndTidyStructuralZeros <- demest:::checkAndTidyStructuralZeros
     ans.obtained <- checkAndTidyStructuralZeros(NULL)

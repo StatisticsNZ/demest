@@ -1859,6 +1859,30 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS (comparing R and C versions)
+updatePriorsBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updatePriorsBetas_R, object)
+    }
+    else {
+        priors <- object@priorsBetas
+        betas <- object@betas
+        thetaTransformed <- object@thetaTransformed
+        sigma <- object@sigma
+        for (i.beta in seq_along(betas)) {
+            priors[[i.beta]] <- updatePriorBeta(prior = priors[[i.beta]],
+                                                beta = betas[[i.beta]],
+                                                thetaTransformed = thetaTransformed,
+                                                sigma = sigma)
+        }
+        object@priorsBetas <- priors
+        object
+    }
+}
+
+## TRANSLATED
+## HAS_TESTS (comparing R and C versions)
 updateBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -1866,7 +1890,7 @@ updateBetas <- function(object, useC = FALSE) {
         .Call(updateBetas_R, object)
     }
     else {
-        use.hmc <- object@useHMCToUpdateBetas@.Data
+        use.hmc <- object@useHMCBetas@.Data
         if (use.hmc)
             object <- updateBetasHMC(object)
         else
@@ -1946,27 +1970,27 @@ updateBetasHMC <- function(object, useC = FALSE) {
         object@betasOld <- object@betas # call 'updateBetasWhereBetaEqualsMean' first
         log.post.betas.curr <- object@logPostBetas
         log.post.momentum.curr <- getLogPostMomentum(object) # call 'initializeMomentum' first
-        ## random selection of step.size and n.step based on code on
+
         ## p603 of Gelman et al 2014 Bayesian Data Analysis, Third Edition
-        mean.step.size <- object@stepSize@.Data
+        mean.size.step <- object@sizeStep@.Data
         mean.n.step <- object@nStep@.Data
-        step.size <- stats::runif(n = 1L,
+        size.step <- stats::runif(n = 1L,
                                   min = 0,
-                                  max = 2 * mean.step.size)
+                                  max = 2 * mean.size.step)
         n.step <- ceiling(stats::runif(n = 1L,
                                        min = 0,
                                        max = 2 * mean.n.step))
         object <- updateMomentumOneStep(object,
-                                        stepSize = step.size,
+                                        sizeStep = size.step,
                                         isFirstLast = TRUE)
         for (i in seq_len(n.step)) {
             is.last <- i == n.step
             object <- updateBetasOneStep(object = object,
-                                         stepSize = step.size)
+                                         sizeStep = size.step)
             object <- updateMu(object)
             object <- updateGradientBetas(object)
             object <- updateMomentumOneStep(object = object,
-                                            stepSize = step.size,
+                                            sizeStep = size.step,
                                             isFirstLast = is.last)
         }
         object <- updateLogPostBetas(object)
@@ -1990,17 +2014,17 @@ updateBetasHMC <- function(object, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-updateBetasOneStep <- function(object, stepSize, useC = FALSE) {
+updateBetasOneStep <- function(object, sizeStep, useC = FALSE) {
     ## object
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
-    ## stepSize
-    stopifnot(identical(length(stepSize), 1L))
-    stopifnot(is.numeric(stepSize))
-    stopifnot(!is.na(stepSize))
-    stopifnot(stepSize > 0)
+    ## sizeStep
+    stopifnot(identical(length(sizeStep), 1L))
+    stopifnot(is.numeric(sizeStep))
+    stopifnot(!is.na(sizeStep))
+    stopifnot(sizeStep > 0)
     if (useC) {
-        .Call(updateBetasOneStep_R, object, stepSize) 
+        .Call(updateBetasOneStep_R, object, sizeStep) 
     }
     else {
         betas <- object@betas
@@ -2014,7 +2038,7 @@ updateBetasOneStep <- function(object, stepSize, useC = FALSE) {
                 variances <- variances.betas[[i]]
                 all.struc.zero <- priors.betas[[i]]@allStrucZero
                 betas[[i]][!all.struc.zero] <- (betas[[i]][!all.struc.zero]
-                    + stepSize * sqrt(variances[!all.struc.zero]) * momentum[!all.struc.zero])
+                    + sizeStep * variances[!all.struc.zero] * momentum[!all.struc.zero])
             }
         }
         object@betas <- betas
@@ -2164,21 +2188,21 @@ updateMeansBetas <- function(object, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-updateMomentumOneStep <- function(object, stepSize, isFirstLast, useC = FALSE) {
+updateMomentumOneStep <- function(object, sizeStep, isFirstLast, useC = FALSE) {
     ## object
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
-    ## stepSize
-    stopifnot(identical(length(stepSize), 1L))
-    stopifnot(is.numeric(stepSize))
-    stopifnot(!is.na(stepSize))
-    stopifnot(stepSize > 0)
+    ## sizeStep
+    stopifnot(identical(length(sizeStep), 1L))
+    stopifnot(is.numeric(sizeStep))
+    stopifnot(!is.na(sizeStep))
+    stopifnot(sizeStep > 0)
     ## isFirstLast
     stopifnot(identical(length(isFirstLast), 1L))
     stopifnot(is.logical(isFirstLast))
     stopifnot(!is.na(isFirstLast))
     if (useC) {
-        .Call(updateMomentumOneStep_R, object, stepSize, isFirstLast)
+        .Call(updateMomentumOneStep_R, object, sizeStep, isFirstLast)
     }
     else {
         momentum.betas <- object@momentumBetas
@@ -2186,7 +2210,7 @@ updateMomentumOneStep <- function(object, stepSize, isFirstLast, useC = FALSE) {
         variances.betas <- object@variancesBetas
         beta.equals.mean <- object@betaEqualsMean
         priors.betas <- object@priorsBetas
-        mult <- stepSize
+        mult <- sizeStep
         if (isFirstLast)
             mult <- 0.5 * mult
         for (i in seq_along(momentum.betas)) {
@@ -2196,7 +2220,7 @@ updateMomentumOneStep <- function(object, stepSize, isFirstLast, useC = FALSE) {
                 variances <- variances.betas[[i]]
                 all.struc.zero <- priors.betas[[i]]@allStrucZero
                 momentum.betas[[i]][!all.struc.zero] <- (momentum[!all.struc.zero]
-                    - mult * sqrt(variances[!all.struc.zero]) * gradient[!all.struc.zero])
+                    + mult * variances[!all.struc.zero] * gradient[!all.struc.zero])
             }
         }
         object@momentumBetas <- momentum.betas
@@ -2214,6 +2238,7 @@ updateMu <- function(object, useC = FALSE) {
     }
     else {
         mu <- object@mu
+        cell.in.lik <- object@cellInLik 
         betas <- object@betas
         iterator <- object@iteratorBetas
         n <- length(mu)

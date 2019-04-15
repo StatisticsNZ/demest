@@ -71,37 +71,129 @@
 
 ## ## estimateModel ##################################################################
 
-## library(tidyverse)
-## library(demest)
-## library(latticeExtra)
-## births <- demdata::iceland.births %>%
-##     Counts(dimscales = c(year = "Intervals")) %>%
-##     subarray(age > 15 & age < 45) %>%
-##     collapseIntervals(dimension = "age", width = 5)
-## expose <- demdata::iceland.popn %>%
-##     Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
-##     subarray(age > 15 & age < 45) %>%
-##     subarray(year < 2015) %>%
-##     collapseIntervals(dimension = "age", width = 5) %>%
-##     subarray(sex == "Females")
-## model <- Model(y ~ Poisson(mean ~ year * age),
-##                age ~ DLM(damp = NULL),
-##                year ~ DLM(level = Level(scale = HalfT(scale = 0.1)),
-##                           trend = Trend(scale = HalfT(scale = 0.1))),
-##                year:age ~ DLM(level = Level(scale = HalfT(scale = 0.05)),
-##                               trend = Trend(scale = HalfT(scale = 0.05))),
-##                jump = 0.008)
-## filename.est <- "deleteme.est"
-## filename.pred <- "deleteme.pred"
-## estimateModel(model,
-##               y = births,
-##               exposure = expose,
-##               filename = filename.est,
-##               nBurnin = 2000,
-##               nSim = 2000,
-##               nThin = 50,
-##               nChain = 4)
-## fetchSummary(filename.est)
+library(tidyverse)
+library(demest)
+library(latticeExtra)
+births <- demdata::iceland.births %>%
+    Counts(dimscales = c(year = "Intervals")) %>%
+    subarray(age > 15 & age < 45) %>%
+    collapseIntervals(dimension = "age", width = 5)
+expose <- demdata::iceland.popn %>%
+    Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
+    subarray(age > 15 & age < 45) %>%
+    subarray(year < 2015) %>%
+    collapseIntervals(dimension = "age", width = 5) %>%
+    subarray(sex == "Females")
+model <- Model(y ~ Poisson(mean ~ year * age),
+               `(Intercept)` ~ ExchFixed(sd = 0.1),
+               age ~ DLM(damp = NULL,
+                         level = Level(scale = HalfT(scale = 0.1)),
+                          trend = Trend(scale = HalfT(scale = 0.2))),                                       
+               year ~ DLM(level = Level(scale = HalfT(scale = 0.2)),
+                          trend = Trend(scale = HalfT(scale = 0.2))),
+               year:age ~ DLM(level = Level(scale = HalfT(scale = 0.1)),
+                              trend = Trend(scale = HalfT(scale = 0.1))),
+               jump = 0.1,
+               useHMC = TRUE,
+               sizeStep = 0.1,
+               nStep = 10)
+filename.est <- tempfile()
+filename.pred <- tempfile()
+estimateModel(model,
+              y = births,
+              exposure = expose,
+              filename = filename.est,
+              nBurnin = 0,
+              nSim = 10,
+              nThin = 1,
+              nChain = 2, useC = TRUE, parallel = FALSE)
+
+
+
+library(tidyverse)
+library(demest)
+library(latticeExtra)
+births <- demdata::iceland.births %>%
+    Counts(dimscales = c(year = "Intervals")) %>%
+    subarray(age > 15 & age < 45) %>%
+    collapseIntervals(dimension = "age", width = 5)
+expose <- demdata::iceland.popn %>%
+    Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
+    subarray(age > 15 & age < 45) %>%
+    subarray(year < 2015) %>%
+    collapseIntervals(dimension = "age", width = 5) %>%
+    subarray(sex == "Females")
+model <- Model(y ~ Poisson(mean ~ age),
+                `(Intercept)` ~ ExchFixed(mean = mean(log(births/expose)), sd = 0.1),
+               ## age ~ DLMS(l = TRUE, t = F, scale = 0.45),
+                ## year ~ DLMS(l = TRUE, t = F, scale = 0.02),
+               age ~ Exch(error = Error(scale = HalfT(scale = 0.5))),
+               ## year ~ Exch(error = Error(scale = HalfT(scale = 0.15))),
+               jump = 0.1,
+               useHMC = T,
+               sizeStep = 0.01,
+               nStep = 10)
+## model <- Model(y ~ Poisson(mean ~ age + year),
+##                 `(Intercept)` ~ ExchFixed(mean = mean(log(births/expose)), sd = 1),
+##                age ~ DLMS(l = TRUE, t = F, scale = 0.45),
+##                 year ~ DLMS(l = TRUE, t = F, scale = 0.02),
+##                ## age ~ Exch(error = Error(scale = HalfT(scale = 0.9))),
+##                ## year ~ Exch(error = Error(scale = HalfT(scale = 0.15))),
+##                jump = 0.1,
+##                useHMC = F,
+##                sizeStep = 0.0001,
+##                nStep = 100)
+filename.est <- tempfile()
+filename.pred <- tempfile()
+estimateModel(model,
+              y = births,
+              exposure = expose,
+              filename = filename.est,
+              nBurnin = 100,
+              nSim = 100,
+              nThin = 1,
+              nChain = 2)
+mean(fetch(filename.est, c("mod", "pr", "acceptBeta")))
+fetchSummary(filename.est)
+
+
+debug(demest:::updateBetasHMC)
+
+
+obj <- demest:::fetchResultsObject(filename.est)
+mod <- obj@final[[1]]@model
+## demest:::getDataFromFile(filename.est, 280L, 280L, lengthIter = demest:::lengthValues(mod), iterations = 1:10)
+## update beta
+lapply(1:3, function(i) round(mod@variancesBetas[[i]] * mod@momentumBetas[[i]] * mod@sizeStep@.Data / mod@betas[[i]], 6))
+lapply(1:3, function(i) round(mod@variancesBetas[[i]] * mod@momentumBetas[[i]] * mod@sizeStep@.Data * 1000000000))
+## update momentum
+lapply(1:3, function(i) round(mod@gradientBetas[[i]] * mod@sizeStep@.Data / mod@momentumBetas[[i]], 6))
+lapply(1:3, function(i) round(mod@gradientBetas[[i]] * mod@sizeStep@.Data , 6))
+
+lapply(1:3, function(i) round((mod@betas[[i]] - mod@meansBetas[[i]])/sqrt(mod@variancesBetas[[i]]), 1))
+
+
+
+
+
+
+
+xyplot(fetchMCMC(filename.est, c("mod", "pr", "age")))
+xyplot(fetchMCMC(filename.est, c("mod", "pr", "(Intercept)")))
+
+sum(mod@thetaTransformed)
+sum(mod@mu)
+plot(mod@mu ~ mod@thetaTransformed)
+abline(a=0, b=1)
+
+mean(fetch(filename.est, c("mod", "pr", "acceptBeta")))
+fetch(filename.est, c("mod", "pr", "sd"))
+age <- fetch(filename.est, c("mod", "prior", "age"))
+year <- fetch(filename.est, c("mod", "prior", "year"))
+mu <- fetch(filename.est, c("mod", "pr", "mean"))
+intercept <- fetch(filename.est, c("mod", "pr", "(Intercept)"))
+age <- fetch(filename.est, c("mod", "pr", "age"))
+
 ## exposure.pred <- Counts(array(100,
 ##                               dim = c(6, 25),
 ##                               dimnames = c(dimnames(expose)["age"], list(year = 2016:2040))),

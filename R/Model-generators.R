@@ -545,6 +545,9 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              useHMC <- object@useHMC
+              sizeStep <- object@sizeStep
+              nStep <- object@nStep
               lower <- object@lower
               upper <- object@upper
               tolerance <- object@tolerance
@@ -653,6 +656,9 @@ setMethod("initialModel",
                                     variancesBetas = val.betas,
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
+                                    useHMCBetas = useHMC,
+                                    sizeStep = sizeStep,
+                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
@@ -666,6 +672,10 @@ setMethod("initialModel",
                              defaultWeights = default.weights)
               model <- makeCellInLik(model = model,
                                      y = y)
+              model <- updateMu(model, useC = TRUE)
+              model <- updateMeansBetas(model, useC = TRUE)
+              model <- updateVariancesBetas(model, useC = TRUE)
+              model <- updateLogPostBetas(model, useC = TRUE)
               model
           })
 
@@ -681,6 +691,9 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              useHMC <- object@useHMC
+              sizeStep <- object@sizeStep
+              nStep <- object@nStep
               structural.zeros <- object@structuralZeros
               box.cox.param <- object@boxCoxParam
               scale.theta <- object@scaleTheta
@@ -843,6 +856,9 @@ setMethod("initialModel",
                                     variancesBetas = val.betas,
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
+                                    useHMCBetas = useHMC,
+                                    sizeStep = sizeStep,
+                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
@@ -866,6 +882,10 @@ setMethod("initialModel",
               model <- makeCellInLik(model = model,
                                      y = y,
                                      strucZeroArray = struc.zero.array)
+              model <- updateMu(model, useC = TRUE)
+              model <- updateMeansBetas(model, useC = TRUE)
+              model <- updateVariancesBetas(model, useC = TRUE)
+              model <- updateLogPostBetas(model, useC = TRUE)
               model
           })
 
@@ -881,6 +901,9 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              useHMC <- object@useHMC
+              sizeStep <- object@sizeStep
+              nStep <- object@nStep
               scale.theta <- object@scaleTheta
               lower <- object@lower
               upper <- object@upper
@@ -987,6 +1010,9 @@ setMethod("initialModel",
                                     variancesBetas = val.betas,
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
+                                    useHMCBetas = useHMC,
+                                    sizeStep = sizeStep,
+                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
@@ -1000,6 +1026,10 @@ setMethod("initialModel",
                              defaultWeights = default.weights)
               model <- makeCellInLik(model = model,
                                      y = y)
+              model <- updateMu(model, useC = TRUE)
+              model <- updateMeansBetas(model, useC = TRUE)
+              model <- updateVariancesBetas(model, useC = TRUE)
+              model <- updateLogPostBetas(model, useC = TRUE)
               model
           })
 
@@ -1014,6 +1044,9 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              useHMC <- object@useHMC
+              sizeStep <- object@sizeStep
+              nStep <- object@nStep
               scale.theta <- object@scaleTheta
               lower <- object@lower
               upper <- object@upper
@@ -1128,6 +1161,9 @@ setMethod("initialModel",
                                     variancesBetas = val.betas,
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
+                                    useHMCBetas = useHMC,
+                                    sizeStep = sizeStep,
+                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
@@ -1141,6 +1177,10 @@ setMethod("initialModel",
                              defaultWeights = default.weights)
               model <- makeCellInLik(model = model,
                                      y = y)
+              model <- updateMu(model, useC = TRUE)
+              model <- updateMeansBetas(model, useC = TRUE)
+              model <- updateVariancesBetas(model, useC = TRUE)
+              model <- updateLogPostBetas(model, useC = TRUE)
               model
           })
 
@@ -1155,6 +1195,9 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              useHMC <- object@useHMC
+              sizeStep <- object@sizeStep
+              nStep <- object@nStep
               structural.zeros <- object@structuralZeros
               box.cox.param <- object@boxCoxParam
               scale.theta <- object@scaleTheta
@@ -1305,6 +1348,9 @@ setMethod("initialModel",
                                     variancesBetas = val.betas,
                                     gradientBetas = val.betas,
                                     momentumBetas = val.betas,
+                                    useHMCBetas = useHMC,
+                                    sizeStep = sizeStep,
+                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
                                     namesBetas = names.betas,
@@ -1328,6 +1374,10 @@ setMethod("initialModel",
               model <- makeCellInLik(model = model,
                                      y = y,
                                      strucZeroArray = struc.zero.array)
+              model <- updateMu(model, useC = TRUE)
+              model <- updateMeansBetas(model, useC = TRUE)
+              model <- updateVariancesBetas(model, useC = TRUE)
+              model <- updateLogPostBetas(model, useC = TRUE)
               model
           })
 

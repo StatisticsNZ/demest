@@ -130,10 +130,10 @@ setClass("Betas",
                    dims = "list",
                    logPostBetas = "Parameter",
                    logPostPriorsBetas = "Parameter",
-                   stepSize = "Scale",
+                   sizeStep = "Scale",
                    nStep = "Length",
                    acceptBeta = "integer",
-                   useHMCToUpdateBetas = "LogicalFlag",
+                   useHMCBetas = "LogicalFlag",
                    mu = "numeric"),
          contains = c("VIRTUAL", "Margins"),
          validity = function(object) {
@@ -146,7 +146,7 @@ setClass("Betas",
              dims <- object@dims
              mu <- object@mu
              theta <- object@theta
-             stepSize <- object@stepSize@.Data
+             sizeStep <- object@sizeStep@.Data
              acceptBeta <- object@acceptBeta
              hasNonPositive <- function(x) any(x <= 0L)
              hasMissing <- function(x) any(is.na(x))
@@ -238,10 +238,10 @@ setClass("Betas",
              if (!is.double(mu))
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "mu", "double"))
-             ## 'stepSize' positive
-             if (!(stepSize > 0))
+             ## 'sizeStep' positive
+             if (!(sizeStep > 0))
                  return(gettextf("'%s' is non-positive",
-                                 "stepSize"))
+                                 "sizeStep"))
              ## gradientBetas, momentumBetas, meansBetas, variancesBetas, betasOld:
              for (name in c("gradientBetas", "momentumBetas",
                             "meansBetas", "variancesBetas",
@@ -754,7 +754,7 @@ setClass("SpecSeriesMixin",
 ## HAS_TESTS
 setClass("SpecsPriorsMixin",
          slots = c(specsPriors = "list",
-                        namesSpecsPriors = "character"),
+                   namesSpecsPriors = "character"),
          contains = "VIRTUAL",
          validity = function(object) {
              formulaMu <- object@formulaMu
@@ -827,6 +827,14 @@ setClass("StructuralZerosMixin",
                  TRUE
              }
          })
+
+## NO_TESTS
+setClass("HMCBetaMixin",
+         slots = c(useHMC = "LogicalFlag",
+                   sizeStep = "Scale",
+                   nStep = "Length"),
+         contains = "VIRTUAL")
+
 
 ## NO_TESTS
 setClass("StrucZeroArrayMixin",

@@ -594,6 +594,15 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
 #'    means or probabilities (the \eqn{gamma_i}).
 #' @param jump The standard deviation of the proposal density
 #'    for Metropolis-Hasting updates.
+#' @param useHMC Whether to update the main effect
+#' and interaction terms in the prior model
+#' using Hamiltonian Monte Carlo.
+#' Defaults to \code{TRUE}. If \code{FALSE}, Gibbs
+#' updates are used instead.
+#' @param sizeStep The size of the steps used by the Hamiltonian
+#' Monte Carlo updating of the prior model. Defaults to 0.1.
+#' @param nStep The number of steps taken in each  Hamiltonian
+#' Monte Carlo update of the prior model. Defaults to 10.
 #' @param series The name of the demographic series (eg
 #'     \code{"population"} or \code{"births"}) that
 #'     is being modelled. Only needed when the model is to
@@ -625,7 +634,9 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
 #'       aggregate = overall.av)
 #' @export
 Model <- function(formula, ..., lower = NULL, upper = NULL,
-                  priorSD = NULL, jump = NULL, series = NULL,
+                  priorSD = NULL, jump = NULL, useHMC = NULL,
+                  sizeStep = NULL, nStep = NULL,
+                  series = NULL,
                   aggregate = NULL) {
     kValidDistributions <- c("Poisson", "Binomial", "Normal", "CMP",
                              "PoissonBinomial", "NormalFixed", "TFixed",
@@ -661,6 +672,9 @@ Model <- function(formula, ..., lower = NULL, upper = NULL,
               upper = upper,
               priorSD = priorSD,
               jump = jump,
+              useHMC = useHMC,
+              sizeStep = sizeStep,
+              nStep = nStep,
               series = series,
               aggregate = aggregate)
 }
@@ -753,7 +767,9 @@ Round3 <- function() {
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodBinomial"),
           function(specInner, call, nameY, dots, 
-                   lower, upper, priorSD, jump, series, aggregate) {
+                   lower, upper, priorSD, jump,
+                   useHMC, sizeStep, nStep,
+                   series, aggregate) {
               formula.mu <- specInner@formulaMu
               specs.priors <- makeSpecsPriors(dots)
               names.specs.priors <- makeNamesSpecsPriors(dots)
@@ -788,6 +804,9 @@ setMethod("SpecModel",
                                         nu = nu.sigma,
                                         isSpec = TRUE)
               scale.theta <- checkAndTidyJump(jump)
+              useHMC <- checkAndTidyUseHMC(useHMC)
+              sizeStep <- checkAndTidySizeStep(sizeStep)
+              nStep <- checkAndTidyNStep(nStep)
               series <- checkAndTidySeries(series)
               if (is.null(aggregate))
                   aggregate <- methods::new("SpecAgPlaceholder")
@@ -803,6 +822,9 @@ setMethod("SpecModel",
                            lower = lower,
                            specsPriors = specs.priors,
                            namesSpecsPriors = names.specs.priors,
+                           useHMC = useHMC,
+                           sizeStep = sizeStep,
+                           nStep = nStep,
                            nameY = nameY,
                            nuSigma = nu.sigma,
                            scaleTheta = scale.theta,
@@ -817,7 +839,9 @@ setMethod("SpecModel",
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodCMP"),
           function(specInner, call, nameY, dots, lower, upper,
-                   priorSD, jump, series, aggregate) {
+                   priorSD, jump,
+                   useHMC, sizeStep, nStep,
+                   series, aggregate) {
               formula.mu <- specInner@formulaMu
               useExpose <- specInner@useExpose
               boxCoxParam <- specInner@boxCoxParam
@@ -857,6 +881,9 @@ setMethod("SpecModel",
                                             isSpec = TRUE)
               }
               scale.theta <- checkAndTidyJump(jump)
+              useHMC <- checkAndTidyUseHMC(useHMC)
+              sizeStep <- checkAndTidySizeStep(sizeStep)
+              nStep <- checkAndTidyNStep(nStep)
               series <- checkAndTidySeries(series)
               if (is.null(aggregate))
                   aggregate <- methods::new("SpecAgPlaceholder")
@@ -869,6 +896,9 @@ setMethod("SpecModel",
                            multSigma = mult.sigma,
                            specsPriors = specs.priors,
                            namesSpecsPriors = names.specs.priors,
+                           useHMC = useHMC,
+                           sizeStep = sizeStep,
+                           nStep = nStep,
                            nameY = nameY,
                            nuSigma = nu.sigma,
                            scaleTheta = scale.theta,
@@ -887,7 +917,9 @@ setMethod("SpecModel",
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodNormalVarsigmaKnown"),
           function(specInner, call, nameY, dots, lower, upper,
-                   priorSD, jump, series, aggregate) {
+                   priorSD, jump,
+                   useHMC, sizeStep, nStep,
+                   series, aggregate) {
               formula.mu <- specInner@formulaMu
               varsigma <- specInner@varsigma
               varsigmaSetToZero <- specInner@varsigmaSetToZero
@@ -915,6 +947,9 @@ setMethod("SpecModel",
                   warning(gettextf("'%s' is ignored in Normal model when '%s' is %s",
                                    "jump", "aggregate", "NULL"))
               scale.theta <- checkAndTidyJump(jump) # needed for aggregate models
+              useHMC <- checkAndTidyUseHMC(useHMC)
+              sizeStep <- checkAndTidySizeStep(sizeStep)
+              nStep <- checkAndTidyNStep(nStep)
               series <- checkAndTidySeries(series)
               if (is.null(aggregate))
                   aggregate <- methods::new("SpecAgPlaceholder")
@@ -930,6 +965,9 @@ setMethod("SpecModel",
                            lower = lower,
                            specsPriors = specs.priors,
                            namesSpecsPriors = names.specs.priors,
+                           useHMC = useHMC,
+                           sizeStep = sizeStep,
+                           nStep = nStep,
                            nameY = nameY,
                            nuSigma = nu.sigma,
                            scaleTheta = scale.theta,
@@ -946,7 +984,9 @@ setMethod("SpecModel",
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodNormalVarsigmaUnknown"),
           function(specInner, call, nameY, dots, lower, upper,
-                   priorSD, jump, series, aggregate) {
+                   priorSD, jump,
+                   useHMC, sizeStep, nStep,
+                   series, aggregate) {
               formula.mu <- specInner@formulaMu
               A.varsigma <- specInner@AVarsigma
               nu.varsigma <- specInner@nuVarsigma
@@ -975,6 +1015,9 @@ setMethod("SpecModel",
                   warning(gettextf("'%s' is ignored in Normal model when '%s' is %s",
                                    "jump", "aggregate", "NULL"))
               scale.theta <- checkAndTidyJump(jump) # needed for aggregate models
+              useHMC <- checkAndTidyUseHMC(useHMC)
+              sizeStep <- checkAndTidySizeStep(sizeStep)
+              nStep <- checkAndTidyNStep(nStep)
               series <- checkAndTidySeries(series)
               if (is.null(aggregate))
                   aggregate <- methods::new("SpecAgPlaceholder")
@@ -991,6 +1034,9 @@ setMethod("SpecModel",
                            lower = lower,
                            specsPriors = specs.priors,
                            namesSpecsPriors = names.specs.priors,
+                           useHMC = useHMC,
+                           sizeStep = sizeStep,
+                           nStep = nStep,
                            nameY = nameY,
                            nuSigma = nu.sigma,
                            nuVarsigma = nu.varsigma,
@@ -1007,7 +1053,9 @@ setMethod("SpecModel",
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodPoisson"),
           function(specInner, call, nameY, dots, lower, upper,
-                   priorSD, jump, series, aggregate) {
+                   priorSD, jump,
+                   useHMC, sizeStep, nStep,
+                   series, aggregate) {
               formula.mu <- specInner@formulaMu
               useExpose <- specInner@useExpose
               boxCoxParam <- specInner@boxCoxParam
@@ -1045,6 +1093,9 @@ setMethod("SpecModel",
                                             isSpec = TRUE)
               }
               scale.theta <- checkAndTidyJump(jump)
+              useHMC <- checkAndTidyUseHMC(useHMC)
+              sizeStep <- checkAndTidySizeStep(sizeStep)
+              nStep <- checkAndTidyNStep(nStep)
               series <- checkAndTidySeries(series)
               if (is.null(aggregate))
                   aggregate <- methods::new("SpecAgPlaceholder")
@@ -1056,6 +1107,9 @@ setMethod("SpecModel",
                            lower = lower,
                            specsPriors = specs.priors,
                            namesSpecsPriors = names.specs.priors,
+                           useHMC = useHMC,
+                           sizeStep = sizeStep,
+                           nStep = nStep,
                            nameY = nameY,
                            nuSigma = nu.sigma,
                            scaleTheta = scale.theta,
@@ -1072,12 +1126,15 @@ setMethod("SpecModel",
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodPoissonBinomialMixture"),
           function(specInner, call, nameY, dots, lower, upper,
-                   priorSD, jump, series, aggregate) {
+                   priorSD, jump,
+                   useHMC, sizeStep, nStep,
+                   series, aggregate) {
               prob <- specInner@prob
               if (length(dots) > 0L)
                   stop(gettextf("priors specified, but distribution is %s",
                                 "Poisson-binomial mixture"))
-              for (name in c("lower", "upper", "priorSD", "jump", "aggregate")) {
+              for (name in c("lower", "upper", "priorSD", "jump", "useHMC",
+                             "sizeStep", "nStep", "aggregate")) {
                   value <- get(name)
                   if (!is.null(value))
                       stop(gettextf("'%s' specified, but distribution is %s",
@@ -1095,11 +1152,14 @@ setMethod("SpecModel",
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodRound3"),
           function(specInner, call, nameY, dots, lower, upper,
-                   priorSD, jump, series, aggregate) {
+                   priorSD, jump,
+                   useHMC, sizeStep, nStep,
+                   series, aggregate) {
               if (length(dots) > 0L)
                   stop(gettextf("priors specified, but model is %s",
                                 "Round3"))
-              for (name in c("lower", "upper", "priorSD", "jump", "aggregate")) {
+              for (name in c("lower", "upper", "priorSD", "jump", "useHMC",
+                             "sizeStep", "nStep", "aggregate")) {
                   value <- get(name)
                   if (!is.null(value))
                       stop(gettextf("'%s' specified, but model is %s",
@@ -1116,7 +1176,9 @@ setMethod("SpecModel",
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodNormalFixed"),
           function(specInner, call, nameY, dots, lower, upper,
-                   priorSD, jump, series, aggregate) {
+                   priorSD, jump,
+                   useHMC, sizeStep, nStep,
+                   series, aggregate) {
               mean <- specInner@mean
               sd <- specInner@sd
               metadata <- specInner@metadata
@@ -1124,7 +1186,8 @@ setMethod("SpecModel",
               if (length(dots) > 0L)
                   stop(gettextf("priors specified, but distribution is %s",
                                 "NormalFixed"))
-              for (name in c("lower", "upper", "priorSD", "jump", "aggregate")) {
+              for (name in c("lower", "upper", "priorSD", "jump", "useHMC",
+                             "sizeStep", "nStep", "aggregate")) {
                   value <- get(name)
                   if (!is.null(value))
                       stop(gettextf("'%s' specified, but distribution is %s",
@@ -1145,7 +1208,9 @@ setMethod("SpecModel",
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodTFixed"),
           function(specInner, call, nameY, dots, lower, upper,
-                   priorSD, jump, series, aggregate) {
+                   priorSD, jump,
+                   useHMC, sizeStep, nStep,
+                   series, aggregate) {
               mean <- specInner@mean
               sd <- specInner@sd
               nu <- specInner@nu
@@ -1154,7 +1219,8 @@ setMethod("SpecModel",
               if (length(dots) > 0L)
                   stop(gettextf("priors specified, but distribution is %s",
                                 "TFixed"))
-              for (name in c("lower", "upper", "priorSD", "jump", "aggregate")) {
+              for (name in c("lower", "upper", "priorSD", "jump", "useHMC",
+                             "sizeStep", "nStep", "aggregate")) {
                   value <- get(name)
                   if (!is.null(value))
                       stop(gettextf("'%s' specified, but distribution is %s",

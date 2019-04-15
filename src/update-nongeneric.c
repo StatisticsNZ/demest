@@ -1131,23 +1131,6 @@ updateComponentWeightMix(SEXP prior_R)
 
 
 void
-updatePriorsBetas(SEXP object_R)
-{
-  SEXP priors_R = GET_SLOT(object_R, priorsBetas_sym);
-  SEXP betas_R = GET_SLOT(object_R, betas_sym);
-  int n_beta =  LENGTH(betas_R);
-  double *thetaTransformed = REAL(GET_SLOT(object_R, thetaTransformed_sym));
-  double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
-  for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
-    double *beta = REAL(VECTOR_ELT(betas_R, i_beta));
-    SEXP prior_R = VECTOR_ELT(priors_R, i_beta);
-    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
-    updatePriorBeta(beta, J, prior_R, thetaTransformed, sigma);
-  }
-}
-
-
-void
 updateGWithTrend(SEXP prior_R)
 {
     /* GWithTrend is a 2x2 matrix, R uses column-major ordering*/
@@ -2537,9 +2520,26 @@ get_log_gamma_dens(int n, double theta[],
 
 
 void
+updatePriorsBetas(SEXP object_R)
+{
+  SEXP priors_R = GET_SLOT(object_R, priorsBetas_sym);
+  SEXP betas_R = GET_SLOT(object_R, betas_sym);
+  int n_beta =  LENGTH(betas_R);
+  double *thetaTransformed = REAL(GET_SLOT(object_R, thetaTransformed_sym));
+  double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
+  for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
+    double *beta = REAL(VECTOR_ELT(betas_R, i_beta));
+    SEXP prior_R = VECTOR_ELT(priors_R, i_beta);
+    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
+    updatePriorBeta(beta, J, prior_R, thetaTransformed, sigma);
+  }
+}
+
+
+void
 updateBetas(SEXP object_R)
 {
-  int useHMC = *LOGICAL(GET_SLOT(object_R, useHMCToUpdateBetas_sym));
+  int useHMC = *LOGICAL(GET_SLOT(object_R, useHMCBetas_sym));
   if (useHMC)
     updateBetasHMC(object_R);
   else
@@ -2649,10 +2649,12 @@ updateBetasHMC(SEXP object_R)
   double log_post_betas_curr = *REAL(GET_SLOT(object_R, logPostBetas_sym));
   double log_post_momentum_curr = getLogPostMomentum(object_R);
   /* get step size and number of steps */
-  double mean_step_size = *REAL(GET_SLOT(object_R, stepSize_sym));
+  double mean_step_size = *REAL(GET_SLOT(object_R, sizeStep_sym));
   int mean_n_step = *INTEGER(GET_SLOT(object_R, nStep_sym));
   double step_size = runif(0, 2 * mean_step_size);
   int n_step = ceil(runif(0, 2 * mean_n_step));
+  Rprintf("\nstepSize %f\n", step_size);
+  Rprintf("nStep %d\n", n_step);
   /* take initial half step */
   updateMomentumOneStep(object_R, step_size, 1);
   /* take remaining steps */
@@ -2672,10 +2674,14 @@ updateBetasHMC(SEXP object_R)
 		     - log_post_betas_curr - log_post_momentum_curr);
   int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
   /* update accordingly */
-  if (accept) {
-    SET_INTSCALE_SLOT(object_R, acceptBeta_sym, 1);
-  }
-  else {
+  SET_INTSCALE_SLOT(object_R, acceptBeta_sym, accept);
+  Rprintf("\nlog_post_betas_prop %f\n", log_post_betas_prop);
+  Rprintf("log_post_momentum_prop %f\n", log_post_momentum_prop);
+  Rprintf("log_post_betas_curr %f\n", log_post_betas_curr);
+  Rprintf("log_post_momentum_curr %f\n", log_post_momentum_curr);
+  Rprintf("log_diff %f\n", log_diff);
+  Rprintf("accept %d\n\n", accept);
+  if (!accept) {
     for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
       int J = J_vec[i_beta];
       for (int j = 0; j < J; ++j)
@@ -2683,20 +2689,19 @@ updateBetasHMC(SEXP object_R)
     }
     updateMu(object_R);
     SET_DOUBLESCALE_SLOT(object_R, logPostBetas_sym, log_post_betas_curr);
-    SET_INTSCALE_SLOT(object_R, acceptBeta_sym, 0);
   }
 }
 
  
 void
-updateBetasOneStep(SEXP object_R, double stepSize)
+updateBetasOneStep(SEXP object_R, double sizeStep)
 {
   SEXP betas_R = GET_SLOT(object_R, betas_sym);
   SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
   SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
   SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
   int n_beta =  LENGTH(betas_R);
-  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));
   for (int i = 0; i < n_beta; ++i) {
     if (!betaEqualsMean[i]) {
       double *beta = REAL(VECTOR_ELT(betas_R, i));
@@ -2707,7 +2712,7 @@ updateBetasOneStep(SEXP object_R, double stepSize)
       int *allStrucZero = INTEGER(GET_SLOT(prior_R, allStrucZero_sym));
       for (int j = 0; j < J; ++j) {
 	if (!allStrucZero[j])
-	  beta[j] += stepSize * sqrt(variances[j]) * momentum[j];
+	  beta[j] += sizeStep * variances[j] * momentum[j];
       }
     }
   }
@@ -2719,7 +2724,7 @@ updateBetasWhereBetaEqualsMean(SEXP object_R)
 {
   SEXP betas_R = GET_SLOT(object_R, betas_sym);
   SEXP means_R = GET_SLOT(object_R, meansBetas_sym);
-  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));
   int n_beta =  LENGTH(betas_R);
   for (int i = 0; i < n_beta; ++i) {
     if (betaEqualsMean[i]) {
@@ -2742,18 +2747,17 @@ updateGradientBetas(SEXP object_R)
   double *thetaTransformed = REAL(thetaTransformed_R);
   double *mu = REAL(GET_SLOT(object_R, mu_sym));
   double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
-  int *cellInLik = INTEGER(GET_SLOT(object_R, cellInLik_sym));
+  int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
   SEXP iterator_R = GET_SLOT(object_R, iteratorBetas_sym);
   SEXP betas_R = GET_SLOT(object_R, betas_sym);
   SEXP gradientBetas_R = GET_SLOT(object_R, gradientBetas_sym);
   SEXP meansBetas_R = GET_SLOT(object_R, meansBetas_sym);
   SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
   SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
-  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));  
+  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));  
   int n_theta = LENGTH(thetaTransformed_R);
   int n_beta = LENGTH(betas_R);
   double var_theta = sigma * sigma;
-  resetB(iterator_R);
   /* arrays of pointers, plus array of lengths */
   double *grad_ptr[n_beta];
   double *beta_ptr[n_beta];
@@ -2780,9 +2784,10 @@ updateGradientBetas(SEXP object_R)
     }
   }
   /* contribution from likelihood */
+  resetB(iterator_R);
+  int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym));
   for (int i_theta = 0; i_theta < n_theta; ++i_theta) {
     if (cellInLik[i_theta]) {
-      int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym));
       double diff = (thetaTransformed[i_theta] - mu[i_theta]) / var_theta;
       for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
 	if (!betaEqualsMean[i_beta]) {
@@ -2803,7 +2808,7 @@ updateGradientBetas(SEXP object_R)
 	if (!struc_zero_ptr[i_beta][j]) {
 	  double diff = ((beta_ptr[i_beta][j] - mean_ptr[i_beta][j])
 			 / var_ptr[i_beta][j]);
-	  grad_ptr[i_beta][j] -= diff;
+	  grad_ptr[i_beta][j] -= diff; /* subtract diff */
 	}
       }
     }
@@ -2817,7 +2822,7 @@ updateLogPostBetas(SEXP object_R)
   SEXP thetaTransformed_R = GET_SLOT(object_R, thetaTransformed_sym);
   double *thetaTransformed = REAL(thetaTransformed_R);
   double *mu = REAL(GET_SLOT(object_R, mu_sym));
-  int *cellInLik = INTEGER(GET_SLOT(object_R, cellInLik_sym));
+  int *cellInLik = LOGICAL(GET_SLOT(object_R, cellInLik_sym));
   double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
   int n_theta = LENGTH(thetaTransformed_R);
   double log_likelihood = 0;
@@ -2833,7 +2838,7 @@ updateLogPostBetas(SEXP object_R)
   SEXP betas_R = GET_SLOT(object_R, betas_sym);
   SEXP means_R = GET_SLOT(object_R, meansBetas_sym);
   SEXP variances_R = GET_SLOT(object_R, variancesBetas_sym);
-  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));
   SEXP priors_R = GET_SLOT(object_R, priorsBetas_sym);
   int n_beta = LENGTH(betas_R);
   double log_prior = 0;
@@ -2876,26 +2881,24 @@ updateMeansBetas(SEXP object_R)
 }
 
 void
-updateMomentumOneStep(SEXP object_R, double stepSize, int isFirstLast)
+updateMomentumOneStep(SEXP object_R, double sizeStep, int isFirstLast)
 {
   SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
   SEXP gradientBetas_R = GET_SLOT(object_R, gradientBetas_sym);
-  SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
   int n_beta =  LENGTH(momentumBetas_R);
-  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));
   SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
-  double mult = isFirstLast ? 0.5 * stepSize : stepSize;
+  double mult = isFirstLast ? 0.5 * sizeStep : sizeStep;
   for (int i = 0; i < n_beta; ++i) {
     if (!betaEqualsMean[i]) {
       double *momentum = REAL(VECTOR_ELT(momentumBetas_R, i));
       double *gradient = REAL(VECTOR_ELT(gradientBetas_R, i));
-      double *variances = REAL(VECTOR_ELT(variancesBetas_R, i));
       SEXP prior_R = VECTOR_ELT(priorsBetas_R, i);
       int *allStrucZero = LOGICAL(GET_SLOT(prior_R, allStrucZero_sym));
       int J = *INTEGER(GET_SLOT(prior_R, J_sym));
       for (int j = 0; j < J; ++j) {
 	if (!allStrucZero[j]) {
-	  momentum[j] -= mult * sqrt(variances[j]) * gradient[j];
+	  momentum[j] += mult * gradient[j];
 	}
       }
     }
@@ -2910,6 +2913,7 @@ updateMu(SEXP object_R)
   SEXP mu_R = GET_SLOT(object_R, mu_sym);
   double *mu = REAL(mu_R);
   int n_mu = LENGTH(mu_R);
+  int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
 
   SEXP betas_R = GET_SLOT(object_R, betas_sym);
   int n_beta =  LENGTH(betas_R);
@@ -2925,9 +2929,10 @@ updateMu(SEXP object_R)
   }
 
   for (int i = 0; i < n_mu; ++i) {
-    mu[i] = 0;
-    for (int b = 0; b < n_beta; ++b) {
-      mu[i] += beta_ptr[b][indices[b]-1];
+      mu[i] = 0;
+      for (int b = 0; b < n_beta; ++b) {
+	mu[i] += beta_ptr[b][indices[b]-1];
+      }
     }
     advanceB(iterator_R);
   }

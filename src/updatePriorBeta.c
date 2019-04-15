@@ -2,7 +2,8 @@
 #include "update-nongeneric.h"
 #include "demest.h"
 
-/* fill in beta, update prior_R */
+/* warning - these functions all have different parameters,
+   in a different order, from the R equivalents */
 void
 updatePriorBeta(double *beta, int J, SEXP prior_R, 
 		double *thetaTransformed, double sigma)

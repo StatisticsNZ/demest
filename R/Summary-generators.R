@@ -12,8 +12,8 @@ setMethod("summary",
               specification <- paste(deparse(call[[2L]]), collapse = "")
               dimensions <- names(metadata)
               methods::new("SummaryModel",
-                  specification = specification,
-                  dimensions = dimensions)
+                           specification = specification,
+                           dimensions = dimensions)
           })
 
 ## HAS_TESTS

@@ -1421,16 +1421,24 @@ double
 getLogPostMomentum(SEXP object_R)
 {
   SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
-  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
-  int n_beta = LENGTH(momentumBetas_R);
+  int n_beta =  LENGTH(momentumBetas_R);
+  SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
+  SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
+  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));
   double ans = 0;
   for (int i = 0; i < n_beta; ++i) {
     if (!betaEqualsMean[i]) {
-      SEXP momentum_R = VECTOR_ELT(momentumBetas_R, i);
-      double *momentum = REAL(momentum_R);
-      int J = LENGTH(momentum_R);
-      for (int j = 0; j < J; ++j)
-	ans += dnorm(momentum[j], 0, 1, USE_LOG);
+      double *momentum = REAL(VECTOR_ELT(momentumBetas_R, i));
+      double *variances = REAL(VECTOR_ELT(variancesBetas_R, i));
+      SEXP prior_R = VECTOR_ELT(priorsBetas_R, i);
+      int J = *INTEGER(GET_SLOT(prior_R, J_sym));
+      int *allStrucZero = LOGICAL(GET_SLOT(prior_R, allStrucZero_sym));
+      for (int j = 0; j < J; ++j) {
+	if (!allStrucZero[j]) {
+	  double inv_sd = 1 / sqrt(variances[j]);
+	  ans += dnorm(momentum[j], 0, inv_sd, USE_LOG);
+	}
+      }
     }
   }
   return ans;
@@ -1442,17 +1450,20 @@ initializeMomentum(SEXP object_R)
 {
   SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
   int n_beta =  LENGTH(momentumBetas_R);
-  int *betaEqualsMean = INTEGER(GET_SLOT(object_R, betaEqualsMean_sym));
+  SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
   SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
+  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));
   for (int i = 0; i < n_beta; ++i) {
     if (!betaEqualsMean[i]) {
       double *momentum = REAL(VECTOR_ELT(momentumBetas_R, i));
+      double *variances = REAL(VECTOR_ELT(variancesBetas_R, i));
       SEXP prior_R = VECTOR_ELT(priorsBetas_R, i);
       int J = *INTEGER(GET_SLOT(prior_R, J_sym));
       int *allStrucZero = LOGICAL(GET_SLOT(prior_R, allStrucZero_sym));
       for (int j = 0; j < J; ++j) {
 	if (!allStrucZero[j]) {
-	  momentum[j] = rnorm(0, 1);
+	  double inv_sd = 1 / sqrt(variances[j]);
+	  momentum[j] = rnorm(0, inv_sd);
 	}
       }
     }

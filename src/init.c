@@ -101,23 +101,6 @@
     return ScalarReal(ans);    \
     }
 
-
-/* Wrapper macro to use for the functions that update priors in place.
- * The wrapper puts a _R suffix on end of function name,
- * and deals with RNGstate (relevant for prior update functions that
- * use prngs),
- * and ensures that the R version returns the updated prior as the SEXP */
-#define UPDATEPRIOR_WRAPPER_R(name)         \
-    SEXP name##_R(SEXP prior_R, SEXP object_R) {    \
-    SEXP ans_R;               \
-    PROTECT(ans_R = duplicate(prior_R));    \
-    GetRNGstate();              \
-    name(ans_R, object_R);          \
-    PutRNGstate();              \
-    UNPROTECT(1);               \
-    return ans_R;             \
-    }
-
 /* Wrapper macro to use for the functions that update priors in place.
  * The wrapper puts a _R suffix on end of function name,
  * and deals with RNGstate (relevant for prior update functions that
@@ -1219,24 +1202,24 @@ SEXP updateSDRobust_R(SEXP sigma_R,
 }
 
 SEXP
-updateBetasOneStep_R(SEXP object_R, SEXP stepSize_R)
+updateBetasOneStep_R(SEXP object_R, SEXP sizeStep_R)
 {
-  double stepSize = *REAL(stepSize_R);
+  double sizeStep = *REAL(sizeStep_R);
   SEXP ans_R;
   PROTECT(ans_R = duplicate(object_R));
-  updateBetasOneStep(ans_R, stepSize);
+  updateBetasOneStep(ans_R, sizeStep);
   UNPROTECT(1); /* ans_R */
   return ans_R;
 }
 
 SEXP
-updateMomentumOneStep_R(SEXP object_R, SEXP stepSize_R, SEXP isFirstLast_R)
+updateMomentumOneStep_R(SEXP object_R, SEXP sizeStep_R, SEXP isFirstLast_R)
 {
-  double stepSize = *REAL(stepSize_R);
+  double sizeStep = *REAL(sizeStep_R);
   int isFirstLast = *INTEGER(isFirstLast_R);
   SEXP ans_R;
   PROTECT(ans_R = duplicate(object_R));
-  updateMomentumOneStep(ans_R, stepSize, isFirstLast);
+  updateMomentumOneStep(ans_R, sizeStep, isFirstLast);
   UNPROTECT(1); /* ans_R */
   return ans_R;
 }
@@ -2664,10 +2647,10 @@ R_init_demest(DllInfo *info)
   ADD_SYM(gradientBetas);
   ADD_SYM(momentumBetas);
   ADD_SYM(betaEqualsMean);
-  ADD_SYM(stepSize);
+  ADD_SYM(sizeStep);
   ADD_SYM(nStep);
   ADD_SYM(acceptBeta);
-  ADD_SYM(useHMCToUpdateBetas);
+  ADD_SYM(useHMCBetas);
   ADD_SYM(tolerance);
   ADD_SYM(betaIsPredicted);
   ADD_SYM(mean);

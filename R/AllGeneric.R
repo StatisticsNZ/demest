@@ -57,6 +57,7 @@ setGeneric("SkeletonMissingDataset",
 setGeneric("SpecModel",
            function(specInner, call, nameY, dots, 
                     lower, upper, priorSD, jump,
+                    useHMC, sizeStep, nStep,
                     series, aggregate)
                standardGeneric("SpecModel"))
 
@@ -627,9 +628,19 @@ setGeneric("whereAcceptance",
            function(object)
                standardGeneric("whereAcceptance"))
 
+setGeneric("whereAcceptanceHMC",
+           function(object) {
+               list(NULL)
+           })
+
 setGeneric("whereAutocorr",
            function(object)
                standardGeneric("whereAutocorr"))
+
+setGeneric("whereAutocorrHMC",
+           function(object) {
+               list(NULL)
+           })
 
 setGeneric("whereEstimated",
            function(object)
@@ -647,9 +658,19 @@ setGeneric("whereMetropStat",
            function(object, FUN)
                standardGeneric("whereMetropStat"))
 
+setGeneric("whereNStep",
+           function(object) {
+               list(NULL)
+           })
+
 setGeneric("whereNoProposal",
            function(object)
                standardGeneric("whereNoProposal"))
+
+setGeneric("whereSizeStep",
+           function(object) {
+               list(NULL)
+           })
 
 setGeneric("whereTheta",
            function(object)

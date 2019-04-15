@@ -241,18 +241,19 @@ setClass("SpecModel",
 
 setClass("SpecVarying",
          contains = c("VIRTUAL",
-             "SpecModel",
-             "ScaleThetaMixin",
-             "SpecASigmaMixin",
-             "SpecAggregateMixin",
-             "FormulaMuMixin",
-             "LowerUpperMixin",
-             "MaxAttemptMixin",
-             "SpecSigmaMaxMixin",
-             "SpecsPriorsMixin",
-             "NuSigmaMixin",
-             "SpecSeriesMixin",
-             "SpecAggregate"))             
+                      "SpecModel",
+                      "ScaleThetaMixin",
+                      "SpecASigmaMixin",
+                      "SpecAggregateMixin",
+                      "FormulaMuMixin",
+                      "HMCBetaMixin",
+                      "LowerUpperMixin",
+                      "MaxAttemptMixin",
+                      "SpecSigmaMaxMixin",
+                      "SpecsPriorsMixin",
+                      "NuSigmaMixin",
+                      "SpecSeriesMixin",
+                      "SpecAggregate"))
 
 ## HAS_TESTS
 #' @rdname SpecModel-class

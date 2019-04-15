@@ -68,10 +68,10 @@ SEXP
   gradientBetas_sym,
   momentumBetas_sym,
   betaEqualsMean_sym,
-  stepSize_sym,
+  sizeStep_sym,
   nStep_sym,
   acceptBeta_sym,
-  useHMCToUpdateBetas_sym,
+  useHMCBetas_sym,
   priorsBetas_sym, 
   logPostPriorsBetas_sym,
   logPostBetas_sym,
@@ -720,12 +720,12 @@ void initializeMomentum(SEXP object);
 void updateBetas(SEXP object);
 void updateBetasGibbs(SEXP object);
 void updateBetasHMC(SEXP object);
-void updateBetasOneStep(SEXP object, double stepSize);
+void updateBetasOneStep(SEXP object, double sizeStep);
 void updateBetasWhereBetaEqualsMean(SEXP object);
 void updateGradientBetas(SEXP object);
 void updateLogPostBetas(SEXP object);
 void updateMeansBetas(SEXP object);
-void updateMomentumOneStep(SEXP object, double stepSize, int isFirstLast);
+void updateMomentumOneStep(SEXP object, double sizeStep, int isFirstLast);
 void updateVariancesBetas(SEXP object);
 void updateMu(SEXP object);
 

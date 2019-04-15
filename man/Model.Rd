@@ -6,7 +6,8 @@
 dataset.}
 \usage{
 Model(formula, ..., lower = NULL, upper = NULL, priorSD = NULL,
-  jump = NULL, series = NULL, aggregate = NULL)
+  jump = NULL, useHMC = NULL, sizeStep = NULL, nStep = NULL,
+  series = NULL, aggregate = NULL)
 }
 \arguments{
 \item{formula}{A \code{\link[stats]{formula}} describing
@@ -28,6 +29,18 @@ the prior for the prior-level standard deviation.}
 
 \item{jump}{The standard deviation of the proposal density
 for Metropolis-Hasting updates.}
+
+\item{useHMC}{Whether to update the main effect
+and interaction terms in the prior model
+using Hamiltonian Monte Carlo.
+Defaults to \code{TRUE}. If \code{FALSE}, Gibbs
+updates are used instead.}
+
+\item{sizeStep}{The size of the steps used by the Hamiltonian
+Monte Carlo updating of the prior model. Defaults to 0.1.}
+
+\item{nStep}{The number of steps taken in each  Hamiltonian
+Monte Carlo update of the prior model. Defaults to 10.}
 
 \item{series}{The name of the demographic series (eg
 \code{"population"} or \code{"births"}) that
