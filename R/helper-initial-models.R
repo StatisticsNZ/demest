@@ -1398,6 +1398,45 @@ makeSpecsPriors <- function(dots) {
     ans
 }
 
+
+makeThetaPoissonCMP <- function(y, exposure, lower, upper, strucZeroArray) {
+    y.missing <- is.na(y@.Data)
+    is.obs <- !is.na(y@.Data) & (struc.zero.array != 0L) 
+    if (any(is.obs))
+        mean.y.obs <- mean(y@.Data[is.obs]) 
+    else
+        mean.y.obs <- 0.5
+    shape <- ifelse(is.obs, 0.05 * mean.y.obs + 0.95 * y@.Data, mean.y.obs)
+    has.exposure <- !is.null(exposure)
+    if (has.exposure) {
+        mean.expose.obs <- mean(exposure[is.obs])
+        rate <- ifelse(is.obs, 0.05 * mean.expose.obs + 0.95 * exposure, mean.expose.obs)
+    }
+    else
+        rate <- 1
+    ans <- stats::rgamma(n = length(y), shape = shape, rate = rate)
+    is.too.low <- theta < lower
+    n.too.low <- sum(is.too.low)
+    width <- 0.05 * (upper - lower)
+    if (is.infinite(width))
+        width <- 100
+    theta[is.too.low] <- stats::runif(n = n.too.low,
+                                      min = lower,
+                                      max = lower + width)
+    is.too.high <- theta > upper
+    n.too.high <- sum(is.too.high)
+    theta[is.too.high] <- stats::runif(n = n.too.high,
+                                       min = upper - width,
+                                       max = upper)
+    array(theta, dim = dim(y), dimnames = dimnames(y))
+}
+
+
+
+
+
+
+
 ## HAS_TESTS
 makeTransformsYToDatasets <- function(y, datasets, concordances,
                                       namesDatasets) {

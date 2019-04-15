@@ -1200,14 +1200,20 @@ getLogPostMomentum <- function(object, useC = FALSE) {
     }
     else {
         momentum.betas <- object@momentumBetas
+        variances.betas <- object@variancesBetas
+        priors.betas <- object@priorsBetas
         beta.equals.mean <- object@betaEqualsMean
         ans <- 0
         for (i in seq_along(momentum.betas)) {
             if (!beta.equals.mean[i]) {
                 momentum <- momentum.betas[[i]]
-                ans <- ans + sum(stats::dnorm(momentum,
+                variances <- variances.betas[[i]]
+                inv_sd <- 1 / sqrt(variances)
+                prior <- priors.betas[[i]]
+                all.struc.zero <- prior@allStrucZero
+                ans <- ans + sum(stats::dnorm(momentum[!all.struc.zero],
                                               mean = 0,
-                                              sd = 1,
+                                              sd = inv_sd[!all.struc.zero],
                                               log = TRUE))
             }
         }
@@ -1259,19 +1265,22 @@ initializeMomentum <- function(object, useC = FALSE) {
         .Call(initializeMomentum_R, object)
     }
     else {
-        momentum <- object@momentumBetas
+        momentum.betas <- object@momentumBetas
+        variances.betas <- object@variancesBetas
         beta.equals.mean <- object@betaEqualsMean
         priors <- object@priorsBetas
-        for (i in seq_along(momentum)) {
+        for (i in seq_along(momentum.betas)) {
             if (!beta.equals.mean[i]) {
                 all.struc.zero <- priors[[i]]@allStrucZero
                 n <- sum(!all.struc.zero)
-                momentum[[i]][!all.struc.zero] <- stats::rnorm(n = n,
-                                                               mean = 0,
-                                                               sd = 1)
+                inv_sd <- 1 / sqrt(variances.betas[[i]])
+                momentum.betas[[i]][!all.struc.zero] <-
+                    stats::rnorm(n = n,
+                                 mean = 0,
+                                 sd = inv_sd[!all.struc.zero])
             }
         }
-        object@momentumBetas <- momentum
+        object@momentumBetas <- momentum.betas
         object
     }
 }

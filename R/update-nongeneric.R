@@ -1968,10 +1968,9 @@ updateBetasHMC <- function(object, useC = FALSE) {
         object <- updateBetasWhereBetaEqualsMean(object)
         object <- initializeMomentum(object)
         object@betasOld <- object@betas # call 'updateBetasWhereBetaEqualsMean' first
-        log.post.betas.curr <- object@logPostBetas
+        object <- updateLogPostBetas(object)
+        log.post.betas.curr <- object@logPostBetas # call 'updateLogPostBetas' first (priors have changed)
         log.post.momentum.curr <- getLogPostMomentum(object) # call 'initializeMomentum' first
-
-        ## p603 of Gelman et al 2014 Bayesian Data Analysis, Third Edition
         mean.size.step <- object@sizeStep@.Data
         mean.n.step <- object@nStep@.Data
         size.step <- stats::runif(n = 1L,
@@ -2207,7 +2206,6 @@ updateMomentumOneStep <- function(object, sizeStep, isFirstLast, useC = FALSE) {
     else {
         momentum.betas <- object@momentumBetas
         gradient.betas <- object@gradientBetas
-        variances.betas <- object@variancesBetas
         beta.equals.mean <- object@betaEqualsMean
         priors.betas <- object@priorsBetas
         mult <- sizeStep
@@ -2217,10 +2215,9 @@ updateMomentumOneStep <- function(object, sizeStep, isFirstLast, useC = FALSE) {
             if (!beta.equals.mean[i]) {
                 momentum <- momentum.betas[[i]]
                 gradient <- gradient.betas[[i]]
-                variances <- variances.betas[[i]]
                 all.struc.zero <- priors.betas[[i]]@allStrucZero
                 momentum.betas[[i]][!all.struc.zero] <- (momentum[!all.struc.zero]
-                    + mult * variances[!all.struc.zero] * gradient[!all.struc.zero])
+                    + mult * gradient[!all.struc.zero])
             }
         }
         object@momentumBetas <- momentum.betas

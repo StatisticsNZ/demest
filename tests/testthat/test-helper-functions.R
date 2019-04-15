@@ -3055,7 +3055,11 @@ test_that("R version of getLogPostMomentum works", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[1,] <- 0L
+    strucZeroArray <- ValuesOne(c(0L, rep(1L, 4)), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = strucZeroArray),
                   age ~ Exch(),
                   region ~ Zero())
     set.seed(1)
@@ -3063,8 +3067,8 @@ test_that("R version of getLogPostMomentum works", {
     x <- updateModelNotUseExp(x, y = y, useC = TRUE)
     x <- initializeMomentum(x)
     ans.obtained <- getLogPostMomentum(x)
-    ans.expected <- sum(dnorm(x@momentumBetas[[1]], log = TRUE)) +
-        sum(dnorm(x@momentumBetas[[2]], log = TRUE))
+    ans.expected <- sum(dnorm(x@momentumBetas[[1]], sd = 1/sqrt(x@variancesBetas[[1]]), log = TRUE)) +
+        sum(dnorm(x@momentumBetas[[2]][-1], sd = 1/sqrt(x@variancesBetas[[2]][-1]), log = TRUE))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3076,13 +3080,16 @@ test_that("R and C versions of getLogPostMomentum give same answer", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[1,] <- 0L
+    strucZeroArray <- ValuesOne(c(0L, rep(1L, 4)), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = strucZeroArray),
                   age ~ Exch(),
                   region ~ Zero())
     set.seed(1)
     x <- initialModel(spec, y = y, exposure = NULL)
     x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-    x <- initializeMomentum(x)
     ans.R <- getLogPostMomentum(x, useC = FALSE)
     ans.C <- getLogPostMomentum(x, useC = TRUE)
     if (test.identity)
@@ -3098,7 +3105,11 @@ test_that("R version of initializeMomentum works", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[1,] <- 0L
+    strucZeroArray <- ValuesOne(c(0L, rep(1L, 4)), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = strucZeroArray),
                   age ~ Exch(),
                   region ~ Zero())
     x <- initialModel(spec, y = y, exposure = NULL)
@@ -3107,8 +3118,8 @@ test_that("R version of initializeMomentum works", {
     ans.obtained <- initializeMomentum(x)
     set.seed(1)
     ans.expected <- x
-    ans.expected@momentumBetas[[1]] <- rnorm(1)
-    ans.expected@momentumBetas[[2]] <- rnorm(5)
+    ans.expected@momentumBetas[[1]] <- rnorm(1, sd = 1/sqrt(x@variancesBetas[[1]]))
+    ans.expected@momentumBetas[[2]][-1] <- rnorm(4, sd = 1/sqrt(x@variancesBetas[[2]][-1]))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3119,7 +3130,11 @@ test_that("R and C versions of initializeMomentum give same answer", {
     y <- Counts(array(rpois(n = 20, lambda = 30),
                       dim = 5:4,
                       dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
+    y[1,] <- 0L
+    strucZeroArray <- ValuesOne(c(0L, rep(1L, 4)), labels = 0:4, name = "age")
+    spec <- Model(y ~ Poisson(mean ~ age + region,
+                              useExpose = FALSE,
+                              structuralZeros = strucZeroArray),
                   age ~ Exch(),
                   region ~ Zero())
     x <- initialModel(spec, y = y, exposure = NULL)
@@ -3158,7 +3173,6 @@ test_that("logPostPhiMix works", {
         ## 'phi'
         stopifnot(identical(length(phi), 1L))
         stopifnot(is.double(phi))
-                                        #stopifnot(abs(phi) <= 1)
         ## 'alpha'
         stopifnot(is.matrix(alpha))
         stopifnot(sum(is.na(alpha))<1)

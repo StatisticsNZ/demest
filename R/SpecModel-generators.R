@@ -579,6 +579,11 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
 #' The \code{trunc-half-t(df, s^2, max)} in the printed results refers to a
 #' truncated \code{\link[=halft-distn]{half-t}} distribution with \code{df}
 #' degrees of freedom, scale \code{s^2}, and maximum value \code{max}.
+#'
+#' @section Warning:
+#'
+#' The Hamiltonian Monte Carlo updating is still under development,
+#' and the functions are rather fragile.
 #' 
 #' @param formula A \code{\link[stats]{formula}} describing
 #'     the likelihood, and possibly parts of the  prior.
@@ -596,9 +601,8 @@ TFixed <- function(location, scale, df = 7, useExpose = TRUE) {
 #'    for Metropolis-Hasting updates.
 #' @param useHMC Whether to update the main effect
 #' and interaction terms in the prior model
-#' using Hamiltonian Monte Carlo.
-#' Defaults to \code{TRUE}. If \code{FALSE}, Gibbs
-#' updates are used instead.
+#' using Hamiltonian Monte Carlo. By default, Gibbs sampling
+#' is used, though this may change in future.
 #' @param sizeStep The size of the steps used by the Hamiltonian
 #' Monte Carlo updating of the prior model. Defaults to 0.1.
 #' @param nStep The number of steps taken in each  Hamiltonian

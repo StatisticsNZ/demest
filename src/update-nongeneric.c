@@ -2654,8 +2654,6 @@ updateBetasHMC(SEXP object_R)
   int mean_n_step = *INTEGER(GET_SLOT(object_R, nStep_sym));
   double step_size = runif(0, 2 * mean_step_size);
   int n_step = ceil(runif(0, 2 * mean_n_step));
-  Rprintf("\nstepSize %f\n", step_size);
-  Rprintf("nStep %d\n", n_step);
   /* take initial half step */
   updateMomentumOneStep(object_R, step_size, 1);
   /* take remaining steps */
@@ -2676,12 +2674,6 @@ updateBetasHMC(SEXP object_R)
   int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
   /* update accordingly */
   SET_INTSCALE_SLOT(object_R, acceptBeta_sym, accept);
-  Rprintf("\nlog_post_betas_prop %f\n", log_post_betas_prop);
-  Rprintf("log_post_momentum_prop %f\n", log_post_momentum_prop);
-  Rprintf("log_post_betas_curr %f\n", log_post_betas_curr);
-  Rprintf("log_post_momentum_curr %f\n", log_post_momentum_curr);
-  Rprintf("log_diff %f\n", log_diff);
-  Rprintf("accept %d\n\n", accept);
   if (!accept) {
     for (int i_beta = 0; i_beta < n_beta; ++i_beta) {
       int J = J_vec[i_beta];

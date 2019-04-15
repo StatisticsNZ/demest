@@ -139,7 +139,7 @@ test_that("checkAndTidyJump works", {
 test_that("checkAndTidyUseHMC works", {
     checkAndTidyUseHMC <- demest:::checkAndTidyUseHMC
     expect_identical(checkAndTidyUseHMC(NULL),
-                     new("LogicalFlag", TRUE))
+                     new("LogicalFlag", FALSE))
     expect_identical(checkAndTidyUseHMC(FALSE),
                      new("LogicalFlag", FALSE))
     expect_error(checkAndTidyUseHMC(c(FALSE, TRUE)),

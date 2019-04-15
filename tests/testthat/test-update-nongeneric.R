@@ -4619,9 +4619,9 @@ test_that("R version of updateBetasOneStep works", {
     ans.obtained <- updateBetasOneStep(x, sizeStep = 0.1)
     ans.expected <- x
     ans.expected@betas[[1]] <- (ans.expected@betas[[1]]
-        + 0.1 * sqrt(ans.expected@variancesBetas[[1]]) * ans.expected@momentumBetas[[1]])
+        + 0.1 * ans.expected@variancesBetas[[1]] * ans.expected@momentumBetas[[1]])
     ans.expected@betas[[2]][-1] <- (ans.expected@betas[[2]][-1]
-            + 0.1 * sqrt(ans.expected@variancesBetas[[2]][-1]) * ans.expected@momentumBetas[[2]][-1])
+            + 0.1 * ans.expected@variancesBetas[[2]][-1] * ans.expected@momentumBetas[[2]][-1])
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -4849,7 +4849,7 @@ test_that("R version of updateMomentumOneStep works", {
     ans.expected <- x
     for (i in 1:2) {
         ans.expected@momentumBetas[[i]] <- (ans.expected@momentumBetas[[i]]
-            - 0.1 * sqrt(ans.expected@variancesBetas[[i]]) * ans.expected@gradientBetas[[i]])
+            + 0.1 * ans.expected@gradientBetas[[i]])
     }
     expect_identical(ans.obtained, ans.expected)
 })
@@ -9124,7 +9124,7 @@ test_that("R and C versions of updateThetaAndValueAgNormal_PoissonUseExp same an
     was.updated <- FALSE  ## only test if was ever updated, since only one update done per iteration
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        aggregate <- AgNormal(value = 0.5, sd = 0.2)
+        aggregate <- AgNormal(value = 0.5, sd = 0.1)
         theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
         exposure <- as.double(rpois(n = 20, lambda = 20))
         exposure <- Counts(array(exposure, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))
@@ -9149,7 +9149,7 @@ test_that("R and C versions of updateThetaAndValueAgNormal_PoissonUseExp same an
     was.updated <- FALSE  ## only test if was ever updated, since only one update done per iteration
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        aggregate <- AgNormal(value = 0.5, sd = 0.2)
+        aggregate <- AgNormal(value = 0.5, sd = 0.1)
         theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)
         exposure <- as.double(rpois(n = 20, lambda = 20))
         exposure <- Counts(array(exposure, dim = c(2, 10), dimnames = list(sex = c("f", "m"), age = 0:9)))

@@ -201,7 +201,7 @@ checkAndTidyJump <- function(jump) {
 ## HAS_TESTS
 checkAndTidyUseHMC <- function(useHMC) {
     if (is.null(useHMC)) {
-        methods::new("LogicalFlag", TRUE)
+        methods::new("LogicalFlag", FALSE)
     }
     else {        
         ## 'useHMC' has length 1
