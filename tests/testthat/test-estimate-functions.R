@@ -110,27 +110,27 @@
 
 
 
-library(tidyverse)
-library(demest)
-library(latticeExtra)
-births <- demdata::iceland.births %>%
-    Counts(dimscales = c(year = "Intervals")) %>%
-    subarray(age > 15 & age < 45) %>%
-    collapseIntervals(dimension = "age", width = 5)
-expose <- demdata::iceland.popn %>%
-    Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
-    subarray(age > 15 & age < 45) %>%
-    subarray(year < 2015) %>%
-    collapseIntervals(dimension = "age", width = 5) %>%
-    subarray(sex == "Females")
-model <- Model(y ~ Poisson(mean ~ age + year),
-               `(Intercept)` ~ ExchFixed(mean = mean(log(births/expose)), sd = 0.05),
-               age ~ DLMS(l = TRUE, t = F, d = F, scale = 0.1),
-               year ~ DLMS(l = TRUE, t = F, d = F, scale = 0.1),
-               jump = 0.1,
-               useHMC = F,
-               sizeStep = 0.082,
-               nStep = 11)
+## library(tidyverse)
+## library(demest)
+## library(latticeExtra)
+## births <- demdata::iceland.births %>%
+##     Counts(dimscales = c(year = "Intervals")) %>%
+##     subarray(age > 15 & age < 45) %>%
+##     collapseIntervals(dimension = "age", width = 5)
+## expose <- demdata::iceland.popn %>%
+##     Counts(dimscales = c(year = "Intervals", age = "Intervals")) %>%
+##     subarray(age > 15 & age < 45) %>%
+##     subarray(year < 2015) %>%
+##     collapseIntervals(dimension = "age", width = 5) %>%
+##     subarray(sex == "Females")
+## model <- Model(y ~ Poisson(mean ~ age + year),
+##                `(Intercept)` ~ ExchFixed(mean = mean(log(births/expose)), sd = 0.05),
+##                age ~ DLMS(l = TRUE, t = F, d = F, scale = 0.1),
+##                year ~ DLMS(l = TRUE, t = F, d = F, scale = 0.1),
+##                jump = 0.1,
+##                useHMC = F,
+##                sizeStep = 0.082,
+##                nStep = 11)
 ## model <- Model(y ~ Poisson(mean ~ age + year),
 ##                 `(Intercept)` ~ ExchFixed(mean = mean(log(births/expose)), sd = 1),
 ##                age ~ DLMS(l = TRUE, t = F, scale = 0.45),
@@ -141,54 +141,54 @@ model <- Model(y ~ Poisson(mean ~ age + year),
 ##                useHMC = F,
 ##                sizeStep = 0.0001,
 ##                nStep = 100)
-filename.est <- tempfile()
-filename.pred <- tempfile()
-estimateModel(model,
-              y = births,
-              exposure = expose,
-              filename = filename.est,
-              nBurnin = 10000,
-              nSim = 10000,
-              nThin = 4,
-              nChain = 4)
-mean(fetch(filename.est, c("mod", "pr", "acceptBeta")))
-fetchSummary(filename.est)
-obj <- demest:::fetchResultsObject(filename.est)
-mod <- obj@final[[1]]@model
+## filename.est <- tempfile()
+## filename.pred <- tempfile()
+## estimateModel(model,
+##               y = births,
+##               exposure = expose,
+##               filename = filename.est,
+##               nBurnin = 10000,
+##               nSim = 10000,
+##               nThin = 4,
+##               nChain = 4)
+## mean(fetch(filename.est, c("mod", "pr", "acceptBeta")))
+## fetchSummary(filename.est)
+## obj <- demest:::fetchResultsObject(filename.est)
+## mod <- obj@final[[1]]@model
 
 
 
-## demest:::getDataFromFile(filename.est, 280L, 280L, lengthIter = demest:::lengthValues(mod), iterations = 1:10)
-## update beta
-lapply(1:3, function(i) round(mod@variancesBetas[[i]] * mod@momentumBetas[[i]] * mod@sizeStep@.Data / mod@betas[[i]], 6))
-lapply(1:3, function(i) round(mod@variancesBetas[[i]] * mod@momentumBetas[[i]] * mod@sizeStep@.Data * 1000000000))
-## update momentum
-lapply(1:3, function(i) round(mod@gradientBetas[[i]] * mod@sizeStep@.Data / mod@momentumBetas[[i]], 6))
-lapply(1:3, function(i) round(mod@gradientBetas[[i]] * mod@sizeStep@.Data , 6))
+## ## demest:::getDataFromFile(filename.est, 280L, 280L, lengthIter = demest:::lengthValues(mod), iterations = 1:10)
+## ## update beta
+## lapply(1:3, function(i) round(mod@variancesBetas[[i]] * mod@momentumBetas[[i]] * mod@sizeStep@.Data / mod@betas[[i]], 6))
+## lapply(1:3, function(i) round(mod@variancesBetas[[i]] * mod@momentumBetas[[i]] * mod@sizeStep@.Data * 1000000000))
+## ## update momentum
+## lapply(1:3, function(i) round(mod@gradientBetas[[i]] * mod@sizeStep@.Data / mod@momentumBetas[[i]], 6))
+## lapply(1:3, function(i) round(mod@gradientBetas[[i]] * mod@sizeStep@.Data , 6))
 
-lapply(1:3, function(i) round((mod@betas[[i]] - mod@meansBetas[[i]])/sqrt(mod@variancesBetas[[i]]), 1))
-
-
+## lapply(1:3, function(i) round((mod@betas[[i]] - mod@meansBetas[[i]])/sqrt(mod@variancesBetas[[i]]), 1))
 
 
 
 
 
-xyplot(fetchMCMC(filename.est, c("mod", "pr", "age")))
-xyplot(fetchMCMC(filename.est, c("mod", "pr", "(Intercept)")))
 
-sum(mod@thetaTransformed)
-sum(mod@mu)
-plot(mod@mu ~ mod@thetaTransformed)
-abline(a=0, b=1)
 
-mean(fetch(filename.est, c("mod", "pr", "acceptBeta")))
-fetch(filename.est, c("mod", "pr", "sd"))
-age <- fetch(filename.est, c("mod", "prior", "age"))
-year <- fetch(filename.est, c("mod", "prior", "year"))
-mu <- fetch(filename.est, c("mod", "pr", "mean"))
-intercept <- fetch(filename.est, c("mod", "pr", "(Intercept)"))
-age <- fetch(filename.est, c("mod", "pr", "age"))
+## xyplot(fetchMCMC(filename.est, c("mod", "pr", "age")))
+## xyplot(fetchMCMC(filename.est, c("mod", "pr", "(Intercept)")))
+
+## sum(mod@thetaTransformed)
+## sum(mod@mu)
+## plot(mod@mu ~ mod@thetaTransformed)
+## abline(a=0, b=1)
+
+## mean(fetch(filename.est, c("mod", "pr", "acceptBeta")))
+## fetch(filename.est, c("mod", "pr", "sd"))
+## age <- fetch(filename.est, c("mod", "prior", "age"))
+## year <- fetch(filename.est, c("mod", "prior", "year"))
+## mu <- fetch(filename.est, c("mod", "pr", "mean"))
+## intercept <- fetch(filename.est, c("mod", "pr", "(Intercept)"))
+## age <- fetch(filename.est, c("mod", "pr", "age"))
 
 ## exposure.pred <- Counts(array(100,
 ##                               dim = c(6, 25),
