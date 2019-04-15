@@ -2646,6 +2646,7 @@ updateBetasHMC(SEXP object_R)
       beta_old_ptr[i_beta][j] = beta_ptr[i_beta][j];
   }
   /* store current values for log posterior */
+  updateLogPostBetas(object_R);
   double log_post_betas_curr = *REAL(GET_SLOT(object_R, logPostBetas_sym));
   double log_post_momentum_curr = getLogPostMomentum(object_R);
   /* get step size and number of steps */
@@ -2913,7 +2914,6 @@ updateMu(SEXP object_R)
   SEXP mu_R = GET_SLOT(object_R, mu_sym);
   double *mu = REAL(mu_R);
   int n_mu = LENGTH(mu_R);
-  int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
 
   SEXP betas_R = GET_SLOT(object_R, betas_sym);
   int n_beta =  LENGTH(betas_R);
@@ -2929,10 +2929,9 @@ updateMu(SEXP object_R)
   }
 
   for (int i = 0; i < n_mu; ++i) {
-      mu[i] = 0;
-      for (int b = 0; b < n_beta; ++b) {
-	mu[i] += beta_ptr[b][indices[b]-1];
-      }
+    mu[i] = 0;
+    for (int b = 0; b < n_beta; ++b) {
+      mu[i] += beta_ptr[b][indices[b]-1];
     }
     advanceB(iterator_R);
   }
