@@ -52,10 +52,7 @@ drawBetas(SEXP object_R)
 		getV_Internal(var, prior_R, J);
 		
 		for (int j = 0; j < J; ++j) {
-			if (all_struc_zero[j]) {
-				beta[j] = 0;
-			}
-			else {
+			if (!all_struc_zero[j]) {
 				beta[j] = rnorm(beta_hat[j], sqrt(var[j]) );
 			}
 		}
