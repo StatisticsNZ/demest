@@ -2585,11 +2585,11 @@ updateTauNorm(SEXP prior_R, double *beta, int J)
     double V = 0;
     
     for (int j = 0; j < J; ++j) {
-    if (!allStrucZero[j]) {
-        n += 1;
-        double diff = beta[j] - beta_hat[j];
-        V += diff*diff;
-    }
+		if (!allStrucZero[j]) {
+			n += 1;
+			double diff = beta[j] - beta_hat[j];
+			V += diff*diff;
+		}
     }
     tau = updateSDNorm(tau, A, nu, V, n, tauMax);
     
@@ -2649,10 +2649,10 @@ updateUBeta(SEXP prior_R, double *beta, int J)
     double thisScaleSq = 0;
     
     for (int j = 0; j < J; ++j) {
-    if (!allStrucZero[j]) {
-        double diff = beta[j] - beta_hat[j];
-        thisScaleSq = (nuTimesTauSq + diff*diff)/df;
-        U[j] = rinvchisq1(df, thisScaleSq);
+		if (!allStrucZero[j]) {
+			double diff = beta[j] - beta_hat[j];
+			thisScaleSq = (nuTimesTauSq + diff*diff)/df;
+			U[j] = rinvchisq1(df, thisScaleSq);
         }
     }
 }

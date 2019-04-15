@@ -126,26 +126,27 @@ updateBetaAndPriorBeta_ExchFixed(double *beta, int J, SEXP prior_R,
 {
     int isSaturated = *INTEGER(GET_SLOT(prior_R, isSaturated_sym));
     if (isSaturated) {
-	for (int i = 0; i < J; ++i) {
-	    beta[i] = 0;
-	}
+		for (int i = 0; i < J; ++i) {
+			beta[i] = 0;
+		}
     }
     else {
-	double tau = *REAL(GET_SLOT(prior_R, tau_sym));
-	double sigmaSq = sigma*sigma;
-	double precPrior = 1/(tau*tau);
-	int *allStrucZero = INTEGER(GET_SLOT(prior_R, allStrucZero_sym));
-	for (int i = 0; i < J; ++i) {
-	    if (allStrucZero[i])
-		beta[i] = 0;
-	    else {
-		double thisPrecData = n_vec[i]/sigmaSq;
-		double thisVar = 1/(thisPrecData + precPrior);
-		double thisMean = thisPrecData * vbar[i] * thisVar;
-		double thisSd = sqrt(thisVar);
-		beta[i] = rnorm(thisMean, thisSd);
-	    }
-	}
+		double tau = *REAL(GET_SLOT(prior_R, tau_sym));
+		double sigmaSq = sigma*sigma;
+		double precPrior = 1/(tau*tau);
+		int *allStrucZero = INTEGER(GET_SLOT(prior_R, allStrucZero_sym));
+		for (int i = 0; i < J; ++i) {
+			if (allStrucZero[i]) {
+				beta[i] = 0;
+			}
+			else {
+				double thisPrecData = n_vec[i]/sigmaSq;
+				double thisVar = 1/(thisPrecData + precPrior);
+				double thisMean = thisPrecData * vbar[i] * thisVar;
+				double thisSd = sqrt(thisVar);
+				beta[i] = rnorm(thisMean, thisSd);
+			}
+		}
     }
 }
 

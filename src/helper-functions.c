@@ -651,6 +651,8 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
     memset(beta_hat, 0, J * sizeof(double));
     
     #ifdef DEBUGGING
+    PrintValue(mkString("beta after memset"));
+    printDblArray(beta_hat, J);
     PrintValue(mkString("hasMean"));
     PrintValue(ScalarLogical(hasMean));
     PrintValue(mkString("hasAlphaDLM"));
@@ -698,11 +700,11 @@ betaHat(double *beta_hat, SEXP prior_R, int J)
 void
 betaHat_MeanInternal(double *beta_hat, SEXP prior_R, int J)
 {
-    double *mean = REAL(GET_SLOT(prior_R, mean_sym));
+    double mean = *REAL(GET_SLOT(prior_R, mean_sym));
     
     for (int j = 0; j < J; ++j) {
         
-        beta_hat[j] += mean[j]; 
+        beta_hat[j] += mean; 
         
     }
 }
@@ -2298,9 +2300,9 @@ predictUBeta(SEXP prior_R)
     double scaleSq = tau*tau;
     
     for (int j = 0; j < J; ++j) {
-      if (!allStrucZero[j]) {
-        U[j] = rinvchisq1(nu, scaleSq);
-      }
+        if (!allStrucZero[j]) {
+            U[j] = rinvchisq1(nu, scaleSq);
+        }
     }
 }
 
