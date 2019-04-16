@@ -250,7 +250,12 @@ test_that("R and C versions of drawPrior give same answer with ExchFixed", {
     ans.R <- drawPrior(prior, useC = FALSE)
     ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
-    expect_identical(ans.R, ans.C)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.generic)
+    else
+        expect_equal(ans.R, ans.C.generic)
+    expect_identical(ans.C.specific, ans.C.generic)
+
 })
 
 ## Exch
@@ -403,16 +408,19 @@ test_that("drawPrior works with ExchNormCov", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
     rinvchisq1 <- demest:::rinvchisq1
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    ## JAH copied from the predict prior test 
+    ## original code gave error about 'model matrix 'Z' has missing values'
     data <- data.frame(region = rep(letters[1:10], times = 2),
                        sex = rep(c("f", "m"), each = 10),
                        income = rnorm(20),
                        cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
     formula <- mean ~ income * cat
-    spec <- Exch(covariates = Covariates(formula = formula,
-                                         data = data,
-                                         contrastsArg = list(cat = diag(3)),
-                                         coef = TDist(scale = 0.3)),
-                 error = Error(scale = HalfT(scale = 0.1)))
+    contrastsArg = list(cat = diag(3))
+    covariates <- Covariates(formula = formula,
+                             data = data,
+                             contrastsArg = contrastsArg)
+    spec <- Exch(covariates = covariates)
     beta <- rnorm(10)
     strucZeroArray <- Counts(array(1L,
                                    dim = 10,
@@ -426,6 +434,31 @@ test_that("drawPrior works with ExchNormCov", {
                           metadata = metadata,
                           sY = NULL,
                           isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
+
+
+#    data <- data.frame(region = rep(letters[1:10], times = 2),
+#                       sex = rep(c("f", "m"), each = 10),
+#                       income = rnorm(20),
+#                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+#    formula <- mean ~ income * cat
+#    spec <- Exch(covariates = Covariates(formula = formula,
+#                                         data = data,
+#                                         contrastsArg = list(cat = diag(3)),
+#                                         coef = TDist(scale = 0.3)),
+#                 error = Error(scale = HalfT(scale = 0.1)))
+#    beta <- rnorm(10)
+#    strucZeroArray <- Counts(array(1L,
+#                                   dim = 10,
+#                                   dimnames = list(region = letters[1:10])))
+#    metadata <- new("MetaData",
+#                    nms = "region",
+#                    dimtypes = "state",
+#                    DimScales = list(new("Categories", dimvalues = letters[1:10])))
+#    prior <- initialPrior(spec,
+#                          beta = beta,
+#                          metadata = metadata,
+#                          sY = NULL,
+#                          isSaturated = FALSE, margin = 1L, strucZeroArray = strucZeroArray)
     expect_is(prior, "ExchNormCov")
     for (seed in seq_len(n.test)) {
         set.seed(seed)
