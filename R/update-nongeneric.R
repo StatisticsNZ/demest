@@ -5010,7 +5010,7 @@ updateCountsBinomial <- function(y, model, exposure, dataModels, datasets,
     
 }
 
-
+## TODO - modify this to use 'updateDataModel' slot
 ## TRANSLATED
 ## HAS_TESTS
 updateDataModelsCounts <- function(y, dataModels, datasets,
@@ -5074,22 +5074,25 @@ updateDataModelsAccount <- function(combined, useC = FALSE) {
         components <- combined@account@components
         series.indices <- combined@seriesIndices
         transforms <- combined@transforms
+        update.data.model <- combined@updateDataModel
         for (i in seq_along(data.models)) {
-            model <- data.models[[i]]
-            dataset <- datasets[[i]]
-            transform <- transforms[[i]]
-            series.index <- series.indices[i]
-            if (series.index == 0L)
-                series <- population
-            else
-                series <- components[[series.index]]
-            series.collapsed <- collapse(series, transform = transform)
-            if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
-                series.collapsed <- toDouble(series.collapsed)
-            model <- updateModelUseExp(model,
-                                       y = dataset,
-                                       exposure = series.collapsed)
-            data.models[[i]] <- model
+            if (update.data.model[i]) {
+                model <- data.models[[i]]
+                dataset <- datasets[[i]]
+                transform <- transforms[[i]]
+                series.index <- series.indices[i]
+                if (series.index == 0L)
+                    series <- population
+                else
+                    series <- components[[series.index]]
+                series.collapsed <- collapse(series, transform = transform)
+                if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+                    series.collapsed <- toDouble(series.collapsed)
+                model <- updateModelUseExp(model,
+                                           y = dataset,
+                                           exposure = series.collapsed)
+                data.models[[i]] <- model
+            }
         }
         combined@dataModels <- data.models
         combined

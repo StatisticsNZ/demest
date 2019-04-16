@@ -2685,6 +2685,9 @@ R_init_demest(DllInfo *info)
   ADD_SYM(datasets);
   ADD_SYM(transforms);
   ADD_SYM(seriesIndices);
+  ADD_SYM(updateComponent);
+  ADD_SYM(updateDataModel);
+  ADD_SYM(updateSystemModel);
   
   ADD_SYM(J);
   

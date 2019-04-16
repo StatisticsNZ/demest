@@ -121,6 +121,9 @@ SEXP
   datasets_sym,
   transforms_sym,
   seriesIndices_sym,
+  updateComponent_sym,
+  updateDataModel_sym,
+  updateSystemModel_sym,
   
   J_sym,
   

@@ -1236,7 +1236,6 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
              y = y,
              model = model,
              dataModels = data.models,
-             dataModelsUseAg = new("LogicalFlag", FALSE),
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)
@@ -1331,7 +1330,6 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
              namesDatasets = namesDatasets,
              transforms = transforms)
     expect_true(validObject(x))
-    expect_identical(x@dataModelsUseAg, new("LogicalFlag", FALSE))
 })
 
 test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited from DataModels work", {

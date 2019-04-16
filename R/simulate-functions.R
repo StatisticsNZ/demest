@@ -80,7 +80,10 @@ simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
 simulateAccount <- function(account, systemModels,
                             datasets = list(), dataModels = list(), 
                             concordances = list(), weights = list(),
-                            dominant = c("Female", "Male"), scaleNoise = 0,
+                            dominant = c("Female", "Male"),
+                            updateSystemModel = "population",
+                            updateDataModel = NULL,
+                            scaleNoise = 0,
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
                             parallel = TRUE, nCore = NULL,
@@ -140,6 +143,14 @@ simulateAccount <- function(account, systemModels,
         namesDatasets <- character()
         transforms <- list()
     }
+    ## 'updateSystemModel' and 'updateDataModel'
+    component.names <- componentNames(account)
+    updateSystemModel <- checkAndTidyUpdateSystemModel(updateSystemModel = updateSystemModel,
+                                                       systemModels = systemModels,
+                                                       componentNames = component.names)
+    updateDataModel <- checkAndTidyUpdateDataModel(updateDataModel = updateDataModel,
+                                                   dataModels = dataModels,
+                                                   namesDatasets = namesDatasets)
     ## mcmc and control arguments
     mcmc.args <- makeMCMCArgs(nBurnin = nBurnin,
                               nSim = nSim,
@@ -164,7 +175,9 @@ simulateAccount <- function(account, systemModels,
                                                namesDatasets = namesDatasets,
                                                transforms = transforms,
                                                dominant = dominant,
-                                               scaleNoise = scaleNoise)
+                                               scaleNoise = scaleNoise,
+                                               updateSystemModel = updateSystemModel,
+                                               updateDataModel = updateDataModel)
     combineds <- rep(list(combined),
                      times = mcmc.args$nChain)
     parallel <- control.args$parallel

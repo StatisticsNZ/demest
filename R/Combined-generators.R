@@ -721,14 +721,13 @@ setMethod("initialCombinedAccount",
                   }
               }
               scaleNoise <- methods::new("Scale", as.double(scaleNoise))
-              ## create flags showing whether system
-              ## or data models use aggregates
-              uses.ag.system.models <- sapply(systemModels, methods::is, "Aggregate")
-              uses.ag.data.models <- sapply(dataModels, methods::is, "Aggregate")
-              system.models.use.ag <- any(uses.ag.system.models)
-              data.models.use.ag <- any(uses.ag.data.models)
-              system.models.use.ag <- methods::new("LogicalFlag", system.models.use.ag)
-              data.models.use.ag <- methods::new("LogicalFlag", data.models.use.ag)
+              ## Create flags showing models or components are updated.
+              ## At present this is used only for simulation, but in future
+              ## we will probably allow for an 'identity' data model, which
+              ## means that neither the data model nor the component is updated.
+              update.system.model <- rep(TRUE, times = length(systemModels))
+              update.data.model <- rep(TRUE, times = length(dataModels))              
+              update.component <- rep(TRUE, times = length(components))
               if (has.age) {
                   accession <- dembase::accession(account,
                                                   births = FALSE)
@@ -743,7 +742,6 @@ setMethod("initialCombinedAccount",
                                ageTimeStep = age.time.step,
                                cumProbComp = cum.prob.comp,
                                dataModels = dataModels,
-                               dataModelsUseAg = data.models.use.ag,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
@@ -785,10 +783,12 @@ setMethod("initialCombinedAccount",
                                scaleNoise = scaleNoise,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
-                               systemModelsUseAg = system.models.use.ag,
                                transformExpToBirths = transform.exp.to.births,
                                transforms = transforms,
-                               transformsExpToComp = transforms.exp.to.comp)
+                               transformsExpToComp = transforms.exp.to.comp,
+                               updateComponent = update.component,
+                               updateDataModel = update.data.model,
+                               updateSystemModel = update.system.model)
               }
               else {
                   methods::new("CombinedAccountMovementsNoAge",
@@ -796,7 +796,6 @@ setMethod("initialCombinedAccount",
                                ageTimeStep = age.time.step,
                                cumProbComp = cum.prob.comp,
                                dataModels = dataModels,
-                               dataModelsUseAg = data.models.use.ag,
                                datasets = datasets,
                                descriptions = descriptions,
                                diffProp = NA_integer_,
@@ -833,10 +832,12 @@ setMethod("initialCombinedAccount",
                                scaleNoise = scaleNoise,
                                seriesIndices = seriesIndices,
                                systemModels = systemModels,
-                               systemModelsUseAg = system.models.use.ag,
                                transformExpToBirths = transform.exp.to.births,
                                transforms = transforms,
-                               transformsExpToComp = transforms.exp.to.comp)
+                               transformsExpToComp = transforms.exp.to.comp,
+                               updateComponent = update.component,
+                               updateDataModel = update.data.model,
+                               updateSystemModel = update.system.model)
               }
           })
 
@@ -850,11 +851,14 @@ setMethod("initialCombinedAccountSimulate",
                     seriesIndices = "integer",
                     datasets = "list",
                     namesDatasets = "character",
-                    transforms = "list"),
+                    transforms = "list",
+                    updateDataModel = "logical",
+                    updateSystemModel = "logical"),
           function(account, systemModels, systemWeights,
                    dataModels, seriesIndices, 
                    datasets, namesDatasets, transforms,
                    dominant = c("Female", "Male"),
+                   updateSystemModel, updateDataModel,
                    scaleNoise = 0) {
               combined <- initialCombinedAccount(account = account,
                                                  systemModels = systemModels,
@@ -871,6 +875,8 @@ setMethod("initialCombinedAccountSimulate",
               combined <- drawSystemModels(combined)
               combined <- updateExpectedExposure(combined,
                                                  useC = TRUE)
+              combined@updateDataModel <- updateDataModel
+              combined@updateSystemModel <- updateSystemModel
               combined
           })
 

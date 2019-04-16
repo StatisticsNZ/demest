@@ -6,7 +6,8 @@
 \usage{
 simulateAccount(account, systemModels, datasets = list(),
   dataModels = list(), concordances = list(), weights = list(),
-  dominant = c("Female", "Male"), scaleNoise = 0, filename = NULL,
+  dominant = c("Female", "Male"), updateSystemModel = "population",
+  updateDataModel = NULL, scaleNoise = 0, filename = NULL,
   nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
   parallel = TRUE, nCore = NULL, outfile = NULL, nUpdateMax = 50,
   verbose = TRUE, useC = TRUE)

@@ -854,8 +854,6 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
     expect_is(x, "CombinedAccountMovementsHasAge")
 })
 
-
-
 test_that("initialCombinedAccountSimulate creates object of class CombinedAccountMovements from valid inputs", {
     initialCombinedAccount <- demest:::initialCombinedAccount
     initialCombinedAccountSimulate <- demest:::initialCombinedAccountSimulate
@@ -918,6 +916,8 @@ test_that("initialCombinedAccountSimulate creates object of class CombinedAccoun
     checkDataModelsSuitableForSimulation(dataModels = data.models,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets)
+    updateSystemModel <- c(TRUE, FALSE, FALSE)
+    updateDataModel <- c(FALSE, FALSE)
     x <- initialCombinedAccountSimulate(account = account,
                                         systemModels = systemModels,
                                         systemWeights = systemWeights,
@@ -925,17 +925,18 @@ test_that("initialCombinedAccountSimulate creates object of class CombinedAccoun
                                         seriesIndices = seriesIndices,
                                         datasets = datasets,
                                         namesDatasets = namesDatasets,
-                                        transforms = transforms)
+                                        transforms = transforms,
+                                        updateSystemModel = updateSystemModel,
+                                        updateDataModel = updateDataModel)
     expect_true(validObject(x))
     expect_is(x, "CombinedAccountMovements")
-    expect_identical(x@systemModelsUseAg@.Data, FALSE)
-    expect_identical(x@dataModelsUseAg@.Data, FALSE)
     ## add aggregate to model for births
     systemModels[[2]] <- Model(births ~ Poisson(mean ~ time),
                                `(Intercept)` ~ ExchFixed(mean = -1, sd = 1),
                                time ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                                priorSD = HalfT(scale = 0.1),
                                aggregate = AgCertain(1))
+    updateSystemModel <- rep(TRUE, 3)
     x <- initialCombinedAccountSimulate(account = account,
                                         systemModels = systemModels,
                                         systemWeights = systemWeights,
@@ -943,8 +944,10 @@ test_that("initialCombinedAccountSimulate creates object of class CombinedAccoun
                                         seriesIndices = seriesIndices,
                                         datasets = datasets,
                                         namesDatasets = namesDatasets,
-                                        transforms = transforms)
-    expect_identical(x@systemModelsUseAg@.Data, TRUE)
+                                        transforms = transforms,
+                                        updateSystemModel = updateSystemModel,
+                                        updateDataModel = updateDataModel)
+    expect_identical(x@updateSystemModel, rep(TRUE, 3))
 })
 
 
