@@ -1044,7 +1044,7 @@ updateEta(SEXP prior_R, double* beta, int J)
       eta[p + 1] += meanEtaCoef[p] / UEtaCoef[p];
       
     }
-	
+    
     /* g <- rnorm(n = P) */
     for (int p = 0; p < P; ++p) {
             
@@ -1764,7 +1764,7 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
     
         int K = *INTEGER(GET_SLOT(prior_R, K_sym));
         int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+        int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
         
         double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
         double omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
@@ -1964,7 +1964,7 @@ updateOmegaLevelComponentWeightMix(SEXP prior_R)
     
     int successfullyUpdated = (omega > 0);
     if(successfullyUpdated) {
-    SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);
+        SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);
     }    
 }
 
@@ -2061,7 +2061,7 @@ updateOmegaVectorsMix(SEXP prior_R)
     
     int successfullyUpdated = (omega > 0);
     if(successfullyUpdated) {
-    SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
+        SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
     }
 }
 
@@ -2072,23 +2072,23 @@ updatePhi(SEXP prior_R, int isWithTrend) {
     
     if (!isPhiKnown) {
 
-    double phiCurr = *REAL(GET_SLOT(prior_R, phi_sym));
+        double phiCurr = *REAL(GET_SLOT(prior_R, phi_sym));
     
         int K = *INTEGER(GET_SLOT(prior_R, K_sym));
         int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+        int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     
         double *state = NULL;
         double omega = 0;
         
         if (isWithTrend) {
-        state = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
-        omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
-    }
+            state = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
+            omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
+        }
         else {
-        state = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
-        omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
-    }
+            state = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
+            omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
+        }
         
         double minPhi = *REAL(GET_SLOT(prior_R, minPhi_sym));
         double maxPhi = *REAL(GET_SLOT(prior_R, maxPhi_sym));
@@ -2106,38 +2106,38 @@ updatePhi(SEXP prior_R, int isWithTrend) {
 
         for (int l = 0; l < L; ++l) {
 
-        if (!alongAllStrucZero[l]) {
-            
-        for (int i = 0; i < K; ++i) {
-            int k_curr = indices[i + 1] - 1; /* C style indices */
-            int k_prev = indices[i] - 1;
-                    
-            double state_k_prev = state[k_prev];
-            numerator += state[k_curr] * state_k_prev;
-            denominator += state_k_prev * state_k_prev;
-        }
-        }
+            if (!alongAllStrucZero[l]) {
+                
+                for (int i = 0; i < K; ++i) {
+                    int k_curr = indices[i + 1] - 1; /* C style indices */
+                    int k_prev = indices[i] - 1;
+                            
+                    double state_k_prev = state[k_prev];
+                    numerator += state[k_curr] * state_k_prev;
+                    denominator += state_k_prev * state_k_prev;
+                }
+            }
 
-        advanceA(iterator_R); 
-    }
+            advanceA(iterator_R); 
+        }
         
         double mean = numerator/denominator;
         double sd = omega/sqrt(denominator);
         
-    double phiProp = rtnorm1(mean, sd, minPhi, maxPhi);
-    
-    double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
-    double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
+        double phiProp = rtnorm1(mean, sd, minPhi, maxPhi);
+        
+        double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
+        double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
 
-    double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
-    double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
-    
-    double logDiff = logDensProp - logDensCurr;
-    
-    int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
-    if (accept) {
-        SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp);
-    }
+        double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
+        double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
+        
+        double logDiff = logDensProp - logDensCurr;
+        
+        int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
+        if (accept) {
+            SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp);
+        }
 
     }/* end !isPhiKnown */
     
@@ -2153,7 +2153,7 @@ updatePhiMix(SEXP prior_R)
     
     if (!isPhiKnown) {
 
-    double phiCurr = *REAL(GET_SLOT(prior_R, phiMix_sym));
+        double phiCurr = *REAL(GET_SLOT(prior_R, phiMix_sym));
     
         double minPhi = *REAL(GET_SLOT(prior_R, minPhi_sym));
         double maxPhi = *REAL(GET_SLOT(prior_R, maxPhi_sym));
@@ -2161,58 +2161,58 @@ updatePhiMix(SEXP prior_R)
         double shape1 = *REAL(GET_SLOT(prior_R, shape1Phi_sym));
         double shape2 = *REAL(GET_SLOT(prior_R, shape2Phi_sym));
 
-    double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
-    double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
-    
-    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
-    
-    double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
-    
-    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
-    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
-    int iAlong_c = iAlong_r -1;
-    int nAlong = dimBeta[iAlong_c];
-    
-    double tolerance = *REAL(GET_SLOT(prior_R, tolerance_sym));
-    
-    double phiMax = modePhiMix(level, meanLevel, nAlong,
-                   indexClassMaxUsed, omega, tolerance);
-    
-    double logPostPhiFirst = logPostPhiFirstOrderMix(phiMax, level, meanLevel,
-                             nAlong, indexClassMaxUsed, omega);
+        double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+        double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
+        
+        int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+        
+        double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
+        
+        int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+        int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+        int iAlong_c = iAlong_r -1;
+        int nAlong = dimBeta[iAlong_c];
+        
+        double tolerance = *REAL(GET_SLOT(prior_R, tolerance_sym));
+        
+        double phiMax = modePhiMix(level, meanLevel, nAlong,
+                       indexClassMaxUsed, omega, tolerance);
+        
+        double logPostPhiFirst = logPostPhiFirstOrderMix(phiMax, level, meanLevel,
+                                 nAlong, indexClassMaxUsed, omega);
 
-    double logPostPhiSecond = logPostPhiSecondOrderMix(phiMax, level, meanLevel,
-                               nAlong, indexClassMaxUsed, omega);
-    
-    double varProp = -1/logPostPhiSecond;
-    double meanProp = phiMax + varProp * logPostPhiFirst;
-    double sdProp = sqrt(varProp);
-    
-    double phiProp = rtnorm1(meanProp, sdProp, minPhi, maxPhi);
+        double logPostPhiSecond = logPostPhiSecondOrderMix(phiMax, level, meanLevel,
+                                   nAlong, indexClassMaxUsed, omega);
+        
+        double varProp = -1/logPostPhiSecond;
+        double meanProp = phiMax + varProp * logPostPhiFirst;
+        double sdProp = sqrt(varProp);
+        
+        double phiProp = rtnorm1(meanProp, sdProp, minPhi, maxPhi);
 
-    double logLikProp = logPostPhiMix(phiProp, level, meanLevel,
-                      nAlong, indexClassMaxUsed, omega);
-    
-    double logLikCurr = logPostPhiMix(phiCurr, level, meanLevel,
-                      nAlong, indexClassMaxUsed, omega);
+        double logLikProp = logPostPhiMix(phiProp, level, meanLevel,
+                          nAlong, indexClassMaxUsed, omega);
+        
+        double logLikCurr = logPostPhiMix(phiCurr, level, meanLevel,
+                          nAlong, indexClassMaxUsed, omega);
 
-    double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
-    double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
+        double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
+        double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
 
-    double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
-    double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
+        double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
+        double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
 
-    double logPropProp = dnorm(phiProp, meanProp, sdProp, USE_LOG);
-    double logPropCurr = dnorm(phiCurr, meanProp, sdProp, USE_LOG);
-    
-    double logDiff = logLikProp - logLikCurr +
-        logDensProp - logDensCurr +
-        logPropCurr - logPropProp;
-    
-    int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
-    if (accept) {
-        SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phiProp);
-    }
+        double logPropProp = dnorm(phiProp, meanProp, sdProp, USE_LOG);
+        double logPropCurr = dnorm(phiCurr, meanProp, sdProp, USE_LOG);
+        
+        double logDiff = logLikProp - logLikCurr +
+            logDensProp - logDensCurr +
+            logPropCurr - logPropProp;
+        
+        int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
+        if (accept) {
+            SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phiProp);
+        }
 
     }
 }
@@ -2268,89 +2268,89 @@ updateSeason(SEXP prior_R, double *betaTilde, int J)
             
     for (int l = 0; l < L; ++l) {
 
-    if (!alongAllStrucZero[l]) {
-        
-        /*m[[1L]] <- m0[[l]]*/
-        double *m0_l = REAL(VECTOR_ELT(m0_R, l));
-        double *m_first = REAL(VECTOR_ELT(m_R, 0));
-        memcpy(m_first, m0_l, nSeason*sizeof(double));
+        if (!alongAllStrucZero[l]) {
             
-        /* forward filter */
-        for (int i = 0; i < K; ++i) {
+            /*m[[1L]] <- m0[[l]]*/
+            double *m0_l = REAL(VECTOR_ELT(m0_R, l));
+            double *m_first = REAL(VECTOR_ELT(m_R, 0));
+            memcpy(m_first, m0_l, nSeason*sizeof(double));
                 
-        int index_j = indices_v[i] - 1;
+            /* forward filter */
+            for (int i = 0; i < K; ++i) {
+                    
+                int index_j = indices_v[i] - 1;
+                        
+                double *this_m = REAL(VECTOR_ELT(m_R, i));
+                double *this_C = REAL(VECTOR_ELT(C_R, i));
+                double *this_a = REAL(VECTOR_ELT(a_R, i));
+                double *this_R = REAL(VECTOR_ELT(R_R, i));
+                        
+                double *next_m = REAL(VECTOR_ELT(m_R, i+1));
+                double *next_C = REAL(VECTOR_ELT(C_R, i+1));
+                        
+                for (int i_n = 0; i_n < nSeason-1; ++i_n) {
+                    this_a[i_n + 1] = this_m[i_n];
+                    this_R[i_n + 1] = this_C[i_n];
+                }
+                        
+                double curr_a = this_m[nSeason-1];
+                double curr_R = this_C[nSeason-1] + omegaSq;
+                this_a[0] = curr_a;
+                this_R[0] = curr_R;
+                        
+                double q = curr_R + v[index_j];
+                double e = betaTilde[index_j] - curr_a;
+                        
+                double Ae1 = curr_R * e/q;
+                memcpy(next_m, this_a, nSeason*sizeof(double));
+                next_m[0] += Ae1;
+                        
+                double AAq1 = curr_R * curr_R/q;
+                memcpy(next_C, this_R, nSeason*sizeof(double));
+                next_C[0] -= AAq1;
+            }
                 
-        double *this_m = REAL(VECTOR_ELT(m_R, i));
-        double *this_C = REAL(VECTOR_ELT(C_R, i));
-        double *this_a = REAL(VECTOR_ELT(a_R, i));
-        double *this_R = REAL(VECTOR_ELT(R_R, i));
+            int i_curr = indices_s[K] - 1;
+            double *this_s = REAL(VECTOR_ELT(s_R, i_curr));
+                    
+            for (int i_n = 0; i_n < nSeason; ++i_n) {
+                double mean = last_m[i_n];
+                double sd = sqrt(last_C[i_n]);
+                double s = rnorm( mean, sd);
+                this_s[i_n] = s;
+            }     
                 
-        double *next_m = REAL(VECTOR_ELT(m_R, i+1));
-        double *next_C = REAL(VECTOR_ELT(C_R, i+1));
+            /* backward smooth */
+            for (int i = K-1; i >= 0; --i) {
+                    
+                int i_prev = indices_s[i+1] - 1;
+                int i_curr = indices_s[i] - 1;
+                        
+                double *this_C = REAL(VECTOR_ELT(C_R, i));
+                double thisC_last = this_C[nSeason-1];
+                double *this_m = REAL(VECTOR_ELT(m_R, i));
+                double thism_last = this_m[nSeason-1];
+                        
+                double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
+                double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
+                        
+                /*s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
+                 * copy from last nSeason-1 elements of s_prev
+                 * into first nSeason-1 elements of s_curr */
+                memcpy(s_curr, (s_prev+1), (nSeason-1)*sizeof(double));
+                        
+                double lambda = thisC_last/(thisC_last + omegaSq);
+                double s_prev_first = s_prev[0];
+                        
+                double mean = lambda * s_prev_first + (1 - lambda)*thism_last;
+                double sd = sqrt(lambda) * omega;
+                s_curr[nSeason-1] = rnorm(mean, sd);
+                    
+            }
                 
-        for (int i_n = 0; i_n < nSeason-1; ++i_n) {
-            this_a[i_n + 1] = this_m[i_n];
-            this_R[i_n + 1] = this_C[i_n];
-        }
-                
-        double curr_a = this_m[nSeason-1];
-        double curr_R = this_C[nSeason-1] + omegaSq;
-        this_a[0] = curr_a;
-        this_R[0] = curr_R;
-                
-        double q = curr_R + v[index_j];
-        double e = betaTilde[index_j] - curr_a;
-                
-        double Ae1 = curr_R * e/q;
-        memcpy(next_m, this_a, nSeason*sizeof(double));
-        next_m[0] += Ae1;
-                
-        double AAq1 = curr_R * curr_R/q;
-        memcpy(next_C, this_R, nSeason*sizeof(double));
-        next_C[0] -= AAq1;
-        }
-            
-        int i_curr = indices_s[K] - 1;
-        double *this_s = REAL(VECTOR_ELT(s_R, i_curr));
-                
-        for (int i_n = 0; i_n < nSeason; ++i_n) {
-        double mean = last_m[i_n];
-        double sd = sqrt(last_C[i_n]);
-        double s = rnorm( mean, sd);
-        this_s[i_n] = s;
-        }     
-            
-        /* backward smooth */
-        for (int i = K-1; i >= 0; --i) {
-                
-        int i_prev = indices_s[i+1] - 1;
-        int i_curr = indices_s[i] - 1;
-                
-        double *this_C = REAL(VECTOR_ELT(C_R, i));
-        double thisC_last = this_C[nSeason-1];
-        double *this_m = REAL(VECTOR_ELT(m_R, i));
-        double thism_last = this_m[nSeason-1];
-                
-        double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
-        double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
-                
-        /*s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
-         * copy from last nSeason-1 elements of s_prev
-         * into first nSeason-1 elements of s_curr */
-        memcpy(s_curr, (s_prev+1), (nSeason-1)*sizeof(double));
-                
-        double lambda = thisC_last/(thisC_last + omegaSq);
-        double s_prev_first = s_prev[0];
-                
-        double mean = lambda * s_prev_first + (1 - lambda)*thism_last;
-        double sd = sqrt(lambda) * omega;
-        s_curr[nSeason-1] = rnorm(mean, sd);
-                
-        }
-            
-    } /* end if (!alongAllStrucZero[l]) */
-    advanceA(iterator_s_R);
-    advanceA(iterator_v_R);
+        } /* end if (!alongAllStrucZero[l]) */
+        advanceA(iterator_s_R);
+        advanceA(iterator_v_R);
     }
     /* only s gets updated in the prior */
     
@@ -2471,7 +2471,7 @@ updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
                 thisVector[iVector] = rnorm(mean, sd);
             }
 
-    } /* end iElement loop */
+        } /* end iElement loop */
 
     
         for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
@@ -2585,11 +2585,11 @@ updateTauNorm(SEXP prior_R, double *beta, int J)
     double V = 0;
     
     for (int j = 0; j < J; ++j) {
-		if (!allStrucZero[j]) {
-			n += 1;
-			double diff = beta[j] - beta_hat[j];
-			V += diff*diff;
-		}
+        if (!allStrucZero[j]) {
+            n += 1;
+            double diff = beta[j] - beta_hat[j];
+            V += diff*diff;
+        }
     }
     tau = updateSDNorm(tau, A, nu, V, n, tauMax);
     
@@ -2617,10 +2617,10 @@ updateTauRobust(SEXP prior_R, int J)
     double V = 0;
     
     for (int i = 0; i < J; ++i) {
-    if (!allStrucZero[i]) {
-        n += 1;
-        V += 1/UBeta[i];
-    }
+        if (!allStrucZero[i]) {
+            n += 1;
+            V += 1/UBeta[i];
+        }
     }
     
     tau = updateSDRobust(tau, A, nuBeta, nuTau, V, n, tauMax);
@@ -2628,7 +2628,7 @@ updateTauRobust(SEXP prior_R, int J)
     
     if (successfullyUpdated) {
     
-      SET_DOUBLESCALE_SLOT(prior_R, tau_sym, tau);
+        SET_DOUBLESCALE_SLOT(prior_R, tau_sym, tau);
     }
 }
 
@@ -2649,10 +2649,10 @@ updateUBeta(SEXP prior_R, double *beta, int J)
     double thisScaleSq = 0;
     
     for (int j = 0; j < J; ++j) {
-		if (!allStrucZero[j]) {
-			double diff = beta[j] - beta_hat[j];
-			thisScaleSq = (nuTimesTauSq + diff*diff)/df;
-			U[j] = rinvchisq1(df, thisScaleSq);
+        if (!allStrucZero[j]) {
+            double diff = beta[j] - beta_hat[j];
+            thisScaleSq = (nuTimesTauSq + diff*diff)/df;
+            U[j] = rinvchisq1(df, thisScaleSq);
         }
     }
 }
@@ -2751,27 +2751,27 @@ updateSigma_Varying_General(SEXP object, double (*g)(double))
     
     for (int i = 0; i < n_theta; ++i) {
 
-    if (cellInLik[i]) {
-        
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-        double *this_beta = betas[b];
-        mu += this_beta[indices[b]-1];
-        }
-        
-        double transformedTheta = 0;
-        if(usesBoxCoxTransform) {
-        transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
-        }
-        else {
-        transformedTheta = g( theta[i] );
-        }
-        
-        double tmp = transformedTheta - mu;
-        V += (tmp * tmp);
-        n += 1;
+        if (cellInLik[i]) {
+            
+            double mu = 0.0;
+            for (int b = 0; b < n_beta; ++b) {
+            double *this_beta = betas[b];
+            mu += this_beta[indices[b]-1];
+            }
+            
+            double transformedTheta = 0;
+            if(usesBoxCoxTransform) {
+            transformedTheta = ( pow(theta[i], boxCoxParam) - 1)/boxCoxParam; 
+            }
+            else {
+            transformedTheta = g( theta[i] );
+            }
+            
+            double tmp = transformedTheta - mu;
+            V += (tmp * tmp);
+            n += 1;
 
-    }
+        }
         advanceB(iteratorBetas_R);
     }
 
@@ -2834,8 +2834,8 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
             mu += this_beta[indices[b]-1];
         }
         
-    int this_y = y[i];
-    int this_exposure = exposure[i];
+        int this_y = y[i];
+        int this_exposure = exposure[i];
         int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
         
         double mean = 0;
@@ -2850,7 +2850,7 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
         else {
             logit_th_curr = log(theta_curr/(1- theta_curr));
             mean = logit_th_curr;
-        sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
+            sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
         }
         
         int attempt = 0;
@@ -3146,8 +3146,7 @@ updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R)
             
            }
         }
-        else {
-        }
+        
     } /* end for each theta */
 
     SET_INTSCALE_SLOT(object, nAcceptTheta_sym, n_accept_theta);
@@ -3417,7 +3416,8 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
         if (!y_is_missing) {
             
             mean = logit_th_curr;
-        sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
+            sd = scale * sqrt((this_exposure - this_y + 0.5) 
+                            / ((this_exposure + 0.5) * (this_y + 0.5)));
 
         }
         
@@ -3687,147 +3687,147 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
     
     for (int i = 0; i < n_theta; ++i) {
 
-	int this_y = y[i];
+    int this_y = y[i];
         int y_is_missing = ( this_y == NA_INTEGER );
 
-	int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
+    int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
 
-	if (!is_struc_zero) {
+    if (!is_struc_zero) {
 
-	    /* get 'mu' */
-	    double mu = 0.0;
-	    for (int b = 0; b < n_beta; ++b) {
-		double *this_beta = betas[b];
+        /* get 'mu' */
+        double mu = 0.0;
+        for (int b = 0; b < n_beta; ++b) {
+        double *this_beta = betas[b];
             
-		mu += this_beta[indices[b]-1];
-	    }
+        mu += this_beta[indices[b]-1];
+        }
         
         
-	    double mean = 0;
-	    double sd = 0;
+        double mean = 0;
+        double sd = 0;
         
-	    double th_curr = 0;
-	    double tr_th_curr = 0;
+        double th_curr = 0;
+        double tr_th_curr = 0;
         
-	    if (y_is_missing) {
-		mean = mu;
-		sd = sigma;
-	    }
-	    else {
-		th_curr = theta[i];
-		if(usesBoxCoxTransform) {
-		    tr_th_curr = ( pow(th_curr, boxCoxParam) - 1)/boxCoxParam; 
-		}
-		else {
-		    tr_th_curr = log(th_curr);
-		}
-		mean = tr_th_curr;
-		if (y_is_missing) {
-		    sd = scale / scaleMultiplier;
-		}
-		else {
-		    sd = scale / sqrt(1 + this_y);
-		}
-	    }
+        if (y_is_missing) {
+            mean = mu;
+            sd = sigma;
+        }
+        else {
+            th_curr = theta[i];
+            if(usesBoxCoxTransform) {
+                tr_th_curr = ( pow(th_curr, boxCoxParam) - 1)/boxCoxParam; 
+            }
+            else {
+                tr_th_curr = log(th_curr);
+            }
+            mean = tr_th_curr;
+            if (y_is_missing) {
+                sd = scale / scaleMultiplier;
+            }
+            else {
+                sd = scale / sqrt(1 + this_y);
+            }
+        }
         
-	    int attempt = 0;
-	    int found_prop_theta = 0;
-	    double tr_th_prop = 0;
+        int attempt = 0;
+        int found_prop_theta = 0;
+        double tr_th_prop = 0;
                 
-	    while( (!found_prop_theta) && (attempt < maxAttempt) ) {
+        while( (!found_prop_theta) && (attempt < maxAttempt) ) {
             
-		++attempt;
+        ++attempt;
 
-		tr_th_prop = rnorm(mean, sd);
+        tr_th_prop = rnorm(mean, sd);
             
-		found_prop_theta = ( ( tr_th_prop > (lower + tolerance) )
-				     && ( tr_th_prop < (upper - tolerance) ) );
-	    }
+        found_prop_theta = ( ( tr_th_prop > (lower + tolerance) )
+                     && ( tr_th_prop < (upper - tolerance) ) );
+        }
         
-	    if (found_prop_theta) {
+        if (found_prop_theta) {
             
-		double th_prop = 0;
-            
-		if (usesBoxCoxTransform) {
-		    th_prop = pow(boxCoxParam * tr_th_prop + 1, oneOverBoxCoxParam);
-		}
-		else {
-		    th_prop = exp(tr_th_prop);    
-		}
-            
-		if (y_is_missing) {
-		    theta[i] = th_prop;
-		    nu[i] = rlnorm(meanLogNu, sdLogNu);
-		}
-		else {
-            
-		    double nu_curr = nu[i];
-		    double log_nu_curr = log(nu_curr);
-		    double log_nu_prop = rnorm(log_nu_curr, sdLogNu);
-		    
-		    double nu_prop = exp(log_nu_prop);
-		    double y_star = rcmp1(th_prop, nu_prop, maxAttempt);
+            double th_prop = 0;
                 
-		    int found_y_star = R_finite(y_star);
+            if (usesBoxCoxTransform) {
+                th_prop = pow(boxCoxParam * tr_th_prop + 1, oneOverBoxCoxParam);
+            }
+            else {
+                th_prop = exp(tr_th_prop);    
+            }
                 
-		    if (found_y_star) {
-			double logLikCurr = logDensCMPUnnormalised1(this_y, th_curr, nu_curr);
-			double logLikProp = logDensCMPUnnormalised1(this_y, th_prop, nu_prop);
-			double logLikCurrStar = logDensCMPUnnormalised1(y_star, th_curr, nu_curr);
-			double logLikPropStar = logDensCMPUnnormalised1(y_star, th_prop, nu_prop);
+            if (y_is_missing) {
+                theta[i] = th_prop;
+                nu[i] = rlnorm(meanLogNu, sdLogNu);
+            }
+            else {
+                
+                double nu_curr = nu[i];
+                double log_nu_curr = log(nu_curr);
+                double log_nu_prop = rnorm(log_nu_curr, sdLogNu);
+                
+                double nu_prop = exp(log_nu_prop);
+                double y_star = rcmp1(th_prop, nu_prop, maxAttempt);
                     
-			double logDensThCurr = dnorm(tr_th_curr, mu, sigma, USE_LOG);
-			double logDensThProp = dnorm(tr_th_prop, mu, sigma, USE_LOG);
-			double logDensNuCurr = dnorm(log_nu_curr, meanLogNu, sdLogNu, USE_LOG);
-			double logDensNuProp = dnorm(log_nu_prop, meanLogNu, sdLogNu, USE_LOG);
+                int found_y_star = R_finite(y_star);
                     
-			double logDiff = logLikProp - logLikCurr + logLikCurrStar - logLikPropStar
-			    + logDensThProp - logDensThCurr + logDensNuProp - logDensNuCurr;
-                    
-			int accept = ( !(logDiff < 0) || ( runif(0,1) < exp(logDiff) ) );
-                    
-#ifdef DEBUGGING
-			PrintValue(mkString(""));
-			PrintValue(mkString("logLikCurr"));
-			PrintValue(ScalarReal(logLikCurr));
-			PrintValue(mkString("logLikProp"));
-			PrintValue(ScalarReal(logLikProp));
-			PrintValue(mkString("logLikCurrStar"));
-			PrintValue(ScalarReal(logLikCurrStar));
-			PrintValue(mkString("logLikPropStar"));
-			PrintValue(ScalarReal(logLikPropStar));
-			PrintValue(mkString("logDensThCurr"));
-			PrintValue(ScalarReal(logDensThCurr));
-			PrintValue(mkString("logDensThProp"));
-			PrintValue(ScalarReal(logDensThProp));
-			PrintValue(mkString("logDensNuCurr"));
-			PrintValue(ScalarReal(logDensNuCurr));
-			PrintValue(mkString("logDensNuProp"));
-			PrintValue(ScalarReal(logDensNuProp));
+                if (found_y_star) {
+                    double logLikCurr = logDensCMPUnnormalised1(this_y, th_curr, nu_curr);
+                    double logLikProp = logDensCMPUnnormalised1(this_y, th_prop, nu_prop);
+                    double logLikCurrStar = logDensCMPUnnormalised1(y_star, th_curr, nu_curr);
+                    double logLikPropStar = logDensCMPUnnormalised1(y_star, th_prop, nu_prop);
                             
-			PrintValue(mkString("logDiff"));
-			PrintValue(ScalarReal(logDiff));
-			PrintValue(mkString("accept"));
-			PrintValue(ScalarInteger(accept));
-#endif
-                    
-			if (accept) {
-			    ++n_accept_theta;
-			    theta[i] = th_prop;
-			    nu[i] = nu_prop; 
-			}
-		    }
-		    else {
-			++n_failed_prop_y_star;
-		    }
-		} 
-	    } /* end if found_prop_theta */
-	    else {
-		++n_failed_prop_theta;
-	    }
-	} /* end if (!is_struc_zero) */
+                    double logDensThCurr = dnorm(tr_th_curr, mu, sigma, USE_LOG);
+                    double logDensThProp = dnorm(tr_th_prop, mu, sigma, USE_LOG);
+                    double logDensNuCurr = dnorm(log_nu_curr, meanLogNu, sdLogNu, USE_LOG);
+                    double logDensNuProp = dnorm(log_nu_prop, meanLogNu, sdLogNu, USE_LOG);
+                            
+                    double logDiff = logLikProp - logLikCurr + logLikCurrStar - logLikPropStar
+                        + logDensThProp - logDensThCurr + logDensNuProp - logDensNuCurr;
+                            
+                    int accept = ( !(logDiff < 0) || ( runif(0,1) < exp(logDiff) ) );
+                            
+        #ifdef DEBUGGING
+                    PrintValue(mkString(""));
+                    PrintValue(mkString("logLikCurr"));
+                    PrintValue(ScalarReal(logLikCurr));
+                    PrintValue(mkString("logLikProp"));
+                    PrintValue(ScalarReal(logLikProp));
+                    PrintValue(mkString("logLikCurrStar"));
+                    PrintValue(ScalarReal(logLikCurrStar));
+                    PrintValue(mkString("logLikPropStar"));
+                    PrintValue(ScalarReal(logLikPropStar));
+                    PrintValue(mkString("logDensThCurr"));
+                    PrintValue(ScalarReal(logDensThCurr));
+                    PrintValue(mkString("logDensThProp"));
+                    PrintValue(ScalarReal(logDensThProp));
+                    PrintValue(mkString("logDensNuCurr"));
+                    PrintValue(ScalarReal(logDensNuCurr));
+                    PrintValue(mkString("logDensNuProp"));
+                    PrintValue(ScalarReal(logDensNuProp));
+                                    
+                    PrintValue(mkString("logDiff"));
+                    PrintValue(ScalarReal(logDiff));
+                    PrintValue(mkString("accept"));
+                    PrintValue(ScalarInteger(accept));
+        #endif
+                            
+                    if (accept) {
+                        ++n_accept_theta;
+                        theta[i] = th_prop;
+                        nu[i] = nu_prop; 
+                    }
+                }
+                else {
+                    ++n_failed_prop_y_star;
+                }
+            } 
+        } /* end if found_prop_theta */
+        else {
+            ++n_failed_prop_theta;
+        }
+    } /* end if (!is_struc_zero) */
 
-	advanceB(iteratorBetas_R);
+    advanceB(iteratorBetas_R);
             
     } /* end loop through theta */
     
@@ -3888,118 +3888,118 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
         int this_y = y[i];
         int y_is_missing = ( this_y == NA_INTEGER );
 
-	int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
+        int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
 
-	if (!is_struc_zero) {
+        if (!is_struc_zero) {
 
-	    /* get 'mu' */
-	    double mu = 0.0;
-	    for (int b = 0; b < n_beta; ++b) {
-		double *this_beta = betas[b];
+            /* get 'mu' */
+            double mu = 0.0;
+            for (int b = 0; b < n_beta; ++b) {
+                double *this_beta = betas[b];
+                    
+                mu += this_beta[indices[b]-1];
+            }
+        
             
-		mu += this_beta[indices[b]-1];
-	    }
-        
-        
-	    double mean = 0;
-	    double sd = 0;
-        
-	    double th_curr = 0;
-	    double tr_th_curr = 0;
-        
-	    if (y_is_missing) {
-		mean = mu;
-		sd = sigma;
-	    }
-	    else {
-		th_curr = theta[i];
-		if(usesBoxCoxTransform) {
-		    tr_th_curr = ( pow(th_curr, boxCoxParam) - 1)/boxCoxParam; 
-		}
-		else {
-		    tr_th_curr = log(th_curr);
-		}
-		mean = tr_th_curr;
-		sd = scale / sqrt(1 + this_y);
-	    }
-        
-	    int attempt = 0;
-	    int found_prop_theta = 0;
-	    double tr_th_prop = 0;
+            double mean = 0;
+            double sd = 0;
+            
+            double th_curr = 0;
+            double tr_th_curr = 0;
+            
+            if (y_is_missing) {
+                mean = mu;
+                sd = sigma;
+            }
+            else {
+                th_curr = theta[i];
+                if(usesBoxCoxTransform) {
+                    tr_th_curr = ( pow(th_curr, boxCoxParam) - 1)/boxCoxParam; 
+                }
+                else {
+                    tr_th_curr = log(th_curr);
+                }
+                mean = tr_th_curr;
+                sd = scale / sqrt(1 + this_y);
+            }
+            
+            int attempt = 0;
+            int found_prop_theta = 0;
+            double tr_th_prop = 0;
+                    
+            while( (!found_prop_theta) && (attempt < maxAttempt) ) {
                 
-	    while( (!found_prop_theta) && (attempt < maxAttempt) ) {
-            
-		++attempt;
+                ++attempt;
 
-		tr_th_prop = rnorm(mean, sd);
-            
-		found_prop_theta = ( ( tr_th_prop > (lower + tolerance) )
-				     && ( tr_th_prop < (upper - tolerance) ) );
-	    }
-        
-	    if (found_prop_theta) {
-            
-		double th_prop = 0;
-            
-		if (usesBoxCoxTransform) {
-		    th_prop = pow(boxCoxParam * tr_th_prop + 1, oneOverBoxCoxParam);
-		}
-		else {
-		    th_prop = exp(tr_th_prop);    
-		}
-            
-		if (y_is_missing) {
-		    theta[i] = th_prop;
-		    nu[i] = rlnorm(meanLogNu, sdLogNu);        
-		}
-		else {
-            
-		    double nu_curr = nu[i];
-		    double log_nu_curr = log(nu_curr);
-		    double log_nu_prop = rnorm(log_nu_curr, sdLogNu);
-                
-		    double nu_prop = exp(log_nu_prop);
-		    double this_exposure = exposure[i];
-		    double gamma_curr = th_curr * this_exposure;
-		    double gamma_prop = th_prop * this_exposure;
-		    double y_star = rcmp1(gamma_prop, nu_prop, maxAttempt);
-                
-		    int found_y_star = R_finite(y_star);
-                
-		    if (found_y_star) {
+                tr_th_prop = rnorm(mean, sd);
                     
-			double logLikCurr = logDensCMPUnnormalised1(this_y, gamma_curr, nu_curr);
-			double logLikProp = logDensCMPUnnormalised1(this_y, gamma_prop, nu_prop);
-			double logLikCurrStar = logDensCMPUnnormalised1(y_star, gamma_curr, nu_curr);
-			double logLikPropStar = logDensCMPUnnormalised1(y_star, gamma_prop, nu_prop);
+                found_prop_theta = ( ( tr_th_prop > (lower + tolerance) )
+                             && ( tr_th_prop < (upper - tolerance) ) );
+            }
+            
+            if (found_prop_theta) {
                     
-			double logDensThCurr = dnorm(tr_th_curr, mu, sigma, USE_LOG);
-			double logDensThProp = dnorm(tr_th_prop, mu, sigma, USE_LOG);
-			double logDensNuCurr = dnorm(log_nu_curr, meanLogNu, sdLogNu, USE_LOG);
-			double logDensNuProp = dnorm(log_nu_prop, meanLogNu, sdLogNu, USE_LOG);
+                double th_prop = 0;
                     
-			double logDiff = logLikProp - logLikCurr + logLikCurrStar - logLikPropStar
-			    + logDensThProp - logDensThCurr + logDensNuProp - logDensNuCurr;
+                if (usesBoxCoxTransform) {
+                    th_prop = pow(boxCoxParam * tr_th_prop + 1, oneOverBoxCoxParam);
+                }
+                else {
+                    th_prop = exp(tr_th_prop);    
+                }
                     
-			int accept = ( !(logDiff < 0) || ( runif(0,1) < exp(logDiff) ) );
+                if (y_is_missing) {
+                    theta[i] = th_prop;
+                    nu[i] = rlnorm(meanLogNu, sdLogNu);        
+                }
+                else {
                     
-			if (accept) {
-			    ++n_accept_theta;
-			    theta[i] = th_prop;
-			    nu[i] = nu_prop; 
-			}
-		    }
-		    else {
-			++n_failed_prop_y_star;
-		    }
-		} 
-	    } /* end if found_prop_theta */
-	    else {
-		++n_failed_prop_theta;
-	    }
-	} /* end if !is_struc_zero */
+                    double nu_curr = nu[i];
+                    double log_nu_curr = log(nu_curr);
+                    double log_nu_prop = rnorm(log_nu_curr, sdLogNu);
+                        
+                    double nu_prop = exp(log_nu_prop);
+                    double this_exposure = exposure[i];
+                    double gamma_curr = th_curr * this_exposure;
+                    double gamma_prop = th_prop * this_exposure;
+                    double y_star = rcmp1(gamma_prop, nu_prop, maxAttempt);
+                        
+                    int found_y_star = R_finite(y_star);
+                        
+                    if (found_y_star) {
+                            
+                        double logLikCurr = logDensCMPUnnormalised1(this_y, gamma_curr, nu_curr);
+                        double logLikProp = logDensCMPUnnormalised1(this_y, gamma_prop, nu_prop);
+                        double logLikCurrStar = logDensCMPUnnormalised1(y_star, gamma_curr, nu_curr);
+                        double logLikPropStar = logDensCMPUnnormalised1(y_star, gamma_prop, nu_prop);
+                                
+                        double logDensThCurr = dnorm(tr_th_curr, mu, sigma, USE_LOG);
+                        double logDensThProp = dnorm(tr_th_prop, mu, sigma, USE_LOG);
+                        double logDensNuCurr = dnorm(log_nu_curr, meanLogNu, sdLogNu, USE_LOG);
+                        double logDensNuProp = dnorm(log_nu_prop, meanLogNu, sdLogNu, USE_LOG);
+                                
+                        double logDiff = logLikProp - logLikCurr + logLikCurrStar - logLikPropStar
+                            + logDensThProp - logDensThCurr + logDensNuProp - logDensNuCurr;
+                                
+                        int accept = ( !(logDiff < 0) || ( runif(0,1) < exp(logDiff) ) );
+                                
+                        if (accept) {
+                            ++n_accept_theta;
+                            theta[i] = th_prop;
+                            nu[i] = nu_prop; 
+                        }
+                    }
+                    else {
+                        ++n_failed_prop_y_star;
+                    }
+                } 
+            } /* end if found_prop_theta */
+            else {
+                ++n_failed_prop_theta;
+            }
+        } /* end if !is_struc_zero */
 
-	advanceB(iteratorBetas_R);
+        advanceB(iteratorBetas_R);
             
     } /* end loop through theta */
     
@@ -4841,138 +4841,138 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
         int this_y = y[i];
         int y_is_missing = yMissing[i];
         
-    int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
+        int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
 
-    if (!is_struc_zero) {
-    
-        int ir = i + 1; /* R index */
+        if (!is_struc_zero) {
         
-        /* get 'mu' */
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-        double *this_beta = betas[b];
-        mu += this_beta[indices[b]-1];
-        }
-
-        double mean = 0;
-        double sd = 0;
-        double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
-        double transformedThetaCurr = log_th_curr;
+            int ir = i + 1; /* R index */
             
-        int use_subtotal = 0;
-        int ir_after = 0;
-        if (y_is_missing && has_subtotals) {
-            
-        ir_after = dembase_getIAfter(ir, transformSubtotals_R);
-        use_subtotal = (ir_after > 0);
-        }
-        
-        int draw_straight_from_prior = (y_is_missing && !use_subtotal);
-        
-        if (draw_straight_from_prior) {
-        mean = mu;
-        sd = sigma;
-        }
-        else {
-        if (usesBoxCoxTransformation) {
-            transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
-        }
-        mean = transformedThetaCurr;
-
-        if (y_is_missing) {
-            sd = scale / scale_multiplier;
-        }
-        else {
-            sd = scale / sqrt(1 + this_y);
-        }
-        
-        }
-
-        double transformedThetaProp = 0.0;
-        
-        int attempt = 0;
-        int found_prop = 0;
-
-        while( (!found_prop) && (attempt < maxAttempt) ) {
-
-        ++attempt;
-            
-        transformedThetaProp = rnorm(mean, sd);
-        found_prop = ( (transformedThetaProp > lower + tolerance) &&
-                   (transformedThetaProp < upper - tolerance));
-        }
-
-        if (found_prop) {
-            
-        double theta_prop = 0;
-        if (usesBoxCoxTransformation) {
-            theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
-        }
-        else {
-            theta_prop = exp(transformedThetaProp);
-        }
-           
-        if (draw_straight_from_prior) {
-            theta[i] = theta_prop;
-        }
-        else {
-                
-            double log_lik_prop = 0;
-            double log_lik_curr = 0;
-                
-            if(use_subtotal) {
-            
-            int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
-            int i_after = ir_after -1;
-            int subtotal = subtotals[i_after];
-                    
-            SEXP ir_shared_R;
-            PROTECT( ir_shared_R 
-                 = dembase_getIShared(ir, transformSubtotals_R) ); 
-                
-            int n_ir_shared = LENGTH(ir_shared_R);
-            int *ir_shared = INTEGER(ir_shared_R);
-        
-            double lambda_curr = 0;
-            for (int j = 0; j < n_ir_shared; ++j) {
-                int shared_index = ir_shared[j] - 1;
-                if (yMissing[shared_index]) {
-                lambda_curr += theta[shared_index];
-                }
+            /* get 'mu' */
+            double mu = 0.0;
+            for (int b = 0; b < n_beta; ++b) {
+                double *this_beta = betas[b];
+                mu += this_beta[indices[b]-1];
             }
-                    
-            UNPROTECT(1); /* ir_shared_R */
-                    
-            double lambda_prop = lambda_curr + theta_prop - theta_curr;
-            log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
-            log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
-                    
+
+            double mean = 0;
+            double sd = 0;
+            double theta_curr = theta[i];
+            double log_th_curr = log(theta_curr);
+            double transformedThetaCurr = log_th_curr;
+                
+            int use_subtotal = 0;
+            int ir_after = 0;
+            if (y_is_missing && has_subtotals) {
+                
+                ir_after = dembase_getIAfter(ir, transformSubtotals_R);
+                use_subtotal = (ir_after > 0);
+            }
+            
+            int draw_straight_from_prior = (y_is_missing && !use_subtotal);
+            
+            if (draw_straight_from_prior) {
+                mean = mu;
+                sd = sigma;
             }
             else {
-                
-            log_lik_prop = dpois(this_y, theta_prop, USE_LOG);
-            log_lik_curr = dpois(this_y, theta_curr, USE_LOG);
-            }
-                
-            double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
-            double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
-            double log_diff = (log_lik_prop + log_dens_prop
-                       - log_lik_curr - log_dens_curr);
-                
-            int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
-            if (accept) {
-            ++n_accept_theta;
-            theta[i] = theta_prop;
-            }
-        }
-        }
-        else { /* not found prop */
-        ++n_failed_prop_theta;
-        }
+                if (usesBoxCoxTransformation) {
+                    transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
+                }
+                mean = transformedThetaCurr;
 
-    } /* end if (!is_struc_zero) */
-        advanceB(iteratorBetas_R);
+                if (y_is_missing) {
+                    sd = scale / scale_multiplier;
+                }
+                else {
+                    sd = scale / sqrt(1 + this_y);
+                }
+            
+            }
+
+            double transformedThetaProp = 0.0;
+            
+            int attempt = 0;
+            int found_prop = 0;
+
+            while( (!found_prop) && (attempt < maxAttempt) ) {
+
+                ++attempt;
+                    
+                transformedThetaProp = rnorm(mean, sd);
+                found_prop = ( (transformedThetaProp > lower + tolerance) &&
+                           (transformedThetaProp < upper - tolerance));
+            }
+
+            if (found_prop) {
+                
+                double theta_prop = 0;
+                if (usesBoxCoxTransformation) {
+                    theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
+                }
+                else {
+                    theta_prop = exp(transformedThetaProp);
+                }
+                   
+                if (draw_straight_from_prior) {
+                    theta[i] = theta_prop;
+                }
+                else {
+                        
+                    double log_lik_prop = 0;
+                    double log_lik_curr = 0;
+                        
+                    if(use_subtotal) {
+                    
+                        int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
+                        int i_after = ir_after -1;
+                        int subtotal = subtotals[i_after];
+                                
+                        SEXP ir_shared_R;
+                        PROTECT( ir_shared_R 
+                             = dembase_getIShared(ir, transformSubtotals_R) ); 
+                            
+                        int n_ir_shared = LENGTH(ir_shared_R);
+                        int *ir_shared = INTEGER(ir_shared_R);
+                    
+                        double lambda_curr = 0;
+                        for (int j = 0; j < n_ir_shared; ++j) {
+                            int shared_index = ir_shared[j] - 1;
+                            if (yMissing[shared_index]) {
+                            lambda_curr += theta[shared_index];
+                            }
+                        }
+                                
+                        UNPROTECT(1); /* ir_shared_R */
+                                
+                        double lambda_prop = lambda_curr + theta_prop - theta_curr;
+                        log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
+                        log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
+                                
+                    }
+                    else {
+                        
+                        log_lik_prop = dpois(this_y, theta_prop, USE_LOG);
+                        log_lik_curr = dpois(this_y, theta_curr, USE_LOG);
+                    }
+                        
+                    double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
+                    double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
+                    double log_diff = (log_lik_prop + log_dens_prop
+                               - log_lik_curr - log_dens_curr);
+                        
+                    int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+                    if (accept) {
+                        ++n_accept_theta;
+                        theta[i] = theta_prop;
+                    }
+                }
+            }
+            else { /* not found prop */
+                ++n_failed_prop_theta;
+            }
+
+        } /* end if (!is_struc_zero) */
+            advanceB(iteratorBetas_R);
     } /* end loop through thetas */
 
     resetB(iteratorBetas_R);
@@ -5054,143 +5054,143 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         int this_y = y[i];
         int y_is_missing = yMissing[i];
         
-    int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
+        int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
 
-    if (!is_struc_zero) {
-    
-        int ir = i + 1; /* R index */
+        if (!is_struc_zero) {
         
-        /* get 'mu' */
-        double mu = 0.0;
-        for (int b = 0; b < n_beta; ++b) {
-            double *this_beta = betas[b];
-            mu += this_beta[indices[b]-1];
-        }
-
-        
-        double mean = 0;
-        double sd = 0;
-        double theta_curr = theta[i];
-        double log_th_curr = log(theta_curr);
-        double transformedThetaCurr = log_th_curr;
+            int ir = i + 1; /* R index */
             
-        int use_subtotal = 0;
-        int ir_after = 0;
-        if (y_is_missing && has_subtotals) {
-            ir_after = dembase_getIAfter(ir, transformSubtotals_R);
-            use_subtotal = (ir_after > 0);
-        }
-        
-        int draw_straight_from_prior = (y_is_missing && !use_subtotal);
-        
-        if (draw_straight_from_prior) {
-            mean = mu;
-            sd = sigma;
-        }
-        else {
-            
-        if (usesBoxCoxTransformation) {
-            transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
-        }
-            
-        mean = transformedThetaCurr;
-            
-        if (y_is_missing) {
-            sd = scale / scale_multiplier;
-        }
-        else {
-            sd = scale / sqrt(1 + this_y);
-        }
-        }
-
-        int attempt = 0;
-        int found_prop = 0;
-        
-        double transformedThetaProp = 0.0;
-        
-        while( (!found_prop) && (attempt < maxAttempt) ) {
-
-        ++attempt;
-            
-        transformedThetaProp = rnorm(mean, sd);
-        found_prop = ( (transformedThetaProp > lower + tolerance) &&
-                   (transformedThetaProp < upper - tolerance));
- 
-        }
-                    
-        if (found_prop) {
-            
-        double theta_prop = 0;
-        if (usesBoxCoxTransformation) {
-            theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
-        }
-        else {
-            theta_prop = exp(transformedThetaProp);
-        }
-            
-        if (draw_straight_from_prior) {
-            theta[i] = theta_prop;
-        }
-        else {
-                
-            double log_lik_prop = 0;
-            double log_lik_curr = 0;
-                
-            double this_exposure = exposure[i];
-                
-            if(use_subtotal) {
-            
-            int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
-            int i_after = ir_after -1;
-            int subtotal = subtotals[i_after];
-                    
-            SEXP ir_shared_R;
-            PROTECT( ir_shared_R 
-                 = dembase_getIShared(ir, transformSubtotals_R) ); 
-            int n_ir_shared = LENGTH(ir_shared_R);
-            int *ir_shared = INTEGER(ir_shared_R);
-                    
-            double lambda_curr = 0;
-            for (int j = 0; j < n_ir_shared; ++j) {
-                int shared_index = ir_shared[j] - 1;
-                if (yMissing[shared_index]) {
-                lambda_curr += theta[shared_index] 
-                    * exposure[ shared_index ];
-                }
+            /* get 'mu' */
+            double mu = 0.0;
+            for (int b = 0; b < n_beta; ++b) {
+                double *this_beta = betas[b];
+                mu += this_beta[indices[b]-1];
             }
-                    
-            UNPROTECT(1); /* ir_shared_R */
-                    
-            double lambda_prop = lambda_curr 
-                + (theta_prop - theta_curr) * this_exposure;
-            log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
-            log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
-                    
+
+            
+            double mean = 0;
+            double sd = 0;
+            double theta_curr = theta[i];
+            double log_th_curr = log(theta_curr);
+            double transformedThetaCurr = log_th_curr;
+                
+            int use_subtotal = 0;
+            int ir_after = 0;
+            if (y_is_missing && has_subtotals) {
+                ir_after = dembase_getIAfter(ir, transformSubtotals_R);
+                use_subtotal = (ir_after > 0);
+            }
+            
+            int draw_straight_from_prior = (y_is_missing && !use_subtotal);
+            
+            if (draw_straight_from_prior) {
+                mean = mu;
+                sd = sigma;
             }
             else {
+                
+                if (usesBoxCoxTransformation) {
+                    transformedThetaCurr = (pow(theta_curr, boxCoxParam) - 1) / boxCoxParam;
+                }
                     
-            log_lik_prop = dpois(this_y, theta_prop*this_exposure, USE_LOG);
-            log_lik_curr = dpois(this_y, theta_curr*this_exposure, USE_LOG);
+                mean = transformedThetaCurr;
+                    
+                if (y_is_missing) {
+                    sd = scale / scale_multiplier;
+                }
+                else {
+                    sd = scale / sqrt(1 + this_y);
+                }
             }
-                
-            double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
-            double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
-                
-            double log_diff = (log_lik_prop + log_dens_prop
-                       - log_lik_curr - log_dens_curr);
-                
-            int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
-            if (accept) {
-            ++n_accept_theta;
-            theta[i] = theta_prop;
-            }
-        }
-        }
-        else { /* not found prop */
-        ++n_failed_prop_theta;
-        }
 
-    } /* end if (!is_struc_zero) */
+            int attempt = 0;
+            int found_prop = 0;
+            
+            double transformedThetaProp = 0.0;
+            
+            while( (!found_prop) && (attempt < maxAttempt) ) {
+
+                ++attempt;
+                    
+                transformedThetaProp = rnorm(mean, sd);
+                found_prop = ( (transformedThetaProp > lower + tolerance) &&
+                           (transformedThetaProp < upper - tolerance));
+         
+            }
+                        
+            if (found_prop) {
+                
+                double theta_prop = 0;
+                if (usesBoxCoxTransformation) {
+                    theta_prop = pow(boxCoxParam * transformedThetaProp + 1, 1/boxCoxParam);
+                }
+                else {
+                    theta_prop = exp(transformedThetaProp);
+                }
+                    
+                if (draw_straight_from_prior) {
+                    theta[i] = theta_prop;
+                }
+                else {
+                        
+                    double log_lik_prop = 0;
+                    double log_lik_curr = 0;
+                        
+                    double this_exposure = exposure[i];
+                        
+                    if(use_subtotal) {
+                    
+                        int *subtotals = INTEGER(GET_SLOT(y_R, subtotalsNet_sym));
+                        int i_after = ir_after -1;
+                        int subtotal = subtotals[i_after];
+                                
+                        SEXP ir_shared_R;
+                        PROTECT( ir_shared_R 
+                             = dembase_getIShared(ir, transformSubtotals_R) ); 
+                        int n_ir_shared = LENGTH(ir_shared_R);
+                        int *ir_shared = INTEGER(ir_shared_R);
+                                
+                        double lambda_curr = 0;
+                        for (int j = 0; j < n_ir_shared; ++j) {
+                            int shared_index = ir_shared[j] - 1;
+                            if (yMissing[shared_index]) {
+                                lambda_curr += theta[shared_index] 
+                                    * exposure[ shared_index ];
+                            }
+                        }
+                                
+                        UNPROTECT(1); /* ir_shared_R */
+                                
+                        double lambda_prop = lambda_curr 
+                            + (theta_prop - theta_curr) * this_exposure;
+                        log_lik_prop = dpois(subtotal, lambda_prop, USE_LOG);
+                        log_lik_curr = dpois(subtotal, lambda_curr, USE_LOG);
+                            
+                    }
+                    else {
+                            
+                        log_lik_prop = dpois(this_y, theta_prop*this_exposure, USE_LOG);
+                        log_lik_curr = dpois(this_y, theta_curr*this_exposure, USE_LOG);
+                    }
+                        
+                    double log_dens_prop = dnorm(transformedThetaProp, mu, sigma, USE_LOG);
+                    double log_dens_curr = dnorm(transformedThetaCurr, mu, sigma, USE_LOG);
+                        
+                    double log_diff = (log_lik_prop + log_dens_prop
+                               - log_lik_curr - log_dens_curr);
+                        
+                    int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+                    if (accept) {
+                        ++n_accept_theta;
+                        theta[i] = theta_prop;
+                    }
+                }
+            }
+            else { /* not found prop */
+                ++n_failed_prop_theta;
+            }
+
+        } /* end if (!is_struc_zero) */
         advanceB(iteratorBetas_R);
     } /* end loop through thetas */
 
@@ -7015,7 +7015,7 @@ updateThetaAndValueAgLife_PoissonUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
                     ++n_accept_theta;
                     theta[i] = theta_prop;
                     if (contributes_to_ag) {
-            int i_ag = i_mx / nAge; /* 1 less than the r style index */
+                        int i_ag = i_mx / nAge; /* 1 less than the r style index */
                         valueAg[i_ag] = ag_prop;
                     }
                 }
@@ -7233,7 +7233,7 @@ updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
         PrintValue(ScalarInteger(10000));
         PrintValue(y_R);
         #endif
-    }
+        }
     }
 
 }

@@ -12,5 +12,5 @@
     
     void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double));
 
-	
+    
 #endif

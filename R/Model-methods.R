@@ -172,7 +172,6 @@ setMethod("drawHyperParam",
 
 
 
-## drawModelNotUseExp ##################################################################
 
 
 
@@ -202,6 +201,7 @@ setMethod("updateModelNotUseExp",
               }
           })
 
+## drawModelNotUseExp ##################################################################
 
 
 setMethod("drawModelNotUseExp",

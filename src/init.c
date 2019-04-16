@@ -1355,6 +1355,46 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_NormalFixedUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_TFixedUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
 
+/* wrap draw model functions */
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaUnknown);
+#if(0)
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_CMPVaryingNotUseExp);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnown);
+
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExp);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExpAgCertain);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgFun);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExpAgNormal);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExpAgFun);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExpAgPoisson);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalFixedNotUseExp);
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_TFixedNotUseExp);
+#endif
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp);
+#if(0)
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_CMPVaryingUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVarying);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVarying);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonBinomialMixture);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_Round3);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVaryingAgCertain);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVaryingAgNormal);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVaryingAgFun);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgCertain);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgNormal);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgFun);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgPoisson);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgLife);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_NormalFixedUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_TFixedUseExp);
+#endif
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp);
+
 /* wrap predict combined model functions */
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelNormal);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelPoissonNotHasExp);
@@ -1671,6 +1711,35 @@ PREDICTOBJECT_WRAPPER_R(predictPrior_KnownCertain);
 PREDICTOBJECT_WRAPPER_R(predictPrior_KnownUncertain);
 PREDICTOBJECT_WRAPPER_R(predictPrior_MixNormZero);
 PREDICTOBJECT_WRAPPER_R(predictPrior_Zero);
+
+/* wrap draw prior functions */
+UPDATEOBJECT_WRAPPER_R(drawPrior);
+UPDATEOBJECT_WRAPPER_R(drawPrior_ExchFixed);
+UPDATEOBJECT_WRAPPER_R(drawPrior_ExchNormZero);
+UPDATEOBJECT_WRAPPER_R(drawPrior_ExchNormCov);
+UPDATEOBJECT_WRAPPER_R(drawPrior_ExchRobustZero);
+UPDATEOBJECT_WRAPPER_R(drawPrior_ExchRobustCov);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMNoTrendNormZeroNoSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMWithTrendNormZeroNoSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMNoTrendNormZeroWithSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMWithTrendNormZeroWithSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMNoTrendNormCovNoSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMWithTrendNormCovNoSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMNoTrendNormCovWithSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMWithTrendNormCovWithSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMNoTrendRobustZeroNoSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMWithTrendRobustZeroNoSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMNoTrendRobustZeroWithSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMWithTrendRobustZeroWithSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMNoTrendRobustCovNoSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMWithTrendRobustCovNoSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMNoTrendRobustCovWithSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_DLMWithTrendRobustCovWithSeason);
+UPDATEOBJECT_WRAPPER_R(drawPrior_KnownCertain);
+UPDATEOBJECT_WRAPPER_R(drawPrior_KnownUncertain);
+UPDATEOBJECT_WRAPPER_R(drawPrior_MixNormZero);
+UPDATEOBJECT_WRAPPER_R(drawPrior_Zero);
+
 
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior);
 TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_ExchNormZero);
@@ -2116,6 +2185,22 @@ updateSubsequentExpMove_R(SEXP combined_R)
 
 /* helper_simulate */
 UPDATEOBJECT_WRAPPER_R(drawBetas);
+UPDATEOBJECT_WRAPPER_R(drawDataModelsAccount);
+UPDATEOBJECT_WRAPPER_R(drawDelta0);
+UPDATEOBJECT_WRAPPER_R(drawEta);
+UPDATEOBJECT_WRAPPER_R(drawOmegaAlpha);
+UPDATEOBJECT_WRAPPER_R(drawOmegaComponentWeightMix);
+UPDATEOBJECT_WRAPPER_R(drawOmegaDelta);
+UPDATEOBJECT_WRAPPER_R(drawOmegaLevelComponentWeightMix);
+UPDATEOBJECT_WRAPPER_R(drawOmegaSeason);
+UPDATEOBJECT_WRAPPER_R(drawOmegaVectorsMix);
+UPDATEOBJECT_WRAPPER_R(drawPhi);
+UPDATEOBJECT_WRAPPER_R(drawPhiMix);
+UPDATEOBJECT_WRAPPER_R(drawPriors);
+UPDATEOBJECT_WRAPPER_R(drawSigma_Varying);
+UPDATEOBJECT_WRAPPER_R(drawTau);
+UPDATEOBJECT_WRAPPER_R(drawUEtaCoef);
+UPDATEOBJECT_WRAPPER_R(drawVarsigma);
 
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
@@ -2384,6 +2469,41 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_TFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
   
+  //CALLDEF(drawModelNotUseExp_CMPVaryingNotUseExp_R, 2),
+  //ALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnown_R, 2),
+  CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknown_R, 2),
+  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExp_R, 2),
+  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain_R, 2),
+  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain_R, 2),
+  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExpAgCertain_R, 2),
+  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal_R, 2),
+  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_R, 2),
+  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_R, 2),
+  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_R, 2),
+  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExpAgNormal_R, 2),
+  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, 2),
+  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_R, 2),
+  //CALLDEF(drawModelNotUseExp_NormalFixedNotUseExp_R, 2),
+  //CALLDEF(drawModelNotUseExp_TFixedNotUseExp_R, 2),
+  CALLDEF(drawModelNotUseExp_R, 2),
+  
+  //CALLDEF(drawModelUseExp_CMPVaryingUseExp_R, 3),
+  //CALLDEF(drawModelUseExp_BinomialVarying_R, 3),
+  //CALLDEF(drawModelUseExp_PoissonVarying_R, 3),
+  //CALLDEF(drawModelUseExp_PoissonBinomialMixture_R, 3),
+  //CALLDEF(drawModelUseExp_Round3_R, 3),
+  //CALLDEF(drawModelUseExp_BinomialVaryingAgCertain_R, 3),
+  //CALLDEF(drawModelUseExp_BinomialVaryingAgNormal_R, 3),
+  //CALLDEF(drawModelUseExp_BinomialVaryingAgFun_R, 3),
+  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgCertain_R, 3),
+  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgNormal_R, 3),
+  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgFun_R, 3),
+  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgPoisson_R, 3),
+  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgLife_R, 3),
+  //CALLDEF(drawModelUseExp_NormalFixedUseExp_R, 3),
+  //CALLDEF(drawModelUseExp_TFixedUseExp_R, 3),
+  CALLDEF(drawModelUseExp_R, 3),
+  
   CALLDEF(updateBetasAndPriorsBetas_R, 1),
   
   /* predict combined */
@@ -2482,6 +2602,34 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictPrior_MixNormZero_R, 1),
   CALLDEF(predictPrior_Zero_R, 1),
   
+  /*draw priors*/
+  CALLDEF(drawPrior_R, 1),
+  CALLDEF(drawPrior_ExchFixed_R, 1),
+  CALLDEF(drawPrior_ExchNormZero_R, 1),
+  CALLDEF(drawPrior_ExchNormCov_R, 1),
+  CALLDEF(drawPrior_ExchRobustZero_R, 1),
+  CALLDEF(drawPrior_ExchRobustCov_R, 1),
+  CALLDEF(drawPrior_DLMNoTrendNormZeroNoSeason_R, 1),
+  CALLDEF(drawPrior_DLMWithTrendNormZeroNoSeason_R, 1),
+  CALLDEF(drawPrior_DLMNoTrendNormZeroWithSeason_R, 1),
+  CALLDEF(drawPrior_DLMWithTrendNormZeroWithSeason_R, 1),
+  CALLDEF(drawPrior_DLMNoTrendNormCovNoSeason_R, 1),
+  CALLDEF(drawPrior_DLMWithTrendNormCovNoSeason_R, 1),
+  CALLDEF(drawPrior_DLMNoTrendNormCovWithSeason_R, 1),
+  CALLDEF(drawPrior_DLMWithTrendNormCovWithSeason_R, 1),
+  CALLDEF(drawPrior_DLMNoTrendRobustZeroNoSeason_R, 1),
+  CALLDEF(drawPrior_DLMWithTrendRobustZeroNoSeason_R, 1),
+  CALLDEF(drawPrior_DLMNoTrendRobustZeroWithSeason_R, 1),
+  CALLDEF(drawPrior_DLMWithTrendRobustZeroWithSeason_R, 1),
+  CALLDEF(drawPrior_DLMNoTrendRobustCovNoSeason_R, 1),
+  CALLDEF(drawPrior_DLMWithTrendRobustCovNoSeason_R, 1),
+  CALLDEF(drawPrior_DLMNoTrendRobustCovWithSeason_R, 1),
+  CALLDEF(drawPrior_DLMWithTrendRobustCovWithSeason_R, 1),
+  CALLDEF(drawPrior_KnownCertain_R, 1),
+  CALLDEF(drawPrior_KnownUncertain_R, 1),
+  CALLDEF(drawPrior_MixNormZero_R, 1),
+  CALLDEF(drawPrior_Zero_R, 1),
+  
   CALLDEF(transferParamPrior_R, 2),
   CALLDEF(transferParamPrior_ExchNormZero_R, 2),
   CALLDEF(transferParamPrior_ExchNormCov_R, 2),
@@ -2554,6 +2702,22 @@ R_CallMethodDef callMethods[] = {
   
   /* helper-simulate */
   CALLDEF(drawBetas_R, 1),
+  CALLDEF(drawDataModelsAccount_R, 1),
+  CALLDEF(drawDelta0_R, 1),
+  CALLDEF(drawEta_R, 1),
+  CALLDEF(drawOmegaAlpha_R, 1),
+  CALLDEF(drawOmegaComponentWeightMix_R, 1),
+  CALLDEF(drawOmegaDelta_R, 1),
+  CALLDEF(drawOmegaLevelComponentWeightMix_R, 1),
+  CALLDEF(drawOmegaSeason_R, 1),
+  CALLDEF(drawOmegaVectorsMix_R, 1),
+  CALLDEF(drawPhi_R, 1),
+  CALLDEF(drawPhiMix_R, 1),
+  CALLDEF(drawPriors_R, 1),
+  CALLDEF(drawSigma_Varying_R, 1),
+  CALLDEF(drawTau_R, 1),
+  CALLDEF(drawUEtaCoef_R, 1),
+  CALLDEF(drawVarsigma_R, 1),
   
   {NULL}
 };
@@ -2894,6 +3058,10 @@ R_init_demest(DllInfo *info)
   ADD_SYM(ASDLogNuCMP);
   ADD_SYM(nuSDLogNuCMP);
   ADD_SYM(nu);
+  ADD_SYM(ADelta0);
+  ADD_SYM(meanDelta0);
+  ADD_SYM(ALevelComponentWeightMix);
+  ADD_SYM(nuLevelComponentWeightMix);
   /* skeleton */
   ADD_SYM(first);
   ADD_SYM(last);

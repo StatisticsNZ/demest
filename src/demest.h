@@ -84,6 +84,8 @@ SEXP
   iteratorBetas_sym,
   dims_sym,
   prob_sym,
+  ADelta0_sym,
+  meanDelta0_sym,
   
   mean_sym,
   sd_sym,
@@ -319,6 +321,8 @@ SEXP
   minLevelComponentWeight_sym,
   maxLevelComponentWeight_sym,
   updateSeriesDLM_sym,
+  ALevelComponentWeightMix_sym,
+  nuLevelComponentWeightMix_sym,
   
   nuCMP_sym,
   sdLogNuCMP_sym,
@@ -592,6 +596,22 @@ int makeIOther(int i, SEXP transform_R);
 
 /* helper-simulate */
 void drawBetas(SEXP object_R);
+void drawDataModelsAccount(SEXP combined_R);
+void drawDelta0(SEXP prior_R);
+void drawEta(SEXP prior_R);
+void drawOmegaAlpha(SEXP prior_R);
+void drawOmegaComponentWeightMix(SEXP prior_R);
+void drawOmegaDelta(SEXP prior_R);
+void drawOmegaLevelComponentWeightMix(SEXP prior_R);
+void drawOmegaSeason(SEXP prior_R);
+void drawOmegaVectorsMix(SEXP prior_R);
+void drawPhi(SEXP prior_R);
+void drawPhiMix(SEXP prior_R);
+void drawPriors(SEXP object_R);
+void drawSigma_Varying(SEXP object_R);
+void drawTau(SEXP prior_R);
+void drawUEtaCoef(SEXP prior_R);
+void drawVarsigma(SEXP object_R);
 
 
 /* loglikelihood */
@@ -661,6 +681,33 @@ void predictPrior_KnownCertain(SEXP prior_R);
 void predictPrior_KnownUncertain(SEXP prior_R);
 void predictPrior_MixNormZero(SEXP prior_R);
 void predictPrior_Zero(SEXP prior_R);
+
+void drawPrior(SEXP prior_R);
+void drawPrior_ExchFixed(SEXP prior_R);
+void drawPrior_ExchNormZero(SEXP prior_R);
+void drawPrior_ExchNormCov(SEXP prior_R);
+void drawPrior_ExchRobustZero(SEXP prior_R);
+void drawPrior_ExchRobustCov(SEXP prior_R);
+void drawPrior_DLMNoTrendNormZeroNoSeason(SEXP prior_R);
+void drawPrior_DLMWithTrendNormZeroNoSeason(SEXP prior_R);
+void drawPrior_DLMNoTrendNormZeroWithSeason(SEXP prior_R);
+void drawPrior_DLMWithTrendNormZeroWithSeason(SEXP prior_R);
+void drawPrior_DLMNoTrendNormCovNoSeason(SEXP prior_R);
+void drawPrior_DLMWithTrendNormCovNoSeason(SEXP prior_R);
+void drawPrior_DLMNoTrendNormCovWithSeason(SEXP prior_R);
+void drawPrior_DLMWithTrendNormCovWithSeason(SEXP prior_R);
+void drawPrior_DLMNoTrendRobustZeroNoSeason(SEXP prior_R);
+void drawPrior_DLMWithTrendRobustZeroNoSeason(SEXP prior_R);
+void drawPrior_DLMNoTrendRobustZeroWithSeason(SEXP prior_R);
+void drawPrior_DLMWithTrendRobustZeroWithSeason(SEXP prior_R);
+void drawPrior_DLMNoTrendRobustCovNoSeason(SEXP prior_R);
+void drawPrior_DLMWithTrendRobustCovNoSeason(SEXP prior_R);
+void drawPrior_DLMNoTrendRobustCovWithSeason(SEXP prior_R);
+void drawPrior_DLMWithTrendRobustCovWithSeason(SEXP prior_R);
+void drawPrior_KnownCertain(SEXP prior_R);
+void drawPrior_KnownUncertain(SEXP prior_R);
+void drawPrior_MixNormZero(SEXP prior_R);
+void drawPrior_Zero(SEXP prior_R);
 
 void transferParamPrior(SEXP prior_R, double *values, int nValues);
 void transferParamPrior_ExchNormZero(SEXP prior_R, double *values, 
@@ -857,6 +904,60 @@ void updateModelUseExp_TFixedUseExp
 void updateModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 void updateBetasAndPriorsBetas(SEXP object_R);
+
+/* update models not using exposure*/
+void drawModelNotUseExp_NormalVaryingVarsigmaUnknown(SEXP object, SEXP y_R);
+#if(0)
+void drawModelNotUseExp_CMPVaryingNotUseExp(SEXP object, SEXP y_R);
+void drawModelNotUseExp_NormalVaryingVarsigmaKnown(SEXP object, SEXP y_R);
+void drawModelNotUseExp_PoissonVaryingNotUseExp(SEXP object, SEXP y_R);
+void drawModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain(SEXP object, SEXP y_R);
+void drawModelNotUseExp_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R);
+void drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain(SEXP object, SEXP y_R);
+void drawModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal(SEXP object, SEXP y_R);
+void drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal(SEXP object, SEXP y_R);
+void drawModelNotUseExp_NormalVaryingVarsigmaKnownAgFun(SEXP object, SEXP y_R);
+void drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun(SEXP object, SEXP y_R);
+void drawModelNotUseExp_PoissonVaryingNotUseExpAgNormal(SEXP object, SEXP y_R);
+void drawModelNotUseExp_PoissonVaryingNotUseExpAgFun(SEXP object, SEXP y_R);
+void drawModelNotUseExp_PoissonVaryingNotUseExpAgPoisson(SEXP object, SEXP y_R);
+void drawModelNotUseExp_NormalFixedNotUseExp(SEXP object, SEXP y_R);
+void drawModelNotUseExp_TFixedNotUseExp(SEXP object, SEXP y_R);
+#endif
+void drawModelNotUseExp(SEXP object, SEXP y_R);
+/* update models using exposure*/
+#if(0)
+void drawModelUseExp_CMPVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_PoissonVarying(SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_PoissonBinomialMixture
+                                (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_Round3
+                        (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_BinomialVaryingAgCertain
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_BinomialVaryingAgNormal
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_BinomialVaryingAgFun
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_PoissonVaryingUseExpAgCertain
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_PoissonVaryingUseExpAgNormal
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_PoissonVaryingUseExpAgFun
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_PoissonVaryingUseExpAgPoisson
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_PoissonVaryingUseExpAgLife
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_NormalFixedUseExp
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_TFixedUseExp
+                            (SEXP object, SEXP y_R, SEXP exposure_R);
+#endif
+void drawModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
+
+
 
 /* predict combined models*/
 void predictCombined_CombinedModelNormal(SEXP object_R, 

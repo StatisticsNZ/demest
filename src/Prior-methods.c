@@ -434,6 +434,523 @@ predictPrior_Zero(SEXP prior_R)
     predictPrior_Zero_i(prior_R);
 }
 
+/* ******************************************************************************** */
+/* Functions for drawing priors. ************************************************* */
+/* ******************************************************************************** */
+
+/* Note that these functions modify the priors in place, 
+   unlike the R versions, or the R-visible C versions
+   created in init.c. */
+
+static __inline__ void
+drawPrior_ExchFixed_i(SEXP prior_R) 
+{
+    /* null op */
+}
+
+static __inline__ void
+drawPrior_ExchNormZero_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+}
+
+static __inline__ void
+drawPrior_ExchNormCov_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+}
+
+static __inline__ void
+drawPrior_ExchRobustZero_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    predictUBeta(prior_R);
+}
+
+static __inline__ void
+drawPrior_ExchRobustCov_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    predictUBeta(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMNoTrendNormZeroNoSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawPhi(prior_R);
+    predictAlphaDLMNoTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMWithTrendNormZeroNoSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaDelta(prior_R);
+    drawPhi(prior_R);
+    drawDelta0(prior_R);
+    predictAlphaDeltaDLMWithTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMNoTrendNormZeroWithSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaSeason(prior_R);
+    drawPhi(prior_R);
+    predictSeason(prior_R);
+    predictAlphaDLMNoTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMWithTrendNormZeroWithSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaDelta(prior_R);
+    drawOmegaSeason(prior_R);
+    drawPhi(prior_R);
+    predictSeason(prior_R);
+    drawDelta0(prior_R);
+    predictAlphaDeltaDLMWithTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMNoTrendNormCovNoSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawPhi(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+    predictAlphaDLMNoTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMWithTrendNormCovNoSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaDelta(prior_R);
+    drawPhi(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+    drawDelta0(prior_R);
+    predictAlphaDeltaDLMWithTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMNoTrendNormCovWithSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaSeason(prior_R);
+    drawPhi(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+    predictSeason(prior_R);
+    predictAlphaDLMNoTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMWithTrendNormCovWithSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaDelta(prior_R);
+    drawOmegaSeason(prior_R);
+    drawPhi(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+    predictSeason(prior_R);
+    drawDelta0(prior_R);
+    predictAlphaDeltaDLMWithTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMNoTrendRobustZeroNoSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    predictUBeta(prior_R);
+    drawPhi(prior_R);
+    predictAlphaDLMNoTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMWithTrendRobustZeroNoSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaDelta(prior_R);
+    predictUBeta(prior_R);
+    drawPhi(prior_R);
+    drawDelta0(prior_R);
+    predictAlphaDeltaDLMWithTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMNoTrendRobustZeroWithSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaSeason(prior_R);
+    predictUBeta(prior_R);
+    drawPhi(prior_R);
+    predictSeason(prior_R);
+    predictAlphaDLMNoTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMWithTrendRobustZeroWithSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaDelta(prior_R);
+    drawOmegaSeason(prior_R);
+    predictUBeta(prior_R);
+    drawPhi(prior_R);
+    predictSeason(prior_R);
+    drawDelta0(prior_R);
+    predictAlphaDeltaDLMWithTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMNoTrendRobustCovNoSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    predictUBeta(prior_R);
+    drawPhi(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+    predictAlphaDLMNoTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMWithTrendRobustCovNoSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaDelta(prior_R);
+    predictUBeta(prior_R);
+    drawPhi(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+    drawDelta0(prior_R);
+    predictAlphaDeltaDLMWithTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMNoTrendRobustCovWithSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaSeason(prior_R);
+    predictUBeta(prior_R);
+    drawPhi(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+    predictSeason(prior_R);
+    predictAlphaDLMNoTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_DLMWithTrendRobustCovWithSeason_i(SEXP prior_R) 
+{
+    drawTau(prior_R);
+    drawOmegaAlpha(prior_R);
+    drawOmegaDelta(prior_R);
+    drawOmegaSeason(prior_R);
+    predictUBeta(prior_R);
+    drawPhi(prior_R);
+    drawUEtaCoef(prior_R);
+    drawEta(prior_R);
+    predictSeason(prior_R);
+    drawDelta0(prior_R);
+    predictAlphaDeltaDLMWithTrend(prior_R);
+}
+
+static __inline__ void
+drawPrior_KnownCertain_i(SEXP prior_R) 
+{
+    /* null op */
+}
+
+static __inline__ void
+drawPrior_KnownUncertain_i(SEXP prior_R) 
+{
+    /* null op */
+}
+
+#if(0)
+/* John not finished yet */
+static __inline__ void
+drawPrior_MixNormZero_i(SEXP prior_R) 
+{
+    /* null op */
+    
+}
+#endif
+
+static __inline__ void
+drawPrior_Zero_i(SEXP prior_R) 
+{
+    /* null op */
+}
+
+
+void
+drawPrior(SEXP prior_R) 
+{
+    int i_method_prior = *(INTEGER(GET_SLOT(prior_R, iMethodPrior_sym)));
+    
+    switch(i_method_prior)
+    {
+        case 0:
+            drawPrior_ExchFixed_i(prior_R);
+            break;
+        case 1:
+            drawPrior_ExchNormZero_i(prior_R);
+            break;
+        case 2:
+            drawPrior_ExchNormCov_i(prior_R);
+            break;
+        case 3:
+            drawPrior_ExchRobustZero_i(prior_R);
+            break;
+        case 4:
+            drawPrior_ExchRobustCov_i(prior_R);
+            break;
+        case 5:
+            drawPrior_DLMNoTrendNormZeroNoSeason_i(prior_R);
+            break;
+        case 6:
+            drawPrior_DLMNoTrendNormZeroWithSeason_i(prior_R);
+            break;
+        case 7:
+            drawPrior_DLMNoTrendNormCovNoSeason_i(prior_R);
+            break;
+        case 8:
+            drawPrior_DLMNoTrendNormCovWithSeason_i(prior_R);
+            break;
+                case 9:
+            drawPrior_DLMNoTrendRobustZeroNoSeason_i(prior_R);
+            break;
+        case 10:
+            drawPrior_DLMNoTrendRobustZeroWithSeason_i(prior_R);
+            break;
+        case 11:
+            drawPrior_DLMNoTrendRobustCovNoSeason_i(prior_R);
+            break;
+        case 12:
+            drawPrior_DLMNoTrendRobustCovWithSeason_i(prior_R);
+            break;
+        case 13:
+            drawPrior_DLMWithTrendNormZeroNoSeason_i(prior_R);
+            break;
+        case 14:
+            drawPrior_DLMWithTrendNormZeroWithSeason_i(prior_R);
+            break;
+        case 15:
+            drawPrior_DLMWithTrendNormCovNoSeason_i(prior_R);
+            break;
+        case 16:
+            drawPrior_DLMWithTrendNormCovWithSeason_i(prior_R);
+            break;
+        case 17:
+            drawPrior_DLMWithTrendRobustZeroNoSeason_i(prior_R);
+            break;
+        case 18:
+            drawPrior_DLMWithTrendRobustZeroWithSeason_i(prior_R);
+            break;
+        case 19:
+            drawPrior_DLMWithTrendRobustCovNoSeason_i(prior_R);
+            break;
+        case 20:
+            drawPrior_DLMWithTrendRobustCovWithSeason_i(prior_R);
+            break;
+        case 29:
+            drawPrior_KnownCertain_i(prior_R);
+            break;
+        case 30:
+            drawPrior_KnownUncertain_i(prior_R);
+            break;
+        case 40:
+            drawPrior_Zero_i(prior_R);
+            break;
+        #if(0)
+        case 131:
+            drawPrior_MixNormZero_i(prior_R);
+            break;
+        #endif
+        default:
+            error("unknown i_method_prior for drawPrior: %d", i_method_prior);
+            break;
+    }
+}
+
+void
+drawPrior_ExchFixed(SEXP prior_R) 
+{
+    drawPrior_ExchFixed_i(prior_R);
+}
+
+void
+drawPrior_ExchNormZero(SEXP prior_R) 
+{
+    drawPrior_ExchNormZero_i(prior_R);
+}
+
+void
+drawPrior_ExchNormCov(SEXP prior_R) 
+{
+    drawPrior_ExchNormCov_i(prior_R);
+}
+
+void
+drawPrior_ExchRobustZero(SEXP prior_R) 
+{
+    drawPrior_ExchRobustZero_i(prior_R);
+}
+
+void
+drawPrior_ExchRobustCov(SEXP prior_R) 
+{
+    drawPrior_ExchRobustCov_i(prior_R);
+}
+
+void
+drawPrior_DLMNoTrendNormZeroNoSeason(SEXP prior_R) 
+{
+    drawPrior_DLMNoTrendNormZeroNoSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMWithTrendNormZeroNoSeason(SEXP prior_R) 
+{
+    drawPrior_DLMWithTrendNormZeroNoSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMNoTrendNormZeroWithSeason(SEXP prior_R) 
+{
+    drawPrior_DLMNoTrendNormZeroWithSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMWithTrendNormZeroWithSeason(SEXP prior_R) 
+{
+    drawPrior_DLMWithTrendNormZeroWithSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMNoTrendNormCovNoSeason(SEXP prior_R) 
+{
+    drawPrior_DLMNoTrendNormCovNoSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMWithTrendNormCovNoSeason(SEXP prior_R) 
+{
+    drawPrior_DLMWithTrendNormCovNoSeason_i(prior_R);
+}
+
+
+void
+drawPrior_DLMNoTrendNormCovWithSeason(SEXP prior_R) 
+{
+    drawPrior_DLMNoTrendNormCovWithSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMWithTrendNormCovWithSeason(SEXP prior_R) 
+{
+    drawPrior_DLMWithTrendNormCovWithSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMNoTrendRobustZeroNoSeason(SEXP prior_R) 
+{
+    drawPrior_DLMNoTrendRobustZeroNoSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMWithTrendRobustZeroNoSeason(SEXP prior_R) 
+{
+    drawPrior_DLMWithTrendRobustZeroNoSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMNoTrendRobustZeroWithSeason(SEXP prior_R) 
+{
+    drawPrior_DLMNoTrendRobustZeroWithSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMWithTrendRobustZeroWithSeason(SEXP prior_R) 
+{
+    drawPrior_DLMWithTrendRobustZeroWithSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMNoTrendRobustCovNoSeason(SEXP prior_R) 
+{
+    drawPrior_DLMNoTrendRobustCovNoSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMWithTrendRobustCovNoSeason(SEXP prior_R) 
+{
+    drawPrior_DLMWithTrendRobustCovNoSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMNoTrendRobustCovWithSeason(SEXP prior_R) 
+{
+    drawPrior_DLMNoTrendRobustCovWithSeason_i(prior_R);
+}
+
+void
+drawPrior_DLMWithTrendRobustCovWithSeason(SEXP prior_R) 
+{
+    drawPrior_DLMWithTrendRobustCovWithSeason_i(prior_R);
+}
+
+void
+drawPrior_KnownCertain(SEXP prior_R) 
+{
+    drawPrior_KnownCertain_i(prior_R);
+}
+
+void
+drawPrior_KnownUncertain(SEXP prior_R) 
+{
+    drawPrior_KnownUncertain_i(prior_R);
+}
+
+void
+drawPrior_MixNormZero(SEXP prior_R) 
+{
+    #if(0)
+    /* John not finished yet */
+    drawPrior_MixNormZero_i(prior_R);
+    #endif
+}
+
+void
+drawPrior_Zero(SEXP prior_R) 
+{
+    drawPrior_Zero_i(prior_R);
+}
+
 
 /* ********************** transferParamPrior ******************* */
 
@@ -1313,86 +1830,11 @@ transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R,
     SET_DOUBLESCALE_SLOT(prior_R, tau_sym, t);
 }
 
-/*## Mix
-## READY_TO_TRANSLATE
-## HAS_TESTS
-setMethod("transferParamPrior",
-          signature(prior = "MixNormZeroPredict"),
-          function(prior, values, useC = FALSE, useSpecific = FALSE) {
-              ## prior
-              methods::validObject(prior)
-              ## values
-              stopifnot(is.double(values))
-              stopifnot(!any(is.na(values)))
-              if (useC) {
-                  if (useSpecific)
-                      .Call(transferParamPrior_MixNormZeroPredict_R, prior, values)
-                  else
-                      .Call(transferParamPrior_R, prior, values)
-              }
-              else {
-                  dim.beta.old <- prior@dimBetaOld
-                  iAlong <- prior@iAlong
-                  index.class.max <- prior@indexClassMaxMix@.Data
-                  n.beta.no.along <- prior@nBetaNoAlongMix@.Data
-                  J.old <- prior@JOld@.Data
-                  n.along.old <- dim.beta.old[iAlong]
-                  offset <- 1L
-                  ## alphaMix (skip)
-                  offset <- offset + J.old
-                  ## prodVectorsMix
-                  n.prod <- n.beta.no.along * index.class.max
-                  prior@prodVectorsMix@.Data <- values[offset : (offset + n.prod - 1L)]
-                  offset <- offset + n.prod
-                  ## omegaVectorsMix
-                  prior@omegaVectorsMix@.Data <- values[offset]
-                  offset <- offset + 1L
-                  ## weightMix
-                  offset <- offset + n.along.old * index.class.max
-                  ## componentWeightMix
-                  offset <- offset + n.along.old * index.class.max
-                  ## omegaComponentWeightMix
-                  prior@omegaComponentWeightMix@.Data <- values[offset]
-                  offset <- offset + 1L
-                  ## levelComponentWeightOldMix (final values of levelComponetWeightMix)
-                  prior@levelComponentWeightOldMix@.Data <-
-                      transferLevelComponentWeightOldMix(values = values,
-                                                         offset = offset,
-                                                         nAlongOld = n.along.old,
-                                                         indexClassMax = index.class.max)
-                  offset <- offset + n.along.old * index.class.max
-                  ## meanLevelComponentWeightMix
-                  prior@meanLevelComponentWeightMix@.Data <- values[offset]
-                  offset <- offset + 1L
-                  ## phiMix
-                  prior@phiMix <- values[offset]
-                  offset <- offset + 1L
-                  ## omegaLevelComponentWeightMix
-                  prior@omegaLevelComponentWeightMix@.Data <- values[offset]
-                  offset <- offset + 1L
-                  ## tau
-                  prior@tau@.Data <- values[offset]
-                  ## return
-                  prior
-              }
-          })
-
-
-*/
 
 void
 transferParamPrior_MixNormZeroPredict(SEXP prior_R,
                         double *values, int nValues) 
 {
-    /*dim.beta.old <- prior@dimBetaOld
-                  iAlong <- prior@iAlong
-                  index.class.max <- prior@indexClassMaxMix@.Data
-                  n.beta.no.along <- prior@nBetaNoAlongMix@.Data
-                  J.old <- prior@JOld@.Data
-                  n.along.old <- dim.beta.old[iAlong]
-                  offset <- 1L
-                  
-                  */
     int *dimBetaOld = INTEGER(GET_SLOT(prior_R, dimBetaOld_sym));
     int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
     int iAlong_c = iAlong_r -1;

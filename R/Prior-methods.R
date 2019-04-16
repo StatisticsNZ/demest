@@ -274,29 +274,6 @@ setMethod("describePrior",
 
 ## drawPrior #########################################################################
 
-## Exch
-
-## READY_TO_TRANSLATE
-## HAS_TESTS
-setMethod("drawPrior",
-          signature(prior = "ExchNormZero"),
-          function(prior, useC = FALSE, useSpecific = FALSE) {
-              methods::validObject(prior)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(drawPrior_ExchNormZero_R, prior)
-                  else
-                      .Call(drawPrior_R, prior)
-              }
-              else {
-                  prior <- drawTau(prior)
-                  prior
-              }
-          })
-
-
-## drawPrior #########################################################################
-
 ## ExchFixed
 
 ## READY_TO_TRANSLATE
@@ -356,7 +333,8 @@ setMethod("drawPrior",
           })
 
 ## READY_TO_TRANSLATE
-## HAS_TESTS
+## HAS_TESTS  
+## JAH - tests not working
 setMethod("drawPrior",
           signature(prior = "ExchNormCov"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -377,6 +355,7 @@ setMethod("drawPrior",
 
 ## READY_TO_TRANSLATE
 ## HAS_TESTS
+## JAH - tests not working
 setMethod("drawPrior",
           signature(prior = "ExchRobustCov"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -450,7 +429,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_DLMNoTrendNormZeroNoSeason_R, prior)
+                      .Call(drawPrior_DLMNoTrendNormZeroWithSeason_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
@@ -473,7 +452,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_DLMWithTrendNormZeroNoSeason_R, prior)
+                      .Call(drawPrior_DLMWithTrendNormZeroWithSeason_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
@@ -649,7 +628,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_DLMNoTrendRobustZeroNoSeason_R, prior)
+                      .Call(drawPrior_DLMNoTrendRobustZeroWithSeason_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
@@ -673,7 +652,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_DLMWithTrendRobustZeroNoSeason_R, prior)
+                      .Call(drawPrior_DLMWithTrendRobustZeroWithSeason_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
