@@ -204,6 +204,8 @@ setMethod("updateModelNotUseExp",
 ## drawModelNotUseExp ##################################################################
 
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
 setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaUnknown"),
           function(object, y, useC = FALSE, useSpecific = FALSE) {

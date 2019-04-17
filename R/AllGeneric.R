@@ -214,7 +214,7 @@ setGeneric("drawCombined",
                standardGeneric("drawCombined"))
 
 setGeneric("drawDataModels",
-           function(combined, useC = FALSE)
+           function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("drawDataModels"))
 
 setGeneric("drawHyperParam",
@@ -235,7 +235,7 @@ setGeneric("drawPrior",
                standardGeneric("drawPrior"))
 
 setGeneric("drawSystemModels",
-           function(combined, useC = FALSE)
+           function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("drawSystemModels"))
 
 setGeneric("drawYNonSampled",

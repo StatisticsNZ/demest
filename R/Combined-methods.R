@@ -61,7 +61,7 @@ setMethod("drawCombined",
           })
 
 ## READY_TO_TRANSLATE
-## HAS_TESTS - though only for unbenchmarked version
+## HAS_TESTS
 setMethod("drawCombined",
           signature(object = "CombinedAccountMovements"),
           function(object, nUpdate = 1L,
@@ -81,11 +81,12 @@ setMethod("drawCombined",
               }
               else {
                   object <- drawSystemModels(object)
+                  object <- updateExpectedExposure(object, useC = TRUE)
                   object <- drawDataModels(object)
                   ## updating functions use 'updateSystemModel' and
                   ## 'updateDataModel' flags to decide what to update
                   for (i in seq_len(nUpdate)) {
-                      object <- updateSystemModels(object, useC = TRUE)
+                      object <- updateSystemModels(object)
                       object <- updateExpectedExposure(object, useC = TRUE)
                       object <- updateAccount(object, useC = TRUE)
                       object <- updateDataModelsAccount(object)
@@ -106,10 +107,13 @@ setMethod("drawCombined",
 ## Function is almost identical to 'updateDataModelsAccount' 
 setMethod("drawDataModels",
           signature(combined = "CombinedAccountMovements"),
-          function(combined, useC = FALSE) {
+          function(combined, useC = FALSE, useSpecific = FALSE) {
               methods::validObject(combined)
               if (useC) {
-                  .Call(drawDataModels_R, combined)
+                  if (useSpecific)
+                      .Call(drawDataModels_CombinedAccountMovements_R, combined)
+                  else
+                      .Call(drawDataModels_R, combined)
               }
               else {
                   data.models <- combined@dataModels
@@ -151,13 +155,18 @@ setMethod("drawDataModels",
 ## have been set to missing, since, unlike the datasets,
 ## the series are generated as part of the estimation process,
 ## rather than imputed afterwards.
+
+## READY_TO_TRANSLATE
 ## HAS_TESTS
 setMethod("drawSystemModels",
           signature(combined = "CombinedAccountMovements"),
-          function(combined, useC = FALSE) {
+          function(combined, useC = FALSE, useSpecific = FALSE) {
               methods::validObject(combined)
               if (useC) {
-                  .Call(drawSystemModels_R, combined)
+                  if (useSpecific)
+                      .Call(drawSystemModels_CombinedAccountMovements_R, combined)
+                  else
+                      .Call(drawSystemModels_R, combined)
               }
               else {
                   system.models <- combined@systemModels
@@ -895,6 +904,7 @@ setMethod("updateExpectedExposure",
               }
               else {
                   expected.exposure <- combined@expectedExposure
+                  update.system.model <- combined@updateSystemModel
                   age.time.step <- combined@ageTimeStep
                   theta <- combined@systemModels[[1L]]@theta
                   description <- combined@descriptions[[1L]]
@@ -906,21 +916,24 @@ setMethod("updateExpectedExposure",
                   length.exp.no.tri <- (length.popn %/% n.time.popn) * n.time.exp # excludes triangle dim, if any
                   length.slice.popn <- n.time.popn * step.time
                   length.slice.exp <- n.time.exp * step.time
-                  for (i in seq_len(length.exp.no.tri)) {
-                      i.popn.start <- (((i - 1L) %/% length.slice.exp) * length.slice.popn
-                          + (i - 1L) %% length.slice.exp
-                          + 1)
-                      i.popn.end <- i.popn.start + step.time
-                      exp.start <- 0.5 * age.time.step * theta[i.popn.start]
-                      exp.end <- 0.5 * age.time.step * theta[i.popn.end]
-                      if (has.age) {
-                          expected.exposure[i + length.exp.no.tri] <- exp.start # upper triangle
-                          expected.exposure[i] <- exp.end # lower triangle
+                  update.popn <- update.system.model[1L]
+                  if (update.popn) {
+                      for (i in seq_len(length.exp.no.tri)) {
+                          i.popn.start <- (((i - 1L) %/% length.slice.exp) * length.slice.popn
+                              + (i - 1L) %% length.slice.exp
+                              + 1)
+                          i.popn.end <- i.popn.start + step.time
+                          exp.start <- 0.5 * age.time.step * theta[i.popn.start]
+                          exp.end <- 0.5 * age.time.step * theta[i.popn.end]
+                          if (has.age) {
+                              expected.exposure[i + length.exp.no.tri] <- exp.start # upper triangle
+                              expected.exposure[i] <- exp.end # lower triangle
+                          }
+                          else
+                              expected.exposure[i] <- exp.start + exp.end
                       }
-                      else
-                          expected.exposure[i] <- exp.start + exp.end
+                      combined@expectedExposure <- expected.exposure
                   }
-                  combined@expectedExposure <- expected.exposure
                   combined
               }
           })

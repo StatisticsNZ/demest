@@ -76,6 +76,12 @@ simulateModel <- function(model, y = NULL, exposure = NULL, weights = NULL,
 #' WARNING - THIS FUNCTION IS STILL UNDER DEVELOPMENT
 #' 
 #' @inheritParams estimateAccount
+#' @param updateSystemModel Names of any system models containing
+#' parameters that need to be estimated (as oppsed to simply drawn
+#' from the prior distribution) as part of the simulation.
+#' @param updateDataModel Names of any data models containing
+#' parameters that need to be estimated (as oppsed to simply drawn
+#' from the prior distribution) as part of the simulation.
 #' @export
 simulateAccount <- function(account, systemModels,
                             datasets = list(), dataModels = list(), 

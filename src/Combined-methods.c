@@ -635,6 +635,9 @@ void
 updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
 {
     double * expectedExposure = REAL(GET_SLOT(combined_R, expectedExposure_sym));
+
+    int *updateSystemModel = LOGICAL(GET_SLOT(combined_R, updateSystemModel_sym));
+    int updatePopn = updateSystemModel[0];
     
     SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
     SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, 0);
@@ -657,23 +660,27 @@ updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
     int lengthSliceExp = nTimeExp * stepTime;
     
     double halfAgeTimeStep = 0.5 * ageTimeStep;
-    
-    for (int i = 0; i < lengthExpNoTri; ++i) {
+
+    if (updatePopn) {
+      
+      for (int i = 0; i < lengthExpNoTri; ++i) {
 
         int iPopnStart = (i / lengthSliceExp) * lengthSlicePopn
-                        + i % lengthSliceExp; /* C style */
+	  + i % lengthSliceExp; /* C style */
         int iPopnEnd = iPopnStart + stepTime;
         double expStart = halfAgeTimeStep * theta[iPopnStart];
         double expEnd = halfAgeTimeStep * theta[iPopnEnd];
         
         if (hasAge) {
-            expectedExposure[i + lengthExpNoTri] = expStart;
-            expectedExposure[i] = expEnd;
+	  expectedExposure[i + lengthExpNoTri] = expStart;
+	  expectedExposure[i] = expEnd;
         }
         else {
-            expectedExposure[i] = expStart + expEnd;
+	  expectedExposure[i] = expStart + expEnd;
         }
             
+      }
+
     }
 }
 

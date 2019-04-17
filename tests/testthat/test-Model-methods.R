@@ -276,10 +276,6 @@ test_that("drawModelNotUseExp works with NormalVaryingVarsigmaUnknown", {
 test_that("R and C versions of drawModelNotUseExp give same answer with NormalVaryingVarsigmaUnknown", {
     initialModel <- demest:::initialModel
     drawModelNotUseExp <- demest:::drawModelNotUseExp
-    drawPriors <- demest:::drawPriors
-    drawBetas <- demest:::drawBetas
-    drawSigma_Varying <- demest:::drawSigma_Varying
-    updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
                   `(Intercept)` ~ ExchFixed(sd = 10), 
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),

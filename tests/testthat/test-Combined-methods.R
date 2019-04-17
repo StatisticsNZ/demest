@@ -180,6 +180,8 @@ test_that("R, specific C, and generic C versions of drawCombined give same answe
 
 test_that("drawCombined works with CombinedAccountMovements - no benchmarks", {
     drawCombined <- demest:::drawCombined
+    drawSystemModels <- demest:::drawSystemModels
+    drawDataModels <- demest:::drawDataModels
     updateAccount <- demest:::updateAccount
     initialCombinedAccountSimulate <- demest:::initialCombinedAccountSimulate
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -246,22 +248,26 @@ test_that("drawCombined works with CombinedAccountMovements - no benchmarks", {
                                          transforms = transforms,
                                          updateSystemModel = updateSystemModel,
                                          updateDataModel = updateDataModel)
-    seed <- 1L
-    set.seed(seed)
-    ans.obtained <- drawCombined(x0, nUpdate = 5L)
-    set.seed(seed)
-    ans.expected <- x0
-    for (i in 1:5) {
-        ans.expected@systemModels[[1]] <- updateModelNotUseExp(ans.expected@systemModels[[1L]],
-                                                               y = ans.expected@account@population,
-                                                               useC = TRUE)
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawCombined(x0, nUpdate = 5L)
+        set.seed(seed)
+        ans.expected <- x0
+        ans.expected <- drawSystemModels(ans.expected)
         ans.expected <- updateExpectedExposure(ans.expected, useC = TRUE)
-        ans.expected <- updateAccount(ans.expected, useC = TRUE)
+        ans.expected <- drawDataModels(ans.expected)
+        for (i in 1:5) {
+            ans.expected@systemModels[[1]] <- updateModelNotUseExp(ans.expected@systemModels[[1L]],
+                                                                   y = ans.expected@account@population,
+                                                                   useC = TRUE)
+            ans.expected <- updateExpectedExposure(ans.expected, useC = TRUE)
+            ans.expected <- updateAccount(ans.expected, useC = TRUE)
+        }
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
     }
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else
-        expect_equal(ans.obtained, ans.expected)
 })
 
 
@@ -331,25 +337,26 @@ test_that("R, C-specific, and C-generic versions of drawCombined give same answe
                                          transforms = transforms,
                                          updateSystemModel = updateSystemModel,
                                          updateDataModel = updateDataModel)
-    set.seed(1)
-    ans.R <- drawCombined(x0,
-                          nUpdate = 5L,
-                          useC = FALSE)
-    set.seed(1)
-    ans.C.specific <- drawCombined(x0,
-                          nUpdate = 5L,
-                          useC = TRUE,
-                          useSpecific = TRUE)
-    set.seed(1)
-    ans.C.generic <- drawCombined(x0,
-                          nUpdate = 5L,
-                          useC = FALSE,
-                          useSpecific = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C.specific)
-    else
-        expect_equal(ans.R, ans.C.specific)
-    expect_identical(ans.C.specific, ans.C.generic)
+    for (seed in seq_len(n.test)) {
+        ans.R <- drawCombined(x0,
+                              nUpdate = 5L,
+                              useC = FALSE)
+        set.seed(1)
+        ans.C.specific <- drawCombined(x0,
+                                       nUpdate = 5L,
+                                       useC = TRUE,
+                                       useSpecific = TRUE)
+        set.seed(1)
+        ans.C.generic <- drawCombined(x0,
+                                      nUpdate = 5L,
+                                      useC = FALSE,
+                                      useSpecific = FALSE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.specific)
+        else
+            expect_equal(ans.R, ans.C.specific)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
 })
 
 
@@ -493,11 +500,14 @@ test_that("R and C versions of drawDataModels give same answer with CombinedAcco
         set.seed(seed)
         ans.R <- drawDataModels(x, useC = FALSE)
         set.seed(seed)
-        ans.C <- drawDataModels(x, useC = TRUE)
+        ans.C.generic <- drawDataModels(x, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawDataModels(x, useC = TRUE, useSpecific = TRUE)
         if (test.identity)
-            expect_identical(ans.R, ans.C)
+            expect_identical(ans.R, ans.C.generic)
         else
-            expect_equal(ans.R, ans.C)
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
     }
 })
 
@@ -505,7 +515,7 @@ test_that("R and C versions of drawDataModels give same answer with CombinedAcco
 
 ## drawSystemModels ####################################################
 
-test_that("drawSystemModels works with CombinedAccountMovements", {
+test_that("R version of drawSystemModels works with CombinedAccountMovements", {
     drawSystemModels <- demest:::drawSystemModels
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -565,21 +575,97 @@ test_that("drawSystemModels works with CombinedAccountMovements", {
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
     expect_true(validObject(x))
-    set.seed(1)
-    ans.obtained <- drawSystemModels(x)
-    ans.obtained <- updateExpectedExposure(ans.obtained)
-    expect_true(validObject(ans.obtained))
-    for (i in 1:3) {
-        expect_false(identical(ans.obtained@systemModels[[i]]@betas,
-                               x@systemModels[[i]]@betas))
-        expect_false(identical(ans.obtained@systemModels[[i]]@theta,
-                               x@systemModels[[i]]@theta))
-        expect_false(identical(ans.obtained@systemModels[[i]]@sigma,
-                               x@systemModels[[i]]@sigma))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawSystemModels(x)
+        ans.obtained <- updateExpectedExposure(ans.obtained)
+        expect_true(validObject(ans.obtained))
+        for (i in 1:3) {
+            expect_false(identical(ans.obtained@systemModels[[i]]@betas,
+                                   x@systemModels[[i]]@betas))
+            expect_false(identical(ans.obtained@systemModels[[i]]@theta,
+                                   x@systemModels[[i]]@theta))
+            expect_false(identical(ans.obtained@systemModels[[i]]@sigma,
+                                   x@systemModels[[i]]@sigma))
+        }
     }
 })
 
 
+test_that("R and C versions of drawSystemModels give same answer with CombinedAccountMovements", {
+    drawSystemModels <- demest:::drawSystemModels
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    checkSystemModelsSuitableForSimulation <- demest:::checkSystemModelsSuitableForSimulation
+    updateExpectedExposure <- demest:::updateExpectedExposure
+    set.seed(1)
+    population <- CountsOne(values = seq(200, 300, 10),
+                            labels = seq(2000, 2100, 10),
+                            name = "time")
+    births <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    deaths <- CountsOne(values = rpois(n = 10, lambda = 5),
+                        labels = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-"),
+                        name = "time")
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.3),
+                               time ~ DLM(level = Level(scale = HalfT(scale = 0.05)),
+                                          trend = NULL,
+                                          damp = NULL,
+                                          error = Error(scale = HalfT(scale = 0.3))),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(births ~ Poisson(mean ~ time),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.3),
+                               time ~ Exch(error = Error(scale = HalfT(scale = 0.2))),
+                               priorSD = HalfT(scale = 0.1)),
+                         Model(deaths ~ Poisson(mean ~ time),
+                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 0.3),
+                               time ~ Exch(error = Error(scale = HalfT(scale = 0.2))),
+                               priorSD = HalfT(scale = 0.1)))
+    checkSystemModelsSuitableForSimulation(systemModels = systemModels,
+                                           account = account)
+    systemWeights <- rep(list(NULL), 3)
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    datasets <- list(Counts(array(7L,
+                                  dim = 10,
+                                  dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
+                     Counts(array(seq.int(110L, 210L, 10L),
+                                  dim = 11,
+                                  dimnames = list(time = seq(2000, 2100, 10)))))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = deaths, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    expect_true(validObject(x))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawSystemModels(x, useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawSystemModels(x, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawSystemModels(x, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
 
 
 ## predictCombined - CombinedModel ####################################################
@@ -2631,6 +2717,11 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
         expect_identical(ans.obtained, ans.expected)
     else
         expect_equal(ans.obtained, ans.expected)        
+    ## updateSystemModel is FALSE for population
+    x@updateSystemModel <- c(FALSE, FALSE)
+    ans.obtained <- updateExpectedExposure(x)
+    ans.expected <- x
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("R and C versions of updatedExpectedExposure give same answer with CombinedAccountMovements - no age", {
@@ -2747,6 +2838,14 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
+    ans.R <- updateExpectedExposure(x, useC = FALSE)
+    ans.C <- updateExpectedExposure(x, useC = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+    ## updateSystemModel is FALSE for population
+    x@updateSystemModel <- c(FALSE, FALSE)
     ans.R <- updateExpectedExposure(x, useC = FALSE)
     ans.C <- updateExpectedExposure(x, useC = TRUE)
     if (test.identity)

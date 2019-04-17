@@ -362,7 +362,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_ExchNormCov_R, prior)
+                      .Call(drawPrior_ExchRobustCov_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
