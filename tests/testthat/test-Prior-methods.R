@@ -409,8 +409,6 @@ test_that("drawPrior works with ExchNormCov", {
     initialPrior <- demest:::initialPrior
     rinvchisq1 <- demest:::rinvchisq1
     rhalftTrunc1 <- demest:::rhalftTrunc1
-    ## JAH copied from the predict prior test 
-    ## original code gave error about 'model matrix 'Z' has missing values'
     data <- data.frame(region = letters[1:10],
                        sex = rep(c("f", "m"), each = 5),
                        income = rnorm(10),

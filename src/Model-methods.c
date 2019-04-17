@@ -1179,17 +1179,58 @@ updateModelUseExp_TFixedUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
 static __inline__ void
 drawModelNotUseExp_NormalVaryingVarsigmaUnknown_i(SEXP object_R, SEXP y_R)
 {
-    /*object <- drawPriors(object)
-                  object <- drawBetas(object)
-                  object <- drawSigma_Varying(object)
-                  object <- drawVarsigma(object)
-                  object <- updateTheta_NormalVarying(object,
-                                                      y = y,
-                                                      useC = TRUE)*/
+    drawPriors(object_R);
+    drawBetas(object_R);
+    drawSigma_Varying(object_R);
+    drawVarsigma(object_R);
+    updateTheta_NormalVarying(object_R, y_R);
                                                       
-    //updateThetaAndNu_CMPVaryingNotUseExp(object_R, y_R);
-    //updateSigma_Varying_General(object_R, log);
-    //updateBetasAndPriorsBetas_General(object_R, log);
+}
+
+static __inline__ void
+drawModelNotUseExp_PoissonVarying_i(SEXP object_R, SEXP y_R)
+{
+    drawPriors(object_R);
+    drawBetas(object_R);
+    drawSigma_Varying(object_R);
+    updateTheta_PoissonVaryingNotUseExp(object_R, y_R);
+                                                      
+}
+
+/* inline functions for models using exposure */
+static __inline__ void
+drawModelUseExp_BinomialVarying_i(SEXP object_R, SEXP y_R, SEXP exposure_R)
+{
+    drawPriors(object_R);
+    drawBetas(object_R);
+    drawSigma_Varying(object_R);
+    updateTheta_BinomialVarying(object_R, y_R, exposure_R);
+                                                      
+}
+
+static __inline__ void
+drawModelUseExp_PoissonVarying_i(SEXP object_R, SEXP y_R, SEXP exposure_R)
+{
+    drawPriors(object_R);
+    drawBetas(object_R);
+    drawSigma_Varying(object_R);
+    updateTheta_PoissonVaryingUseExp(object_R,    y_R, exposure_R);
+                                                      
+}
+
+static __inline__ void
+drawModelUseExp_NormalFixedUseExp_i(SEXP object_R, SEXP y_R, SEXP exposure_R)
+{
+    /*null op*/
+                                                      
+}
+
+static __inline__ void
+drawModelUseExp_PoissonBinomialMixture_i(SEXP object_R, SEXP y_R, 
+                                                        SEXP exposure_R)
+{
+    /*null op*/
+                                                      
 }
 
 void
@@ -1205,58 +1246,12 @@ drawModelNotUseExp_Internal(SEXP object_R, SEXP y_R, int i_method_model)
 {
     switch(i_method_model)
     {
-        #if(0)
-        case 4:
-            drawModelNotUseExp_NormalVaryingVarsigmaKnown_i(object_R, y_R);
-            break;
-        #endif
         case 5:
             drawModelNotUseExp_NormalVaryingVarsigmaUnknown_i(object_R, y_R);
             break;
-        #if(0)
         case 6:
-            drawModelNotUseExp_PoissonVaryingNotUseExp_i(object_R, y_R);
+            drawModelNotUseExp_PoissonVarying_i(object_R, y_R);
             break;
-        case 12:    
-            drawModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain_i(object_R, y_R);
-            break;
-        case 13:    
-            drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain_i(object_R, y_R);
-            break;
-        case 14:    
-            drawModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal_i(object_R, y_R);
-            break;  
-        case 15:    
-            drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_i(object_R, y_R);
-            break;
-        case 16:    
-            drawModelNotUseExp_PoissonVaryingNotUseExpAgCertain_i(object_R, y_R);
-            break;    
-        case 17:    
-            drawModelNotUseExp_PoissonVaryingNotUseExpAgNormal_i(object_R, y_R);
-            break;    
-        case 22:    
-            drawModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_i(object_R, y_R);
-            break; 
-        case 24:    
-            drawModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_i(object_R, y_R);
-            break; 
-        case 25:    
-            drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_i(object_R, y_R);
-            break; 
-        case 26:    
-            drawModelNotUseExp_PoissonVaryingNotUseExpAgFun_i(object_R, y_R);
-            break; 
-        case 30:    
-            drawModelNotUseExp_NormalFixedNotUseExp_i(object_R, y_R);
-            break; 
-        case 32:    
-            drawModelNotUseExp_CMPVaryingNotUseExp_i(object_R, y_R);
-            break; 
-        case 35:    
-            drawModelNotUseExp_TFixedNotUseExp_i(object_R, y_R);
-            break; 
-        #endif
         default:
             error("unknown i_method_model: %d", i_method_model);
             break;
@@ -1278,7 +1273,7 @@ drawModelUseExp_Internal(SEXP object_R, SEXP y_R, SEXP exposure_R,
 {
     switch(i_method_model)
     {
-        #if(0)
+
         case 9:
             drawModelUseExp_BinomialVarying_i(object_R, y_R, exposure_R);
             break;
@@ -1288,43 +1283,9 @@ drawModelUseExp_Internal(SEXP object_R, SEXP y_R, SEXP exposure_R,
         case 11:
             drawModelUseExp_PoissonBinomialMixture_i(object_R, y_R, exposure_R);
             break;
-        case 18: 
-            drawModelUseExp_BinomialVaryingAgCertain_i(object_R, y_R, exposure_R);
-            break;
-        case 19:    
-            drawModelUseExp_BinomialVaryingAgNormal_i(object_R, y_R, exposure_R);
-            break;
-        case 20:    
-            drawModelUseExp_PoissonVaryingUseExpAgCertain_i(object_R, y_R, exposure_R);
-            break;
-        case 21:    
-            drawModelUseExp_PoissonVaryingUseExpAgNormal_i(object_R, y_R, exposure_R);
-            break;
-        case 23:    
-            drawModelUseExp_PoissonVaryingUseExpAgPoisson_i(object_R, y_R, exposure_R);
-            break;
-        case 27:    
-            drawModelUseExp_BinomialVaryingAgFun_i(object_R, y_R, exposure_R);
-            break;
-        case 28:    
-            drawModelUseExp_PoissonVaryingUseExpAgFun_i(object_R, y_R, exposure_R);
-            break;
-        case 29:    
-            drawModelUseExp_PoissonVaryingUseExpAgLife_i(object_R, y_R, exposure_R);
-            break;
         case 31:    
             drawModelUseExp_NormalFixedUseExp_i(object_R, y_R, exposure_R);
             break;
-        case 33:    
-            drawModelUseExp_CMPVaryingUseExp_i(object_R, y_R, exposure_R);
-            break;
-        case 34:    
-            drawModelUseExp_Round3_i(object_R, y_R, exposure_R);
-            break;
-        case 36:    
-            drawModelUseExp_TFixedUseExp_i(object_R, y_R, exposure_R);
-            break;
-        #endif
         default:
             error("unknown i_method_model: %d", i_method_model);
             break;
@@ -1340,3 +1301,34 @@ drawModelNotUseExp_NormalVaryingVarsigmaUnknown(SEXP object_R, SEXP y_R)
 }
 
 
+void
+drawModelNotUseExp_PoissonVarying(SEXP object_R, SEXP y_R) 
+{
+    drawModelNotUseExp_PoissonVarying_i(object_R, y_R);
+    
+}
+
+/* specific functions for models using exposure */
+void
+drawModelUseExp_BinomialVarying(SEXP object_R, SEXP y_R, SEXP exposure_R)
+{
+    drawModelUseExp_BinomialVarying_i(object_R, y_R, exposure_R);
+}
+
+void
+drawModelUseExp_PoissonVarying(SEXP object_R, SEXP y_R, SEXP exposure_R)
+{
+    drawModelUseExp_PoissonVarying_i(object_R, y_R, exposure_R);
+}
+
+void
+drawModelUseExp_NormalFixedUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
+{
+    drawModelUseExp_NormalFixedUseExp_i(object_R, y_R, exposure_R);
+}
+
+void
+drawModelUseExp_PoissonBinomialMixture(SEXP object_R, SEXP y_R, SEXP exposure_R)
+{
+    drawModelUseExp_PoissonBinomialMixture_i(object_R, y_R, exposure_R);
+}

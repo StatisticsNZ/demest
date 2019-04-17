@@ -296,6 +296,10 @@ drawBetas <- function(object, useC = FALSE) {
 }
 
 ## READY_TO_TRANSLATE
+##                      JAH - translated but cannot test at present
+##                      17  April 2019
+##                      had to comment out Mixin model stuff in combined mixins
+##                      to allow package loading
 ## HAS_TESTS
 drawDataModelsAccount <- function(combined, useC = FALSE) {
     stopifnot(methods::validObject(combined))
@@ -558,7 +562,7 @@ drawPhiMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawPriors <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))

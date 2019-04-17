@@ -907,54 +907,15 @@ void updateBetasAndPriorsBetas(SEXP object_R);
 
 /* update models not using exposure*/
 void drawModelNotUseExp_NormalVaryingVarsigmaUnknown(SEXP object, SEXP y_R);
-#if(0)
-void drawModelNotUseExp_CMPVaryingNotUseExp(SEXP object, SEXP y_R);
-void drawModelNotUseExp_NormalVaryingVarsigmaKnown(SEXP object, SEXP y_R);
-void drawModelNotUseExp_PoissonVaryingNotUseExp(SEXP object, SEXP y_R);
-void drawModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain(SEXP object, SEXP y_R);
-void drawModelNotUseExp_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R);
-void drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain(SEXP object, SEXP y_R);
-void drawModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal(SEXP object, SEXP y_R);
-void drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal(SEXP object, SEXP y_R);
-void drawModelNotUseExp_NormalVaryingVarsigmaKnownAgFun(SEXP object, SEXP y_R);
-void drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun(SEXP object, SEXP y_R);
-void drawModelNotUseExp_PoissonVaryingNotUseExpAgNormal(SEXP object, SEXP y_R);
-void drawModelNotUseExp_PoissonVaryingNotUseExpAgFun(SEXP object, SEXP y_R);
-void drawModelNotUseExp_PoissonVaryingNotUseExpAgPoisson(SEXP object, SEXP y_R);
-void drawModelNotUseExp_NormalFixedNotUseExp(SEXP object, SEXP y_R);
-void drawModelNotUseExp_TFixedNotUseExp(SEXP object, SEXP y_R);
-#endif
+void drawModelNotUseExp_PoissonVarying(SEXP object, SEXP y_R);
 void drawModelNotUseExp(SEXP object, SEXP y_R);
 /* update models using exposure*/
-#if(0)
-void drawModelUseExp_CMPVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 void drawModelUseExp_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void drawModelUseExp_PoissonVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void drawModelUseExp_PoissonBinomialMixture
                                 (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_Round3
-                        (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_BinomialVaryingAgCertain
-                            (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_BinomialVaryingAgNormal
-                            (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_BinomialVaryingAgFun
-                            (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_PoissonVaryingUseExpAgCertain
-                            (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_PoissonVaryingUseExpAgNormal
-                            (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_PoissonVaryingUseExpAgFun
-                            (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_PoissonVaryingUseExpAgPoisson
-                            (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_PoissonVaryingUseExpAgLife
-                            (SEXP object, SEXP y_R, SEXP exposure_R);
 void drawModelUseExp_NormalFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
-void drawModelUseExp_TFixedUseExp
-                            (SEXP object, SEXP y_R, SEXP exposure_R);
-#endif
 void drawModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 

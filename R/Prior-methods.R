@@ -276,7 +276,7 @@ setMethod("describePrior",
 
 ## ExchFixed
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "ExchFixed"),
@@ -295,7 +295,7 @@ setMethod("drawPrior",
 
 ## Exch
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "ExchNormZero"),
@@ -313,7 +313,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "ExchRobustZero"),
@@ -332,9 +332,8 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS  
-## JAH - tests not working
 setMethod("drawPrior",
           signature(prior = "ExchNormCov"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -353,9 +352,8 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
-## JAH - tests not working
 setMethod("drawPrior",
           signature(prior = "ExchRobustCov"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -377,7 +375,7 @@ setMethod("drawPrior",
 
 ## DLM - Norm, Zero
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendNormZeroNoSeason"),
@@ -398,7 +396,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendNormZeroNoSeason"),
@@ -421,7 +419,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendNormZeroWithSeason"),
@@ -444,7 +442,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendNormZeroWithSeason"),
@@ -471,7 +469,7 @@ setMethod("drawPrior",
 
 ## DLM - Norm, Cov
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendNormCovNoSeason"),
@@ -494,7 +492,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendNormCovNoSeason"),
@@ -519,7 +517,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendNormCovWithSeason"),
@@ -545,7 +543,7 @@ setMethod("drawPrior",
           })
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendNormCovWithSeason"),
@@ -574,7 +572,7 @@ setMethod("drawPrior",
 
 ## DLM - Robust, Zero
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendRobustZeroNoSeason"),
@@ -596,7 +594,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendRobustZeroNoSeason"),
@@ -620,7 +618,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendRobustZeroWithSeason"),
@@ -644,7 +642,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendRobustZeroWithSeason"),
@@ -672,7 +670,7 @@ setMethod("drawPrior",
 
 ## DLM - Robust, Cov
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendRobustCovNoSeason"),
@@ -696,7 +694,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendRobustCovNoSeason"),
@@ -722,7 +720,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendRobustCovWithSeason"),
@@ -748,7 +746,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendRobustCovWithSeason"),
@@ -778,7 +776,7 @@ setMethod("drawPrior",
 
 ## Known
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "KnownCertain"),
@@ -795,7 +793,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "KnownUncertain"),
@@ -836,7 +834,7 @@ setMethod("drawPrior",
 
 ## Zero
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "Zero"),

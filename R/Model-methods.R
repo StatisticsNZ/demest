@@ -204,7 +204,7 @@ setMethod("updateModelNotUseExp",
 ## drawModelNotUseExp ##################################################################
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaUnknown"),
@@ -234,7 +234,7 @@ setMethod("drawModelNotUseExp",
 
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawModelNotUseExp",
           signature(object = "PoissonVaryingNotUseExp"),
@@ -266,7 +266,7 @@ setMethod("drawModelNotUseExp",
 
 ## drawModelUseExp #####################################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawModelUseExp",
           signature(object = "BinomialVarying"),
@@ -302,7 +302,7 @@ setMethod("drawModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawModelUseExp",
           signature(object = "PoissonVaryingUseExp"),
@@ -339,7 +339,7 @@ setMethod("drawModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawModelUseExp",
           signature(object = "NormalFixedUseExp"),
@@ -364,7 +364,7 @@ setMethod("drawModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawModelUseExp",
           signature(object = "PoissonBinomialMixture"),
