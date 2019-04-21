@@ -1,5 +1,5 @@
 
-setClass("AccountMixin",
+ setClass("AccountMixin",
          contains = c("VIRTUAL",
                       "AgeTimeStepMixin",
                       "ProbAccountMixin",

@@ -86,10 +86,10 @@ setMethod("drawCombined",
                   ## updating functions use 'updateSystemModel' and
                   ## 'updateDataModel' flags to decide what to update
                   for (i in seq_len(nUpdate)) {
-                      object <- updateSystemModels(object)
+                      object <- updateSystemModels(object, useC = TRUE)
                       object <- updateExpectedExposure(object, useC = TRUE)
                       object <- updateAccount(object, useC = TRUE)
-                      object <- updateDataModelsAccount(object)
+                      object <- updateDataModelsAccount(object, useC = TRUE)
                   }
                   object
               }
