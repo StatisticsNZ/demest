@@ -1632,7 +1632,7 @@ test_that("R and C versions of drawUEtaCoef give same answer", {
         set.seed(seed)
         ans.R <- drawUEtaCoef(prior, useC = FALSE)
         set.seed(seed)
-        ans.R <- drawUEtaCoef(prior, useC = TRUE)
+        ans.C <- drawUEtaCoef(prior, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else

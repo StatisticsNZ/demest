@@ -86,6 +86,67 @@ checkAndTidySystemWeights <- function(weights, systemModels) {
     ans
 }
 
+
+## HAS_TESTS
+checkAndTidyUpdateSystemModel <- function(updateSystemModel, systemModels,
+                                          componentNames) {
+    uses.ag <- any(sapply(systemModels, methods::is, "Aggregate"))
+    n <- length(systemModels)
+    if (is.null(updateSystemModel)) {
+        ans <- if (uses.ag) rep(TRUE, times = n) else rep(FALSE, times = n)
+        return(ans)
+    }
+    if (!is.character(updateSystemModel))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "updateSystemModel", class(updateSystemModel)))
+    if (any(is.na(updateSystemModel)))
+        stop(gettextf("'%s' has missing values",
+                      "updateSystemModel"))
+    if (any(duplicated(updateSystemModel)))
+        stop(gettextf("'%s' has duplicates",
+                      "updateSystemModel"))
+    names.sys.mod <- c("population", componentNames)
+    for (name in updateSystemModel)
+        if (!(name %in% names.sys.mod))
+            stop(gettextf("element \"%s\" of '%s' is not the name of a demographic series",
+                          name, "updateSystemModel"))
+    ans <- names.sys.mod %in% updateSystemModel
+    if (uses.ag & !all(ans))
+        stop(gettextf("one or more system models uses aggregate values, but '%s' does not include all system models",
+                      "updateSystemModel"))
+    ans
+}
+
+## HAS_TESTS
+checkAndTidyUpdateDataModel <- function(updateDataModel, dataModels,
+                                        namesDatasets) {
+    uses.ag <- any(sapply(dataModels, methods::is, "Aggregate"))
+    n <- length(dataModels)
+    if (is.null(updateDataModel)) {
+        ans <- if (uses.ag) rep(TRUE, times = n) else rep(FALSE, times = n)
+        return(ans)
+    }
+    if (!is.character(updateDataModel))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "updateDataModel", class(updateDataModel)))
+    if (any(is.na(updateDataModel)))
+        stop(gettextf("'%s' has missing values",
+                      "updateDataModel"))
+    if (any(duplicated(updateDataModel)))
+        stop(gettextf("'%s' has duplicates",
+                      "updateDataModel"))
+    for (name in updateDataModel)
+        if (!(name %in% namesDatasets))
+            stop(gettextf("element \"%s\" of '%s' is not the name of a demographic series",
+                          name, "updateDataModel"))
+    ans <- namesDatasets %in% updateDataModel
+    if (uses.ag & !all(ans))
+        stop(gettextf("one or more data models uses aggregate values, but '%s' does not include all data models",
+                      "updateDataModel"))
+    ans
+}
+
+
 ## HAS_TESTS
 checkSystemModels <- function(systemModels) {
     ## 'systemModels' is a list

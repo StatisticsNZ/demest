@@ -552,11 +552,13 @@ test_that("R and C versions of drawModelUseExp give same answer with BinomialVar
                                  y = y.tmp,
                                  exposure = exposure,
                                  useC = FALSE)
+        set.seed(seed)
         ans.C.generic <- drawModelUseExp(object = model,
                                          y = y.tmp,
                                          exposure = exposure,
                                          useC = TRUE,
                                          useSpecific = FALSE)
+        set.seed(seed)
         ans.C.specific <- drawModelUseExp(object = model,
                                           y = y.tmp,
                                           exposure = exposure,
@@ -642,11 +644,13 @@ test_that("R and C versions of drawModelUseExp give same answer with PoissonVary
                                  y = y.tmp,
                                  exposure = exposure,
                                  useC = FALSE)
+        set.seed(seed)
         ans.C.generic <- drawModelUseExp(object = model,
                                          y = y.tmp,
                                          exposure = exposure,
                                          useC = TRUE,
                                          useSpecific = FALSE)
+        set.seed(seed)
         ans.C.specific <- drawModelUseExp(object = model,
                                           y = y.tmp,
                                           exposure = exposure,

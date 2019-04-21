@@ -250,7 +250,12 @@ test_that("R and C versions of drawPrior give same answer with ExchFixed", {
     ans.R <- drawPrior(prior, useC = FALSE)
     ans.C.generic <- drawPrior(prior, useC = TRUE, useSpecific = FALSE)
     ans.C.specific <- drawPrior(prior, useC = TRUE, useSpecific = TRUE)
-    expect_identical(ans.R, ans.C)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.generic)
+    else
+        expect_equal(ans.R, ans.C.generic)
+    expect_identical(ans.C.specific, ans.C.generic)
+
 })
 
 ## Exch
@@ -403,16 +408,17 @@ test_that("drawPrior works with ExchNormCov", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
     rinvchisq1 <- demest:::rinvchisq1
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
-    spec <- Exch(covariates = Covariates(formula = formula,
-                                         data = data,
-                                         contrastsArg = list(cat = diag(3)),
-                                         coef = TDist(scale = 0.3)),
-                 error = Error(scale = HalfT(scale = 0.1)))
+    contrastsArg = list(cat = diag(3))
+    covariates <- Covariates(formula = formula,
+                             data = data,
+                             contrastsArg = contrastsArg)
+    spec <- Exch(covariates = covariates)
     beta <- rnorm(10)
     strucZeroArray <- Counts(array(1L,
                                    dim = 10,
@@ -453,10 +459,10 @@ test_that("drawPrior works with ExchNormCov", {
 test_that("R and C versions of drawPrior give same answer with ExchNormCov", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     spec <- Exch(covariates = Covariates(formula = formula,
                                          data = data,
@@ -496,10 +502,11 @@ test_that("drawPrior works with ExchRobustCov", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
     rinvchisq1 <- demest:::rinvchisq1
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     spec <- Exch(covariates = Covariates(formula = formula,
                                          data = data,
@@ -549,10 +556,10 @@ test_that("drawPrior works with ExchRobustCov", {
 test_that("R and C versions of drawPrior give same answer with ExchRobustCov", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     spec <- Exch(covariates = Covariates(formula = formula,
                                          data = data,
@@ -954,10 +961,10 @@ test_that("drawPrior works with DLMNoTrendNormCovNoSeason", {
     drawEta <- demest:::drawEta
     predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 3, 4)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = NULL,
@@ -1005,10 +1012,10 @@ test_that("drawPrior works with DLMNoTrendNormCovNoSeason", {
 test_that("R and C versions of drawPrior give same answer with DLMNoTrendNormCovNoSeason", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = NULL,
@@ -1061,10 +1068,10 @@ test_that("drawPrior works with DLMWithTrendNormCovNoSeason", {
     drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
@@ -1114,10 +1121,10 @@ test_that("drawPrior works with DLMWithTrendNormCovNoSeason", {
 test_that("R and C versions of drawPrior give same answer with DLMWithTrendNormCovNoSeason", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
@@ -1170,10 +1177,10 @@ test_that("drawPrior works with DLMNoTrendNormCovWithSeason", {
     predictSeason <- demest:::predictSeason
     predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = NULL,
@@ -1224,10 +1231,10 @@ test_that("drawPrior works with DLMNoTrendNormCovWithSeason", {
 test_that("R and C versions of drawPrior give same answer with DLMNoTrendNormCovWithSeason", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = NULL,
@@ -1283,10 +1290,10 @@ test_that("drawPrior works with DLMWithTrendNormCovWithSeason", {
     drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.01)),
@@ -1339,10 +1346,10 @@ test_that("drawPrior works with DLMWithTrendNormCovWithSeason", {
 test_that("R and C versions of drawPrior give same answer with DLMWithTrendNormCovWithSeason", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.01)),
@@ -1759,10 +1766,10 @@ test_that("drawPrior works with DLMNoTrendRobustCovNoSeason", {
     drawEta <- demest:::drawEta
     predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = NULL,
@@ -1811,10 +1818,10 @@ test_that("drawPrior works with DLMNoTrendRobustCovNoSeason", {
 test_that("R and C versions of drawPrior give same answer with DLMNoTrendRobustCovNoSeason", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = NULL,
@@ -1868,10 +1875,10 @@ test_that("drawPrior works with DLMWithTrendRobustCovNoSeason", {
     drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
@@ -1922,10 +1929,10 @@ test_that("drawPrior works with DLMWithTrendRobustCovNoSeason", {
 test_that("R and C versions of drawPrior give same answer with DLMWithTrendRobustCovNoSeason", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.1)),
@@ -1979,10 +1986,10 @@ test_that("drawPrior works with DLMNoTrendRobustCovWithSeason", {
     predictSeason <- demest:::predictSeason
     predictAlphaDLMNoTrend <- demest:::predictAlphaDLMNoTrend
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = NULL,
@@ -2034,10 +2041,10 @@ test_that("drawPrior works with DLMNoTrendRobustCovWithSeason", {
 test_that("R and C versions of drawPrior give same answer with DLMNoTrendRobustCovWithSeason", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = NULL,
@@ -2094,10 +2101,10 @@ test_that("drawPrior works with DLMWithTrendRobustCovWithSeason", {
     drawDelta0 <- demest:::drawDelta0
     predictAlphaDeltaDLMWithTrend <- demest:::predictAlphaDeltaDLMWithTrend
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.01)),
@@ -2151,10 +2158,10 @@ test_that("drawPrior works with DLMWithTrendRobustCovWithSeason", {
 test_that("R and C versions of drawPrior give same answer with DLMWithTrendRobustCovWithSeason", {
     drawPrior <- demest:::drawPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(time = rep(2001:2010, times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(time = 2001:2010,
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(3, 4, 3)))
     formula <- mean ~ income * cat
     spec <- DLM(level = Level(scale = HalfT(scale = 0.2)),
                 trend = Trend(initial = Initial(sd = 0.1), scale = HalfT(scale = 0.01)),
@@ -4523,10 +4530,10 @@ test_that("R and C versions of predictPrior give same answer with ExchRobustZero
 test_that("predictPrior works with ExchNormCov", {
     predictPrior <- demest:::predictPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     covariates <- Covariates(formula = formula,
@@ -4554,10 +4561,10 @@ test_that("predictPrior works with ExchNormCov", {
 test_that("R and C versions of predictPrior give same answer with ExchNormCov", {
     predictPrior <- demest:::predictPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     covariates <- Covariates(formula = formula,
@@ -4588,10 +4595,10 @@ test_that("predictPrior works with ExchRobustCov", {
     predictPrior <- demest:::predictPrior
     initialPrior <- demest:::initialPrior
     predictUBeta <- demest:::predictUBeta
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     covariates <- Covariates(formula = formula,
@@ -4621,10 +4628,10 @@ test_that("predictPrior works with ExchRobustCov", {
 test_that("R and C versions of predictPrior give same answer with ExchRobustCov", {
     predictPrior <- demest:::predictPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     covariates <- Covariates(formula = formula,
@@ -7396,10 +7403,10 @@ test_that("R and C versions of transferParamPrior give same answer with ExchNorm
 test_that("transferParamPrior works with ExchNormCov", {
     transferParamPrior <- demest:::transferParamPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     covariates <- Covariates(formula = formula,
@@ -7431,10 +7438,10 @@ test_that("transferParamPrior works with ExchNormCov", {
 test_that("R and C versions of transferParamPrior give same answer with ExchNormCov", {
     transferParamPrior <- demest:::transferParamPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     covariates <- Covariates(formula = formula,
@@ -7531,10 +7538,10 @@ test_that("R and C versions of transferParamPrior give same answer with ExchRobu
 test_that("transferParamPrior works with ExchRobustCov", {
     transferParamPrior <- demest:::transferParamPrior
     initialPrior <- demest:::initialPrior
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     covariates <- Covariates(formula = formula,
@@ -7567,10 +7574,10 @@ test_that("R and C versions of transferParamPrior give same answer with ExchRobu
     transferParamPrior <- demest:::transferParamPrior
     initialPrior <- demest:::initialPrior
     set.seed(1)
-    data <- data.frame(region = rep(letters[1:10], times = 2),
-                       sex = rep(c("f", "m"), each = 10),
-                       income = rnorm(20),
-                       cat = sample(c("x" ,"y", "z"), size = 20, replace = TRUE))
+    data <- data.frame(region = letters[1:10],
+                       sex = rep(c("f", "m"), each = 5),
+                       income = rnorm(10),
+                       cat = rep(c("x" ,"y", "z"), times = c(2, 3, 5)))
     formula <- mean ~ income * cat
     contrastsArg = list(cat = diag(3))
     covariates <- Covariates(formula = formula,

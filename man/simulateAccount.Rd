@@ -6,7 +6,8 @@
 \usage{
 simulateAccount(account, systemModels, datasets = list(),
   dataModels = list(), concordances = list(), weights = list(),
-  dominant = c("Female", "Male"), scaleNoise = 0, filename = NULL,
+  dominant = c("Female", "Male"), updateSystemModel = "population",
+  updateDataModel = NULL, scaleNoise = 0, filename = NULL,
   nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
   parallel = TRUE, nCore = NULL, outfile = NULL, nUpdateMax = 50,
   verbose = TRUE, useC = TRUE)
@@ -38,6 +39,14 @@ providing weights for any Normal models among the system models.}
 \item{dominant}{Either \code{"Female"} (the default) or \code{"Male"}.
 Determines which sex is used to generate exposures in the system
 model for births.}
+
+\item{updateSystemModel}{Names of any system models containing
+parameters that need to be estimated (as oppsed to simply drawn
+from the prior distribution) as part of the simulation.}
+
+\item{updateDataModel}{Names of any data models containing
+parameters that need to be estimated (as oppsed to simply drawn
+from the prior distribution) as part of the simulation.}
 
 \item{scaleNoise}{Governs noise added to Metropolis-Hastings
 ratio. Should be non-zero only when trying to generate

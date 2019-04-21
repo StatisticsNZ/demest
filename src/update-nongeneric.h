@@ -35,5 +35,5 @@
     
     void updatePriorsBetas(SEXP object_R);
 
-	
+    
 #endif

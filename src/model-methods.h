@@ -23,5 +23,14 @@
                                     SEXP exposure_R,
                                     int i_method_model);
 
+    void drawModelNotUseExp_Internal(SEXP object, 
+                                        SEXP y_R, 
+                                        int i_method_model);
+    
+    void drawModelUseExp_Internal(SEXP object,
+                                    SEXP y_R,
+                                    SEXP exposure_R,
+                                    int i_method_model);
+
     
 #endif

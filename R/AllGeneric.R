@@ -219,7 +219,7 @@ setGeneric("drawCombined",
                standardGeneric("drawCombined"))
 
 setGeneric("drawDataModels",
-           function(combined)
+           function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("drawDataModels"))
 
 setGeneric("drawHyperParam",
@@ -240,7 +240,7 @@ setGeneric("drawPrior",
                standardGeneric("drawPrior"))
 
 setGeneric("drawSystemModels",
-           function(combined)
+           function(combined, useC = FALSE, useSpecific = FALSE)
                standardGeneric("drawSystemModels"))
 
 setGeneric("drawYNonSampled",
@@ -389,6 +389,7 @@ setGeneric("initialCombinedAccountSimulate",
                    dataModels, seriesIndices, 
                    datasets, namesDatasets, transforms,
                    dominant = c("Female", "Male"),
+                   updateSystemModel, updateDataModel,
                    scaleNoise = 0)
               standardGeneric("initialCombinedAccountSimulate"))
 

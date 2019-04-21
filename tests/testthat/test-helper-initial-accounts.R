@@ -79,6 +79,182 @@ test_that("checkAndTidySystemWeights works", {
                  "'weights' contains weights for 'population', but system model for 'population' does not use weights")
 })
 
+test_that("checkAndTidyUpdateDataModel works - no aggregate values", {
+    checkAndTidyUpdateDataModel <- demest:::checkAndTidyUpdateDataModel
+    initialModel <- demest:::initialModel
+    specs <- list(Model(census ~ PoissonBinomial(prob = 0.99), series = "population"),
+                  Model(arrivals ~ Poisson(mean ~ time), series = "inmigration"))
+    datasets <- list(Counts(array(1L,
+                                  dim = 4,
+                                  dimnames = list(time = 2000:2003)),
+                            dimscales = c(time = "Points")),
+                     Counts(array(1L,
+                                  dim = 3,
+                                  dimnames = list(time = 2001:2003)),
+                            dimscales = c(time = "Intervals")))
+    dataModels <- list(initialModel(specs[[1]], y = datasets[[1]], exposure = datasets[[1]]),
+                       initialModel(specs[[2]], y = datasets[[2]], exposure = datasets[[2]]))
+    ans.obtained <- checkAndTidyUpdateDataModel(updateDataModel = NULL,
+                                                dataModels = dataModels,
+                                                namesDatasets = c("census", "arrivals"))
+    ans.expected <- c(FALSE, FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- checkAndTidyUpdateDataModel(updateDataModel = "census",
+                                                dataModels = dataModels,
+                                                namesDatasets = c("census", "arrivals"))
+    ans.expected <- c(TRUE, FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    expect_error(checkAndTidyUpdateDataModel(updateDataModel = FALSE,
+                                             dataModels = dataModels,
+                                             namesDatasets = c("census", "arrivals")),
+                 "'updateDataModel' has class \"logical\"")
+    expect_error(checkAndTidyUpdateDataModel(updateDataModel = as.character(NA),
+                                             dataModels = dataModels,
+                                             namesDatasets = c("census", "arrivals")),
+                 "'updateDataModel' has missing values")
+    expect_error(checkAndTidyUpdateDataModel(updateDataModel = c("population", "population"),
+                                             dataModels = dataModels,
+                                             namesDatasets = c("census", "arrivals")),
+                 "'updateDataModel' has duplicates")
+    expect_error(checkAndTidyUpdateDataModel(updateDataModel = "wrong",
+                                             dataModels = dataModels,
+                                             namesDatasets = c("census", "arrivals")),
+                 "element \"wrong\" of 'updateDataModel' is not the name of a demographic series")
+})
+
+
+test_that("checkAndTidyUpdateDataModel works - with aggregate values", {
+    checkAndTidyUpdateDataModel <- demest:::checkAndTidyUpdateDataModel
+    initialModel <- demest:::initialModel
+    specs <- list(Model(census ~ PoissonBinomial(prob = 0.99), series = "population"),
+                  Model(arrivals ~ Poisson(mean ~ time), series = "inmigration",
+                        aggregate = AgCertain(3)))
+    datasets <- list(Counts(array(1L,
+                                  dim = 4,
+                                  dimnames = list(time = 2000:2003)),
+                            dimscales = c(time = "Points")),
+                     Counts(array(1L,
+                                  dim = 3,
+                                  dimnames = list(time = 2001:2003)),
+                            dimscales = c(time = "Intervals")))
+    dataModels <- list(initialModel(specs[[1]], y = datasets[[1]], exposure = datasets[[1]]),
+                       initialModel(specs[[2]], y = datasets[[2]], exposure = datasets[[2]]))
+    ans.obtained <- checkAndTidyUpdateDataModel(updateDataModel = NULL,
+                                                dataModels = dataModels,
+                                                namesDatasets = c("census", "arrivals"))
+    ans.expected <- c(TRUE, TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- checkAndTidyUpdateDataModel(updateDataModel = c("arrivals", "census"),
+                                                dataModels = dataModels,
+                                                namesDatasets = c("census", "arrivals"))
+    ans.expected <- c(TRUE, TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    expect_error(checkAndTidyUpdateDataModel(updateDataModel = FALSE,
+                                             dataModels = dataModels,
+                                             namesDatasets = c("census", "arrivals")),
+                 "'updateDataModel' has class \"logical\"")
+    expect_error(checkAndTidyUpdateDataModel(updateDataModel = as.character(NA),
+                                             dataModels = dataModels,
+                                             namesDatasets = c("census", "arrivals")),
+                 "'updateDataModel' has missing values")
+    expect_error(checkAndTidyUpdateDataModel(updateDataModel = c("population", "population"),
+                                             dataModels = dataModels,
+                                             namesDatasets = c("census", "arrivals")),
+                 "'updateDataModel' has duplicates")
+    expect_error(checkAndTidyUpdateDataModel(updateDataModel = "wrong",
+                                             dataModels = dataModels,
+                                             namesDatasets = c("census", "arrivals")),
+                 "element \"wrong\" of 'updateDataModel' is not the name of a demographic series")
+})
+
+test_that("checkAndTidyUpdateSystemModel works - no aggregate values", {
+    checkAndTidyUpdateSystemModel <- demest:::checkAndTidyUpdateSystemModel
+    initialModel <- demest:::initialModel
+    specs <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                  Model(inmigration ~ Poisson(mean ~ time)))
+    data <- list(Counts(array(1L,
+                              dim = 4,
+                              dimnames = list(time = 2000:2003)),
+                        dimscales = c(time = "Points")),
+                 Counts(array(1L,
+                              dim = 3,
+                              dimnames = list(time = 2001:2003)),
+                        dimscales = c(time = "Intervals")))
+    systemModels <- list(initialModel(specs[[1]], y = data[[1]], exposure = NULL),
+                         initialModel(specs[[2]], y = data[[2]], exposure = data[[2]]))
+    ans.obtained <- checkAndTidyUpdateSystemModel(updateSystemModel = NULL,
+                                                  systemModels = systemModels,
+                                                  componentNames = "inmigration")
+    ans.expected <- c(FALSE, FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- checkAndTidyUpdateSystemModel(updateSystemModel = "population",
+                                                  systemModels = systemModels,
+                                                  componentNames = "inmigration")
+    ans.expected <- c(TRUE, FALSE)
+    expect_identical(ans.obtained, ans.expected)
+    expect_error(checkAndTidyUpdateSystemModel(updateSystemModel = FALSE,
+                                               systemModels = systemModels,
+                                               componentNames = "inmigration"),
+                 "'updateSystemModel' has class \"logical\"")
+    expect_error(checkAndTidyUpdateSystemModel(updateSystemModel = as.character(NA),
+                                               systemModels = systemModels,
+                                               componentNames = "inmigration"),
+                 "'updateSystemModel' has missing values")
+    expect_error(checkAndTidyUpdateSystemModel(updateSystemModel = c("population", "population"),
+                                               systemModels = systemModels,
+                                               componentNames = "inmigration"),
+                 "'updateSystemModel' has duplicates")
+    expect_error(checkAndTidyUpdateSystemModel(updateSystemModel = "wrong",
+                                               systemModels = systemModels,
+                                               componentNames = "inmigration"),
+                 "element \"wrong\" of 'updateSystemModel' is not the name of a demographic series")
+})
+
+test_that("checkAndTidyUpdateSystemModel works - with aggregate values", {
+    checkAndTidyUpdateSystemModel <- demest:::checkAndTidyUpdateSystemModel
+    initialModel <- demest:::initialModel
+    specs <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                  Model(inmigration ~ Poisson(mean ~ time),
+                        aggregate = AgCertain(3)))
+    data <- list(Counts(array(1L,
+                              dim = 4,
+                              dimnames = list(time = 2000:2003)),
+                        dimscales = c(time = "Points")),
+                 Counts(array(1L,
+                              dim = 3,
+                              dimnames = list(time = 2001:2003)),
+                        dimscales = c(time = "Intervals")))
+    systemModels <- list(initialModel(specs[[1]], y = datasets[[1]], exposure = NULL),
+                         initialModel(specs[[2]], y = datasets[[2]], exposure = datasets[[2]]))
+    ans.obtained <- checkAndTidyUpdateSystemModel(updateSystemModel = NULL,
+                                                  systemModels = systemModels,
+                                                  componentNames = "inmigration")
+    ans.expected <- c(TRUE, TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    ans.obtained <- checkAndTidyUpdateSystemModel(updateSystemModel = c("inmigration", "population"),
+                                                  systemModels = systemModels,
+                                                  componentNames = "inmigration")
+    ans.expected <- c(TRUE, TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    expect_error(checkAndTidyUpdateSystemModel(updateSystemModel = FALSE,
+                                               systemModels = systemModels,
+                                               componentNames = "inmigration"),
+                 "'updateSystemModel' has class \"logical\"")
+    expect_error(checkAndTidyUpdateSystemModel(updateSystemModel = as.character(NA),
+                                               systemModels = systemModels,
+                                               componentNames = "inmigration"),
+                 "'updateSystemModel' has missing values")
+    expect_error(checkAndTidyUpdateSystemModel(updateSystemModel = c("population", "population"),
+                                               systemModels = systemModels,
+                                               componentNames = "inmigration"),
+                 "'updateSystemModel' has duplicates")
+    expect_error(checkAndTidyUpdateSystemModel(updateSystemModel = "wrong",
+                                               systemModels = systemModels,
+                                               componentNames = "inmigration"),
+                 "element \"wrong\" of 'updateSystemModel' is not the name of a demographic series")
+})
+
+
 test_that("checkSystemModels works", {
     checkSystemModels <- demest:::checkSystemModels
     x <- list(Model(population ~ Poisson(mean ~ age + sex)),

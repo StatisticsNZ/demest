@@ -281,7 +281,7 @@ drawBetas <- function(object, useC = FALSE) {
             v <- getV(prior)
             for (j in seq_len(J)) {
                 if (!all.struc.zero[j]) {
-					mean <- beta.hat[j]
+                    mean <- beta.hat[j]
                     sd <- sqrt(v[j])
                     beta[j] <- stats::rnorm(n = 1L,
                                             mean = mean,
@@ -296,6 +296,10 @@ drawBetas <- function(object, useC = FALSE) {
 }
 
 ## READY_TO_TRANSLATE
+##                      JAH - translated but cannot test at present
+##                      17  April 2019
+##                      had to comment out Mixin model stuff in combined mixins
+##                      to allow package loading
 ## HAS_TESTS
 drawDataModelsAccount <- function(combined, useC = FALSE) {
     stopifnot(methods::validObject(combined))
@@ -331,7 +335,7 @@ drawDataModelsAccount <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawDelta0 <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "DLM") && methods::is(prior, "WithTrendMixin"))
@@ -361,7 +365,7 @@ drawDelta0 <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawEta <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -386,7 +390,7 @@ drawEta <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATEd
 ## HAS_TESTS
 drawOmegaAlpha <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -406,7 +410,7 @@ drawOmegaAlpha <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawOmegaComponentWeightMix <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -426,7 +430,7 @@ drawOmegaComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawOmegaDelta <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -446,7 +450,7 @@ drawOmegaDelta <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -466,7 +470,7 @@ drawOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawOmegaSeason <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -486,7 +490,7 @@ drawOmegaSeason <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawOmegaVectorsMix <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -506,7 +510,7 @@ drawOmegaVectorsMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawPhi <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -532,7 +536,7 @@ drawPhi <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawPhiMix <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -558,7 +562,7 @@ drawPhiMix <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawPriors <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
@@ -575,7 +579,7 @@ drawPriors <- function(object, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawSigma_Varying <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
@@ -596,7 +600,7 @@ drawSigma_Varying <- function(object, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawTau <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -616,7 +620,7 @@ drawTau <- function(prior, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawUEtaCoef <- function(prior, useC = FALSE) {
     methods::validObject(prior)
@@ -636,7 +640,7 @@ drawUEtaCoef <- function(prior, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 drawVarsigma <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "VarsigmaUnknown"))

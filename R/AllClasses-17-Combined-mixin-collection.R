@@ -1,5 +1,5 @@
 
-setClass("AccountMixin",
+ setClass("AccountMixin",
          contains = c("VIRTUAL",
                       "AgeTimeStepMixin",
                       "ProbAccountMixin",
@@ -18,7 +18,10 @@ setClass("AccountMixin",
                       "MappingsAccountMixin",
                       "MaxAttemptMixin",
                       "NCellAccountMixin",
-                      "ScaleNoiseMixin"))
+                      "ScaleNoiseMixin",
+                      "UpdateComponentMixin",
+                      "UpdateDataModelMixin",
+                      "UpdateSystemModelMixin"))
 
 
 setClass("MovementsAgeMixin",
@@ -32,7 +35,6 @@ setClass("MovementsAgeMixin",
 setClass("DataMixin",
          contains = c("VIRTUAL",
                       "DataModelsMixin",
-                      "DataModelsUseAgMixin",
                       "DatasetsMixin",
                       "NamesDatasetsMixin",
                       "TransformsMixin"))
@@ -40,7 +42,6 @@ setClass("DataMixin",
 setClass("SystemMixin",
          contains = c("VIRTUAL",
                       "SystemModelsMixin",
-                      "SystemModelsUseAgMixin",
                       "ModelUsesExposureMixin",
                       "TransformExpToBirthsMixin",
                       "TransformsExpToCompMixin"))

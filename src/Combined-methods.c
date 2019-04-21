@@ -383,7 +383,7 @@ updateCombined(SEXP object_R, int nUpdate)
             updateCombined_CombinedCountsBinomial(object_R, nUpdate);
             break;
         case 9: case 10: /* combined account movements (no age and has age) */
-  	    updateCombined_CombinedAccount(object_R, nUpdate);
+        updateCombined_CombinedAccount(object_R, nUpdate);
             break;
         case 11: /* CMP model, not has exposure */
             updateCombined_CombinedModelCMPNotHasExp(object_R, nUpdate);
@@ -635,6 +635,9 @@ void
 updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
 {
     double * expectedExposure = REAL(GET_SLOT(combined_R, expectedExposure_sym));
+
+    int *updateSystemModel = LOGICAL(GET_SLOT(combined_R, updateSystemModel_sym));
+    int updatePopn = updateSystemModel[0];
     
     SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
     SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, 0);
@@ -657,23 +660,27 @@ updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
     int lengthSliceExp = nTimeExp * stepTime;
     
     double halfAgeTimeStep = 0.5 * ageTimeStep;
-    
-    for (int i = 0; i < lengthExpNoTri; ++i) {
+
+    if (updatePopn) {
+      
+      for (int i = 0; i < lengthExpNoTri; ++i) {
 
         int iPopnStart = (i / lengthSliceExp) * lengthSlicePopn
-                        + i % lengthSliceExp; /* C style */
+	  + i % lengthSliceExp; /* C style */
         int iPopnEnd = iPopnStart + stepTime;
         double expStart = halfAgeTimeStep * theta[iPopnStart];
         double expEnd = halfAgeTimeStep * theta[iPopnEnd];
         
         if (hasAge) {
-            expectedExposure[i + lengthExpNoTri] = expStart;
-            expectedExposure[i] = expEnd;
+	  expectedExposure[i + lengthExpNoTri] = expStart;
+	  expectedExposure[i] = expEnd;
         }
         else {
-            expectedExposure[i] = expStart + expEnd;
+	  expectedExposure[i] = expStart + expEnd;
         }
             
+      }
+
     }
 }
 
@@ -701,104 +708,114 @@ void
 updateSystemModels_CombinedAccountMovements(SEXP combined_R)
 {
                   
-    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+  SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+  int *updateSystemModel = LOGICAL(GET_SLOT(combined_R, updateSystemModel_sym));
         
-    SEXP account_R = GET_SLOT(combined_R, account_sym);
-    SEXP population_R = GET_SLOT(account_R, population_sym);
-    SEXP components_R = GET_SLOT(account_R, components_sym);
-    int nComponents = LENGTH(components_R);
+  SEXP account_R = GET_SLOT(combined_R, account_sym);
+  SEXP population_R = GET_SLOT(account_R, population_sym);
+  SEXP components_R = GET_SLOT(account_R, components_sym);
+  int nComponents = LENGTH(components_R);
     
-    int * modelUsesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
+  int * modelUsesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
     
-    SEXP transformsExpToComp_R = GET_SLOT(combined_R, transformsExpToComp_sym); /* list */
-    SEXP transformExpToBirths_R = GET_SLOT(combined_R, transformExpToBirths_sym);
+  SEXP transformsExpToComp_R = GET_SLOT(combined_R, transformsExpToComp_sym); /* list */
+  SEXP transformExpToBirths_R = GET_SLOT(combined_R, transformExpToBirths_sym);
     
-    int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
-    
-    SEXP firstModel_R = VECTOR_ELT(systemModels_R, 0);
-    
-    updateModelNotUseExp(firstModel_R, population_R);
-    
-    for(int i = 0; i < nComponents; ++i) {
+  int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
+
+  /* update model for population */
+
+  if (updateSystemModel[0]) {
+    SEXP popnModel_R = VECTOR_ELT(systemModels_R, 0);
+    updateModelNotUseExp(popnModel_R, population_R);
+  }
+
+  /* update models for components */
+  
+  for(int i = 0; i < nComponents; ++i) {
+
+    if (updateSystemModel[i+1]) {
         
-        SEXP model_R = VECTOR_ELT(systemModels_R, i+1);
-        SEXP component_R = VECTOR_ELT(components_R, i);
-        int usesExposure = modelUsesExposureVec[i+1];
+      SEXP model_R = VECTOR_ELT(systemModels_R, i+1);
+      SEXP component_R = VECTOR_ELT(components_R, i);
+      int usesExposure = modelUsesExposureVec[i+1];
         
-        if (usesExposure) {
+      if (usesExposure) {
             
-            SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
-            int haveTransform = !isNull(transform_R);
+	SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
+	int haveTransform = !isNull(transform_R);
             
-            SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
-            int isBirths = (i == (iBirths_r - 1));
+	SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
+	int isBirths = (i == (iBirths_r - 1));
                 
-            if(isBirths) {
-                SEXP newExposure_R = NULL;
-                PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
-                                        transformExpToBirths_R));
-                if(haveTransform) {
-                    SEXP anotherNewExposure_R = NULL;
-                    PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
-                                        transform_R));
-                    updateModelUseExp(model_R, component_R, anotherNewExposure_R);
-                    UNPROTECT(1); /* anotherNewExposure */
+	if(isBirths) {
+	  SEXP newExposure_R = NULL;
+	  PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
+						     transformExpToBirths_R));
+	  if(haveTransform) {
+	    SEXP anotherNewExposure_R = NULL;
+	    PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
+							    transform_R));
+	    updateModelUseExp(model_R, component_R, anotherNewExposure_R);
+	    UNPROTECT(1); /* anotherNewExposure */
                     
-                    #ifdef MYDEBUG
-                    PrintValue(mkString("is Births and have transform"));
-                    #endif
-                }
-                else {
-                    updateModelUseExp(model_R, component_R, newExposure_R);
+#ifdef MYDEBUG
+	    PrintValue(mkString("is Births and have transform"));
+#endif
+	  }
+	  else {
+	    updateModelUseExp(model_R, component_R, newExposure_R);
                     
-                    #ifdef MYDEBUG
-                    PrintValue(mkString("isBirths, no transform"));
-                    #endif
-                }
-                UNPROTECT(1); /* newExposure */
-            }
-            else if (haveTransform) {
-                SEXP newExposure_R = NULL;
-                PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
-                                    transform_R));
-                updateModelUseExp(model_R, component_R, newExposure_R);
-                UNPROTECT(1); /* newExposure */
+#ifdef MYDEBUG
+	    PrintValue(mkString("isBirths, no transform"));
+#endif
+	  }
+	  UNPROTECT(1); /* newExposure */
+	}
+	else if (haveTransform) {
+	  SEXP newExposure_R = NULL;
+	  PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
+						   transform_R));
+	  updateModelUseExp(model_R, component_R, newExposure_R);
+	  UNPROTECT(1); /* newExposure */
                 
-                #ifdef MYDEBUG
-                    PrintValue(mkString("not isBirths, has transform"));
-                #endif
-            }
-            else {
-                updateModelUseExp(model_R, component_R, exposure_R);
+#ifdef MYDEBUG
+	  PrintValue(mkString("not isBirths, has transform"));
+#endif
+	}
+	else {
+	  updateModelUseExp(model_R, component_R, exposure_R);
                 
-                #ifdef MYDEBUG
-                    PrintValue(mkString("not isBirths, no transform"));
-                #endif
-            }
-        } /* end if usesExposure */
+#ifdef MYDEBUG
+	  PrintValue(mkString("not isBirths, no transform"));
+#endif
+	}
+      } /* end if usesExposure */
         
-        else {
-            const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-            char *found = NULL;
-            found = strstr(class_name, "Normal");
-            if (found) {
-                SEXP componentDouble_R;
-                PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
-                updateModelNotUseExp(model_R, componentDouble_R);
-                UNPROTECT(1);
-                #ifdef MYDEBUG
-                    PrintValue(mkString("not use exp, normal"));
-                #endif
-            }
-            else {
-                updateModelNotUseExp(model_R, component_R);
-                #ifdef MYDEBUG
-                    PrintValue(mkString("not use exp, not normal"));
-                #endif
-            }
+      else {
+	const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+	char *found = NULL;
+	found = strstr(class_name, "Normal");
+	if (found) {
+	  SEXP componentDouble_R;
+	  PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
+	  updateModelNotUseExp(model_R, componentDouble_R);
+	  UNPROTECT(1);
+#ifdef MYDEBUG
+	  PrintValue(mkString("not use exp, normal"));
+#endif
+	}
+	else {
+	  updateModelNotUseExp(model_R, component_R);
+#ifdef MYDEBUG
+	  PrintValue(mkString("not use exp, not normal"));
+#endif
+	}
             
-        }
+      }
+
     }
+  }
     
 }  
 
@@ -806,10 +823,10 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
 void
 updateCombined_CombinedAccount(SEXP object_R, int nUpdate)
 {
-  for (int i = 0; i < nUpdate; ++i) {
-    updateAccount(object_R);
-    updateSystemModels(object_R);
-    updateExpectedExposure(object_R);
-    updateDataModelsAccount(object_R);
-  }
+    for (int i = 0; i < nUpdate; ++i) {
+        updateAccount(object_R);
+        updateSystemModels(object_R);
+        updateExpectedExposure(object_R);
+        updateDataModelsAccount(object_R);
+    }
 }

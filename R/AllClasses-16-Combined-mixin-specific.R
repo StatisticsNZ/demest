@@ -143,23 +143,6 @@ setClass("DatasetsMixin",
              TRUE
          })
 
-## HAS_TESTS
-setClass("DataModelsUseAgMixin",
-         slots = c(dataModelsUseAg = "LogicalFlag"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             dataModelsUseAg <- object@dataModelsUseAg@.Data
-             dataModels <- object@dataModels
-             mod.uses.ag <- sapply(dataModels, methods::is, "Aggregate")
-             if (dataModelsUseAg && !any(mod.uses.ag))
-                 return(gettextf("'%s' is %s, but no data models have class \"%s\"",
-                                 "dataModelsUseAg", TRUE, "Aggregate"))
-             if (!dataModelsUseAg && any(mod.uses.ag))
-                 return(gettextf("'%s' is %s, but data models have class \"%s\"",
-                                 "dataModelsUseAg", FALSE, "Aggregate"))
-             TRUE
-         })
-
 ## NO_TESTS
 setClass("DescriptionsMixin",
          slots = c(descriptions = "list"),
@@ -961,24 +944,6 @@ setClass("SystemModelsMixin",
              TRUE
          })
 
-## NO_TESTS
-setClass("SystemModelsUseAgMixin",
-         slots = c(systemModelsUseAg = "LogicalFlag"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             systemModelsUseAg <- object@systemModelsUseAg@.Data
-             systemModels <- object@systemModels
-             mod.uses.ag <- sapply(systemModels, methods::is, "Aggregate")
-             if (systemModelsUseAg && !any(mod.uses.ag))
-                 return(gettextf("'%s' is %s, but no system models have class \"%s\"",
-                                 "systemModelsUseAg", TRUE, "Aggregate"))
-             if (!systemModelsUseAg && any(mod.uses.ag))
-                 return(gettextf("'%s' is %s, but system models have class \"%s\"",
-                                 "systemModelsUseAg", FALSE, "Aggregate"))
-             TRUE
-         })
-
-
 setClass("SystemMovementsMixin",
          contains = "VIRTUAL",
          validity = function(object) {
@@ -1124,6 +1089,60 @@ setClass("TransformsExpToCompMixin",
              TRUE
          })
 
+## NO_TESTS
+setClass("UpdateComponentMixin",
+         slots = c(updateComponent = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             updateComponent <- object@updateComponent
+             components <- object@account@components
+             ## 'updateComponent' has no missing values
+             if (any(is.na(updateComponent)))
+                 return(gettextf("'%s' has missing values",
+                                 "updateComponent"))
+             ## length of 'updateComponent' equal to length of 'components'
+             if (!identical(length(updateComponent), length(components)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "updateComponent", "components"))
+             TRUE             
+         })
+
+## NO_TESTS
+setClass("UpdateDataModelMixin",
+         slots = c(updateDataModel = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             updateDataModel <- object@updateDataModel
+             dataModels <- object@dataModels
+             ## 'updateDataModel' has no missing values
+             if (any(is.na(updateDataModel)))
+                 return(gettextf("'%s' has missing values",
+                                 "updateDataModel"))
+             ## length of 'updateDataModel' equal to length of 'dataModels'
+             if (!identical(length(updateDataModel), length(dataModels)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "updateDataModel", "dataModels"))
+             TRUE             
+         })
+
+## NO_TESTS
+setClass("UpdateSystemModelMixin",
+         slots = c(updateSystemModel = "logical"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             updateSystemModel <- object@updateSystemModel
+             systemModels <- object@systemModels
+             ## 'updateSystemModel' has no missing values
+             if (any(is.na(updateSystemModel)))
+                 return(gettextf("'%s' has missing values",
+                                 "updateSystemModel"))
+             ## length of 'updateSystemModel' equal to length of 'systemModels'
+             if (!identical(length(updateSystemModel), length(systemModels)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "updateSystemModel", "systemModels"))
+             TRUE             
+         })
+          
 ## HAS_TESTS
 setClass("Y",
          slots = c(y = "DemographicArray"),

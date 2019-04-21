@@ -153,7 +153,7 @@ rhalftTrunc1(double df, double scale, double max)
       double t = rt(df);
       ans = scale * fabs(t);
       if (ans < max) {
-	found = 1;
+    found = 1;
       }
       ++i;
     }
@@ -502,25 +502,25 @@ rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
     
         while ( !found && (n_attempt < maxAttempt) ) {
 
-	  n_attempt += 1;
+      n_attempt += 1;
 
-	  prop_value = rpois(lambda);
-	  
-	  if (lower == 0) { 	/* must have finite_upper is TRUE */
-	    found = !(prop_value > upper);
-	  }
-	  else {
-	    int m = ceil(lower - lambda);
-	    if (m < 0)
-	      m = 0;
-	    prop_value += m;
-	    found = ( !(prop_value < lower)
-		      && (runif(0, 1) < (lower / prop_value)) );
-	    if (finite_upper)
-	      found = found && !(prop_value > upper);
-	      
-	  }
-	  
+      prop_value = rpois(lambda);
+      
+      if (lower == 0) {     /* must have finite_upper is TRUE */
+        found = !(prop_value > upper);
+      }
+      else {
+        int m = ceil(lower - lambda);
+        if (m < 0)
+          m = 0;
+        prop_value += m;
+        found = ( !(prop_value < lower)
+              && (runif(0, 1) < (lower / prop_value)) );
+        if (finite_upper)
+          found = found && !(prop_value > upper);
+          
+      }
+      
         }
         if (found) {
             retValue = (int) prop_value;
@@ -734,12 +734,12 @@ betaHat_AlphaDLMInternal(double *beta_hat, SEXP prior_R, int J)
     int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
     
     for (int l = 0; l < L; ++l) {
-    if (!alongAllStrucZero[l]) {
-        for (int k = 0; k < K; ++k) {
-        int iAlpha = indicesAlpha[k+1];
-        int iBetaHat = indicesV[k];
-        beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
-        }
+        if (!alongAllStrucZero[l]) {
+            for (int k = 0; k < K; ++k) {
+                int iAlpha = indicesAlpha[k+1];
+                int iBetaHat = indicesV[k];
+                beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
+            }
         }
         advanceA(iteratorAlpha);
         advanceA(iteratorV);
@@ -818,11 +818,11 @@ betaHat_SeasonInternal(double *beta_hat, SEXP prior_R, int J)
     for (int l = 0; l < L; ++l) {
     if (!alongAllStrucZero[l]) {
         for (int k = 0; k < K; ++k) {
-        int iS = indicesS[k+1];
-        int iBetaHat = indicesV[k];
-        double *isVec = REAL(VECTOR_ELT(s_R, iS-1));
-        beta_hat[iBetaHat - 1] += isVec[0]; 
-        }
+            int iS = indicesS[k+1];
+            int iBetaHat = indicesV[k];
+            double *isVec = REAL(VECTOR_ELT(s_R, iS-1));
+            beta_hat[iBetaHat - 1] += isVec[0]; 
+            }
         }
         advanceA(iteratorS);
         advanceA(iteratorV);
@@ -863,12 +863,12 @@ betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J)
     int *indicesV = INTEGER(GET_SLOT(iteratorV, indices_sym));
     
     for (int l = 0; l < L; ++l) {
-    if (!alongAllStrucZero[l]) {
-        for (int k = 0; k < K; ++k) {
-        int iAlpha = indicesAlpha[k+1];
-        int iBetaHat = indicesV[k];
-        beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
-        }
+        if (!alongAllStrucZero[l]) {
+            for (int k = 0; k < K; ++k) {
+                int iAlpha = indicesAlpha[k+1];
+                int iBetaHat = indicesV[k];
+                beta_hat[iBetaHat - 1] += alphaDLM[iAlpha - 1]; 
+            }
         }
         advanceA(iteratorAlpha);
         advanceA(iteratorV);
@@ -928,12 +928,12 @@ betaHatSeason(double *beta_hat, SEXP prior_R, int J)
     
     for (int l = 0; l < L; ++l) {
         if (!alongAllStrucZero[l]) {
-        for (int k = 0; k < K; ++k) {
-        int iS = indicesS[k+1];
-        int iBetaHat = indicesV[k];
-        double *isVec = REAL(VECTOR_ELT(s_R, iS-1));
-        beta_hat[iBetaHat - 1] += isVec[0]; 
-        }
+            for (int k = 0; k < K; ++k) {
+                int iS = indicesS[k+1];
+                int iBetaHat = indicesV[k];
+                double *isVec = REAL(VECTOR_ELT(s_R, iS-1));
+                beta_hat[iBetaHat - 1] += isVec[0]; 
+            }
         }
         advanceA(iteratorS);
         advanceA(iteratorV);
@@ -1277,12 +1277,12 @@ getV_Internal(double *V, SEXP prior_R, int J)
         double *A = REAL(GET_SLOT(prior_R, AKnownVec_sym));
         for (int j = 0; j < J; ++j) {
             V[j] = A[j] * A[j];
-	}
+        }
     }
     else if (isZeroVar) {
         for (int j = 0; j < J; ++j) {
-  	    V[j] = 0;
-	}
+            V[j] = 0;
+        }
     }
     else {
         error("unable to calculate variances for this prior");
@@ -1857,11 +1857,11 @@ predictAlphaDLMNoTrend(SEXP prior_R)
     if (!alongAllStrucZero[l]) {
         for (int i = 0; i < K; ++i) {
             
-        int k_curr = indices[i+1] - 1;
-        int k_prev = indices[i] - 1;
-            
-        double mean = phi * alpha[k_prev];
-        alpha[k_curr] = rnorm(mean, omega);
+            int k_curr = indices[i+1] - 1;
+            int k_prev = indices[i] - 1;
+                
+            double mean = phi * alpha[k_prev];
+            alpha[k_curr] = rnorm(mean, omega);
         }
     }
             
@@ -1895,25 +1895,25 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
     for (int l = 0; l < L; ++l) {
     
         if (!alongAllStrucZero[l]) {
-        for (int i = 0; i < K; ++i) {
-            
-        int k_curr = indices[i+1] - 1;
-        int k_prev = indices[i] - 1;
-            
-        double delta_k_prev = delta[k_prev];
-            
-        double meanDelta = phi * delta_k_prev;
-        delta[k_curr] = rnorm(meanDelta, omegaDelta);
-            
-        double meanAlpha = alpha[k_prev] + delta_k_prev;
-        if (hasLevel) {
-            alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
-        }
-        else {
-            alpha[k_curr] = meanAlpha;
-        }
-        }
-    }
+            for (int i = 0; i < K; ++i) {
+                
+                int k_curr = indices[i+1] - 1;
+                int k_prev = indices[i] - 1;
+                    
+                double delta_k_prev = delta[k_prev];
+                    
+                double meanDelta = phi * delta_k_prev;
+                delta[k_curr] = rnorm(meanDelta, omegaDelta);
+                    
+                double meanAlpha = alpha[k_prev] + delta_k_prev;
+                if (hasLevel) {
+                    alpha[k_curr] = rnorm(meanAlpha, omegaAlpha);
+                }
+                else {
+                    alpha[k_curr] = meanAlpha;
+                }
+            }
+        }   
         advanceA(iterator_R);
     }
 }
@@ -2187,24 +2187,24 @@ predictSeason(SEXP prior_R)
     int *indices = INTEGER(GET_SLOT(iteratorS, indices_sym));
     
     for (int l = 0; l < L; ++l) {
-    if (!alongAllStrucZero[l]) {
-        for (int k = 0; k < K; ++k) {
-            
-        int k_curr = indices[k + 1] - 1; /* C style indices */
-        int k_prev = indices[k] - 1;
-            
-        double *s_curr = REAL(VECTOR_ELT(s_R, k_curr));
-        double *s_prev = REAL(VECTOR_ELT(s_R, k_prev));
-            
-        double mean = s_prev[nSeason - 1];
-            
-        s_curr[0] = rnorm(mean, omega);
+        if (!alongAllStrucZero[l]) {
+            for (int k = 0; k < K; ++k) {
+                
+                int k_curr = indices[k + 1] - 1; /* C style indices */
+                int k_prev = indices[k] - 1;
+                    
+                double *s_curr = REAL(VECTOR_ELT(s_R, k_curr));
+                double *s_prev = REAL(VECTOR_ELT(s_R, k_prev));
+                    
+                double mean = s_prev[nSeason - 1];
+                    
+                s_curr[0] = rnorm(mean, omega);
 
-        /* copy nSeason-1 values from s_prev (starting at first)
-         * to s_curr (starting at second) */
-        memcpy((s_curr+1), s_prev, (nSeason-1)*sizeof(double));
-                        
-        }
+                /* copy nSeason-1 values from s_prev (starting at first)
+                 * to s_curr (starting at second) */
+                memcpy((s_curr+1), s_prev, (nSeason-1)*sizeof(double));
+                                
+            }
         }
         advanceA(iteratorS);
 
@@ -2698,16 +2698,16 @@ logLikelihood_Round3(SEXP model_R, int count,
 
     int diff = fabs(x - count);
     if (diff > 2) {
-    return R_NegInf;
+        return R_NegInf;
     }
     else if (diff == 2) {
-    return -log(3);
+        return -log(3);
     }
     else if (diff == 1) {
-    return log(2) - log(3);
+        return log(2) - log(3);
     }
     else {
-    return 0;
+        return 0;
     }
 }
 
@@ -2769,9 +2769,13 @@ makeIOther(int i, SEXP transform_R)
             if (ir_shared[ir_self-1] == i) break;
         }
         int whichr_shared = (int)floor(runif(0.0,1.0)*(n_shared-1) + 1);
-        if (whichr_shared == n_shared) whichr_shared = n_shared - 1;
+        if (whichr_shared == n_shared) {
+            whichr_shared = n_shared - 1;
+        }
         /* max whichr_shared = n_shared - 1 */
-        if (whichr_shared >= ir_self) whichr_shared += 1;
+        if (whichr_shared >= ir_self) {
+            whichr_shared += 1;
+        }
         ans = ir_shared[whichr_shared - 1];
     }
     
@@ -3693,13 +3697,15 @@ getIAccNextFromPopn(int i, SEXP description_R)
     int iAcc = 0;
     
     if ((iTime_r < nTimePopn) && (iAge_r < nAgePopn)) {
-    iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
-        + ((i - 1) % (stepTimePopn * nTimePopn))) + 1;
+        iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
+            + ((i - 1) % (stepTimePopn * nTimePopn))) + 1;
     int stepAgeAcc;
-    if (stepTimePopn > stepAgePopn)
+    if (stepTimePopn > stepAgePopn) {
         stepAgeAcc = stepAgePopn;
-    else
+    }
+    else {
         stepAgeAcc = (stepAgePopn / nTimePopn) * nTimeAcc;
+    }
     iAcc = (((iAcc - 1) / (stepAgeAcc * nAgePopn)) * (stepAgeAcc * nAgeAcc)
         + ((iAcc - 1) % (stepAgeAcc * nAgePopn))) + 1;
     }
@@ -3723,11 +3729,12 @@ getIExpFirstFromPopn(int i, SEXP description_R)
     
     int hasAge = *INTEGER(GET_SLOT(description_R, hasAge_sym));
     if (hasAge) {
-    int lengthLowerTri = (lengthPopn / nTimePopn) * nTimeExp; /* integer div */
+        int lengthLowerTri = (lengthPopn / nTimePopn) * nTimeExp; /* integer div */
         return (lengthLowerTri + indexExp);
     }
-    else
-    return indexExp;
+    else {
+        return indexExp;
+    }
 }
     
 int
@@ -3772,13 +3779,13 @@ getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
     while(!(finished)) {
         
         advanceCA(iterator_R);
-    i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+        i = *INTEGER(GET_SLOT(iterator_R, i_sym));
         int check = series[i - 1];
     
         if (check < ans) {
             ans = check;
         }
-    finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+        finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
 
     }
     
@@ -3806,7 +3813,7 @@ getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R)
         if (check < ans) {
             ans = check;
         }
-    finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+        finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
     
     }
     

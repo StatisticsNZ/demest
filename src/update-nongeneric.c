@@ -997,7 +997,7 @@ updateEta(SEXP prior_R, double* beta, int J)
       eta[p + 1] += meanEtaCoef[p] / UEtaCoef[p];
       
     }
-	
+    
     /* g <- rnorm(n = P) */
     for (int p = 0; p < P; ++p) {
             
@@ -1597,7 +1597,7 @@ updateOmegaAlpha(SEXP prior_R, int isWithTrend)
     
         int K = *INTEGER(GET_SLOT(prior_R, K_sym));
         int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+        int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
         
         double *alpha = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
         double omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
@@ -1797,7 +1797,7 @@ updateOmegaLevelComponentWeightMix(SEXP prior_R)
     
     int successfullyUpdated = (omega > 0);
     if(successfullyUpdated) {
-    SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);
+        SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);
     }    
 }
 
@@ -1894,7 +1894,7 @@ updateOmegaVectorsMix(SEXP prior_R)
     
     int successfullyUpdated = (omega > 0);
     if(successfullyUpdated) {
-    SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
+        SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);
     }
 }
 
@@ -1905,23 +1905,23 @@ updatePhi(SEXP prior_R, int isWithTrend) {
     
     if (!isPhiKnown) {
 
-    double phiCurr = *REAL(GET_SLOT(prior_R, phi_sym));
+        double phiCurr = *REAL(GET_SLOT(prior_R, phi_sym));
     
         int K = *INTEGER(GET_SLOT(prior_R, K_sym));
         int L = *INTEGER(GET_SLOT(prior_R, L_sym));
-    int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
+        int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     
         double *state = NULL;
         double omega = 0;
         
         if (isWithTrend) {
-        state = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
-        omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
-    }
+            state = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
+            omega = *REAL(GET_SLOT(prior_R, omegaDelta_sym));
+        }
         else {
-        state = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
-        omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
-    }
+            state = REAL(GET_SLOT(prior_R, alphaDLM_sym)); /* vector, length (K+1)L */
+            omega = *REAL(GET_SLOT(prior_R, omegaAlpha_sym));
+        }
         
         double minPhi = *REAL(GET_SLOT(prior_R, minPhi_sym));
         double maxPhi = *REAL(GET_SLOT(prior_R, maxPhi_sym));
@@ -1939,38 +1939,38 @@ updatePhi(SEXP prior_R, int isWithTrend) {
 
         for (int l = 0; l < L; ++l) {
 
-        if (!alongAllStrucZero[l]) {
-            
-        for (int i = 0; i < K; ++i) {
-            int k_curr = indices[i + 1] - 1; /* C style indices */
-            int k_prev = indices[i] - 1;
-                    
-            double state_k_prev = state[k_prev];
-            numerator += state[k_curr] * state_k_prev;
-            denominator += state_k_prev * state_k_prev;
-        }
-        }
+            if (!alongAllStrucZero[l]) {
+                
+                for (int i = 0; i < K; ++i) {
+                    int k_curr = indices[i + 1] - 1; /* C style indices */
+                    int k_prev = indices[i] - 1;
+                            
+                    double state_k_prev = state[k_prev];
+                    numerator += state[k_curr] * state_k_prev;
+                    denominator += state_k_prev * state_k_prev;
+                }
+            }
 
-        advanceA(iterator_R); 
-    }
+            advanceA(iterator_R); 
+        }
         
         double mean = numerator/denominator;
         double sd = omega/sqrt(denominator);
         
-    double phiProp = rtnorm1(mean, sd, minPhi, maxPhi);
-    
-    double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
-    double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
+        double phiProp = rtnorm1(mean, sd, minPhi, maxPhi);
+        
+        double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
+        double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
 
-    double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
-    double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
-    
-    double logDiff = logDensProp - logDensCurr;
-    
-    int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
-    if (accept) {
-        SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp);
-    }
+        double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
+        double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
+        
+        double logDiff = logDensProp - logDensCurr;
+        
+        int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
+        if (accept) {
+            SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phiProp);
+        }
 
     }/* end !isPhiKnown */
     
@@ -1986,7 +1986,7 @@ updatePhiMix(SEXP prior_R)
     
     if (!isPhiKnown) {
 
-    double phiCurr = *REAL(GET_SLOT(prior_R, phiMix_sym));
+        double phiCurr = *REAL(GET_SLOT(prior_R, phiMix_sym));
     
         double minPhi = *REAL(GET_SLOT(prior_R, minPhi_sym));
         double maxPhi = *REAL(GET_SLOT(prior_R, maxPhi_sym));
@@ -1994,58 +1994,58 @@ updatePhiMix(SEXP prior_R)
         double shape1 = *REAL(GET_SLOT(prior_R, shape1Phi_sym));
         double shape2 = *REAL(GET_SLOT(prior_R, shape2Phi_sym));
 
-    double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
-    double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
-    
-    int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
-    
-    double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
-    
-    int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
-    int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
-    int iAlong_c = iAlong_r -1;
-    int nAlong = dimBeta[iAlong_c];
-    
-    double tolerance = *REAL(GET_SLOT(prior_R, tolerance_sym));
-    
-    double phiMax = modePhiMix(level, meanLevel, nAlong,
-                   indexClassMaxUsed, omega, tolerance);
-    
-    double logPostPhiFirst = logPostPhiFirstOrderMix(phiMax, level, meanLevel,
-                             nAlong, indexClassMaxUsed, omega);
+        double *level = REAL(GET_SLOT(prior_R, levelComponentWeightMix_sym));
+        double meanLevel = *REAL(GET_SLOT(prior_R, meanLevelComponentWeightMix_sym));
+        
+        int indexClassMaxUsed = *INTEGER(GET_SLOT(prior_R, indexClassMaxUsedMix_sym));
+        
+        double omega = *REAL(GET_SLOT(prior_R, omegaLevelComponentWeightMix_sym));
+        
+        int *dimBeta = INTEGER(GET_SLOT(prior_R, dimBeta_sym));  
+        int iAlong_r = *INTEGER(GET_SLOT(prior_R, iAlong_sym));  
+        int iAlong_c = iAlong_r -1;
+        int nAlong = dimBeta[iAlong_c];
+        
+        double tolerance = *REAL(GET_SLOT(prior_R, tolerance_sym));
+        
+        double phiMax = modePhiMix(level, meanLevel, nAlong,
+                       indexClassMaxUsed, omega, tolerance);
+        
+        double logPostPhiFirst = logPostPhiFirstOrderMix(phiMax, level, meanLevel,
+                                 nAlong, indexClassMaxUsed, omega);
 
-    double logPostPhiSecond = logPostPhiSecondOrderMix(phiMax, level, meanLevel,
-                               nAlong, indexClassMaxUsed, omega);
-    
-    double varProp = -1/logPostPhiSecond;
-    double meanProp = phiMax + varProp * logPostPhiFirst;
-    double sdProp = sqrt(varProp);
-    
-    double phiProp = rtnorm1(meanProp, sdProp, minPhi, maxPhi);
+        double logPostPhiSecond = logPostPhiSecondOrderMix(phiMax, level, meanLevel,
+                                   nAlong, indexClassMaxUsed, omega);
+        
+        double varProp = -1/logPostPhiSecond;
+        double meanProp = phiMax + varProp * logPostPhiFirst;
+        double sdProp = sqrt(varProp);
+        
+        double phiProp = rtnorm1(meanProp, sdProp, minPhi, maxPhi);
 
-    double logLikProp = logPostPhiMix(phiProp, level, meanLevel,
-                      nAlong, indexClassMaxUsed, omega);
-    
-    double logLikCurr = logPostPhiMix(phiCurr, level, meanLevel,
-                      nAlong, indexClassMaxUsed, omega);
+        double logLikProp = logPostPhiMix(phiProp, level, meanLevel,
+                          nAlong, indexClassMaxUsed, omega);
+        
+        double logLikCurr = logPostPhiMix(phiCurr, level, meanLevel,
+                          nAlong, indexClassMaxUsed, omega);
 
-    double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
-    double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
+        double phiPropTr = (phiProp - minPhi) / (maxPhi - minPhi);
+        double phiCurrTr = (phiCurr - minPhi) / (maxPhi - minPhi);
 
-    double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
-    double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
+        double logDensProp = dbeta(phiPropTr, shape1, shape2, USE_LOG);
+        double logDensCurr = dbeta(phiCurrTr, shape1, shape2, USE_LOG);
 
-    double logPropProp = dnorm(phiProp, meanProp, sdProp, USE_LOG);
-    double logPropCurr = dnorm(phiCurr, meanProp, sdProp, USE_LOG);
-    
-    double logDiff = logLikProp - logLikCurr +
-        logDensProp - logDensCurr +
-        logPropCurr - logPropProp;
-    
-    int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
-    if (accept) {
-        SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phiProp);
-    }
+        double logPropProp = dnorm(phiProp, meanProp, sdProp, USE_LOG);
+        double logPropCurr = dnorm(phiCurr, meanProp, sdProp, USE_LOG);
+        
+        double logDiff = logLikProp - logLikCurr +
+            logDensProp - logDensCurr +
+            logPropCurr - logPropProp;
+        
+        int accept = (!(logDiff < 0) || (runif(0, 1) < exp(logDiff)));  
+        if (accept) {
+            SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phiProp);
+        }
 
     }
 }
@@ -2101,89 +2101,89 @@ updateSeason(SEXP prior_R, double *betaTilde, int J)
             
     for (int l = 0; l < L; ++l) {
 
-    if (!alongAllStrucZero[l]) {
-        
-        /*m[[1L]] <- m0[[l]]*/
-        double *m0_l = REAL(VECTOR_ELT(m0_R, l));
-        double *m_first = REAL(VECTOR_ELT(m_R, 0));
-        memcpy(m_first, m0_l, nSeason*sizeof(double));
+        if (!alongAllStrucZero[l]) {
             
-        /* forward filter */
-        for (int i = 0; i < K; ++i) {
+            /*m[[1L]] <- m0[[l]]*/
+            double *m0_l = REAL(VECTOR_ELT(m0_R, l));
+            double *m_first = REAL(VECTOR_ELT(m_R, 0));
+            memcpy(m_first, m0_l, nSeason*sizeof(double));
                 
-        int index_j = indices_v[i] - 1;
+            /* forward filter */
+            for (int i = 0; i < K; ++i) {
+                    
+                int index_j = indices_v[i] - 1;
+                        
+                double *this_m = REAL(VECTOR_ELT(m_R, i));
+                double *this_C = REAL(VECTOR_ELT(C_R, i));
+                double *this_a = REAL(VECTOR_ELT(a_R, i));
+                double *this_R = REAL(VECTOR_ELT(R_R, i));
+                        
+                double *next_m = REAL(VECTOR_ELT(m_R, i+1));
+                double *next_C = REAL(VECTOR_ELT(C_R, i+1));
+                        
+                for (int i_n = 0; i_n < nSeason-1; ++i_n) {
+                    this_a[i_n + 1] = this_m[i_n];
+                    this_R[i_n + 1] = this_C[i_n];
+                }
+                        
+                double curr_a = this_m[nSeason-1];
+                double curr_R = this_C[nSeason-1] + omegaSq;
+                this_a[0] = curr_a;
+                this_R[0] = curr_R;
+                        
+                double q = curr_R + v[index_j];
+                double e = betaTilde[index_j] - curr_a;
+                        
+                double Ae1 = curr_R * e/q;
+                memcpy(next_m, this_a, nSeason*sizeof(double));
+                next_m[0] += Ae1;
+                        
+                double AAq1 = curr_R * curr_R/q;
+                memcpy(next_C, this_R, nSeason*sizeof(double));
+                next_C[0] -= AAq1;
+            }
                 
-        double *this_m = REAL(VECTOR_ELT(m_R, i));
-        double *this_C = REAL(VECTOR_ELT(C_R, i));
-        double *this_a = REAL(VECTOR_ELT(a_R, i));
-        double *this_R = REAL(VECTOR_ELT(R_R, i));
+            int i_curr = indices_s[K] - 1;
+            double *this_s = REAL(VECTOR_ELT(s_R, i_curr));
+                    
+            for (int i_n = 0; i_n < nSeason; ++i_n) {
+                double mean = last_m[i_n];
+                double sd = sqrt(last_C[i_n]);
+                double s = rnorm( mean, sd);
+                this_s[i_n] = s;
+            }     
                 
-        double *next_m = REAL(VECTOR_ELT(m_R, i+1));
-        double *next_C = REAL(VECTOR_ELT(C_R, i+1));
+            /* backward smooth */
+            for (int i = K-1; i >= 0; --i) {
+                    
+                int i_prev = indices_s[i+1] - 1;
+                int i_curr = indices_s[i] - 1;
+                        
+                double *this_C = REAL(VECTOR_ELT(C_R, i));
+                double thisC_last = this_C[nSeason-1];
+                double *this_m = REAL(VECTOR_ELT(m_R, i));
+                double thism_last = this_m[nSeason-1];
+                        
+                double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
+                double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
+                        
+                /*s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
+                 * copy from last nSeason-1 elements of s_prev
+                 * into first nSeason-1 elements of s_curr */
+                memcpy(s_curr, (s_prev+1), (nSeason-1)*sizeof(double));
+                        
+                double lambda = thisC_last/(thisC_last + omegaSq);
+                double s_prev_first = s_prev[0];
+                        
+                double mean = lambda * s_prev_first + (1 - lambda)*thism_last;
+                double sd = sqrt(lambda) * omega;
+                s_curr[nSeason-1] = rnorm(mean, sd);
+                    
+            }
                 
-        for (int i_n = 0; i_n < nSeason-1; ++i_n) {
-            this_a[i_n + 1] = this_m[i_n];
-            this_R[i_n + 1] = this_C[i_n];
-        }
-                
-        double curr_a = this_m[nSeason-1];
-        double curr_R = this_C[nSeason-1] + omegaSq;
-        this_a[0] = curr_a;
-        this_R[0] = curr_R;
-                
-        double q = curr_R + v[index_j];
-        double e = betaTilde[index_j] - curr_a;
-                
-        double Ae1 = curr_R * e/q;
-        memcpy(next_m, this_a, nSeason*sizeof(double));
-        next_m[0] += Ae1;
-                
-        double AAq1 = curr_R * curr_R/q;
-        memcpy(next_C, this_R, nSeason*sizeof(double));
-        next_C[0] -= AAq1;
-        }
-            
-        int i_curr = indices_s[K] - 1;
-        double *this_s = REAL(VECTOR_ELT(s_R, i_curr));
-                
-        for (int i_n = 0; i_n < nSeason; ++i_n) {
-        double mean = last_m[i_n];
-        double sd = sqrt(last_C[i_n]);
-        double s = rnorm( mean, sd);
-        this_s[i_n] = s;
-        }     
-            
-        /* backward smooth */
-        for (int i = K-1; i >= 0; --i) {
-                
-        int i_prev = indices_s[i+1] - 1;
-        int i_curr = indices_s[i] - 1;
-                
-        double *this_C = REAL(VECTOR_ELT(C_R, i));
-        double thisC_last = this_C[nSeason-1];
-        double *this_m = REAL(VECTOR_ELT(m_R, i));
-        double thism_last = this_m[nSeason-1];
-                
-        double *s_prev = REAL(VECTOR_ELT(s_R, i_prev));
-        double *s_curr = REAL(VECTOR_ELT(s_R, i_curr));
-                
-        /*s[[i.curr]][-n.season] <- s[[i.prev]][-1L]
-         * copy from last nSeason-1 elements of s_prev
-         * into first nSeason-1 elements of s_curr */
-        memcpy(s_curr, (s_prev+1), (nSeason-1)*sizeof(double));
-                
-        double lambda = thisC_last/(thisC_last + omegaSq);
-        double s_prev_first = s_prev[0];
-                
-        double mean = lambda * s_prev_first + (1 - lambda)*thism_last;
-        double sd = sqrt(lambda) * omega;
-        s_curr[nSeason-1] = rnorm(mean, sd);
-                
-        }
-            
-    } /* end if (!alongAllStrucZero[l]) */
-    advanceA(iterator_s_R);
-    advanceA(iterator_v_R);
+        } /* end if (!alongAllStrucZero[l]) */
+        advanceA(iterator_s_R);
+        advanceA(iterator_v_R);
     }
     /* only s gets updated in the prior */
     
@@ -2304,7 +2304,7 @@ updateVectorsMixAndProdVectorsMix(SEXP prior_R, double * betaTilde, int J)
                 thisVector[iVector] = rnorm(mean, sd);
             }
 
-    } /* end iElement loop */
+        } /* end iElement loop */
 
     
         for (int iClass = 0; iClass < indexClassMaxUsed; ++iClass) {
@@ -2418,11 +2418,11 @@ updateTauNorm(SEXP prior_R, double *beta, int J)
     double V = 0;
     
     for (int j = 0; j < J; ++j) {
-		if (!allStrucZero[j]) {
-			n += 1;
-			double diff = beta[j] - beta_hat[j];
-			V += diff*diff;
-		}
+        if (!allStrucZero[j]) {
+            n += 1;
+            double diff = beta[j] - beta_hat[j];
+            V += diff*diff;
+        }
     }
     tau = updateSDNorm(tau, A, nu, V, n, tauMax);
     
@@ -2450,10 +2450,10 @@ updateTauRobust(SEXP prior_R, int J)
     double V = 0;
     
     for (int i = 0; i < J; ++i) {
-    if (!allStrucZero[i]) {
-        n += 1;
-        V += 1/UBeta[i];
-    }
+        if (!allStrucZero[i]) {
+            n += 1;
+            V += 1/UBeta[i];
+        }
     }
     
     tau = updateSDRobust(tau, A, nuBeta, nuTau, V, n, tauMax);
@@ -2461,7 +2461,7 @@ updateTauRobust(SEXP prior_R, int J)
     
     if (successfullyUpdated) {
     
-      SET_DOUBLESCALE_SLOT(prior_R, tau_sym, tau);
+        SET_DOUBLESCALE_SLOT(prior_R, tau_sym, tau);
     }
 }
 
@@ -2482,10 +2482,10 @@ updateUBeta(SEXP prior_R, double *beta, int J)
     double thisScaleSq = 0;
     
     for (int j = 0; j < J; ++j) {
-		if (!allStrucZero[j]) {
-			double diff = beta[j] - beta_hat[j];
-			thisScaleSq = (nuTimesTauSq + diff*diff)/df;
-			U[j] = rinvchisq1(df, thisScaleSq);
+        if (!allStrucZero[j]) {
+            double diff = beta[j] - beta_hat[j];
+            thisScaleSq = (nuTimesTauSq + diff*diff)/df;
+            U[j] = rinvchisq1(df, thisScaleSq);
         }
     }
 }
@@ -3004,7 +3004,6 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
 
   for (int i = 0; i < n_theta; ++i) {
         
-        
     int this_y = y[i];
     int this_exposure = exposure[i];
     int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
@@ -3013,7 +3012,7 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
     double sd = 0;
     double theta_curr = theta[i]; /* only used if y not missing */
     double logit_th_curr = thetaTransformed[i]; /* only used if y not missing */
-        
+
     if (y_is_missing) {
       mean = mu[i];
       sd = sigma;
@@ -3949,7 +3948,6 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
       }
     } /* end if (!is_struc_zero) */
 
-            
   } /* end loop through theta */
     
   SET_INTSCALE_SLOT(object_R, nFailedPropYStar_sym, n_failed_prop_y_star);
@@ -4103,6 +4101,7 @@ updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
   SET_INTSCALE_SLOT(object_R, nFailedPropYStar_sym, n_failed_prop_y_star);
   SET_INTSCALE_SLOT(object_R, nFailedPropTheta_sym, n_failed_prop_theta);
   SET_INTSCALE_SLOT(object_R, nAcceptTheta_sym, n_accept_theta);
+
 }
 
 
@@ -4884,7 +4883,7 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
     int this_y = y[i];
     int y_is_missing = yMissing[i];
         
-    int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
+        int is_struc_zero = !cellInLik[i] && !y_is_missing && (this_y == 0);
 
     if (!is_struc_zero) {
     
@@ -4930,7 +4929,12 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
 
       while( (!found_prop) && (attempt < maxAttempt) ) {
 
-        ++attempt;
+                if (y_is_missing) {
+                    sd = scale / scale_multiplier;
+                }
+                else {
+                    sd = scale / sqrt(1 + this_y);
+                }
             
         transformedThetaProp = rnorm(mean, sd);
         found_prop = ( (transformedThetaProp > lower + tolerance) &&
@@ -5117,9 +5121,9 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
         
       while( (!found_prop) && (attempt < maxAttempt) ) {
 
-        ++attempt;
-            
-        transformedThetaProp = rnorm(mean, sd);
+	attempt++;
+	  
+	transformedThetaProp = rnorm(mean, sd);
         found_prop = ( (transformedThetaProp > lower + tolerance) &&
 		       (transformedThetaProp < upper - tolerance));
  
@@ -5166,7 +5170,7 @@ updateTheta_PoissonVaryingUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
 		  * exposure[ shared_index ];
 	      }
             }
-                    
+
             UNPROTECT(1); /* ir_shared_R */
                     
             double lambda_prop = lambda_curr 
@@ -7363,6 +7367,8 @@ updateDataModelsAccount(SEXP combined_R)
   SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
   SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
   SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+
+  int *updateDataModel = LOGICAL(GET_SLOT(combined_R, updateDataModel_sym));
     
   SEXP account_R = GET_SLOT(combined_R, account_sym);
   SEXP population_R = GET_SLOT(account_R, population_sym);
@@ -7373,44 +7379,49 @@ updateDataModelsAccount(SEXP combined_R)
   int nObs = LENGTH(dataModels_R);
     
   for (int i = 0; i < nObs; ++i) {
-        
-    SEXP model_R = VECTOR_ELT(dataModels_R, i);
-    SEXP dataset_R = VECTOR_ELT(datasets_R, i);
-    SEXP transform_R = VECTOR_ELT(transforms_R, i);
-        
-    int seriesIndex_r = seriesIndices[i];
-    SEXP series_R = population_R;
-    if (seriesIndex_r > 0) {
-      series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
-    }
-        
-    SEXP seriesCollapsed_R;
 
-    int nProtect  = 0;
-    int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+    if (updateDataModel[i]) {
         
-    const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-    int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
-    if (found) {
+      SEXP model_R = VECTOR_ELT(dataModels_R, i);
+      SEXP dataset_R = VECTOR_ELT(datasets_R, i);
+      SEXP transform_R = VECTOR_ELT(transforms_R, i);
+        
+      int seriesIndex_r = seriesIndices[i];
+      SEXP series_R = population_R;
+      if (seriesIndex_r > 0) {
+	series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
+      }
+        
+      SEXP seriesCollapsed_R;
+
+      int nProtect  = 0;
+      int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+        
+      const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+      int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
+      if (found) {
             
-      SEXP seriesCollapsed_tmp_R;
-      /* collapse_R in demographic is okay with series_R being integer
-       * but type of contents of seriesCollapsed_R will be integer*/
-      PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+	SEXP seriesCollapsed_tmp_R;
+	/* collapse_R in demographic is okay with series_R being integer
+	 * but type of contents of seriesCollapsed_R will be integer*/
+	PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
 
-      PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
-      nProtect  = 2;
-    }
-    else {
+	PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
+	nProtect  = 2;
+      }
+      else {
             
-      PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
-      nProtect  = 1;
-    }
+	PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
+	nProtect  = 1;
+      }
         
-    /* seriesCollapsed_R should now be in appropriate state for model */
-    updateModelUseExp_Internal(model_R, dataset_R,
-			       seriesCollapsed_R, i_method_model);
+      /* seriesCollapsed_R should now be in appropriate state for model */
+      updateModelUseExp_Internal(model_R, dataset_R,
+				 seriesCollapsed_R, i_method_model);
 
-    UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
+      UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
+      
+    }
+
   }
 }

@@ -275,32 +275,9 @@ setMethod("describePrior",
 
 ## drawPrior #########################################################################
 
-## Exch
-
-## READY_TO_TRANSLATE
-## HAS_TESTS
-setMethod("drawPrior",
-          signature(prior = "ExchNormZero"),
-          function(prior, useC = FALSE, useSpecific = FALSE) {
-              methods::validObject(prior)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(drawPrior_ExchNormZero_R, prior)
-                  else
-                      .Call(drawPrior_R, prior)
-              }
-              else {
-                  prior <- drawTau(prior)
-                  prior
-              }
-          })
-
-
-## drawPrior #########################################################################
-
 ## ExchFixed
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "ExchFixed"),
@@ -319,7 +296,7 @@ setMethod("drawPrior",
 
 ## Exch
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "ExchNormZero"),
@@ -337,7 +314,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "ExchRobustZero"),
@@ -356,8 +333,8 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
-## HAS_TESTS
+## TRANSLATED
+## HAS_TESTS  
 setMethod("drawPrior",
           signature(prior = "ExchNormCov"),
           function(prior, useC = FALSE, useSpecific = FALSE) {
@@ -376,7 +353,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "ExchRobustCov"),
@@ -384,7 +361,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_ExchNormCov_R, prior)
+                      .Call(drawPrior_ExchRobustCov_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
@@ -399,7 +376,7 @@ setMethod("drawPrior",
 
 ## DLM - Norm, Zero
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendNormZeroNoSeason"),
@@ -420,7 +397,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendNormZeroNoSeason"),
@@ -443,7 +420,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendNormZeroWithSeason"),
@@ -451,7 +428,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_DLMNoTrendNormZeroNoSeason_R, prior)
+                      .Call(drawPrior_DLMNoTrendNormZeroWithSeason_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
@@ -466,7 +443,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendNormZeroWithSeason"),
@@ -474,7 +451,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_DLMWithTrendNormZeroNoSeason_R, prior)
+                      .Call(drawPrior_DLMWithTrendNormZeroWithSeason_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
@@ -493,7 +470,7 @@ setMethod("drawPrior",
 
 ## DLM - Norm, Cov
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendNormCovNoSeason"),
@@ -516,7 +493,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendNormCovNoSeason"),
@@ -541,7 +518,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendNormCovWithSeason"),
@@ -567,7 +544,7 @@ setMethod("drawPrior",
           })
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendNormCovWithSeason"),
@@ -596,7 +573,7 @@ setMethod("drawPrior",
 
 ## DLM - Robust, Zero
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendRobustZeroNoSeason"),
@@ -618,7 +595,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendRobustZeroNoSeason"),
@@ -642,7 +619,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendRobustZeroWithSeason"),
@@ -650,7 +627,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_DLMNoTrendRobustZeroNoSeason_R, prior)
+                      .Call(drawPrior_DLMNoTrendRobustZeroWithSeason_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
@@ -666,7 +643,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendRobustZeroWithSeason"),
@@ -674,7 +651,7 @@ setMethod("drawPrior",
               methods::validObject(prior)
               if (useC) {
                   if (useSpecific)
-                      .Call(drawPrior_DLMWithTrendRobustZeroNoSeason_R, prior)
+                      .Call(drawPrior_DLMWithTrendRobustZeroWithSeason_R, prior)
                   else
                       .Call(drawPrior_R, prior)
               }
@@ -694,7 +671,7 @@ setMethod("drawPrior",
 
 ## DLM - Robust, Cov
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendRobustCovNoSeason"),
@@ -718,7 +695,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendRobustCovNoSeason"),
@@ -744,7 +721,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMNoTrendRobustCovWithSeason"),
@@ -770,7 +747,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "DLMWithTrendRobustCovWithSeason"),
@@ -800,7 +777,7 @@ setMethod("drawPrior",
 
 ## Known
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "KnownCertain"),
@@ -817,7 +794,7 @@ setMethod("drawPrior",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "KnownUncertain"),
@@ -858,7 +835,7 @@ setMethod("drawPrior",
 
 ## Zero
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawPrior",
           signature(prior = "Zero"),

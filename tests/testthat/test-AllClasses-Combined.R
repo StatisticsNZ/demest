@@ -1444,7 +1444,6 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
              y = y,
              model = model,
              dataModels = data.models,
-             dataModelsUseAg = new("LogicalFlag", FALSE),
              datasets = datasets,
              namesDatasets = namesDatasets,
              transforms = transforms)
@@ -1555,7 +1554,6 @@ test_that("can create valid object of class CombinedCountsPoissonNotHasExp", {
              namesDatasets = namesDatasets,
              transforms = transforms)
     expect_true(validObject(x))
-    expect_identical(x@dataModelsUseAg, new("LogicalFlag", FALSE))
 })
 
 test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited from DataModels work", {
@@ -1758,128 +1756,6 @@ test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited
     expect_error(validObject(x.wrong),
                  "'dataset' and 'transform' for \"dataset1\" inconsistent")
 })
-
-test_that("validity tests inherited for CombinedCountsPoissonNotHasExp inherited from DataModelsUseAgMixin work", {
-    BetaIterator <- demest:::BetaIterator
-    y <- Counts(array(1:6,
-                      dim = c(3, 2),
-                      dimnames = list(age = 0:2, sex = c("f", "m"))))
-    theta <- rbeta(n = 6, shape1 = 5, shape2 = 5)
-    thetaTransformed <- log(theta)
-    mu <- thetaTransformed + 0.01
-    model <- new("PoissonVaryingNotUseExp",
-                 theta = theta,
-                 thetaTransformed = thetaTransformed,
-                 mu = mu,
-                 metadataY = y@metadata,
-                 strucZeroArray = Counts(array(1L,
-                                               dim = 3:2,
-                                               dimnames = list(age = 0:2, sex = c("f", "m")))),
-                 scaleTheta = new("Scale", 0.1),
-                 cellInLik = rep(TRUE, 6),
-                 nAcceptTheta = new("Counter", 0L),
-                 lower = -Inf,
-                 upper = Inf,
-                 maxAttempt = 100L,
-                 nFailedPropTheta = new("Counter", 0L),
-                 sigma = new("Scale", 1),
-                 sigmaMax = new("Scale", 5),
-                 ASigma = new("Scale", 1),
-                 betas = list(5, rnorm(2), rnorm(3)),
-                 betasOld = list(5, rnorm(2), rnorm(3)),
-                 meansBetas = list(0, rep(0, 2), rep(0, 3)),
-                 variancesBetas = list(0, rep(0, 2), rep(0, 3)),
-                 gradientBetas = list(0, rep(0, 2), rep(0, 3)),
-                 momentumBetas = list(0, rep(0, 2), rep(0, 3)),
-                 betaEqualsMean = rep(FALSE, 3),
-                 namesBetas = c("(Intercept)", "age", "sex"),
-                 margins = list(0L, 1L, 2L),
-                 priorsBetas = list(new("ExchFixed", isSaturated = new("LogicalFlag", FALSE), allStrucZero = FALSE),
-                                    new("ExchFixed", J = new("Length", 2L), isSaturated = new("LogicalFlag", FALSE),
-                                        allStrucZero = rep(FALSE, 2)),
-                                    new("ExchNormZero", J = new("Length", 3L), tauMax = new("Scale", 5),
-                                        isSaturated = new("LogicalFlag", FALSE),
-                                        allStrucZero = rep(FALSE, 3))),
-                 iteratorBetas = BetaIterator(dim = 2:3, margins = list(0L, 1L, 2L)),
-                 dims = list(0L, 2L, 3L))
-    datasets <- list(Counts(array(c(1:5, 5L),
-                                  dim = c(3, 2),
-                                  dimnames = list(age = 0:2, sex = c("f", "m")))),
-                     Counts(array(2L,
-                                  dim = c(2, 2),
-                                  dimnames = list(age = 0:1, sex = c("f", "m")))))
-    theta <- rbeta(n = 4, shape1 = 5, shape2 = 5)
-    thetaTransformed <- log(theta)
-    mu <- thetaTransformed + 0.01
-    data.models <- list(new("PoissonBinomialMixture", prob = 0.9, metadataY = datasets[[1]]@metadata),
-                        new("PoissonVaryingUseExp",
-                            theta = theta,
-                            thetaTransformed = thetaTransformed,
-                            mu = mu,
-                            metadataY = y[1:2,]@metadata,
-                            strucZeroArray = Counts(array(1L,
-                                                          dim = c(2, 2),
-                                                          dimnames = list(age = 0:1, sex = c("f", "m")))),
-                            cellInLik = rep(TRUE, 4),
-                            scaleTheta = new("Scale", 0.1),
-                            nAcceptTheta = new("Counter", 0L),
-                            lower = -Inf,
-                            upper = Inf,
-                            maxAttempt = 100L,
-                            nFailedPropTheta = new("Counter", 0L),
-                            sigma = new("Scale", 1),
-                            sigmaMax = new("Scale", 5),
-                            ASigma = new("Scale", 1),
-                            betas = list(5, rnorm(2), rnorm(2)),
-                            betasOld = list(5, rnorm(2), rnorm(2)),
-                            meansBetas = list(0, rep(0, 2), rep(0, 2)),
-                            variancesBetas = list(0, rep(0, 2), rep(0, 2)),
-                            gradientBetas = list(0, rep(0, 2), rep(0, 2)),
-                            momentumBetas = list(0, rep(0, 2), rep(0, 2)),
-                            betaEqualsMean = rep(FALSE, 3),
-                            namesBetas = c("(Intercept)", "age", "sex"),
-                            margins = list(0L, 1L, 2L),
-                            priorsBetas = list(new("ExchFixed", isSaturated = new("LogicalFlag", FALSE), allStrucZero = FALSE),
-                                               new("ExchFixed", J = new("Length", 2L), isSaturated = new("LogicalFlag", FALSE),
-                                                   allStrucZero = rep(FALSE, 2)),
-                                               new("ExchNormZero", J = new("Length", 2L), tauMax = new("Scale", 5),
-                                                   isSaturated = new("LogicalFlag", FALSE),
-                                                   allStrucZero = rep(FALSE, 2))),
-                            iteratorBetas = BetaIterator(dim = c(2L, 2L), margins = list(0L, 1L, 2L)),
-                            dims = list(0L, 2L, 2L)))
-    namesDatasets <- c("dataset1", "dataset2")
-    transforms <- list(new("CollapseTransformExtra",
-                           indices = list(1:3, 1:2),
-                           dims = 1:2,
-                           dimBefore = 3:2,
-                           dimAfter = 3:2,
-                           multiplierBefore = c(1L, 3L),
-                           multiplierAfter = c(1L, 3L),
-                           invIndices = list(list(1L, 2L, 3L), list(1L, 2L))),
-                       new("CollapseTransformExtra",
-                           indices = list(c(1:2, 0L), 1:2),
-                           dims = 1:2,
-                           dimBefore = 3:2,
-                           dimAfter = c(2L, 2L),
-                           multiplierBefore = c(1L, 3L),
-                           multiplierAfter = c(1L, 2L),
-                           invIndices = list(list(1L, 2L), list(1L, 2L))))
-    x <- new("CombinedCountsPoissonNotHasExp",
-             y = y,
-             model = model,
-             dataModels = data.models,
-             datasets = datasets,
-             namesDatasets = namesDatasets,
-             transforms = transforms)
-    expect_true(validObject(x))
-    ## if 'dataModelsUsesAg' is TRUE, then one or more
-    ## data models must inherit from Aggregate
-    x.wrong <- x
-    x.wrong@dataModelsUseAg@.Data <- TRUE
-    expect_error(validObject(x.wrong),
-                 "'dataModelsUseAg' is TRUE, but no data models have class \"Aggregate\"")
-})
-
 
 test_that("can create valid object of class CombinedCountsPoissonHasExp", {
     BetaIterator <- demest:::BetaIterator
