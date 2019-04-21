@@ -1357,42 +1357,12 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
 
 /* wrap draw model functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaUnknown);
-#if(0)
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_CMPVaryingNotUseExp);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnown);
-
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExp);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExpAgCertain);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgFun);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExpAgNormal);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExpAgFun);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVaryingNotUseExpAgPoisson);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalFixedNotUseExp);
-UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_TFixedNotUseExp);
-#endif
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVarying);
 UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp);
-#if(0)
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_CMPVaryingUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonBinomialMixture);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_Round3);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVaryingAgCertain);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVaryingAgNormal);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVaryingAgFun);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgCertain);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgNormal);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgFun);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgPoisson);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVaryingUseExpAgLife);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_NormalFixedUseExp);
-UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_TFixedUseExp);
-#endif
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp);
 
 /* wrap predict combined model functions */
@@ -2469,39 +2439,14 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_TFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
   
-  //CALLDEF(drawModelNotUseExp_CMPVaryingNotUseExp_R, 2),
-  //ALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnown_R, 2),
   CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknown_R, 2),
-  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExp_R, 2),
-  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgCertain_R, 2),
-  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgCertain_R, 2),
-  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExpAgCertain_R, 2),
-  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgNormal_R, 2),
-  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgNormal_R, 2),
-  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnownAgFun_R, 2),
-  //CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknownAgFun_R, 2),
-  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExpAgNormal_R, 2),
-  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExpAgFun_R, 2),
-  //CALLDEF(drawModelNotUseExp_PoissonVaryingNotUseExpAgPoisson_R, 2),
-  //CALLDEF(drawModelNotUseExp_NormalFixedNotUseExp_R, 2),
-  //CALLDEF(drawModelNotUseExp_TFixedNotUseExp_R, 2),
+  CALLDEF(drawModelNotUseExp_PoissonVarying_R, 2),
   CALLDEF(drawModelNotUseExp_R, 2),
   
-  //CALLDEF(drawModelUseExp_CMPVaryingUseExp_R, 3),
-  //CALLDEF(drawModelUseExp_BinomialVarying_R, 3),
-  //CALLDEF(drawModelUseExp_PoissonVarying_R, 3),
-  //CALLDEF(drawModelUseExp_PoissonBinomialMixture_R, 3),
-  //CALLDEF(drawModelUseExp_Round3_R, 3),
-  //CALLDEF(drawModelUseExp_BinomialVaryingAgCertain_R, 3),
-  //CALLDEF(drawModelUseExp_BinomialVaryingAgNormal_R, 3),
-  //CALLDEF(drawModelUseExp_BinomialVaryingAgFun_R, 3),
-  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgCertain_R, 3),
-  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgNormal_R, 3),
-  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgFun_R, 3),
-  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgPoisson_R, 3),
-  //CALLDEF(drawModelUseExp_PoissonVaryingUseExpAgLife_R, 3),
-  //CALLDEF(drawModelUseExp_NormalFixedUseExp_R, 3),
-  //CALLDEF(drawModelUseExp_TFixedUseExp_R, 3),
+  CALLDEF(drawModelUseExp_BinomialVarying_R, 3),
+  CALLDEF(drawModelUseExp_PoissonVarying_R, 3),
+  CALLDEF(drawModelUseExp_PoissonBinomialMixture_R, 3),
+  CALLDEF(drawModelUseExp_NormalFixedUseExp_R, 3),
   CALLDEF(drawModelUseExp_R, 3),
   
   CALLDEF(updateBetasAndPriorsBetas_R, 1),

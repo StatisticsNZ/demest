@@ -70,53 +70,9 @@ drawBetas(SEXP object_R)
     }
 }
 
-/*
- * ## READY_TO_TRANSLATE
-## HAS_TESTS
-drawDataModelsAccount <- function(combined, useC = FALSE) {
-    stopifnot(methods::validObject(combined))
-    if (useC) {
-        .Call(drawDataModelsAccount_R, combined)
-    }
-    else {
-        data.models <- combined@dataModels
-        datasets <- combined@datasets
-        population <- combined@account@population
-        components <- combined@account@components
-        series.indices <- combined@seriesIndices
-        transforms <- combined@transforms
-        for (i in seq_along(data.models)) {
-            model <- data.models[[i]]
-            dataset <- datasets[[i]]
-            transform <- transforms[[i]]
-            series.index <- series.indices[i]
-            if (series.index == 0L)
-                series <- population
-            else
-                series <- components[[series.index]]
-            series.collapsed <- collapse(series, transform = transform)
-            if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
-                series.collapsed <- toDouble(series.collapsed)
-            model <- drawModelUseExp(model,
-                                     y = dataset,
-                                     exposure = series.collapsed)
-            data.models[[i]] <- model
-        }
-        combined@dataModels <- data.models
-        combined
-    }
-}
-*/
-
 void
 drawDataModelsAccount(SEXP combined_R)
 {
-    /*data.models <- combined@dataModels
-        datasets <- combined@datasets
-        population <- combined@account@population
-        components <- combined@account@components
-        series.indices <- combined@seriesIndices
-        transforms <- combined@transforms*/
         
     SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
     SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
@@ -131,12 +87,6 @@ drawDataModelsAccount(SEXP combined_R)
     
     int nObs = LENGTH(dataModels_R);
 
-/*    for (i in seq_along(data.models)) {
-            model <- data.models[[i]]
-            dataset <- datasets[[i]]
-            transform <- transforms[[i]]
-            series.index <- series.indices[i]
-*/
     for (int i = 0; i < nObs; ++i) {
         
         SEXP model_R = VECTOR_ELT(dataModels_R, i);
@@ -145,11 +95,6 @@ drawDataModelsAccount(SEXP combined_R)
         
         int series_index_r = seriesIndices[i];
         
-/*            if (series.index == 0L)
-                series <- population
-            else
-                series <- components[[series.index]]
-*/        
         SEXP series_R = population_R;
         if (series_index_r > 0) {
             series_R = VECTOR_ELT(components_R, series_index_r-1);
@@ -187,56 +132,16 @@ drawDataModelsAccount(SEXP combined_R)
         }
         
         /* seriesCollapsed_R should now be in appropriate state for model */
-        //drawModelUseExp_Internal(model_R, dataset_R,
-                                    //seriesCollapsed_R, i_method_model);
+        drawModelUseExp_Internal(model_R, dataset_R,
+                                    seriesCollapsed_R, i_method_model);
 
         UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
     }    
 }
 
-/*
- * 
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawDelta0 <- function(prior, useC = FALSE) {
-    stopifnot(methods::is(prior, "DLM") && methods::is(prior, "WithTrendMixin"))
-    if (useC) {
-        .Call(drawDelta0_R, prior)
-    }
-    else {
-        L <- prior@L@.Data
-        along.all.struc.zero <- prior@alongAllStrucZero
-        delta <- prior@deltaDLM@.Data # numeric vector length (K+1)L
-        A0 <- prior@ADelta0@.Data # scalar
-        mean0 <- prior@meanDelta0@.Data # scalar
-        iterator <- prior@iteratorState
-        iterator <- resetA(iterator)
-        for (l in seq_len(L)) {
-            if (!along.all.struc.zero[l]) {
-                indices <- iterator@indices
-                i0 <- indices[1L]
-                delta[i0] <- stats::rnorm(n = 1L,
-                                          mean = mean0,
-                                          sd = A0)
-            }
-            iterator <- advanceA(iterator)
-        }
-        prior@deltaDLM@.Data <- delta
-        prior
-    }
-}
-*/
 void
 drawDelta0(SEXP prior_R)
 {
-    /*L <- prior@L@.Data
-        along.all.struc.zero <- prior@alongAllStrucZero
-        delta <- prior@deltaDLM@.Data # numeric vector length (K+1)L
-        A0 <- prior@ADelta0@.Data # scalar
-        mean0 <- prior@meanDelta0@.Data # scalar
-        iterator <- prior@iteratorState
-        iterator <- resetA(iterator)
-        */
     int L = *INTEGER(GET_SLOT(prior_R, L_sym));
     int *alongAllStrucZero = INTEGER(GET_SLOT(prior_R, alongAllStrucZero_sym));
     double *delta = REAL(GET_SLOT(prior_R, deltaDLM_sym)); /* vector, length (K+1)L */
@@ -249,17 +154,6 @@ drawDelta0(SEXP prior_R)
     resetA(iterator_R);
     int *indices = INTEGER(GET_SLOT(iterator_R, indices_sym));
 
-    /*for (l in seq_len(L)) {
-            if (!along.all.struc.zero[l]) {
-                indices <- iterator@indices
-                i0 <- indices[1L]
-                delta[i0] <- stats::rnorm(n = 1L,
-                                          mean = mean0,
-                                          sd = A0)
-            }
-            iterator <- advanceA(iterator)
-        }
-     */
      for (int l = 0; l < L; ++l) {
     
         if (!alongAllStrucZero[l]) {
@@ -270,32 +164,6 @@ drawDelta0(SEXP prior_R)
     }   
 }
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawEta <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawEta_R, prior)
-    }
-    else {
-        eta <- prior@eta@.Data
-        P <- prior@P@.Data
-        U.eta.coef <- prior@UEtaCoef@.Data
-        mean.eta.coef <- prior@meanEtaCoef@.Data
-        eta[1L] <- 0
-        for (p in seq_len(P - 1L)) {
-            mean <- mean.eta.coef[p]
-            sd <- sqrt(U.eta.coef[p])
-            eta[p + 1L] <- stats::rnorm(n = 1L,
-                                        mean = mean,
-                                        sd = sd)
-        }
-        prior@eta@.Data <- eta
-        prior
-    }
-}
-*/
 void
 drawEta(SEXP prior_R)
 {
@@ -313,27 +181,6 @@ drawEta(SEXP prior_R)
         eta[p+1] = rnorm(mean, sd);
     }
 }
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawOmegaAlpha <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawOmegaAlpha_R, prior)
-    }
-    else {
-        A <- prior@AAlpha@.Data
-        nu <- prior@nuAlpha@.Data
-        max <- prior@omegaAlphaMax@.Data
-        omega <- rhalftTrunc1(df = nu,
-                              scale = A,
-                              max = max,
-                              useC = TRUE)
-        prior@omegaAlpha@.Data <- omega
-        prior
-    }
-}
-*/
 
 void
 drawOmegaAlpha(SEXP prior_R)
@@ -349,28 +196,6 @@ drawOmegaAlpha(SEXP prior_R)
 }
 
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawOmegaComponentWeightMix <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawOmegaComponentWeightMix_R, prior)
-    }
-    else {
-        A <- prior@AComponentWeightMix@.Data
-        nu <- prior@nuComponentWeightMix@.Data
-        max <- prior@omegaComponentWeightMaxMix@.Data
-        omega <- rhalftTrunc1(df = nu,
-                              scale = A,
-                              max = max,
-                              useC = TRUE)
-        prior@omegaComponentWeightMix@.Data <- omega
-        prior
-    }
-}
-*/
-
 void
 drawOmegaComponentWeightMix(SEXP prior_R)
 {
@@ -383,27 +208,6 @@ drawOmegaComponentWeightMix(SEXP prior_R)
     SET_DOUBLESCALE_SLOT(prior_R, omegaComponentWeightMix_sym, omega);   
 }
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawOmegaDelta <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawOmegaDelta_R, prior)
-    }
-    else {
-        A <- prior@ADelta@.Data
-        nu <- prior@nuDelta@.Data
-        max <- prior@omegaDeltaMax@.Data
-        omega <- rhalftTrunc1(df = nu,
-                              scale = A,
-                              max = max,
-                              useC = TRUE)
-        prior@omegaDelta@.Data <- omega
-        prior
-    }
-}
-*/
 
 void
 drawOmegaDelta(SEXP prior_R)
@@ -418,27 +222,7 @@ drawOmegaDelta(SEXP prior_R)
     SET_DOUBLESCALE_SLOT(prior_R, omegaDelta_sym, omega);    
 }
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawOmegaLevelComponentWeightMix_R, prior)
-    }
-    else {
-        A <- prior@ALevelComponentWeightMix@.Data
-        nu <- prior@nuLevelComponentWeightMix@.Data
-        max <- prior@omegaLevelComponentWeightMaxMix@.Data
-        omega <- rhalftTrunc1(df = nu,
-                              scale = A,
-                              max = max,
-                              useC = TRUE)
-        prior@omegaLevelComponentWeightMix@.Data <- omega
-        prior
-    }
-}
-*/
+
 void
 drawOmegaLevelComponentWeightMix(SEXP prior_R)
 {
@@ -451,28 +235,6 @@ drawOmegaLevelComponentWeightMix(SEXP prior_R)
     SET_DOUBLESCALE_SLOT(prior_R, omegaLevelComponentWeightMix_sym, omega);   
 }
 
-
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawOmegaSeason <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawOmegaSeason_R, prior)
-    }
-    else {
-        A <- prior@ASeason@.Data
-        nu <- prior@nuSeason@.Data
-        max <- prior@omegaSeasonMax@.Data
-        omega <- rhalftTrunc1(df = nu,
-                              scale = A,
-                              max = max,
-                              useC = TRUE)
-        prior@omegaSeason@.Data <- omega
-        prior
-    }
-}
-*/
 void
 drawOmegaSeason(SEXP prior_R)
 {
@@ -485,27 +247,6 @@ drawOmegaSeason(SEXP prior_R)
     SET_DOUBLESCALE_SLOT(prior_R, omegaSeason_sym, omega);   
 }
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawOmegaVectorsMix <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawOmegaVectorsMix_R, prior)
-    }
-    else {
-        A <- prior@AVectorsMix@.Data
-        nu <- prior@nuVectorsMix@.Data
-        max <- prior@omegaVectorsMaxMix@.Data
-        omega <- rhalftTrunc1(df = nu,
-                              scale = A,
-                              max = max,
-                              useC = TRUE)
-        prior@omegaVectorsMix@.Data <- omega
-        prior
-    }
-}
-*/
 void
 drawOmegaVectorsMix(SEXP prior_R)
 {
@@ -518,33 +259,6 @@ drawOmegaVectorsMix(SEXP prior_R)
     SET_DOUBLESCALE_SLOT(prior_R, omegaVectorsMix_sym, omega);   
 }
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawPhi <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawPhi_R, prior)
-    }
-    else {
-        phi.known <- prior@phiKnown@.Data
-        if (phi.known)
-            prior
-        else {
-            phi.min <- prior@minPhi@.Data
-            phi.max <- prior@maxPhi@.Data
-            shape1 <- prior@shape1Phi@.Data
-            shape2 <- prior@shape2Phi@.Data
-            X <- stats::rbeta(n = 1L,
-                              shape1 = shape1,
-                              shape2 = shape2)
-            phi <- phi.min + X * (phi.max - phi.min)
-            prior@phi <- phi
-            prior
-        }
-    }
-}
-*/
 void
 drawPhi(SEXP prior_R)
 {
@@ -560,33 +274,6 @@ drawPhi(SEXP prior_R)
     SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phi);   
 }
 
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawPhiMix <- function(prior, useC = FALSE) {
-    methods::validObject(prior)
-    if (useC) {
-        .Call(drawPhiMix_R, prior)
-    }
-    else {
-        phi.known <- prior@phiKnown@.Data
-        if (phi.known)
-            prior
-        else {
-            phi.min <- prior@minPhi@.Data
-            phi.max <- prior@maxPhi@.Data
-            shape1 <- prior@shape1Phi@.Data
-            shape2 <- prior@shape2Phi@.Data
-            X <- stats::rbeta(n = 1L,
-                              shape1 = shape1,
-                              shape2 = shape2)
-            phi <- phi.min + X * (phi.max - phi.min)
-            prior@phiMix <- phi
-            prior
-        }
-    }
-}
-*/
 void
 drawPhiMix(SEXP prior_R)
 {
@@ -601,24 +288,7 @@ drawPhiMix(SEXP prior_R)
     
     SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phi);   
 }
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-drawPriors <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(drawPriors_R, object)
-    }
-    else {
-        priors <- object@priorsBetas
-        for (b in seq_along(priors))
-            priors[[b]] <- drawPrior(priors[[b]])
-        object@priorsBetas <- priors
-        object
-    }
-}
-*/
+
 void
 drawPriors(SEXP object_R)
 {
@@ -627,8 +297,8 @@ drawPriors(SEXP object_R)
     
     for (int b = 0; b < nPriors; ++b) {
         
-            /*priors[[b]] <- drawPrior(priors[[b]])*/
-        
+            SEXP this_prior = VECTOR_ELT(priors_R, b);
+            drawPrior(this_prior);
     }
 }
 
