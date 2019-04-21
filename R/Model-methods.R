@@ -204,12 +204,8 @@ setMethod("drawModelNotUseExp",
 
 ## drawModelNotUseExp ##################################################################
 
-<<<<<<< HEAD
-## READY_TO_TRANSLATE
-=======
 
 ## TRANSLATED
->>>>>>> master
 ## HAS_TESTS
 setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaUnknown"),
