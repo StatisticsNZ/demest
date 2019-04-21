@@ -4929,13 +4929,8 @@ updateTheta_PoissonVaryingNotUseExp(SEXP object, SEXP y_R)
 
       while( (!found_prop) && (attempt < maxAttempt) ) {
 
-                if (y_is_missing) {
-                    sd = scale / scale_multiplier;
-                }
-                else {
-                    sd = scale / sqrt(1 + this_y);
-                }
-            
+	++attempt;
+
         transformedThetaProp = rnorm(mean, sd);
         found_prop = ( (transformedThetaProp > lower + tolerance) &&
 		       (transformedThetaProp < upper - tolerance));

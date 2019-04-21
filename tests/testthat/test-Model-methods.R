@@ -5156,7 +5156,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgCertain updates the
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for PoissonVaryingNotUseExpAgCertain give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    update.beta <- FALSE
+    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2)))
