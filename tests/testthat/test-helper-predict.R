@@ -106,6 +106,7 @@ test_that("initialModelPredictHelper works", {
                                             new("TimeInvariant", J = new("Length", 4L),
                                                 isSaturated = new("LogicalFlag", FALSE))),
                          betaEqualsMean = c(TRUE, FALSE, TRUE),
+                         useHMCToUpdateBeta = c(FALSE, TRUE, FALSE),
                          iteratorBetas = BetaIterator(dim = c(4L, 4L),
                                                       margins = c(0L, 1L, 2L)),
                          dims = list(0L, 4L, 4L),

@@ -172,6 +172,7 @@ setMethod("drawHyperParam",
 
 
 
+## drawModelNotUseExp ##################################################################
 
 
 ## READY_TO_TRANSLATE
@@ -202,7 +203,6 @@ setMethod("drawModelNotUseExp",
               }
           })
 
-## drawModelNotUseExp ##################################################################
 
 
 ## TRANSLATED

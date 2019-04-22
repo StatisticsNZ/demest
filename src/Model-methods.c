@@ -1291,6 +1291,7 @@ drawModelNotUseExp_NormalVaryingVarsigmaUnknown_i(SEXP object_R, SEXP y_R)
 {
     drawPriors(object_R);
     drawBetas(object_R);
+    updateMu(object_R);
     drawSigma_Varying(object_R);
     drawVarsigma(object_R);
     updateTheta_NormalVarying(object_R, y_R);
@@ -1302,6 +1303,7 @@ drawModelNotUseExp_PoissonVarying_i(SEXP object_R, SEXP y_R)
 {
     drawPriors(object_R);
     drawBetas(object_R);
+    updateMu(object_R);
     drawSigma_Varying(object_R);
     updateTheta_PoissonVaryingNotUseExp(object_R, y_R);
                                                       
@@ -1313,6 +1315,7 @@ drawModelUseExp_BinomialVarying_i(SEXP object_R, SEXP y_R, SEXP exposure_R)
 {
     drawPriors(object_R);
     drawBetas(object_R);
+    updateMu(object_R);
     drawSigma_Varying(object_R);
     updateTheta_BinomialVarying(object_R, y_R, exposure_R);
                                                       
@@ -1323,6 +1326,7 @@ drawModelUseExp_PoissonVarying_i(SEXP object_R, SEXP y_R, SEXP exposure_R)
 {
     drawPriors(object_R);
     drawBetas(object_R);
+    updateMu(object_R);
     drawSigma_Varying(object_R);
     updateTheta_PoissonVaryingUseExp(object_R,    y_R, exposure_R);
                                                       

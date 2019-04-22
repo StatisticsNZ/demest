@@ -1400,7 +1400,8 @@ makeSpecsPriors <- function(dots) {
 
 
 makeThetaPoissonCMP <- function(y, exposure, lower, upper, strucZeroArray) {
-    is.obs <- !is.na(y@.Data) & (struc.zero.array != 0L) 
+    has.exposure <- !is.null(exposure)
+    is.obs <- !is.na(y@.Data) & (strucZeroArray != 0L) 
     if (any(is.obs))
         mean.y.obs <- mean(y@.Data[is.obs]) 
     else
@@ -1423,7 +1424,7 @@ makeThetaPoissonCMP <- function(y, exposure, lower, upper, strucZeroArray) {
     n.too.high <- sum(is.too.high)
     theta[is.too.high] <- stats::runif(n = n.too.high, min = upper - width, max = upper)
     theta <- as.numeric(theta)
-    theta[struc.zero.array == 0L] <- NA
+    theta[strucZeroArray == 0L] <- NA
     array(theta, dim = dim(y), dimnames = dimnames(y))
 }
 

@@ -1623,8 +1623,8 @@ updateValuesAccount_CombinedAccountMovements_R(SEXP object_R)
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateExpectedExposure);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateExpectedExposure_CombinedAccountMovements);
-UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSystemModels);
-UPDATEOBJECT_NOPRNG_WRAPPER_R(updateSystemModels_CombinedAccountMovements);
+UPDATEOBJECT_WRAPPER_R(updateSystemModels);
+UPDATEOBJECT_WRAPPER_R(updateSystemModels_CombinedAccountMovements);
 
 /* wrap repetitive update of combined counts functions */
 UPDATECOMBINEDOBJECT_WRAPPER_R(updateCombined_CombinedCountsPoissonNotHasExp);

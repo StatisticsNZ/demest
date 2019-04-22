@@ -224,8 +224,8 @@ test_that("checkAndTidyUpdateSystemModel works - with aggregate values", {
                               dim = 3,
                               dimnames = list(time = 2001:2003)),
                         dimscales = c(time = "Intervals")))
-    systemModels <- list(initialModel(specs[[1]], y = datasets[[1]], exposure = NULL),
-                         initialModel(specs[[2]], y = datasets[[2]], exposure = datasets[[2]]))
+    systemModels <- list(initialModel(specs[[1]], y = data[[1]], exposure = NULL),
+                         initialModel(specs[[2]], y = data[[2]], exposure = data[[2]]))
     ans.obtained <- checkAndTidyUpdateSystemModel(updateSystemModel = NULL,
                                                   systemModels = systemModels,
                                                   componentNames = "inmigration")

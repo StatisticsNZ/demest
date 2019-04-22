@@ -126,6 +126,7 @@ setClass("Betas",
                    namesBetas = "character",
                    priorsBetas = "list",
                    betaEqualsMean = "logical",
+                   useHMCToUpdateBeta = "logical",
                    iteratorBetas = "BetaIterator",
                    dims = "list",
                    logPostBetas = "Parameter",
@@ -142,6 +143,7 @@ setClass("Betas",
              margins <- object@margins
              priors <- object@priorsBetas
              betaEqualsMean <- object@betaEqualsMean
+             useHMCToUpdateBeta <- object@useHMCToUpdateBeta
              iteratorBetas <- object@iteratorBetas
              dims <- object@dims
              mu <- object@mu
@@ -206,6 +208,10 @@ setClass("Betas",
              if (any(is.na(betaEqualsMean)))
                  return(gettextf("'%s' has missing values",
                                  "betaEqualsMean"))
+             ## 'useHMCToUpdateBeta' has no missing values
+             if (any(is.na(useHMCToUpdateBeta)))
+                 return(gettextf("'%s' has missing values",
+                                 "useHMCToUpdateBeta"))
              ## all elements of 'dims' are integer
              if (!all(sapply(dims, is.integer)))
                  return(gettextf("'%s' has elements not of type \"%s\"",
@@ -266,6 +272,10 @@ setClass("Betas",
              if (!identical(length(betas), length(betaEqualsMean)))
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "betas", "betaEqualsMean"))
+             ## 'betas' and 'useHMCToUpdateBeta' have same length
+             if (!identical(length(betas), length(useHMCToUpdateBeta)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "betas", "useHMCToUpdateBeta"))
              ## 'betas' and 'namesBetas' have same length
              if (!identical(length(betas), length(names)))
                  return(gettextf("'%s' and '%s' have different lengths",
