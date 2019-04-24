@@ -26,12 +26,6 @@ drawBetas(SEXP object_R)
     
     for (int i = 0; i < n_betas; ++i) {
         
-        #ifdef DEBUGGING
-        PrintValue(mkString(""));
-        PrintValue(mkString("i"));
-        PrintValue(ScalarInteger(i));
-        #endif
-           
         SEXP beta_R = VECTOR_ELT(betas_R, i);
         SEXP prior_R = VECTOR_ELT(priors_R, i);
         double *beta = REAL(beta_R);
@@ -57,16 +51,6 @@ drawBetas(SEXP object_R)
                 beta[j] = rnorm(beta_hat[j], sqrt(var[j]) );
             }
         }
-        #ifdef DEBUGGING
-        PrintValue(mkString("J"));
-        PrintValue(ScalarReal(J));
-        PrintValue(mkString("beta_hat"));
-        printDblArray(beta_hat, J);
-        PrintValue(mkString("var"));
-        printDblArray(var, J);
-        PrintValue(mkString("beta"));
-        printDblArray(beta, J);
-        #endif
     }
 }
 

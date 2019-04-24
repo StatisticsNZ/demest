@@ -12,7 +12,7 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
-//#define DEBUGGING
+#define DEBUGGING
 //#define DEBUGGING_EXTRA
 //#define DEBUGNANS /* debugging NaNs */
 //#define DEBUGFILEREAD 
@@ -919,6 +919,9 @@ void drawModelUseExp_NormalFixedUseExp
 void drawModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 
+
+/* draw combined models*/
+void drawCombined_CombinedModelBinomial(SEXP object_R, int nUpdate);
 
 /* predict combined models*/
 void predictCombined_CombinedModelNormal(SEXP object_R, 

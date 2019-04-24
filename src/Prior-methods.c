@@ -712,6 +712,12 @@ drawPrior(SEXP prior_R)
 {
     int i_method_prior = *(INTEGER(GET_SLOT(prior_R, iMethodPrior_sym)));
     
+    #ifdef DEBUGGING
+        PrintValue(mkString("i_method_prior"));
+        PrintValue(ScalarInteger(i_method_prior));
+        
+        #endif
+    
     switch(i_method_prior)
     {
         case 0:

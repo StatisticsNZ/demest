@@ -5,6 +5,239 @@
 /* File "Combined-methods.c" contains C versions of functions 
  * from "Combined-methods.R". */
 
+/* ************************ drawCombined ************************ */
+
+/*## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawCombined",
+          signature(object = "CombinedModelBinomial"),
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawCombined_CombinedModelBinomial_R, object, nUpdate)
+                  else
+                      .Call(drawCombined_R, object, nUpdate)
+              }
+              else {
+                  model <- object@model
+                  y <- object@y
+                  exposure <- object@exposure
+                  for (i in seq_len(nUpdate))
+                      model <- drawModelUseExp(model,
+                                               y = y,
+                                               exposure = exposure)
+                  object@model <- model
+                  object
+              }
+          })
+
+*/
+void
+drawCombined_CombinedModelBinomial(SEXP object_R, int nUpdate)
+{
+    SEXP model_R = GET_SLOT(object_R, model_sym);
+    SEXP y_R = GET_SLOT(object_R, y_sym);
+    SEXP exposure_R = GET_SLOT(object_R, exposure_sym);
+    #ifdef DEBUGGING
+        PrintValue(mkString("model before update"));
+        PrintValue(mkString("betas"));
+        PrintValue(GET_SLOT(model_R, betas_sym));
+        PrintValue(mkString("priorsBetas"));
+        PrintValue(GET_SLOT(model_R, priorsBetas_sym));
+        #endif
+    
+    for (int i = 0; i < nUpdate; ++i) {
+        
+        drawModelUseExp(model_R, y_R, exposure_R);
+        
+        #ifdef DEBUGGING
+        PrintValue(mkString("i"));
+        PrintValue(ScalarInteger(i));
+        PrintValue(mkString("model after update"));
+        PrintValue(mkString("betas"));
+        PrintValue(GET_SLOT(model_R, betas_sym));
+        PrintValue(mkString("priorsBetas"));
+        PrintValue(GET_SLOT(model_R, priorsBetas_sym));
+        #endif
+
+    }
+    
+    
+}
+
+
+
+/*
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawCombined",
+          signature(object = "CombinedAccountMovements"),
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawCombined_CombinedAccountMovements_R, object, nUpdate)
+                  else
+                      .Call(drawCombined_R, object, nUpdate)
+              }
+              else {
+                  object <- drawSystemModels(object)
+                  object <- updateExpectedExposure(object, useC = TRUE)
+                  object <- drawDataModels(object)
+                  ## updating functions use 'updateSystemModel' and
+                  ## 'updateDataModel' flags to decide what to update
+                  for (i in seq_len(nUpdate)) {
+                      object <- updateSystemModels(object, useC = TRUE)
+                      object <- updateExpectedExposure(object, useC = TRUE)
+                      object <- updateAccount(object, useC = TRUE)
+                      object <- updateDataModelsAccount(object, useC = TRUE)
+                  }
+                  object
+              }
+          })
+
+*/
+
+/*
+## drawDataModels ##################################################################
+
+## Elements of 'datasets' must contain only NAs, when
+## 'drawDataModels' is called. Normally this is done by
+## calling function 'setDatasetsToMissing'.
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## Function is almost identical to 'updateDataModelsAccount' 
+setMethod("drawDataModels",
+          signature(combined = "CombinedAccountMovements"),
+          function(combined, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(combined)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawDataModels_CombinedAccountMovements_R, combined)
+                  else
+                      .Call(drawDataModels_R, combined)
+              }
+              else {
+                  data.models <- combined@dataModels
+                  datasets <- combined@datasets
+                  population <- combined@account@population
+                  components <- combined@account@components
+                  series.indices <- combined@seriesIndices
+                  transforms <- combined@transforms
+                  for (i in seq_along(data.models)) {
+                      model <- data.models[[i]]
+                      dataset <- datasets[[i]]
+                      transform <- transforms[[i]]
+                      series.index <- series.indices[i]
+                      if (any(!is.na(dataset)))
+                          stop(gettextf("'%s' have not been set to missing",
+                                        "datasets"))
+                      if (series.index == 0L)
+                          series <- population
+                      else
+                          series <- components[[series.index]]
+                      series.collapsed <- collapse(series, transform = transform)
+                      if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+                          series.collapsed <- toDouble(series.collapsed)
+                      model <- drawModelUseExp(model, ## this line different from 'updateDataModelsAccount'
+                                               y = dataset,
+                                               exposure = series.collapsed)
+                      data.models[[i]] <- model
+                  }
+                  combined@dataModels <- data.models
+                  combined
+              }
+          })
+
+*/
+
+/*
+## drawSystemModels ################################################################
+
+## Unlike with 'drawSystemModels', 'drawSystemModels' does
+## not assume that outcome variables (ie the demographic series)
+## have been set to missing, since, unlike the datasets,
+## the series are generated as part of the estimation process,
+## rather than imputed afterwards.
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawSystemModels",
+          signature(combined = "CombinedAccountMovements"),
+          function(combined, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(combined)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawSystemModels_CombinedAccountMovements_R, combined)
+                  else
+                      .Call(drawSystemModels_R, combined)
+              }
+              else {
+                  system.models <- combined@systemModels
+                  population <- combined@account@population
+                  components <- combined@account@components
+                  model.uses.exposure <- combined@modelUsesExposure
+                  transforms.exp.to.comp <- combined@transformsExpToComp
+                  transform.exp.to.births <- combined@transformExpToBirths
+                  i.births <- combined@iBirths
+                  ## population
+                  population[] <- NA
+                  model <- system.models[[1L]]
+                  model <- drawModelNotUseExp(model,
+                                              y = population)
+                  system.models[[1L]] <- model
+                  ## components
+                  for (i in seq_along(components)) {
+                      model <- system.models[[i + 1L]]
+                      component <- components[[i]]
+                      component[] <- NA
+                      uses.exposure <- model.uses.exposure[i + 1L]
+                      if (uses.exposure) {
+                          exposure <- combined@exposure@.Data
+                          is.births <- i == i.births
+                          if (is.births)
+                              exposure <- collapse(exposure,
+                                                   transform = transform.exp.to.births)
+                          transform <- transforms.exp.to.comp[[i]]
+                          if (!is.null(transform))
+                              exposure <- extend(exposure,
+                                                 transform = transforms.exp.to.comp[[i]])
+                          model <- drawModelUseExp(object = model,
+                                                   y = component,
+                                                   exposure = exposure)
+                      }
+                      else {
+                          if (methods::is(model, "Normal"))
+                              component <- toDouble(component)
+                          model <- drawModelNotUseExp(object = model,
+                                                      y = component)
+                      }
+                      system.models[[i + 1L]] <- model
+                  }
+                  combined@systemModels <- system.models
+                  combined
+              }
+          })
+
+*/
+
+
 /* ******************** predictCombined ********************** */
 
 
@@ -666,17 +899,17 @@ updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
       for (int i = 0; i < lengthExpNoTri; ++i) {
 
         int iPopnStart = (i / lengthSliceExp) * lengthSlicePopn
-	  + i % lengthSliceExp; /* C style */
+      + i % lengthSliceExp; /* C style */
         int iPopnEnd = iPopnStart + stepTime;
         double expStart = halfAgeTimeStep * theta[iPopnStart];
         double expEnd = halfAgeTimeStep * theta[iPopnEnd];
         
         if (hasAge) {
-	  expectedExposure[i + lengthExpNoTri] = expStart;
-	  expectedExposure[i] = expEnd;
+      expectedExposure[i + lengthExpNoTri] = expStart;
+      expectedExposure[i] = expEnd;
         }
         else {
-	  expectedExposure[i] = expStart + expEnd;
+      expectedExposure[i] = expStart + expEnd;
         }
             
       }
@@ -742,75 +975,75 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
         
       if (usesExposure) {
             
-	SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
-	int haveTransform = !isNull(transform_R);
+    SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
+    int haveTransform = !isNull(transform_R);
             
-	SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
-	int isBirths = (i == (iBirths_r - 1));
+    SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
+    int isBirths = (i == (iBirths_r - 1));
                 
-	if(isBirths) {
-	  SEXP newExposure_R = NULL;
-	  PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
-						     transformExpToBirths_R));
-	  if(haveTransform) {
-	    SEXP anotherNewExposure_R = NULL;
-	    PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
-							    transform_R));
-	    updateModelUseExp(model_R, component_R, anotherNewExposure_R);
-	    UNPROTECT(1); /* anotherNewExposure */
+    if(isBirths) {
+      SEXP newExposure_R = NULL;
+      PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
+                             transformExpToBirths_R));
+      if(haveTransform) {
+        SEXP anotherNewExposure_R = NULL;
+        PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
+                                transform_R));
+        updateModelUseExp(model_R, component_R, anotherNewExposure_R);
+        UNPROTECT(1); /* anotherNewExposure */
                     
 #ifdef MYDEBUG
-	    PrintValue(mkString("is Births and have transform"));
+        PrintValue(mkString("is Births and have transform"));
 #endif
-	  }
-	  else {
-	    updateModelUseExp(model_R, component_R, newExposure_R);
+      }
+      else {
+        updateModelUseExp(model_R, component_R, newExposure_R);
                     
 #ifdef MYDEBUG
-	    PrintValue(mkString("isBirths, no transform"));
+        PrintValue(mkString("isBirths, no transform"));
 #endif
-	  }
-	  UNPROTECT(1); /* newExposure */
-	}
-	else if (haveTransform) {
-	  SEXP newExposure_R = NULL;
-	  PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
-						   transform_R));
-	  updateModelUseExp(model_R, component_R, newExposure_R);
-	  UNPROTECT(1); /* newExposure */
+      }
+      UNPROTECT(1); /* newExposure */
+    }
+    else if (haveTransform) {
+      SEXP newExposure_R = NULL;
+      PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
+                           transform_R));
+      updateModelUseExp(model_R, component_R, newExposure_R);
+      UNPROTECT(1); /* newExposure */
                 
 #ifdef MYDEBUG
-	  PrintValue(mkString("not isBirths, has transform"));
+      PrintValue(mkString("not isBirths, has transform"));
 #endif
-	}
-	else {
-	  updateModelUseExp(model_R, component_R, exposure_R);
+    }
+    else {
+      updateModelUseExp(model_R, component_R, exposure_R);
                 
 #ifdef MYDEBUG
-	  PrintValue(mkString("not isBirths, no transform"));
+      PrintValue(mkString("not isBirths, no transform"));
 #endif
-	}
+    }
       } /* end if usesExposure */
         
       else {
-	const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-	char *found = NULL;
-	found = strstr(class_name, "Normal");
-	if (found) {
-	  SEXP componentDouble_R;
-	  PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
-	  updateModelNotUseExp(model_R, componentDouble_R);
-	  UNPROTECT(1);
+    const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+    char *found = NULL;
+    found = strstr(class_name, "Normal");
+    if (found) {
+      SEXP componentDouble_R;
+      PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
+      updateModelNotUseExp(model_R, componentDouble_R);
+      UNPROTECT(1);
 #ifdef MYDEBUG
-	  PrintValue(mkString("not use exp, normal"));
+      PrintValue(mkString("not use exp, normal"));
 #endif
-	}
-	else {
-	  updateModelNotUseExp(model_R, component_R);
+    }
+    else {
+      updateModelNotUseExp(model_R, component_R);
 #ifdef MYDEBUG
-	  PrintValue(mkString("not use exp, not normal"));
+      PrintValue(mkString("not use exp, not normal"));
 #endif
-	}
+    }
             
       }
 

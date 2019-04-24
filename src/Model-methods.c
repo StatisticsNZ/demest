@@ -1271,6 +1271,11 @@ void
 drawModelUseExp_Internal(SEXP object_R, SEXP y_R, SEXP exposure_R,
                             int i_method_model) 
 {
+    #ifdef DEBUGGING
+        PrintValue(mkString("i_method_model"));
+        PrintValue(ScalarInteger(i_method_model));
+        
+        #endif
     switch(i_method_model)
     {
 
