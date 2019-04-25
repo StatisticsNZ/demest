@@ -12,7 +12,7 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
-#define DEBUGGING
+//#define DEBUGGING
 //#define DEBUGGING_EXTRA
 //#define DEBUGNANS /* debugging NaNs */
 //#define DEBUGFILEREAD 
