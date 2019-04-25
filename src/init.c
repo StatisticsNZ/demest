@@ -1367,6 +1367,12 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp);
 
 /* wrap draw combined model functions */
 UPDATECOMBINEDOBJECT_WRAPPER_R(drawCombined_CombinedModelBinomial);
+UPDATECOMBINEDOBJECT_WRAPPER_R(drawCombined_CombinedAccountMovements);
+UPDATECOMBINEDOBJECT_WRAPPER_R(drawCombined);
+
+/* wrap draw data models combined functions */
+UPDATEOBJECT_WRAPPER_R(drawDataModels_CombinedAccountMovements);
+UPDATEOBJECT_WRAPPER_R(drawDataModels);
 
 /* wrap predict combined model functions */
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelNormal);
@@ -2455,6 +2461,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateBetasAndPriorsBetas_R, 1),
   /* draw combined */
   CALLDEF(drawCombined_CombinedModelBinomial_R, 2),
+  CALLDEF(drawCombined_CombinedAccountMovements_R, 2),
+  CALLDEF(drawCombined_R, 2),
+  
+  /* draw data models*/
+  CALLDEF(drawDataModels_CombinedAccountMovements_R, 1),
+  CALLDEF(drawDataModels_R, 1),
+  
   /* predict combined */
   CALLDEF(predictCombined_CombinedModelNormal_R, 4),
   CALLDEF(predictCombined_CombinedModelPoissonNotHasExp_R, 4),

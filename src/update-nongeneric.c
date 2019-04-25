@@ -7397,64 +7397,64 @@ updateDataModelsCounts(SEXP y_R, SEXP dataModels_R,
 void 
 updateDataModelsAccount(SEXP combined_R)
 {
-  SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
-  SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
-  SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
-  SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
-  int *updateDataModel = LOGICAL(GET_SLOT(combined_R, updateDataModel_sym));
-    
-  SEXP account_R = GET_SLOT(combined_R, account_sym);
-  SEXP population_R = GET_SLOT(account_R, population_sym);
-  SEXP components_R = GET_SLOT(account_R, components_sym);
-    
-  int* seriesIndices = INTEGER(seriesIndices_R);
-    
-  int nObs = LENGTH(dataModels_R);
-    
-  for (int i = 0; i < nObs; ++i) {
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    int *updateDataModel = LOGICAL(GET_SLOT(combined_R, updateDataModel_sym));
 
-    if (updateDataModel[i]) {
-        
-      SEXP model_R = VECTOR_ELT(dataModels_R, i);
-      SEXP dataset_R = VECTOR_ELT(datasets_R, i);
-      SEXP transform_R = VECTOR_ELT(transforms_R, i);
-        
-      int seriesIndex_r = seriesIndices[i];
-      SEXP series_R = population_R;
-      if (seriesIndex_r > 0) {
-	series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
-      }
-        
-      SEXP seriesCollapsed_R;
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
 
-      int nProtect  = 0;
-      int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
-        
-      const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-      int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
-      if (found) {
-            
-	SEXP seriesCollapsed_tmp_R;
-	/* collapse_R in demographic is okay with series_R being integer
-	 * but type of contents of seriesCollapsed_R will be integer*/
-	PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+    int* seriesIndices = INTEGER(seriesIndices_R);
 
-	PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
-	nProtect  = 2;
-      }
-      else {
-            
-	PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
-	nProtect  = 1;
-      }
-        
-      /* seriesCollapsed_R should now be in appropriate state for model */
-      updateModelUseExp_Internal(model_R, dataset_R,
-				 seriesCollapsed_R, i_method_model);
+    int nObs = LENGTH(dataModels_R);
 
-      UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
-      
+    for (int i = 0; i < nObs; ++i) {
+
+        if (updateDataModel[i]) {
+
+            SEXP model_R = VECTOR_ELT(dataModels_R, i);
+            SEXP dataset_R = VECTOR_ELT(datasets_R, i);
+            SEXP transform_R = VECTOR_ELT(transforms_R, i);
+
+            int seriesIndex_r = seriesIndices[i];
+            SEXP series_R = population_R;
+            if (seriesIndex_r > 0) {
+                series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
+            }
+
+            SEXP seriesCollapsed_R;
+
+            int nProtect  = 0;
+            int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+
+            const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+            int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
+            if (found) {
+                
+                SEXP seriesCollapsed_tmp_R;
+                /* collapse_R in demographic is okay with series_R being integer
+                * but type of contents of seriesCollapsed_R will be integer*/
+                PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+
+                PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
+                nProtect  = 2;
+            }
+            else {
+                
+                PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
+                nProtect  = 1;
+            }
+
+            /* seriesCollapsed_R should now be in appropriate state for model */
+            updateModelUseExp_Internal(model_R, dataset_R,
+                     seriesCollapsed_R, i_method_model);
+
+            UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
+
+        }
+
     }
-
-  }
 }

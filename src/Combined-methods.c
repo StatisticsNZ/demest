@@ -7,70 +7,19 @@
 
 /* ************************ drawCombined ************************ */
 
-/*## READY_TO_TRANSLATE
-## HAS_TESTS
-setMethod("drawCombined",
-          signature(object = "CombinedModelBinomial"),
-          function(object, nUpdate = 1L,
-                   useC = FALSE, useSpecific = FALSE) {
-              ## object
-              methods::validObject(object)
-              ## nUpdate
-              stopifnot(identical(length(nUpdate), 1L))
-              stopifnot(is.integer(nUpdate))
-              stopifnot(!is.na(nUpdate))
-              stopifnot(nUpdate >= 0L)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(drawCombined_CombinedModelBinomial_R, object, nUpdate)
-                  else
-                      .Call(drawCombined_R, object, nUpdate)
-              }
-              else {
-                  model <- object@model
-                  y <- object@y
-                  exposure <- object@exposure
-                  for (i in seq_len(nUpdate))
-                      model <- drawModelUseExp(model,
-                                               y = y,
-                                               exposure = exposure)
-                  object@model <- model
-                  object
-              }
-          })
 
-*/
 void
 drawCombined_CombinedModelBinomial(SEXP object_R, int nUpdate)
 {
     SEXP model_R = GET_SLOT(object_R, model_sym);
     SEXP y_R = GET_SLOT(object_R, y_sym);
     SEXP exposure_R = GET_SLOT(object_R, exposure_sym);
-    #ifdef DEBUGGING
-        PrintValue(mkString("model before update"));
-        PrintValue(mkString("betas"));
-        PrintValue(GET_SLOT(model_R, betas_sym));
-        PrintValue(mkString("priorsBetas"));
-        PrintValue(GET_SLOT(model_R, priorsBetas_sym));
-        #endif
     
     for (int i = 0; i < nUpdate; ++i) {
         
         drawModelUseExp(model_R, y_R, exposure_R);
         
-        #ifdef DEBUGGING
-        PrintValue(mkString("i"));
-        PrintValue(ScalarInteger(i));
-        PrintValue(mkString("model after update"));
-        PrintValue(mkString("betas"));
-        PrintValue(GET_SLOT(model_R, betas_sym));
-        PrintValue(mkString("priorsBetas"));
-        PrintValue(GET_SLOT(model_R, priorsBetas_sym));
-        #endif
-
     }
-    
-    
 }
 
 
@@ -113,6 +62,36 @@ setMethod("drawCombined",
 
 */
 
+void
+drawCombined_CombinedAccountMovements(SEXP object_R, int nUpdate)
+{
+    
+}
+
+/* generic draw combined object method */
+void
+drawCombined(SEXP object_R, int nUpdate)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    object_R, iMethodCombined_sym)));
+        
+    switch(i_method_combined)
+    {
+        case 1: /* binomial model, has exposure */
+            drawCombined_CombinedModelBinomial(object_R, nUpdate);
+            break;
+        case 9: /* combined account movements, no age */
+            drawCombined_CombinedAccountMovements(object_R, nUpdate);
+            break;
+        case 10: /* combined account movements, has age */
+            drawCombined_CombinedAccountMovements(object_R, nUpdate);
+            break;
+            
+        default:
+            error("unknown iMethodCombined for drawCombined: %d", i_method_combined);
+            break;
+    }
+}
 /*
 ## drawDataModels ##################################################################
 
@@ -166,6 +145,119 @@ setMethod("drawDataModels",
           })
 
 */
+
+void
+drawDataModels_CombinedAccountMovements(SEXP combined_R)
+{
+    /*
+     *                   data.models <- combined@dataModels
+                  datasets <- combined@datasets
+                  population <- combined@account@population
+                  components <- combined@account@components
+                  series.indices <- combined@seriesIndices
+                  transforms <- combined@transforms
+   */
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+
+    int* seriesIndices = INTEGER(seriesIndices_R);
+
+    int nObs = LENGTH(dataModels_R);
+/*                      model <- data.models[[i]]
+                      dataset <- datasets[[i]]
+                      transform <- transforms[[i]]
+                      series.index <- series.indices[i]
+                      if (any(!is.na(dataset)))
+                          stop(gettextf("'%s' have not been set to missing",
+                                        "datasets"))
+*/
+    for (int i = 0; i < nObs; ++i) {
+
+        SEXP model_R = VECTOR_ELT(dataModels_R, i);
+        SEXP dataset_R = VECTOR_ELT(datasets_R, i);
+        SEXP transform_R = VECTOR_ELT(transforms_R, i);
+
+/*      NO CHECK FOR THIS
+ *      if (any(!is.na(dataset)))
+            stop(gettextf("'%s' have not been set to missing",
+                    "datasets"))
+*/
+        int seriesIndex_r = seriesIndices[i];
+        
+        /*if (series.index == 0L)
+                          series <- population
+                      else
+                          series <- components[[series.index]]
+                      */
+        SEXP series_R = population_R;
+        if (seriesIndex_r > 0) {
+            series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
+        }
+
+/*series.collapsed <- collapse(series, transform = transform)
+                      if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+                          series.collapsed <- toDouble(series.collapsed)
+                      model <- drawModelUseExp(model, ## this line different from 'updateDataModelsAccount'
+                                               y = dataset,
+                                               exposure = series.collapsed)
+                      data.models[[i]] <- model*/
+        SEXP seriesCollapsed_R;
+
+        int nProtect  = 0;
+        int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+
+        const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+        int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
+        if (found) {
+            
+            SEXP seriesCollapsed_tmp_R;
+            /* collapse_R in demographic is okay with series_R being integer
+            * but type of contents of seriesCollapsed_R will be integer*/
+            PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+
+            PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
+            nProtect  = 2;
+        }
+        else {
+            
+            PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
+            nProtect  = 1;
+        }
+
+        /* seriesCollapsed_R should now be in appropriate state for model */
+        drawModelUseExp_Internal(model_R, dataset_R,
+                 seriesCollapsed_R, i_method_model);
+
+        UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
+
+    }
+}
+/* generic draw data models combined object method */
+void
+drawDataModels(SEXP combined_R)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    combined_R, iMethodCombined_sym)));
+        
+    switch(i_method_combined)
+    {
+        case 9: /* combined account movements, no age */
+            drawDataModels_CombinedAccountMovements(combined_R);
+            break;
+        case 10: /* combined account movements, has age */
+            drawDataModels_CombinedAccountMovements(combined_R);
+            break;
+            
+        default:
+            error("unknown iMethodCombined for drawCombined: %d", i_method_combined);
+            break;
+    }
+}
 
 /*
 ## drawSystemModels ################################################################

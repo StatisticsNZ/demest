@@ -922,6 +922,12 @@ void drawModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 /* draw combined models*/
 void drawCombined_CombinedModelBinomial(SEXP object_R, int nUpdate);
+void drawCombined_CombinedAccountMovements(SEXP object_R, int nUpdate);
+void drawCombined(SEXP object_R, int nUpdate);
+
+/* draw data models*/
+void drawDataModels_CombinedAccountMovements(SEXP combined_R);
+void drawDataModels(SEXP combined_R);
 
 /* predict combined models*/
 void predictCombined_CombinedModelNormal(SEXP object_R, 
