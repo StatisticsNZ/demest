@@ -929,6 +929,10 @@ void drawCombined(SEXP object_R, int nUpdate);
 void drawDataModels_CombinedAccountMovements(SEXP combined_R);
 void drawDataModels(SEXP combined_R);
 
+/* draw system models*/
+void drawSystemModels_CombinedAccountMovements(SEXP combined_R);
+void drawSystemModels(SEXP combined_R);
+
 /* predict combined models*/
 void predictCombined_CombinedModelNormal(SEXP object_R, 
                     const char *filename, int lengthIter, int iteration);

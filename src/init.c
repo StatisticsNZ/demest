@@ -1374,6 +1374,10 @@ UPDATECOMBINEDOBJECT_WRAPPER_R(drawCombined);
 UPDATEOBJECT_WRAPPER_R(drawDataModels_CombinedAccountMovements);
 UPDATEOBJECT_WRAPPER_R(drawDataModels);
 
+/* wrap draw system models combined functions */
+UPDATEOBJECT_WRAPPER_R(drawSystemModels_CombinedAccountMovements);
+UPDATEOBJECT_WRAPPER_R(drawSystemModels);
+
 /* wrap predict combined model functions */
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelNormal);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelPoissonNotHasExp);
@@ -2467,6 +2471,10 @@ R_CallMethodDef callMethods[] = {
   /* draw data models*/
   CALLDEF(drawDataModels_CombinedAccountMovements_R, 1),
   CALLDEF(drawDataModels_R, 1),
+  
+  /* draw system models*/
+  CALLDEF(drawSystemModels_CombinedAccountMovements_R, 1),
+  CALLDEF(drawSystemModels_R, 1),
   
   /* predict combined */
   CALLDEF(predictCombined_CombinedModelNormal_R, 4),
