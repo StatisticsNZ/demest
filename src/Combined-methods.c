@@ -332,7 +332,6 @@ setMethod("drawSystemModels",
 void
 drawSystemModels_CombinedAccountMovements(SEXP combined_R)
 {   
-    #if(0)
 /*                  system.models <- combined@systemModels
                   population <- combined@account@population
                   components <- combined@account@components
@@ -365,101 +364,151 @@ drawSystemModels_CombinedAccountMovements(SEXP combined_R)
                                               y = population)
                   system.models[[1L]] <- model
  */
- 
+    int nPops = LENGTH(population_R);
+    for (int i = 0; i < nPops; ++i){
+        SET_VECTOR_ELT(population_R, i, ScalarLogical(NA_LOGICAL));
+    }
     
     SEXP model_R = VECTOR_ELT(systemModels_R, 0);
     int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
-    drawModelNotUseExp_Internal(model_R, 
-        updateModelNotUseExp(popnModel_R, population_R);
+    drawModelNotUseExp_Internal(model_R, population_R, i_method_model);
     
 
     /* update models for components */
 
+    /*## components
+                  for (i in seq_along(components)) {
+                      model <- system.models[[i + 1L]]
+                      component <- components[[i]]
+                      component[] <- NA
+                      uses.exposure <- model.uses.exposure[i + 1L]
+                      
+                      }*/
+    
     for(int i = 0; i < nComponents; ++i) {
 
-        if (updateSystemModel[i+1]) {
+        SEXP this_model_R = VECTOR_ELT(systemModels_R, i+1);
+        int this_i_method_model = *(INTEGER(GET_SLOT(this_model_R,
+                                                iMethodModel_sym)));
+        SEXP this_component_R = VECTOR_ELT(components_R, i);
+        
+        int nC = LENGTH(this_component_R);
+        for (int i = 0; i < nC; ++i){
+            SET_VECTOR_ELT(this_component_R, i, ScalarLogical(NA_LOGICAL));
+        }
 
-            SEXP model_R = VECTOR_ELT(systemModels_R, i+1);
-            SEXP component_R = VECTOR_ELT(components_R, i);
-            int usesExposure = modelUsesExposureVec[i+1];
+        int usesExposure = modelUsesExposureVec[i+1];
+        
+        /*if (uses.exposure) {
+                      exposure <- combined@exposure@.Data
+                      is.births <- i == i.births
+                      if (is.births)
+                          exposure <- collapse(exposure,
+                                               transform = transform.exp.to.births)
+                      transform <- transforms.exp.to.comp[[i]]
+                      if (!is.null(transform))
+                          exposure <- extend(exposure,
+                                             transform = transforms.exp.to.comp[[i]])
+                      model <- drawModelUseExp(object = model,
+                                               y = component,
+                                               exposure = exposure)*/
 
-            if (usesExposure) {
+        if (usesExposure) {
 
-                SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
-                int haveTransform = !isNull(transform_R);
+            SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
+            int haveTransform = !isNull(transform_R);
 
-                SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
-                int isBirths = (i == (iBirths_r - 1));
+            SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
+            int isBirths = (i == (iBirths_r - 1));
 
-                if(isBirths) {
-                    SEXP newExposure_R = NULL;
-                    PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
-                             transformExpToBirths_R));
-                    if(haveTransform) {
-                        SEXP anotherNewExposure_R = NULL;
-                        PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
-                                    transform_R));
-                        updateModelUseExp(model_R, component_R, anotherNewExposure_R);
-                        UNPROTECT(1); /* anotherNewExposure */
+            if(isBirths) {
+                SEXP newExposure_R = NULL;
+                PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
+                         transformExpToBirths_R));
+                if(haveTransform) {
+                    SEXP anotherNewExposure_R = NULL;
+                    PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
+                                transform_R));
+                    drawModelUseExp_Internal(this_model_R, 
+                                            this_component_R,
+                                            anotherNewExposure_R,
+                                            this_i_method_model);
+                    UNPROTECT(1); /* anotherNewExposure */
 
-                        #ifdef MYDEBUG
-                        PrintValue(mkString("is Births and have transform"));
-                        #endif
-                    }
-                    else {
-                        updateModelUseExp(model_R, component_R, newExposure_R);
-
-                        #ifdef MYDEBUG
-                        PrintValue(mkString("isBirths, no transform"));
-                        #endif
-                    }
-                    
-                    UNPROTECT(1); /* newExposure */
-                }
-                else if (haveTransform) {
-                    SEXP newExposure_R = NULL;
-                    PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
-                           transform_R));
-                    updateModelUseExp(model_R, component_R, newExposure_R);
-                    UNPROTECT(1); /* newExposure */
-
-                    #ifdef MYDEBUG
-                    PrintValue(mkString("not isBirths, has transform"));
+                    #ifdef DEBUGGING
+                    PrintValue(mkString("is Births and have transform"));
                     #endif
-                    }
+                }
                 else {
-                    updateModelUseExp(model_R, component_R, exposure_R);
+                    drawModelUseExp_Internal(this_model_R,
+                                                this_component_R,
+                                                newExposure_R,
+                                                this_i_method_model);
 
-                    #ifdef MYDEBUG
-                    PrintValue(mkString("not isBirths, no transform"));
+                    #ifdef DEBUGGING
+                    PrintValue(mkString("isBirths, no transform"));
                     #endif
                 }
-            } /* end if usesExposure */
-
-            else {
-                const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-                char *found = NULL;
-                found = strstr(class_name, "Normal");
                 
-                if (found) {
-                    SEXP componentDouble_R;
-                    PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
-                    updateModelNotUseExp(model_R, componentDouble_R);
-                    UNPROTECT(1);
-                    #ifdef MYDEBUG
-                    PrintValue(mkString("not use exp, normal"));
-                    #endif
+                UNPROTECT(1); /* newExposure */
+            }
+            else if (haveTransform) {
+                SEXP newExposure_R = NULL;
+                PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
+                       transform_R));
+                drawModelUseExp_Internal(this_model_R,
+                                        this_component_R,
+                                        newExposure_R,
+                                        this_i_method_model);
+                UNPROTECT(1); /* newExposure */
+
+                #ifdef DEBUGGING
+                PrintValue(mkString("not isBirths, has transform"));
+                #endif
                 }
-                else {
-                    updateModelNotUseExp(model_R, component_R);
-                    #ifdef MYDEBUG
-                    PrintValue(mkString("not use exp, not normal"));
-                    #endif
-                }
+            else {
+                updateModelUseExp_Internal(this_model_R,
+                                            this_component_R,
+                                            exposure_R,
+                                            this_i_method_model);
+
+                #ifdef DEBUGGING
+                PrintValue(mkString("not isBirths, no transform"));
+                #endif
+            }
+        } /* end if usesExposure */
+        
+        /*else {
+                      if (methods::is(model, "Normal"))
+                          component <- toDouble(component)
+                      model <- drawModelNotUseExp(object = model,
+                                                  y = component)
+                  }*/
+
+        else {
+            const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+            char *found = NULL;
+            found = strstr(class_name, "Normal");
+            
+            if (found) {
+                SEXP this_component_double_R;
+                PROTECT(this_component_double_R = coerceVector(this_component_R, REALSXP));
+                drawModelNotUseExp_Internal(this_model_R,
+                                            this_component_double_R,
+                                            this_i_method_model);
+                UNPROTECT(1);
+                #ifdef DEBUGGING
+                PrintValue(mkString("not use exp, normal"));
+                #endif
+            }
+            else {
+                drawModelNotUseExp(this_model_R, this_component_R);
+                #ifdef DEBUGGING
+                PrintValue(mkString("not use exp, not normal"));
+                #endif
             }
         }
     }
-    #endif
 }
 
 /* generic draw system models combined object method */
@@ -1240,14 +1289,14 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
                         updateModelUseExp(model_R, component_R, anotherNewExposure_R);
                         UNPROTECT(1); /* anotherNewExposure */
 
-                        #ifdef MYDEBUG
+                        #ifdef DEBUGGING
                         PrintValue(mkString("is Births and have transform"));
                         #endif
                     }
                     else {
                         updateModelUseExp(model_R, component_R, newExposure_R);
 
-                        #ifdef MYDEBUG
+                        #ifdef DEBUGGING
                         PrintValue(mkString("isBirths, no transform"));
                         #endif
                     }
@@ -1261,14 +1310,14 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
                     updateModelUseExp(model_R, component_R, newExposure_R);
                     UNPROTECT(1); /* newExposure */
 
-                    #ifdef MYDEBUG
+                    #ifdef DEBUGGING
                     PrintValue(mkString("not isBirths, has transform"));
                     #endif
                     }
                 else {
                     updateModelUseExp(model_R, component_R, exposure_R);
 
-                    #ifdef MYDEBUG
+                    #ifdef DEBUGGING
                     PrintValue(mkString("not isBirths, no transform"));
                     #endif
                 }
@@ -1284,13 +1333,13 @@ updateSystemModels_CombinedAccountMovements(SEXP combined_R)
                     PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
                     updateModelNotUseExp(model_R, componentDouble_R);
                     UNPROTECT(1);
-                    #ifdef MYDEBUG
+                    #ifdef DEBUGGING
                     PrintValue(mkString("not use exp, normal"));
                     #endif
                 }
                 else {
                     updateModelNotUseExp(model_R, component_R);
-                    #ifdef MYDEBUG
+                    #ifdef DEBUGGING
                     PrintValue(mkString("not use exp, not normal"));
                     #endif
                 }

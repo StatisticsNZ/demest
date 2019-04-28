@@ -544,11 +544,6 @@ getTwoMultinomialProposalsNoExp (int *yProp,
     int size = (int) y[ir-1];
     size += (int) y[ir_other-1];
     
-    #ifdef DEBUGGING
-    PrintValue(ScalarInteger(400));
-    PrintValue(ScalarInteger(size));
-    #endif
-    
     /* version of rmultinom in C gives rubbish 
      * if probabilities not normalised */
     double prob_total = theta[ir-1] + theta[ir_other - 1];
@@ -559,17 +554,6 @@ getTwoMultinomialProposalsNoExp (int *yProp,
     
     rmultinom(size, prob, nInd, yProp);
     /* after call, yProp contains nInd proposals */
-        
-    #ifdef DEBUGGING
-    PrintValue(ScalarInteger(500));
-    PrintValue(ScalarInteger(size));
-    #endif
-    
-    #ifdef DEBUGGING
-    for (int i = 0; i < nInd; ++i) {
-        PrintValue(ScalarInteger(yProp[i]));
-    } 
-    #endif
 }
 
 /* helper function to make two multinomial proposals, with exposure.
@@ -944,21 +928,6 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
                                     - nuPlus1/2 * log(maxTolSq + nuASq);
     }
     
-    #ifdef DEBUGGING
-        PrintValue(mkString("z"));
-        PrintValue(ScalarReal(z));
-        PrintValue(mkString(""));
-        PrintValue(mkString("max"));
-        PrintValue(ScalarReal(max));
-        PrintValue(mkString("min"));
-        PrintValue(ScalarReal(min));
-        PrintValue(mkString("fmax"));
-        PrintValue(ScalarReal(fmax));
-        PrintValue(mkString("fmin"));
-        PrintValue(ScalarReal(fmin));
-        
-    #endif
-    
     if ( !(( (fmin < z) && (fmax < z ) ) || ( (fmin > z) && (fmax > z) ) ) ) {
     
         int found = 0;
@@ -985,49 +954,9 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
             
             int derivNearZero = ( fabs(f0prime) < K_EPSILON );
             
-            #ifdef DEBUGGING
-                PrintValue(mkString(""));
-                PrintValue(mkString("kIter+1"));
-                PrintValue(ScalarInteger(kIter+1));
-                PrintValue(mkString("f0"));
-                PrintValue(ScalarReal(f0));
-                PrintValue(mkString("g0"));
-                PrintValue(ScalarReal(g0));
-                PrintValue(mkString(""));
-                PrintValue(mkString("n"));
-                PrintValue(ScalarInteger(n));
-                PrintValue(mkString("nu"));
-                PrintValue(ScalarReal(nu));
-                PrintValue(mkString("V"));
-                PrintValue(ScalarReal(V));
-                PrintValue(mkString("A"));
-                PrintValue(ScalarReal(A));
-                
-                Rprintf("sigma0 is %.16f\n", sigma0);
-                Rprintf("-n/sigma0 is %.16f\n", -n/sigma0);
-                Rprintf("V/(sigma0*sigma0*sigma0) is %.16f\n", V/(sigma0*sigma0*sigma0));
-                Rprintf("(nu + 1) * sigma0 is %.16f\n", (nu + 1) * sigma0);
-                Rprintf("(sigma0 * sigma0 + nu * A * A) is %.16f\n", (sigma0 * sigma0 + nu * A * A));
-                
-                Rprintf("-n/sigma0 + V/(sigma0*sigma0*sigma0) is %.16f\n", -n/sigma0 + V/(sigma0*sigma0*sigma0));
-                
-                Rprintf("((nu + 1) * sigma0)/(sigma0 * sigma0 + nu * A * A) is %.16f\n", ((nu + 1) * sigma0)/(sigma0 * sigma0 + nu * A * A));
-              
-                
-                PrintValue(mkString("f0prime"));
-                PrintValue(ScalarReal(f0prime));
-                PrintValue(mkString("derivNearZero"));
-                PrintValue(ScalarInteger(derivNearZero));
-                
-            #endif
             
             if (derivNearZero) {
                 
-                #ifdef DEBUGGING
-                    PrintValue(mkString("ending early, deriv near zero"));
-                    
-                #endif
-            
                 found = 1;
                 retValue = -1;
             }
@@ -1039,15 +968,6 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
                     rho /= 2;
                     sigma1 = sigma0 - rho * f0MinusZOverF0prime;
                 }
-                
-                #ifdef DEBUGGING
-                    PrintValue(mkString("end repeat 1"));
-                    PrintValue(mkString("sigma1"));
-                    PrintValue(ScalarReal(sigma1));
-                    PrintValue(mkString("rho"));
-                    PrintValue(ScalarReal(rho));
-                    
-                #endif
                 
                 double sigma1Sq = sigma1 * sigma1;
                 double f1 = -n*log(sigma1) - V/(2*sigma1Sq) 
@@ -1064,29 +984,12 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
                     
                 }
                 
-                #ifdef DEBUGGING
-                    PrintValue(mkString("end repeat 2"));
-                    PrintValue(mkString("sigma1"));
-                    PrintValue(ScalarReal(sigma1));
-                    PrintValue(mkString("rho"));
-                    PrintValue(ScalarReal(rho));
-                    PrintValue(mkString("f1"));
-                    PrintValue(ScalarReal(f1));
-                    PrintValue(mkString("g1"));
-                    PrintValue(ScalarReal(g1));
-                    
-                #endif
-                
                 ++kIter;
                 
                 if ( (fabs(g1 - g0) < K_TOLERANCE ) || (rho < K_TOLERANCE) ) {
                     retValue = sigma0; 
                     found = 1;
-                    #ifdef DEBUGGING
-                        PrintValue(mkString("found"));
-                        
-                        
-                    #endif
+                    
                 }
                 else {
                     sigma0 = sigma1;
@@ -1099,12 +1002,6 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
        /* if not found retValue will stay as default value */ 
     
     } /* end if */
-    
-    #ifdef DEBUGGING
-        PrintValue(mkString("returning"));
-        PrintValue(ScalarReal(retValue));
-        
-    #endif
     
     return retValue;
 }
@@ -2566,32 +2463,7 @@ diffLogLik(int *yProp, SEXP y_R,
                 SEXP this_transform_R = VECTOR_ELT(transforms_R, i_dataset);
                 int ir_cell_dataset = dembase_getIAfter(ir_cell_y, this_transform_R);
                 
-                #ifdef DEBUGGING
-                PrintValue(ScalarInteger(100001));
-                PrintValue(ScalarInteger(i_element_indices_y));
-                PrintValue(ScalarInteger(ir_cell_y-1));
-                PrintValue(ScalarInteger(i_dataset));
-                PrintValue(ScalarInteger(ir_cell_dataset));
-                #endif    
-
                 if (ir_cell_dataset > 0) {
-                    
-                    #ifdef DEBUGGING
-                    PrintValue(ScalarInteger(100010));
-                    PrintValue(ScalarInteger(100011));
-                    PrintValue(ScalarInteger(yProp[i_element_indices_y]));
-                    PrintValue(ScalarInteger(100012));
-                    PrintValue(ScalarInteger(y[ir_cell_y-1]));
-                    PrintValue(ScalarInteger(100013));
-                    int checkid = R_compute_identical(ScalarReal(yProp[i_element_indices_y]),
-                                                    ScalarReal(y[ir_cell_y-1]),0);
-                    PrintValue(ScalarInteger(checkid));
-                    checkid = (yProp[i_element_indices_y]< y[ir_cell_y-1]);
-                    PrintValue(ScalarInteger(checkid));
-                    checkid = (yProp[i_element_indices_y]> y[ir_cell_y-1]);
-                    PrintValue(ScalarInteger(checkid));
-                    
-                    #endif
                     
                     SEXP this_dataset_R = VECTOR_ELT(datasets_R, i_dataset);
                     int *this_dataset = INTEGER(this_dataset_R);
@@ -2625,13 +2497,6 @@ diffLogLik(int *yProp, SEXP y_R,
                         int collapsed_y_prop 
                                             = collapsed_y_curr + diff_prop_curr;
                         
-                        #ifdef DEBUGGING
-                        PrintValue(ScalarInteger(100015));
-                        PrintValue(ScalarReal(collapsed_y_curr));
-                        PrintValue(ScalarReal(diff_prop_curr));
-                        PrintValue(ScalarReal(collapsed_y_prop));
-                        #endif
-                        
                         double log_lik_prop = logLikelihood(this_model_R, 
                                                             collapsed_y_prop,
                                                             this_dataset_R,
@@ -2642,10 +2507,6 @@ diffLogLik(int *yProp, SEXP y_R,
                             ans = R_NegInf;
                             ans_infinite = 1;
                             
-                            #ifdef DEBUGGING
-                            PrintValue(ScalarInteger(99999999));
-                            #endif
-                            
                             break;
                         }
                     
@@ -2655,37 +2516,16 @@ diffLogLik(int *yProp, SEXP y_R,
                                                         ir_cell_dataset);    
 
                         ans += ( log_lik_prop - log_lik_curr);
-                    
-                        #ifdef DEBUGGING
-                        PrintValue(ScalarInteger(100020));
-                        PrintValue(ScalarReal(log_lik_prop));
-                        PrintValue(ScalarReal(log_lik_curr));
-                        PrintValue(ScalarReal(ans));
-                        #endif
-                    }
+                     }
                 }
                 
                 ++i_dataset;
             } /* end dataset loop */
         } /* end if we need to do dataset loop */
-        else {
-            #ifdef DEBUGGING
-            PrintValue(ScalarReal(yProp[i_element_indices_y]));
-            PrintValue(ScalarReal(y[ir_cell_y - 1]));
-            PrintValue(ScalarReal(yProp[i_element_indices_y] - y[ir_cell_y -1 ]));
-           
-            PrintValue(ScalarInteger(100000));
-            #endif    
-        }
     
         ++i_element_indices_y;
     } /* end i_element_indices_y loop */
     
-    #ifdef DEBUGGING
-    PrintValue(ScalarInteger(100050));
-    PrintValue(ScalarReal(ans));
-    #endif
-                
     return ans;
 }
 

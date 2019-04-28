@@ -13,9 +13,6 @@
 #include <R_ext/Rdynload.h>
 
 //#define DEBUGGING
-//#define DEBUGGING_EXTRA
-//#define DEBUGNANS /* debugging NaNs */
-//#define DEBUGFILEREAD 
 
 #define USE_LOG 1 /* macro for indicator to use log for dbinom etc */
 #define NOT_USE_LOG 0 /* macro for indicator to use log for dbinom etc */
