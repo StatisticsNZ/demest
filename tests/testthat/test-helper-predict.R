@@ -42,6 +42,16 @@ test_that("checkDataPredict works", {
                  "item \"age\" from 'data' has class \"character\"")
 })
 
+test_that("checkEstAndPredFilenamesDifferent works", {
+    ans.obtained <- checkEstAndPredFilenamesDifferent(filenameEst = "model.est",
+                                                      filenamePred = "model.pred")
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    expect_error(checkEstAndPredFilenamesDifferent(filenameEst = "model.est",
+                                                   filenamePred = "model.pred"),
+                 "'filenameEst' and 'filenamePred' are identical")
+})
+
 test_that("initialModelPredictHelper works", {
     initialModelPredictHelper <- demest:::initialModelPredictHelper
     initialModel <- demest:::initialModel

@@ -266,6 +266,8 @@ predictModel <- function(filenameEst, filenamePred,
                          nBurnin = 0L,  parallel = TRUE,
                          outfile = NULL,
                          verbose = FALSE, useC = TRUE) {
+    checkEstAndPredFilenamesDifferent(filenameEst = filenameEst,
+                                      filenamePred = filenamePred)
     if (!identical(nBurnin, 0L))
         stop("'nBurnin' must currently be 0L")
     call <- match.call()
@@ -561,6 +563,8 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
                           exposure = NULL, data = list(), aggregate = list(), lower = list(),
                           upper = list(), nBurnin = 0L,  parallel = TRUE, outfile = NULL,
                           verbose = FALSE, useC = TRUE) {
+    checkEstAndPredFilenamesDifferent(filenameEst = filenameEst,
+                                      filenamePred = filenamePred)
     if (!identical(nBurnin, 0L))
         stop("'nBurnin' must currently be 0L")
     call <- match.call()
@@ -837,6 +841,8 @@ predictAccount <- function(filenameEst, filenamePred, along = NULL, labels = NUL
                            data = NULL, aggregate = NULL, lower = NULL,
                            upper = NULL, nBurnin = 0L,  parallel = TRUE, outfile = NULL,
                            verbose = FALSE, useC = TRUE) {
+    checkEstAndPredFilenamesDifferent(filenameEst = filenameEst,
+                                      filenamePred = filenamePred)
     stop("not written yet")
 }
 

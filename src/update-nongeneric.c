@@ -161,7 +161,8 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau,
         if (near_sigma_star) {
             ans = sigma_star;
         }
-    }    
+    }
+
     return ans;
 }
 
