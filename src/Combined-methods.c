@@ -5,6 +5,536 @@
 /* File "Combined-methods.c" contains C versions of functions 
  * from "Combined-methods.R". */
 
+/* ************************ drawCombined ************************ */
+
+
+void
+drawCombined_CombinedModelBinomial(SEXP object_R, int nUpdate)
+{
+    SEXP model_R = GET_SLOT(object_R, model_sym);
+    SEXP y_R = GET_SLOT(object_R, y_sym);
+    SEXP exposure_R = GET_SLOT(object_R, exposure_sym);
+    
+    for (int i = 0; i < nUpdate; ++i) {
+        
+        drawModelUseExp(model_R, y_R, exposure_R);
+        
+    }
+}
+
+
+
+/*
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawCombined",
+          signature(object = "CombinedAccountMovements"),
+          function(object, nUpdate = 1L,
+                   useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawCombined_CombinedAccountMovements_R, object, nUpdate)
+                  else
+                      .Call(drawCombined_R, object, nUpdate)
+              }
+              else {
+                  object <- drawSystemModels(object)
+                  object <- updateExpectedExposure(object, useC = TRUE)
+                  object <- drawDataModels(object)
+                  ## updating functions use 'updateSystemModel' and
+                  ## 'updateDataModel' flags to decide what to update
+                  for (i in seq_len(nUpdate)) {
+                      object <- updateSystemModels(object, useC = TRUE)
+                      object <- updateExpectedExposure(object, useC = TRUE)
+                      object <- updateAccount(object, useC = TRUE)
+                      object <- updateDataModelsAccount(object, useC = TRUE)
+                  }
+                  object
+              }
+          })
+
+*/
+
+void
+drawCombined_CombinedAccountMovements(SEXP object_R, int nUpdate)
+{
+    
+}
+
+/* generic draw combined object method */
+void
+drawCombined(SEXP object_R, int nUpdate)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    object_R, iMethodCombined_sym)));
+        
+    switch(i_method_combined)
+    {
+        case 1: /* binomial model, has exposure */
+            drawCombined_CombinedModelBinomial(object_R, nUpdate);
+            break;
+        case 9: /* combined account movements, no age */
+            drawCombined_CombinedAccountMovements(object_R, nUpdate);
+            break;
+        case 10: /* combined account movements, has age */
+            drawCombined_CombinedAccountMovements(object_R, nUpdate);
+            break;
+            
+        default:
+            error("unknown iMethodCombined for drawCombined: %d", i_method_combined);
+            break;
+    }
+}
+/*
+## drawDataModels ##################################################################
+
+## Elements of 'datasets' must contain only NAs, when
+## 'drawDataModels' is called. Normally this is done by
+## calling function 'setDatasetsToMissing'.
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## Function is almost identical to 'updateDataModelsAccount' 
+setMethod("drawDataModels",
+          signature(combined = "CombinedAccountMovements"),
+          function(combined, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(combined)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawDataModels_CombinedAccountMovements_R, combined)
+                  else
+                      .Call(drawDataModels_R, combined)
+              }
+              else {
+                  data.models <- combined@dataModels
+                  datasets <- combined@datasets
+                  population <- combined@account@population
+                  components <- combined@account@components
+                  series.indices <- combined@seriesIndices
+                  transforms <- combined@transforms
+                  for (i in seq_along(data.models)) {
+                      model <- data.models[[i]]
+                      dataset <- datasets[[i]]
+                      transform <- transforms[[i]]
+                      series.index <- series.indices[i]
+                      if (any(!is.na(dataset)))
+                          stop(gettextf("'%s' have not been set to missing",
+                                        "datasets"))
+                      if (series.index == 0L)
+                          series <- population
+                      else
+                          series <- components[[series.index]]
+                      series.collapsed <- collapse(series, transform = transform)
+                      if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+                          series.collapsed <- toDouble(series.collapsed)
+                      model <- drawModelUseExp(model, ## this line different from 'updateDataModelsAccount'
+                                               y = dataset,
+                                               exposure = series.collapsed)
+                      data.models[[i]] <- model
+                  }
+                  combined@dataModels <- data.models
+                  combined
+              }
+          })
+
+*/
+
+void
+drawDataModels_CombinedAccountMovements(SEXP combined_R)
+{
+    /*
+     *                   data.models <- combined@dataModels
+                  datasets <- combined@datasets
+                  population <- combined@account@population
+                  components <- combined@account@components
+                  series.indices <- combined@seriesIndices
+                  transforms <- combined@transforms
+   */
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+
+    int* seriesIndices = INTEGER(seriesIndices_R);
+
+    int nObs = LENGTH(dataModels_R);
+/*                      model <- data.models[[i]]
+                      dataset <- datasets[[i]]
+                      transform <- transforms[[i]]
+                      series.index <- series.indices[i]
+                      if (any(!is.na(dataset)))
+                          stop(gettextf("'%s' have not been set to missing",
+                                        "datasets"))
+*/
+    for (int i = 0; i < nObs; ++i) {
+
+        SEXP model_R = VECTOR_ELT(dataModels_R, i);
+        SEXP dataset_R = VECTOR_ELT(datasets_R, i);
+        SEXP transform_R = VECTOR_ELT(transforms_R, i);
+
+/*      NO CHECK FOR THIS
+ *      if (any(!is.na(dataset)))
+            stop(gettextf("'%s' have not been set to missing",
+                    "datasets"))
+*/
+        int seriesIndex_r = seriesIndices[i];
+        
+        /*if (series.index == 0L)
+                          series <- population
+                      else
+                          series <- components[[series.index]]
+                      */
+        SEXP series_R = population_R;
+        if (seriesIndex_r > 0) {
+            series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
+        }
+
+/*series.collapsed <- collapse(series, transform = transform)
+                      if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+                          series.collapsed <- toDouble(series.collapsed)
+                      model <- drawModelUseExp(model, ## this line different from 'updateDataModelsAccount'
+                                               y = dataset,
+                                               exposure = series.collapsed)
+                      data.models[[i]] <- model*/
+        SEXP seriesCollapsed_R;
+
+        int nProtect  = 0;
+        int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+
+        const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+        int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
+        if (found) {
+            
+            SEXP seriesCollapsed_tmp_R;
+            /* collapse_R in demographic is okay with series_R being integer
+            * but type of contents of seriesCollapsed_R will be integer*/
+            PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+
+            PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
+            nProtect  = 2;
+        }
+        else {
+            
+            PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
+            nProtect  = 1;
+        }
+
+        /* seriesCollapsed_R should now be in appropriate state for model */
+        drawModelUseExp_Internal(model_R, dataset_R,
+                 seriesCollapsed_R, i_method_model);
+
+        UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
+
+    }
+}
+/* generic draw data models combined object method */
+void
+drawDataModels(SEXP combined_R)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    combined_R, iMethodCombined_sym)));
+        
+    switch(i_method_combined)
+    {
+        case 9: /* combined account movements, no age */
+            drawDataModels_CombinedAccountMovements(combined_R);
+            break;
+        case 10: /* combined account movements, has age */
+            drawDataModels_CombinedAccountMovements(combined_R);
+            break;
+            
+        default:
+            error("unknown iMethodCombined for drawCombined: %d", i_method_combined);
+            break;
+    }
+}
+
+/*
+## drawSystemModels ################################################################
+
+## Unlike with 'drawSystemModels', 'drawSystemModels' does
+## not assume that outcome variables (ie the demographic series)
+## have been set to missing, since, unlike the datasets,
+## the series are generated as part of the estimation process,
+## rather than imputed afterwards.
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawSystemModels",
+          signature(combined = "CombinedAccountMovements"),
+          function(combined, useC = FALSE, useSpecific = FALSE) {
+              methods::validObject(combined)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawSystemModels_CombinedAccountMovements_R, combined)
+                  else
+                      .Call(drawSystemModels_R, combined)
+              }
+              else {
+                  system.models <- combined@systemModels
+                  population <- combined@account@population
+                  components <- combined@account@components
+                  model.uses.exposure <- combined@modelUsesExposure
+                  transforms.exp.to.comp <- combined@transformsExpToComp
+                  transform.exp.to.births <- combined@transformExpToBirths
+                  i.births <- combined@iBirths
+                  ## population
+                  population[] <- NA
+                  model <- system.models[[1L]]
+                  model <- drawModelNotUseExp(model,
+                                              y = population)
+                  system.models[[1L]] <- model
+                  ## components
+                  for (i in seq_along(components)) {
+                      model <- system.models[[i + 1L]]
+                      component <- components[[i]]
+                      component[] <- NA
+                      uses.exposure <- model.uses.exposure[i + 1L]
+                      if (uses.exposure) {
+                          exposure <- combined@exposure@.Data
+                          is.births <- i == i.births
+                          if (is.births)
+                              exposure <- collapse(exposure,
+                                                   transform = transform.exp.to.births)
+                          transform <- transforms.exp.to.comp[[i]]
+                          if (!is.null(transform))
+                              exposure <- extend(exposure,
+                                                 transform = transforms.exp.to.comp[[i]])
+                          model <- drawModelUseExp(object = model,
+                                                   y = component,
+                                                   exposure = exposure)
+                      }
+                      else {
+                          if (methods::is(model, "Normal"))
+                              component <- toDouble(component)
+                          model <- drawModelNotUseExp(object = model,
+                                                      y = component)
+                      }
+                      system.models[[i + 1L]] <- model
+                  }
+                  combined@systemModels <- system.models
+                  combined
+              }
+          })
+
+*/
+
+void
+drawSystemModels_CombinedAccountMovements(SEXP combined_R)
+{   
+/*                  system.models <- combined@systemModels
+                  population <- combined@account@population
+                  components <- combined@account@components
+                  model.uses.exposure <- combined@modelUsesExposure
+                  transforms.exp.to.comp <- combined@transformsExpToComp
+                  transform.exp.to.births <- combined@transformExpToBirths
+                  i.births <- combined@iBirths
+ */
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    //int *updateSystemModel = LOGICAL(GET_SLOT(combined_R, updateSystemModel_sym));
+
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    int nComponents = LENGTH(components_R);
+
+    int * modelUsesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
+
+    SEXP transformsExpToComp_R = GET_SLOT(combined_R, transformsExpToComp_sym); /* list */
+    SEXP transformExpToBirths_R = GET_SLOT(combined_R, transformExpToBirths_sym);
+
+    int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
+
+    /* update model for population */
+
+/*                  ## population
+                  population[] <- NA
+                  model <- system.models[[1L]]
+                  model <- drawModelNotUseExp(model,
+                                              y = population)
+                  system.models[[1L]] <- model
+ */
+    int nPops = LENGTH(population_R);
+    for (int i = 0; i < nPops; ++i){
+        SET_VECTOR_ELT(population_R, i, ScalarLogical(NA_LOGICAL));
+    }
+    
+    SEXP model_R = VECTOR_ELT(systemModels_R, 0);
+    int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+    drawModelNotUseExp_Internal(model_R, population_R, i_method_model);
+    
+
+    /* update models for components */
+
+    /*## components
+                  for (i in seq_along(components)) {
+                      model <- system.models[[i + 1L]]
+                      component <- components[[i]]
+                      component[] <- NA
+                      uses.exposure <- model.uses.exposure[i + 1L]
+                      
+                      }*/
+    
+    for(int i = 0; i < nComponents; ++i) {
+
+        SEXP this_model_R = VECTOR_ELT(systemModels_R, i+1);
+        int this_i_method_model = *(INTEGER(GET_SLOT(this_model_R,
+                                                iMethodModel_sym)));
+        SEXP this_component_R = VECTOR_ELT(components_R, i);
+        
+        int nC = LENGTH(this_component_R);
+        for (int i = 0; i < nC; ++i){
+            SET_VECTOR_ELT(this_component_R, i, ScalarLogical(NA_LOGICAL));
+        }
+
+        int usesExposure = modelUsesExposureVec[i+1];
+        
+        /*if (uses.exposure) {
+                      exposure <- combined@exposure@.Data
+                      is.births <- i == i.births
+                      if (is.births)
+                          exposure <- collapse(exposure,
+                                               transform = transform.exp.to.births)
+                      transform <- transforms.exp.to.comp[[i]]
+                      if (!is.null(transform))
+                          exposure <- extend(exposure,
+                                             transform = transforms.exp.to.comp[[i]])
+                      model <- drawModelUseExp(object = model,
+                                               y = component,
+                                               exposure = exposure)*/
+
+        if (usesExposure) {
+
+            SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
+            int haveTransform = !isNull(transform_R);
+
+            SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
+            int isBirths = (i == (iBirths_r - 1));
+
+            if(isBirths) {
+                SEXP newExposure_R = NULL;
+                PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
+                         transformExpToBirths_R));
+                if(haveTransform) {
+                    SEXP anotherNewExposure_R = NULL;
+                    PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
+                                transform_R));
+                    drawModelUseExp_Internal(this_model_R, 
+                                            this_component_R,
+                                            anotherNewExposure_R,
+                                            this_i_method_model);
+                    UNPROTECT(1); /* anotherNewExposure */
+
+                    #ifdef DEBUGGING
+                    PrintValue(mkString("is Births and have transform"));
+                    #endif
+                }
+                else {
+                    drawModelUseExp_Internal(this_model_R,
+                                                this_component_R,
+                                                newExposure_R,
+                                                this_i_method_model);
+
+                    #ifdef DEBUGGING
+                    PrintValue(mkString("isBirths, no transform"));
+                    #endif
+                }
+                
+                UNPROTECT(1); /* newExposure */
+            }
+            else if (haveTransform) {
+                SEXP newExposure_R = NULL;
+                PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
+                       transform_R));
+                drawModelUseExp_Internal(this_model_R,
+                                        this_component_R,
+                                        newExposure_R,
+                                        this_i_method_model);
+                UNPROTECT(1); /* newExposure */
+
+                #ifdef DEBUGGING
+                PrintValue(mkString("not isBirths, has transform"));
+                #endif
+                }
+            else {
+                updateModelUseExp_Internal(this_model_R,
+                                            this_component_R,
+                                            exposure_R,
+                                            this_i_method_model);
+
+                #ifdef DEBUGGING
+                PrintValue(mkString("not isBirths, no transform"));
+                #endif
+            }
+        } /* end if usesExposure */
+        
+        /*else {
+                      if (methods::is(model, "Normal"))
+                          component <- toDouble(component)
+                      model <- drawModelNotUseExp(object = model,
+                                                  y = component)
+                  }*/
+
+        else {
+            const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+            char *found = NULL;
+            found = strstr(class_name, "Normal");
+            
+            if (found) {
+                SEXP this_component_double_R;
+                PROTECT(this_component_double_R = coerceVector(this_component_R, REALSXP));
+                drawModelNotUseExp_Internal(this_model_R,
+                                            this_component_double_R,
+                                            this_i_method_model);
+                UNPROTECT(1);
+                #ifdef DEBUGGING
+                PrintValue(mkString("not use exp, normal"));
+                #endif
+            }
+            else {
+                drawModelNotUseExp(this_model_R, this_component_R);
+                #ifdef DEBUGGING
+                PrintValue(mkString("not use exp, not normal"));
+                #endif
+            }
+        }
+    }
+}
+
+/* generic draw system models combined object method */
+void
+drawSystemModels(SEXP combined_R)
+{
+    int i_method_combined = *(INTEGER(GET_SLOT(
+                                    combined_R, iMethodCombined_sym)));
+        
+    switch(i_method_combined)
+    {
+        case 9: /* combined account movements, no age */
+            drawSystemModels_CombinedAccountMovements(combined_R);
+            break;
+        case 10: /* combined account movements, has age */
+            drawSystemModels_CombinedAccountMovements(combined_R);
+            break;
+            
+        default:
+            error("unknown iMethodCombined for drawCombined: %d", i_method_combined);
+            break;
+    }
+}
+
+
+
 /* ******************** predictCombined ********************** */
 
 
@@ -666,17 +1196,17 @@ updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
       for (int i = 0; i < lengthExpNoTri; ++i) {
 
         int iPopnStart = (i / lengthSliceExp) * lengthSlicePopn
-	  + i % lengthSliceExp; /* C style */
+      + i % lengthSliceExp; /* C style */
         int iPopnEnd = iPopnStart + stepTime;
         double expStart = halfAgeTimeStep * theta[iPopnStart];
         double expEnd = halfAgeTimeStep * theta[iPopnEnd];
         
         if (hasAge) {
-	  expectedExposure[i + lengthExpNoTri] = expStart;
-	  expectedExposure[i] = expEnd;
+      expectedExposure[i + lengthExpNoTri] = expStart;
+      expectedExposure[i] = expEnd;
         }
         else {
-	  expectedExposure[i] = expStart + expEnd;
+      expectedExposure[i] = expStart + expEnd;
         }
             
       }
@@ -708,115 +1238,114 @@ void
 updateSystemModels_CombinedAccountMovements(SEXP combined_R)
 {
                   
-  SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
-  int *updateSystemModel = LOGICAL(GET_SLOT(combined_R, updateSystemModel_sym));
-        
-  SEXP account_R = GET_SLOT(combined_R, account_sym);
-  SEXP population_R = GET_SLOT(account_R, population_sym);
-  SEXP components_R = GET_SLOT(account_R, components_sym);
-  int nComponents = LENGTH(components_R);
-    
-  int * modelUsesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
-    
-  SEXP transformsExpToComp_R = GET_SLOT(combined_R, transformsExpToComp_sym); /* list */
-  SEXP transformExpToBirths_R = GET_SLOT(combined_R, transformExpToBirths_sym);
-    
-  int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    int *updateSystemModel = LOGICAL(GET_SLOT(combined_R, updateSystemModel_sym));
 
-  /* update model for population */
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    int nComponents = LENGTH(components_R);
 
-  if (updateSystemModel[0]) {
-    SEXP popnModel_R = VECTOR_ELT(systemModels_R, 0);
-    updateModelNotUseExp(popnModel_R, population_R);
-  }
+    int * modelUsesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
 
-  /* update models for components */
-  
-  for(int i = 0; i < nComponents; ++i) {
+    SEXP transformsExpToComp_R = GET_SLOT(combined_R, transformsExpToComp_sym); /* list */
+    SEXP transformExpToBirths_R = GET_SLOT(combined_R, transformExpToBirths_sym);
 
-    if (updateSystemModel[i+1]) {
-        
-      SEXP model_R = VECTOR_ELT(systemModels_R, i+1);
-      SEXP component_R = VECTOR_ELT(components_R, i);
-      int usesExposure = modelUsesExposureVec[i+1];
-        
-      if (usesExposure) {
-            
-	SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
-	int haveTransform = !isNull(transform_R);
-            
-	SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
-	int isBirths = (i == (iBirths_r - 1));
-                
-	if(isBirths) {
-	  SEXP newExposure_R = NULL;
-	  PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
-						     transformExpToBirths_R));
-	  if(haveTransform) {
-	    SEXP anotherNewExposure_R = NULL;
-	    PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
-							    transform_R));
-	    updateModelUseExp(model_R, component_R, anotherNewExposure_R);
-	    UNPROTECT(1); /* anotherNewExposure */
-                    
-#ifdef MYDEBUG
-	    PrintValue(mkString("is Births and have transform"));
-#endif
-	  }
-	  else {
-	    updateModelUseExp(model_R, component_R, newExposure_R);
-                    
-#ifdef MYDEBUG
-	    PrintValue(mkString("isBirths, no transform"));
-#endif
-	  }
-	  UNPROTECT(1); /* newExposure */
-	}
-	else if (haveTransform) {
-	  SEXP newExposure_R = NULL;
-	  PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
-						   transform_R));
-	  updateModelUseExp(model_R, component_R, newExposure_R);
-	  UNPROTECT(1); /* newExposure */
-                
-#ifdef MYDEBUG
-	  PrintValue(mkString("not isBirths, has transform"));
-#endif
-	}
-	else {
-	  updateModelUseExp(model_R, component_R, exposure_R);
-                
-#ifdef MYDEBUG
-	  PrintValue(mkString("not isBirths, no transform"));
-#endif
-	}
-      } /* end if usesExposure */
-        
-      else {
-	const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-	char *found = NULL;
-	found = strstr(class_name, "Normal");
-	if (found) {
-	  SEXP componentDouble_R;
-	  PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
-	  updateModelNotUseExp(model_R, componentDouble_R);
-	  UNPROTECT(1);
-#ifdef MYDEBUG
-	  PrintValue(mkString("not use exp, normal"));
-#endif
-	}
-	else {
-	  updateModelNotUseExp(model_R, component_R);
-#ifdef MYDEBUG
-	  PrintValue(mkString("not use exp, not normal"));
-#endif
-	}
-            
-      }
+    int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
 
+    /* update model for population */
+
+    if (updateSystemModel[0]) {
+        SEXP popnModel_R = VECTOR_ELT(systemModels_R, 0);
+        updateModelNotUseExp(popnModel_R, population_R);
     }
-  }
-    
+
+    /* update models for components */
+
+    for(int i = 0; i < nComponents; ++i) {
+
+        if (updateSystemModel[i+1]) {
+
+            SEXP model_R = VECTOR_ELT(systemModels_R, i+1);
+            SEXP component_R = VECTOR_ELT(components_R, i);
+            int usesExposure = modelUsesExposureVec[i+1];
+
+            if (usesExposure) {
+
+                SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
+                int haveTransform = !isNull(transform_R);
+
+                SEXP exposure_R = GET_SLOT(combined_R, exposure_sym);
+                int isBirths = (i == (iBirths_r - 1));
+
+                if(isBirths) {
+                    SEXP newExposure_R = NULL;
+                    PROTECT(newExposure_R = dembase_Collapse_R(exposure_R, 
+                             transformExpToBirths_R));
+                    if(haveTransform) {
+                        SEXP anotherNewExposure_R = NULL;
+                        PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
+                                    transform_R));
+                        updateModelUseExp(model_R, component_R, anotherNewExposure_R);
+                        UNPROTECT(1); /* anotherNewExposure */
+
+                        #ifdef DEBUGGING
+                        PrintValue(mkString("is Births and have transform"));
+                        #endif
+                    }
+                    else {
+                        updateModelUseExp(model_R, component_R, newExposure_R);
+
+                        #ifdef DEBUGGING
+                        PrintValue(mkString("isBirths, no transform"));
+                        #endif
+                    }
+                    
+                    UNPROTECT(1); /* newExposure */
+                }
+                else if (haveTransform) {
+                    SEXP newExposure_R = NULL;
+                    PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
+                           transform_R));
+                    updateModelUseExp(model_R, component_R, newExposure_R);
+                    UNPROTECT(1); /* newExposure */
+
+                    #ifdef DEBUGGING
+                    PrintValue(mkString("not isBirths, has transform"));
+                    #endif
+                    }
+                else {
+                    updateModelUseExp(model_R, component_R, exposure_R);
+
+                    #ifdef DEBUGGING
+                    PrintValue(mkString("not isBirths, no transform"));
+                    #endif
+                }
+            } /* end if usesExposure */
+
+            else {
+                const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+                char *found = NULL;
+                found = strstr(class_name, "Normal");
+                
+                if (found) {
+                    SEXP componentDouble_R;
+                    PROTECT(componentDouble_R = coerceVector(component_R, REALSXP));
+                    updateModelNotUseExp(model_R, componentDouble_R);
+                    UNPROTECT(1);
+                    #ifdef DEBUGGING
+                    PrintValue(mkString("not use exp, normal"));
+                    #endif
+                }
+                else {
+                    updateModelNotUseExp(model_R, component_R);
+                    #ifdef DEBUGGING
+                    PrintValue(mkString("not use exp, not normal"));
+                    #endif
+                }
+            }
+        }
+    }
 }  
 
 

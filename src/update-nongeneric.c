@@ -868,14 +868,6 @@ updateBeta(double *beta, int J, SEXP prior_R,
     
     getV_Internal(v, prior_R, J);
     
-    #ifdef DEBUGGING
-    PrintValue(mkString("in updateBeta"));
-    PrintValue(mkString("betaHat"));
-    printDblArray(beta_hat, J);
-    PrintValue(mkString("v"));
-    printDblArray(v, J);
-    #endif
-    
     double sigmaSq = sigma*sigma;
     double thisPrecPrior = 0;
     double thisPrecData = 0;
@@ -893,13 +885,6 @@ updateBeta(double *beta, int J, SEXP prior_R,
         beta[i] = rnorm(thisMean, thisSD);
     }
     }
-#ifdef DEBUGGING
-    PrintValue(mkString("beta"));
-    printDblArray(beta, J);
-    PrintValue(mkString("end updateBeta"));
-    PrintValue(mkString(""));
-#endif
-    
 }
 
 void
@@ -941,15 +926,6 @@ updateEta(SEXP prior_R, double* beta, int J)
     }
     /*crossprod(Z, diag(1 / v)) in work1
      * keep work1 for b later */
-    #ifdef DEBUGGING
-        PrintValue(mkString(""));
-        PrintValue(mkString("in updateEta"));
-        PrintValue(mkString("v"));
-        printDblArray(v, J);
-        PrintValue(mkString("crossprod(Z, diag(1 / v)) in work1"));
-        printDblArray(work1, J*P);
-    #endif
-        
     /* stuff needed for mm and mv multiplication fortran routines */
     char transN = 'N';
     
@@ -963,10 +939,6 @@ updateEta(SEXP prior_R, double* beta, int J)
                             &beta_blas_zero, work2, &P);
     /* PxP  result is in work2 */       
         
-    #ifdef DEBUGGING
-        PrintValue(mkString("crossprod(Z, diag(1 / v)) %*% Z in work2"));
-        printDblArray(work2, P*P);
-    #endif
     /* U.eta <- c(A.eta.intercept^2, U.eta.coef)
     var.inv <- crossprod(Z, diag(1 / v)) %*% Z + diag(1 / U.eta)*/
     work2[0] += 1/(AEtaIntercept*AEtaIntercept);
@@ -976,11 +948,6 @@ updateEta(SEXP prior_R, double* beta, int J)
         work2[p * P + p] += 1/UEtaCoef[p-1];
     }
     /* var.inv in work2 */
-    #ifdef DEBUGGING 
-        PrintValue(mkString("var.inv in work2"));
-        printDblArray(work2, P*P);
-    #endif
-    
     /* keep a copy of var.inv in work3 for Choleski factorisation later */
     memcpy(work3, work2, P*P*sizeof(double));
         
@@ -996,21 +963,11 @@ updateEta(SEXP prior_R, double* beta, int J)
      * of the decomposition can be recovered,
      * and qraux contains the information required to be able to do this */
     
-    #ifdef DEBUGGING 
-        PrintValue(mkString("qr in work2"));
-        printDblArray(work2, P*P);
-    #endif
-    
     /*b <- crossprod(Z, diag(1 / v)) %*% beta */
     F77_CALL(dgemv)(&transN, &P, &J, &alpha_blas_one, work1, 
                         &P, beta, &inc_blas, &beta_blas_zero,
                         b, &inc_blas);   
 
-    #ifdef DEBUGGING 
-        PrintValue(mkString("b"));
-        printDblArray(b, P);
-    #endif
-    
     /*eta.hat <- qr.solve(qr, b)
      * qr.solve(a,b) does same as qr.coef(a,b) when a is a qr
      * ie solves using least squares, so C can use dqrsl
@@ -1032,12 +989,6 @@ updateEta(SEXP prior_R, double* beta, int J)
                     &rsd, &xb, &job_sl, &info);
     if (info) error("error in dqrsl in updateEta: %d", info);
     
-    #ifdef DEBUGGING 
-        PrintValue(mkString("eta_hat"));
-        printDblArray(eta, P);
-    #endif
-
-
     /* eta.hat[-1L] <- eta.hat[-1L] + mean.eta.coef / U.eta.coef */
     /* Added by JB 24 December 2018                              */
     for (int p = 0; p < P - 1; ++p) {
@@ -1060,23 +1011,10 @@ updateEta(SEXP prior_R, double* beta, int J)
       * UPLO, N, A, LDA, INFO */
     char uplo = 'U';
     
-    #ifdef DEBUGGING 
-        PrintValue(mkString("var.inv in work3"));
-        printDblArray(work3, P*P);
-    #endif 
-    
     F77_CALL(dpotrf)(&uplo, &P, work3, &P, &info);
     if (info) error("error in dpotrf in updateEta: %d", info);
     /* on exit, work3 contains U from factorisation var.inv = U**T*U
      * ie work3 contains R from R <- chol(var.inv)*/                        
-    
-    #ifdef DEBUGGING 
-        PrintValue(mkString("R <- chol(var.inv) work3"));
-        printDblArray(work3, P*P);
-        PrintValue(mkString("g"));
-        printDblArray(qty_and_g, P);
-    
-    #endif 
     
     /* epsilon <- backsolve(R, g) */
     
@@ -1089,24 +1027,10 @@ updateEta(SEXP prior_R, double* beta, int J)
     if (info) error("error in dtrsl in updateEta: %d", info);
     /* after the call, qty_and_g contains the solution, epsilon */
     
-    #ifdef DEBUGGING 
-        PrintValue(mkString("epsilon"));
-        printDblArray(qty_and_g, P);
-    #endif
-    
     /* prior@eta@.Data <- eta.hat + epsilon */
     for (int p = 0; p < P; ++p) {
             eta[p] += qty_and_g[p];
     }
-    
-    #ifdef DEBUGGING 
-        PrintValue(mkString("eta"));
-        printDblArray(eta, P);
-        PrintValue(mkString("beta at end"));
-        printDblArray(beta, J);
-        PrintValue(mkString(""));
-        PrintValue(mkString("end updateEta"));
-    #endif
 }
 
 void
@@ -1219,16 +1143,6 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
     
     SEXP iteratorBetas_R = GET_SLOT(object_R, iteratorBetas_sym); 
     
-    #ifdef DEBUGGING
-            PrintValue(mkString("sigma"));
-            PrintValue(ScalarReal(sigma));
-            PrintValue(mkString("n_betas"));
-            PrintValue(ScalarInteger(n_betas));
-            PrintValue(mkString("theta"));
-            PrintValue(theta_R);
-             
-        #endif
-    
     for (int iBeta = 0; iBeta < n_betas; ++iBeta) {
         
         int len_beta = LENGTH(VECTOR_ELT(betas_R, iBeta));
@@ -1260,40 +1174,12 @@ void updateBetasAndPriorsBetas_General(SEXP object_R, double (*g)(double))
         double *beta = REAL(VECTOR_ELT(betas_R, iBeta));
         SEXP prior_R = VECTOR_ELT(priors_R, iBeta);
         
-        #ifdef DEBUGGING
-            PrintValue(mkString(""));
-            PrintValue(mkString("iBeta"));
-            PrintValue(ScalarInteger(iBeta));
-            PrintValue(mkString("len_beta"));
-            PrintValue(ScalarInteger(len_beta));
-            PrintValue(mkString("vbar"));
-            printDblArray(vbar, len_beta);
-            PrintValue(mkString("beta"));
-            printDblArray(beta, len_beta);
-            PrintValue(mkString("prior_R"));
-            PrintValue(prior_R);
-             
-        #endif
-        
-        
-
         updateBetaAndPriorBeta(beta,
                    len_beta, 
                    prior_R,
                    vbar, 
                    n_vec,
                    sigma);
-#ifdef DEBUGGING
-        PrintValue(mkString("after update"));
-        PrintValue(mkString("beta"));
-            printDblArray(beta, len_beta);
-            PrintValue(VECTOR_ELT(betas_R, iBeta));
-            PrintValue(mkString("prior_R"));
-            PrintValue(prior_R);
-            PrintValue(VECTOR_ELT(priors_R, iBeta));
-             
-        #endif
-             
         /* beta and prior_R updated in place and hence object_R updated*/
     }
 }
@@ -3427,32 +3313,6 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
         
         double logit_th_prop = 0.0;
         
-        #ifdef DEBUGGING
-            PrintValue(mkString(""));
-            PrintValue(mkString("--------------------------------"));
-            PrintValue(mkString("i_r"));
-            PrintValue(ScalarInteger(ir));
-            PrintValue(mkString("contributes_to_ag"));
-            PrintValue(ScalarInteger(contributes_to_ag));
-            PrintValue(mkString("y_is_missing"));
-            PrintValue(ScalarInteger(y_is_missing));
-            PrintValue(mkString("draw straight_from_prior"));
-            PrintValue(ScalarInteger(draw_straight_from_prior));
-            PrintValue(mkString("this_y"));
-            PrintValue(ScalarInteger(this_y));
-            PrintValue(mkString("this_exposure"));
-            PrintValue(ScalarInteger(this_exposure));
-            PrintValue(mkString("theta_curr"));
-            PrintValue(ScalarReal(theta_curr));
-            PrintValue(mkString("logit_th_curr"));
-            PrintValue(ScalarReal(logit_th_curr));
-            PrintValue(mkString("mean"));
-            PrintValue(ScalarReal(mean));
-            PrintValue(mkString("sd"));
-            PrintValue(ScalarReal(sd));
-        #endif
-        
-        
         while( (!found_prop) && (attempt < maxAttempt) ) {
 
             ++attempt;
@@ -3462,16 +3322,7 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
                             (logit_th_prop < upper - tolerance));
  
         }
-        
-            #ifdef DEBUGGING
-                PrintValue(mkString(""));
-                PrintValue(mkString("after while loop"));
-                PrintValue(mkString("found_prop"));
-                PrintValue(ScalarInteger(found_prop));
-                PrintValue(mkString("logit_th_prop"));
-                PrintValue(ScalarReal(logit_th_prop));
-            #endif
-        
+            
         if (found_prop) {
             
             double exp_logit_theta_prop = exp(logit_th_prop);
@@ -3481,21 +3332,9 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
                 theta_prop = 1 / ( 1 + 1/exp_logit_theta_prop );
             }
             
-            #ifdef DEBUGGING
-                PrintValue(mkString(""));
-                PrintValue(mkString("in if found prop"));
-                PrintValue(mkString("theta_prop"));
-                PrintValue(ScalarReal(theta_prop));
-            #endif
-            
             if (draw_straight_from_prior) {
                 theta[i] = theta_prop;
-                #ifdef DEBUGGING
-                    PrintValue(mkString("drawing straight from prior"));
-                    PrintValue(mkString("theta[i]"));
-                    PrintValue(ScalarReal(theta[i]));
-                #endif
-            }
+           }
             else {
                 
                 SEXP x_R = NULL;
@@ -3513,46 +3352,16 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
                 
                 double log_diff = 0;
                 
-                #ifdef DEBUGGING
-                    PrintValue(mkString("NOT drawing straight from prior"));
-                    
-                #endif
-                
                 if (!y_is_missing) {
                     
                     double log_lik_prop = dbinom(this_y, this_exposure, theta_prop, USE_LOG);
                     double log_lik_curr = dbinom(this_y, this_exposure, theta_curr, USE_LOG);
                     log_diff = log_lik_prop - log_lik_curr;   
-                    
-                    #ifdef DEBUGGING
-                    PrintValue(mkString("NOT y_is_missing"));
-                    PrintValue(mkString("theta_prop"));
-                    PrintValue(ScalarReal(theta_prop));
-                    PrintValue(mkString("theta_curr"));
-                    PrintValue(ScalarReal(theta_curr));
-                    PrintValue(mkString("log_lik_prop"));
-                    PrintValue(ScalarReal(log_lik_prop));
-                    PrintValue(mkString("log_lik_curr"));
-                    PrintValue(ScalarReal(log_lik_curr));
-                    PrintValue(mkString("log_diff"));
-                    PrintValue(ScalarReal(log_diff));
-                    
-                #endif 
                 }
                 
                 double log_dens_prop = dnorm(logit_th_prop, mu, sigma, USE_LOG);
                 double log_dens_curr = dnorm(logit_th_curr, mu, sigma, USE_LOG);
                 log_diff += (log_dens_prop - log_dens_curr);
-
-                #ifdef DEBUGGING
-                    PrintValue(mkString("log_dens_prop"));
-                    PrintValue(ScalarReal(log_dens_prop));
-                    PrintValue(mkString("log_dens_curr"));
-                    PrintValue(ScalarReal(log_dens_curr));
-                    PrintValue(mkString("log_diff"));
-                    PrintValue(ScalarReal(log_diff));
-                #endif
-
 
                 double ag_prop = 0;
                 
@@ -3589,14 +3398,6 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
                     double log_dens_ag_curr = dnorm(mean_ag, ag_curr, sd_ag, USE_LOG);
                     log_diff += log_dens_ag_prop - log_dens_ag_curr;
                     
-                    
-                    #ifdef DEBUGGING
-                        PrintValue(mkString("contributes to ag"));
-                        PrintValue(mkString("ag_prop"));
-                        PrintValue(ScalarReal(ag_prop));
-                        PrintValue(mkString("log_diff"));
-                        PrintValue(ScalarReal(log_diff));
-                    #endif
                 }
                 
                 int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
@@ -3612,19 +3413,6 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
                     /* unmodify the x_ags */
                     memcpy(x, tmp_x, n_xs*sizeof(double));
                 }
-                
-                #ifdef DEBUGGING
-                    PrintValue(mkString(""));
-                    PrintValue(mkString("accept"));
-                    PrintValue(ScalarInteger(accept));
-                    PrintValue(mkString("theta[i]"));
-                    PrintValue(ScalarReal(theta[i]));
-                    PrintValue(mkString("valueAg[i_ag]"));
-                    PrintValue(ScalarReal(valueAg[i_ag]));
-                    PrintValue(mkString("xArgsAg_R"));
-                    PrintValue(xArgsAg_R);
-                    
-                #endif
             }
         }
         else { /* not found prop */
@@ -3786,32 +3574,7 @@ updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R)
                         + logDensThProp - logDensThCurr + logDensNuProp - logDensNuCurr;
                             
                     int accept = ( !(logDiff < 0) || ( runif(0,1) < exp(logDiff) ) );
-                            
-        #ifdef DEBUGGING
-                    PrintValue(mkString(""));
-                    PrintValue(mkString("logLikCurr"));
-                    PrintValue(ScalarReal(logLikCurr));
-                    PrintValue(mkString("logLikProp"));
-                    PrintValue(ScalarReal(logLikProp));
-                    PrintValue(mkString("logLikCurrStar"));
-                    PrintValue(ScalarReal(logLikCurrStar));
-                    PrintValue(mkString("logLikPropStar"));
-                    PrintValue(ScalarReal(logLikPropStar));
-                    PrintValue(mkString("logDensThCurr"));
-                    PrintValue(ScalarReal(logDensThCurr));
-                    PrintValue(mkString("logDensThProp"));
-                    PrintValue(ScalarReal(logDensThProp));
-                    PrintValue(mkString("logDensNuCurr"));
-                    PrintValue(ScalarReal(logDensNuCurr));
-                    PrintValue(mkString("logDensNuProp"));
-                    PrintValue(ScalarReal(logDensNuProp));
-                                    
-                    PrintValue(mkString("logDiff"));
-                    PrintValue(ScalarReal(logDiff));
-                    PrintValue(mkString("accept"));
-                    PrintValue(ScalarInteger(accept));
-        #endif
-                            
+                           
                     if (accept) {
                         ++n_accept_theta;
                         theta[i] = th_prop;
@@ -4145,14 +3908,6 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
     /* make 'mu' (need whole thing to get values for th.other)*/
     getMu(mu, n_theta, betas_R, iteratorBetas_R);
     
-    #ifdef DEBUGGING
-        PrintValue(mkString("theta"));
-        PrintValue(theta_R);
-        SEXP mu_R = GET_SLOT(object, mu_sym);
-        PrintValue(mkString("mu"));
-        PrintValue(mu_R);
-    #endif
-    
     resetB(iteratorBetas_R);
 
     double *y = REAL(y_R);
@@ -4201,16 +3956,6 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
         
         double th_curr = theta[i];
 
-        #ifdef DEBUGGING
-        PrintValue(mkString(""));
-        PrintValue(mkString("ir"));
-        PrintValue(ScalarInteger(ir));
-        PrintValue(mkString("th_curr"));
-        PrintValue(ScalarReal(th_curr));
-        PrintValue(mkString("ir_other"));
-        PrintValue(ScalarInteger(ir_other));
-        #endif
-
         double th_prop = 0.0;
         double th_other_curr = 0.0;
         double th_other_prop = 0.0;
@@ -4249,27 +3994,8 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
             
         }    /* end while loop */
         
-        #ifdef DEBUGGING
-            PrintValue(mkString("after while loop"));
-            PrintValue(mkString("th_prop"));
-            PrintValue(ScalarReal(th_prop));
-            PrintValue(mkString("update pair"));
-            PrintValue(ScalarInteger(is_update_pair));
-            PrintValue(mkString("th_other_curr"));
-            PrintValue(ScalarReal(th_other_curr));
-            PrintValue(mkString("th_other_prop"));
-            PrintValue(ScalarReal(th_other_prop));
-            PrintValue(mkString("found_prop"));
-            PrintValue(ScalarInteger(found_prop));
-        #endif
-        
         if (!found_prop) {  /* reached 'maxAttempt' without generating proposal */
             ++n_failed_prop_theta;
-
-            #ifdef DEBUGGING
-            PrintValue(mkString("!found_prop"));
-            PrintValue(ScalarInteger(n_failed_prop_theta));
-            #endif
 
             continue; /* go on to next theta */
         }
@@ -4278,14 +4004,6 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
         double this_mu = mu[i];
 
         int y_is_missing = ( this_y == NA_REAL || ISNA(this_y) );
-        
-        #ifdef DEBUGGING
-        PrintValue(mkString("this_y"));
-        PrintValue(ScalarReal(this_y));
-        PrintValue(mkString("y_is_missing"));
-        PrintValue(ScalarInteger(y_is_missing));
-        #endif
-        
         
         double log_diff = 0;
         
@@ -4297,11 +4015,6 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
                             - dnorm(this_y, th_curr, 
                                             this_sd, USE_LOG);
         }
-        
-        #ifdef DEBUGGING
-        PrintValue(mkString("after !y_is_missing. log_diff"));
-        PrintValue(ScalarReal(log_diff));
-        #endif
         
         if(is_update_pair) {
             
@@ -4320,18 +4033,6 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
                                                 this_sd_other, USE_LOG);
             }
         
-            #ifdef DEBUGGING
-                PrintValue(mkString("this_y_other"));
-                PrintValue(ScalarReal(this_y_other));
-                PrintValue(mkString("after y_other_is_missing"));
-                PrintValue(mkString("log_diff"));
-                PrintValue(ScalarReal(log_diff));
-                PrintValue(mkString("this_mu"));
-                PrintValue(ScalarReal(this_mu));
-                PrintValue(mkString("mu_other"));
-                PrintValue(ScalarReal(mu_other));
-            #endif
-
             double log_diff_prior = 
                 dnorm(th_prop, this_mu, sigma, USE_LOG)
                 + dnorm(th_other_prop, mu_other, sigma, USE_LOG)
@@ -4346,18 +4047,6 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
                 
             log_diff += log_diff_prior + log_diff_prop;
             
-            #ifdef DEBUGGING
-            PrintValue(mkString("final log_diff if is_update_pair"));
-            PrintValue(mkString("weight_ratior"));
-            PrintValue(ScalarReal(weight_ratio));
-            PrintValue(mkString("log_diff_prior"));
-            PrintValue(ScalarReal(log_diff_prior));
-            PrintValue(mkString("log_diff_prop"));
-            PrintValue(ScalarReal(log_diff_prop));
-            PrintValue(mkString("final log_diff"));
-            PrintValue(ScalarReal(log_diff));
-            #endif
-
         }
         else {
             
@@ -4365,14 +4054,7 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
             log_diff += 
                 dnorm(th_prop, this_mu, sigma, USE_LOG)
                 - dnorm(th_curr, this_mu, sigma, USE_LOG);
-            
-            #ifdef DEBUGGING
-            PrintValue(mkString("final log_diff if not is_update_pair"));
-            PrintValue(mkString("log_diff"));
-            PrintValue(ScalarReal(log_diff));
-            #endif
-
-        }
+       }
             
         int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
 
@@ -4382,30 +4064,10 @@ updateTheta_NormalVaryingAgCertain(SEXP object, SEXP y_R)
             
             theta[i] = th_prop;
             
-            #ifdef DEBUGGING
-            PrintValue(mkString("accept"));
-            PrintValue(mkString("n_accept_theta"));
-            PrintValue(ScalarInteger(n_accept_theta));
-            PrintValue(mkString("theta[i]"));
-            PrintValue(ScalarReal(theta[i]));
-            #endif
-            
             if(is_update_pair) {
                 
                 theta[i_other] = th_other_prop;
-            
-                #ifdef DEBUGGING
-                PrintValue(mkString("theta[i_other"));
-                PrintValue(ScalarReal(theta[i_other]));
-                #endif
-            }
-        }
-        else {
-            #ifdef DEBUGGING
-            PrintValue(mkString("not accepted"));
-
-            #endif
-
+             }
         }
     } /* end for each theta */
 
@@ -5275,24 +4937,6 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
         int value_fixed = (is_in_delta && is_weight_positive
                         && !(is_has_other && is_weight_other_positive) );
         
-        #ifdef DEBUGGING
-        PrintValue(mkString(""));
-        PrintValue(mkString("ir"));
-        PrintValue(ScalarInteger(ir));
-        PrintValue(mkString("ir_other"));
-        PrintValue(ScalarInteger(ir_other));
-        PrintValue(mkString("is_in_delta"));
-        PrintValue(ScalarInteger(is_in_delta));
-        PrintValue(mkString("is_has_other"));
-        PrintValue(ScalarInteger(is_has_other));
-        PrintValue(mkString("weight"));
-        PrintValue(ScalarReal(weight));
-        PrintValue(mkString("weight_other"));
-        PrintValue(ScalarReal(weight_other));
-        PrintValue(mkString("value_fixed"));
-        PrintValue(ScalarInteger(value_fixed));
-        #endif
-        
         if (value_fixed) {
             /* skip to next value of theta */
             continue;
@@ -5307,17 +4951,6 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
 
         double theta_other_curr = (is_update_pair ? theta[i_other] : 0.0);
         
-        #ifdef DEBUGGING
-        PrintValue(mkString("is_update_pair"));
-        PrintValue(ScalarInteger(is_update_pair));
-        PrintValue(mkString("theta_curr"));
-        PrintValue(ScalarReal(theta_curr));
-        PrintValue(mkString("log_th_curr"));
-        PrintValue(ScalarReal(log_th_curr));
-        PrintValue(mkString("theta_other_curr"));
-        PrintValue(ScalarReal(theta_other_curr));
-        #endif
-
         double theta_prop = 0.0;
         double theta_other_prop = 0.0;
         double log_th_prop = 0.0;
@@ -5358,28 +4991,9 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
             } /* end if inside limits */
         } /* end while loop */
         
-        #ifdef DEBUGGING
-            PrintValue(mkString("outside while loop"));
-            PrintValue(mkString("attempt"));
-            PrintValue(ScalarInteger(attempt));
-            PrintValue(mkString("found_prop"));
-            PrintValue(ScalarInteger(found_prop));
-            PrintValue(mkString("theta_prop"));
-            PrintValue(ScalarReal(theta_prop));
-            PrintValue(mkString("theta_other_prop"));
-            PrintValue(ScalarReal(theta_other_prop));
-            PrintValue(mkString("is_update_pair"));
-            PrintValue(ScalarInteger(is_update_pair));
-        #endif
-       
         if (!found_prop) {  /* reached 'maxAttempt' without generating proposal */
       
             ++n_failed_prop_theta;
-
-            #ifdef DEBUGGING
-            PrintValue(mkString("!found_prop"));
-            PrintValue(ScalarInteger(n_failed_prop_theta));
-            #endif
 
             continue; /* go on to next theta */
         }
@@ -5391,61 +5005,23 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
         
         double log_diff = 0;
         
-        #ifdef DEBUGGING
-            PrintValue(mkString("y_is_missing"));
-            PrintValue(ScalarInteger(y_is_missing));
-        #endif
- 
         if (!y_is_missing) {
             
             log_diff = dpois(this_y, theta_prop, USE_LOG)
                             - dpois(this_y, theta_curr, USE_LOG);
-            #ifdef DEBUGGING
-            PrintValue(mkString("this_y"));
-            PrintValue(ScalarInteger(this_y));
-            PrintValue(mkString("theta_prop"));
-            PrintValue(ScalarReal(theta_prop));
-            PrintValue(mkString("theta_curr"));
-            PrintValue(ScalarReal(theta_curr));
-            #endif
         }
         
-        #ifdef DEBUGGING
-            PrintValue(mkString("log_diff so far"));
-            PrintValue(ScalarReal(log_diff));
-        #endif
-
         if (is_update_pair) {
             
             int this_y_other = y[i_other];
             
             int y_other_is_missing = ( this_y_other == NA_INTEGER 
                                                 || ISNA(this_y_other) );
-            #ifdef DEBUGGING
-            PrintValue(mkString("updating pair"));
-            PrintValue(mkString("this_y_other"));
-            PrintValue(ScalarInteger(this_y_other));
-            PrintValue(mkString("y_other_is_missing"));
-            PrintValue(ScalarInteger(y_other_is_missing));
-            #endif
-        
             if (!y_other_is_missing) {
                 log_diff += dpois(this_y_other, theta_other_prop, USE_LOG)
                             - dpois(this_y_other, theta_other_curr, USE_LOG);
-                #ifdef DEBUGGING
-                PrintValue(mkString("this_y_other"));
-                PrintValue(ScalarInteger(this_y_other));
-                PrintValue(mkString("theta_other_prop"));
-                PrintValue(ScalarReal(theta_other_prop));
-                PrintValue(mkString("theta_other_curr"));
-                PrintValue(ScalarReal(theta_other_curr));
-                #endif
             }
         
-            #ifdef DEBUGGING
-            PrintValue(mkString("log_diff so far"));
-            PrintValue(ScalarReal(log_diff));
-            #endif
             double mu_other = mu[i_other];
         
             double log_th_other_curr
@@ -5474,45 +5050,11 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
 
             log_diff += log_diff_prior + log_diff_prop;
 
-            #ifdef DEBUGGING
-            PrintValue(mkString("updating pairs"));
-            PrintValue(mkString("this_mu"));
-            PrintValue(ScalarReal(this_mu));
-            PrintValue(mkString("mu_other"));
-            PrintValue(ScalarReal(mu_other));
-            
-            PrintValue(mkString("log_th_prop"));
-            PrintValue(ScalarReal(log_th_prop));
-            PrintValue(mkString("log_th_other_prop"));
-            PrintValue(ScalarReal(log_th_other_prop));
-            PrintValue(mkString("log_th_curr"));
-            PrintValue(ScalarReal(log_th_curr));
-            PrintValue(mkString("log_th_other_curr"));
-            PrintValue(ScalarReal(log_th_other_curr));
-            
-            PrintValue(mkString("log_diff_prior"));
-            PrintValue(ScalarReal(log_diff_prior));
-            PrintValue(mkString("log_diff_prop"));
-            PrintValue(ScalarReal(log_diff_prop));
-            PrintValue(mkString("log_diff"));
-            PrintValue(ScalarReal(log_diff));
-            #endif
         }
         else {
             log_diff += dnorm(log_th_prop, this_mu, sigma, USE_LOG)
                         - dnorm(log_th_curr, this_mu, sigma, USE_LOG);
 
-            #ifdef DEBUGGING
-            PrintValue(mkString("not updating pairs"));
-            PrintValue(mkString("log_th_prop"));
-            PrintValue(ScalarReal(log_th_prop));
-            PrintValue(mkString("log_th_curr"));
-            PrintValue(ScalarReal(log_th_curr));
-            PrintValue(mkString("this_mu"));
-            PrintValue(ScalarReal(this_mu));
-            PrintValue(mkString("log_diff"));
-            PrintValue(ScalarReal(log_diff));
-            #endif
         }
         
         int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
@@ -5520,32 +5062,10 @@ updateTheta_PoissonVaryingNotUseExpAgCertain(SEXP object, SEXP y_R)
         if (accept) {
             ++n_accept_theta;
             theta[i] = theta_prop;
-            
-            #ifdef DEBUGGING
-                PrintValue(mkString("accept"));
-                PrintValue(mkString("n_accept_theta"));
-                PrintValue(ScalarInteger(n_accept_theta));
-                PrintValue(mkString("theta[i]"));
-                PrintValue(ScalarReal(theta[i]));
-                PrintValue(mkString("theta[i_other"));
-                PrintValue(ScalarReal(theta[i_other]));
-            #endif
-
+ 
             if (is_update_pair) {
                 theta[i_other] = theta_other_prop;
-            
-                #ifdef DEBUGGING
-                    PrintValue(mkString("theta[i_other"));
-                    PrintValue(ScalarReal(theta[i_other]));
-                #endif
-            }
-        }
-        else {
-            #ifdef DEBUGGING
-                PrintValue(mkString("not accepted"));
-
-            #endif
-
+           }
         }
     } /* end for each theta */
 
@@ -7083,15 +6603,6 @@ void
 updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
                             SEXP datasets_R, SEXP transforms_R)
 {
-    #ifdef DEBUGGING
-    PrintValue(y_R);
-    PrintValue(model_R);
-    PrintValue(dataModels_R);
-    PrintValue(datasets_R);
-    PrintValue(transforms_R);
-    PrintValue(GET_SLOT(model_R, theta_sym));
-    #endif
-
     double *theta = REAL(GET_SLOT(model_R, theta_sym));
     int n_y = LENGTH(y_R);
     int *y = INTEGER(y_R);
@@ -7105,138 +6616,59 @@ updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
         transformSubtotals_R = GET_SLOT(y_R, transformSubtotals_sym);
     }
 
-    #ifdef DEBUGGING
-    PrintValue(ScalarInteger(100));
-    PrintValue(ScalarInteger(has_subtotals));
-    if(has_subtotals) {
-        PrintValue(ScalarInteger(110));
-        PrintValue(transformSubtotals_R);
-    }
-    #endif
-
     for (int ir = 1; ir <= n_y; ++ir) {
 
-    if (strucZeroArray[ir - 1] != 0) {
+        if (strucZeroArray[ir - 1] != 0) {
 
-        #ifdef DEBUGGING
-        PrintValue(ScalarInteger(200));
-        PrintValue(ScalarInteger(ir));
-        #endif
+            int nInd = 2; /* number of indices (proposals) to deal with */
+            int yProp[nInd]; /* make space > 1 (may only need one) */
+            int indices[nInd]; /* make space > 1 (may only need one) */
+            /* put ir into first pos in indices
+             * if nInd=2 second pos will be filled later */
+            indices[0] = ir;
 
-        int nInd = 2; /* number of indices (proposals) to deal with */
-        int yProp[nInd]; /* make space > 1 (may only need one) */
-        int indices[nInd]; /* make space > 1 (may only need one) */
-        /* put ir into first pos in indices
-         * if nInd=2 second pos will be filled later */
-        indices[0] = ir;
+            if (has_subtotals) {
+                int ir_other = makeIOther(ir, transformSubtotals_R);
 
-        if (has_subtotals) {
-            int ir_other = makeIOther(ir, transformSubtotals_R);
+                if (ir_other > 0) { /* found other cell with same subtotal */
 
-            #ifdef DEBUGGING
-            PrintValue(ScalarInteger(300));
-            PrintValue(ScalarInteger(ir_other));
-            #endif
+                    getTwoMultinomialProposalsNoExp(yProp,
+                        y, theta, ir, ir_other);
 
-            if (ir_other > 0) { /* found other cell with same subtotal */
+                    indices[1] = ir_other; /* only need if nInd = 2 */
 
-                getTwoMultinomialProposalsNoExp(yProp,
-                    y, theta, ir, ir_other);
+                }
 
-                indices[1] = ir_other; /* only need if nInd = 2 */
+                else if (ir_other < 0) { /* cell not included in any subtotal */
+                    nInd = 1;
 
+                    /* the R code for R 3.0.0 onwards seems to just use
+                     * a cast to an int, so that's what I have done. */
+                    yProp[0] = (int) rpois(theta[ir-1]);
+
+                }
+                else { /* ir_other == 0, subtotal refers to single cell */
+                    continue; /* next ir in for loop */
+                }
             }
-
-            else if (ir_other < 0) { /* cell not included in any subtotal */
+            else { /* no subtotals */
                 nInd = 1;
-
-                #ifdef DEBUGGING
-                PrintValue(ScalarInteger(700));
-                PrintValue(ScalarReal(theta[ir-1]));
-                #endif
-
                 /* the R code for R 3.0.0 onwards seems to just use
                  * a cast to an int, so that's what I have done. */
                 yProp[0] = (int) rpois(theta[ir-1]);
-
-                #ifdef DEBUGGING
-                PrintValue(ScalarInteger(750));
-                PrintValue(ScalarReal(yProp[0]));
-                #endif
             }
-            else { /* ir_other == 0, subtotal refers to single cell */
-                #ifdef DEBUGGING
-                PrintValue(ScalarInteger(600));
-                #endif
-                continue; /* next ir in for loop */
-            }
-        }
-        else { /* no subtotals */
-            nInd = 1;
-            /* the R code for R 3.0.0 onwards seems to just use
-             * a cast to an int, so that's what I have done. */
-            yProp[0] = (int) rpois(theta[ir-1]);
-            #ifdef DEBUGGING
-            PrintValue(ScalarInteger(800));
-            PrintValue(ScalarReal(yProp[0]));
-            #endif
-        }
 
-        double diffLL = diffLogLik(yProp, y_R, indices, nInd,
-                dataModels_R, datasets_R, transforms_R);
+            double diffLL = diffLogLik(yProp, y_R, indices, nInd,
+                    dataModels_R, datasets_R, transforms_R);
 
-        #ifdef DEBUGGING
-        PrintValue(ScalarInteger(900));
-        PrintValue(ScalarReal(diffLL));
-        #endif
-
-        #ifndef DEBUGGING
-        if ( !( diffLL < 0.0) || ( runif(0.0, 1.0) < exp(diffLL) ) ) {
-            /* accept proposals */
-            for (int i = 0; i < nInd; ++i) {
-                y[ indices[i] - 1] = yProp[i];
-            }
-        }
-        #endif
-
-        #ifdef DEBUGGING
-            int accept = 0;
-            if (!(diffLL < 0.0)) {
-                PrintValue(ScalarInteger(950));
-                accept = 1;
-                }
-            else {
-                double ru = runif(0.0,1.0);
-                double edll = exp(diffLL);
-                PrintValue(ScalarInteger(960));
-                PrintValue(ScalarReal(ru));
-                PrintValue(ScalarInteger(970));
-                PrintValue(ScalarReal(edll));
-                int tmp = (ru < edll);
-                PrintValue(ScalarInteger(980));
-                PrintValue(ScalarInteger(tmp));
-                if (tmp) {
-                    accept = 1;
-                }
-            }
-            PrintValue(ScalarInteger(1000));
-            PrintValue(ScalarInteger(accept));
-
-            if ( accept ) {
+            if ( !( diffLL < 0.0) || ( runif(0.0, 1.0) < exp(diffLL) ) ) {
                 /* accept proposals */
                 for (int i = 0; i < nInd; ++i) {
                     y[ indices[i] - 1] = yProp[i];
                 }
             }
-            #endif
-
-        #ifdef DEBUGGING
-        PrintValue(ScalarInteger(10000));
-        PrintValue(y_R);
-        #endif
         }
     }
-
 }
 
 
@@ -7398,64 +6830,64 @@ updateDataModelsCounts(SEXP y_R, SEXP dataModels_R,
 void 
 updateDataModelsAccount(SEXP combined_R)
 {
-  SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
-  SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
-  SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
-  SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
-  int *updateDataModel = LOGICAL(GET_SLOT(combined_R, updateDataModel_sym));
-    
-  SEXP account_R = GET_SLOT(combined_R, account_sym);
-  SEXP population_R = GET_SLOT(account_R, population_sym);
-  SEXP components_R = GET_SLOT(account_R, components_sym);
-    
-  int* seriesIndices = INTEGER(seriesIndices_R);
-    
-  int nObs = LENGTH(dataModels_R);
-    
-  for (int i = 0; i < nObs; ++i) {
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    int *updateDataModel = LOGICAL(GET_SLOT(combined_R, updateDataModel_sym));
 
-    if (updateDataModel[i]) {
-        
-      SEXP model_R = VECTOR_ELT(dataModels_R, i);
-      SEXP dataset_R = VECTOR_ELT(datasets_R, i);
-      SEXP transform_R = VECTOR_ELT(transforms_R, i);
-        
-      int seriesIndex_r = seriesIndices[i];
-      SEXP series_R = population_R;
-      if (seriesIndex_r > 0) {
-	series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
-      }
-        
-      SEXP seriesCollapsed_R;
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
 
-      int nProtect  = 0;
-      int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
-        
-      const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-      int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
-      if (found) {
-            
-	SEXP seriesCollapsed_tmp_R;
-	/* collapse_R in demographic is okay with series_R being integer
-	 * but type of contents of seriesCollapsed_R will be integer*/
-	PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+    int* seriesIndices = INTEGER(seriesIndices_R);
 
-	PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
-	nProtect  = 2;
-      }
-      else {
-            
-	PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
-	nProtect  = 1;
-      }
-        
-      /* seriesCollapsed_R should now be in appropriate state for model */
-      updateModelUseExp_Internal(model_R, dataset_R,
-				 seriesCollapsed_R, i_method_model);
+    int nObs = LENGTH(dataModels_R);
 
-      UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
-      
+    for (int i = 0; i < nObs; ++i) {
+
+        if (updateDataModel[i]) {
+
+            SEXP model_R = VECTOR_ELT(dataModels_R, i);
+            SEXP dataset_R = VECTOR_ELT(datasets_R, i);
+            SEXP transform_R = VECTOR_ELT(transforms_R, i);
+
+            int seriesIndex_r = seriesIndices[i];
+            SEXP series_R = population_R;
+            if (seriesIndex_r > 0) {
+                series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
+            }
+
+            SEXP seriesCollapsed_R;
+
+            int nProtect  = 0;
+            int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+
+            const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+            int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
+            if (found) {
+                
+                SEXP seriesCollapsed_tmp_R;
+                /* collapse_R in demographic is okay with series_R being integer
+                * but type of contents of seriesCollapsed_R will be integer*/
+                PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+
+                PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
+                nProtect  = 2;
+            }
+            else {
+                
+                PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
+                nProtect  = 1;
+            }
+
+            /* seriesCollapsed_R should now be in appropriate state for model */
+            updateModelUseExp_Internal(model_R, dataset_R,
+                     seriesCollapsed_R, i_method_model);
+
+            UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
+
+        }
+
     }
-
-  }
 }

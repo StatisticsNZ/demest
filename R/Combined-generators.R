@@ -568,7 +568,7 @@ setMethod("initialCombinedAccount",
               n.popn <- length(population)
               n.components <- sapply(components, length)
               n.cell.account <- n.popn + sum(n.components)
-              prob.popn <- n.popn / (n.popn + sum(n.components))
+              prob.popn <- 2 * n.popn / (2 * n.popn + sum(n.components))
               cum.prob.comp <- cumsum(n.components) / sum(n.components)
               is.births <- sapply(components, methods::is, "Births")
               is.orig.dest <- sapply(components, methods::is, "HasOrigDest")

@@ -26,12 +26,6 @@ drawBetas(SEXP object_R)
     
     for (int i = 0; i < n_betas; ++i) {
         
-        #ifdef DEBUGGING
-        PrintValue(mkString(""));
-        PrintValue(mkString("i"));
-        PrintValue(ScalarInteger(i));
-        #endif
-           
         SEXP beta_R = VECTOR_ELT(betas_R, i);
         SEXP prior_R = VECTOR_ELT(priors_R, i);
         double *beta = REAL(beta_R);
@@ -57,16 +51,6 @@ drawBetas(SEXP object_R)
                 beta[j] = rnorm(beta_hat[j], sqrt(var[j]) );
             }
         }
-        #ifdef DEBUGGING
-        PrintValue(mkString("J"));
-        PrintValue(ScalarReal(J));
-        PrintValue(mkString("beta_hat"));
-        printDblArray(beta_hat, J);
-        PrintValue(mkString("var"));
-        printDblArray(var, J);
-        PrintValue(mkString("beta"));
-        printDblArray(beta, J);
-        #endif
     }
 }
 
@@ -262,31 +246,38 @@ drawOmegaVectorsMix(SEXP prior_R)
 void
 drawPhi(SEXP prior_R)
 {
-    double phi_min = *REAL(GET_SLOT(prior_R, minPhi_sym));
-    double phi_max = *REAL(GET_SLOT(prior_R, maxPhi_sym));
-    double shape1 = *REAL(GET_SLOT(prior_R, shape1Phi_sym));
-    double shape2 = *REAL(GET_SLOT(prior_R, shape2Phi_sym));
-    
-    
-    double X = rbeta(shape1, shape2);
-    double phi = phi_min + X*(phi_max - phi_min);
-    
-    SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phi);   
+    int phi_known = *LOGICAL(GET_SLOT(prior_R, phiKnown_sym));
+    if (!phi_known) {
+        double phi_min = *REAL(GET_SLOT(prior_R, minPhi_sym));
+        double phi_max = *REAL(GET_SLOT(prior_R, maxPhi_sym));
+        double shape1 = *REAL(GET_SLOT(prior_R, shape1Phi_sym));
+        double shape2 = *REAL(GET_SLOT(prior_R, shape2Phi_sym));
+        
+        
+        double X = rbeta(shape1, shape2);
+        double phi = phi_min + X*(phi_max - phi_min);
+        
+        SET_DOUBLESCALE_SLOT(prior_R, phi_sym, phi);  
+    }
+    /* no change if phi known */ 
 }
 
 void
 drawPhiMix(SEXP prior_R)
 {
-    double phi_min = *REAL(GET_SLOT(prior_R, minPhi_sym));
-    double phi_max = *REAL(GET_SLOT(prior_R, maxPhi_sym));
-    double shape1 = *REAL(GET_SLOT(prior_R, shape1Phi_sym));
-    double shape2 = *REAL(GET_SLOT(prior_R, shape2Phi_sym));
-    
-    
-    double X = rbeta(shape1, shape2);
-    double phi = phi_min + X*(phi_max - phi_min);
-    
-    SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phi);   
+    int phi_known = *LOGICAL(GET_SLOT(prior_R, phiKnown_sym));
+    if (!phi_known) {
+        double phi_min = *REAL(GET_SLOT(prior_R, minPhi_sym));
+        double phi_max = *REAL(GET_SLOT(prior_R, maxPhi_sym));
+        double shape1 = *REAL(GET_SLOT(prior_R, shape1Phi_sym));
+        double shape2 = *REAL(GET_SLOT(prior_R, shape2Phi_sym));
+        
+        
+        double X = rbeta(shape1, shape2);
+        double phi = phi_min + X*(phi_max - phi_min);
+        
+        SET_DOUBLESCALE_SLOT(prior_R, phiMix_sym, phi);   
+    }
 }
 
 void
