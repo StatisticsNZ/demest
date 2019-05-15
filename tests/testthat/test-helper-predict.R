@@ -43,12 +43,13 @@ test_that("checkDataPredict works", {
 })
 
 test_that("checkEstAndPredFilenamesDifferent works", {
+    checkEstAndPredFilenamesDifferent <- demest:::checkEstAndPredFilenamesDifferent
     ans.obtained <- checkEstAndPredFilenamesDifferent(filenameEst = "model.est",
                                                       filenamePred = "model.pred")
     ans.expected <- NULL
     expect_identical(ans.obtained, ans.expected)
     expect_error(checkEstAndPredFilenamesDifferent(filenameEst = "model.est",
-                                                   filenamePred = "model.pred"),
+                                                   filenamePred = "model.est"),
                  "'filenameEst' and 'filenamePred' are identical")
 })
 

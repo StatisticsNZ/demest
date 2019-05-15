@@ -91,7 +91,7 @@ setClass("ProbAccountMixin",
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "cumProbComp", "double"))
              ## 'cumProbComp' is between 0 and 1
-             if (any((cumProbComp < 0) || (cumProbComp > 1)))
+             if (any(cumProbComp < 0) || any(cumProbComp > 1))
                  return(gettextf("'%s' has values between %d and %d",
                                  "cumProbComp", 0L, 1L))
              ## 'cumProbComp' strictly increasing

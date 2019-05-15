@@ -338,18 +338,19 @@ test_that("R, C-specific, and C-generic versions of drawCombined give same answe
                                          updateSystemModel = updateSystemModel,
                                          updateDataModel = updateDataModel)
     for (seed in seq_len(n.test)) {
+        set.seed(seed)
         ans.R <- drawCombined(x0,
                               nUpdate = 5L,
                               useC = FALSE)
-        set.seed(1)
+        set.seed(seed)
         ans.C.specific <- drawCombined(x0,
                                        nUpdate = 5L,
                                        useC = TRUE,
                                        useSpecific = TRUE)
-        set.seed(1)
+        set.seed(seed)
         ans.C.generic <- drawCombined(x0,
                                       nUpdate = 5L,
-                                      useC = FALSE,
+                                      useC = TRUE,
                                       useSpecific = FALSE)
         if (test.identity)
             expect_identical(ans.R, ans.C.specific)

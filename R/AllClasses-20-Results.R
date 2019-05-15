@@ -31,7 +31,9 @@ setClass("Results",
              if (control$parallel) {
                  ## valid L'Ecuyer seeds
                  for (i in seq_along(seed)) {
-                     if (!identical(seed[[i]][1L], 407L) || !identical(length(seed[[i]]), 7L))
+                     is.valid.kind <- seed[[i]][1L] %in% c(407L, 10407L)
+                     is.valid.length <- identical(length(seed[[i]]), 7L)
+                     if (!is.valid.kind || !is.valid.length)
                          return(gettextf("element %d of '%s' is not a valid %s seed",
                                          i, "seed", "L'Ecuyer"))
                  }

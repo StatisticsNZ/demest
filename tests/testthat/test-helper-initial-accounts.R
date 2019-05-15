@@ -216,14 +216,14 @@ test_that("checkAndTidyUpdateSystemModel works - with aggregate values", {
     specs <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
                   Model(inmigration ~ Poisson(mean ~ time),
                         aggregate = AgCertain(3)))
-    data <- list(Counts(array(1L,
-                              dim = 4,
-                              dimnames = list(time = 2000:2003)),
-                        dimscales = c(time = "Points")),
-                 Counts(array(1L,
-                              dim = 3,
-                              dimnames = list(time = 2001:2003)),
-                        dimscales = c(time = "Intervals")))
+    datasets <- list(Counts(array(1L,
+                                  dim = 4,
+                                  dimnames = list(time = 2000:2003)),
+                            dimscales = c(time = "Points")),
+                     Counts(array(1L,
+                                  dim = 3,
+                                  dimnames = list(time = 2001:2003)),
+                            dimscales = c(time = "Intervals")))
     systemModels <- list(initialModel(specs[[1]], y = datasets[[1]], exposure = NULL),
                          initialModel(specs[[2]], y = datasets[[2]], exposure = datasets[[2]]))
     ans.obtained <- checkAndTidyUpdateSystemModel(updateSystemModel = NULL,
