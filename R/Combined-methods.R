@@ -28,7 +28,7 @@ setMethod("getSeriesForDataset",
 
 ## drawCombined ####################################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawCombined",
           signature(object = "CombinedModelBinomial"),
@@ -61,6 +61,9 @@ setMethod("drawCombined",
           })
 
 ## READY_TO_TRANSLATE
+## JAH 26 April 2019: delayed translating because of problems
+## loading unless bits of combined models are commented out
+## so cannot test drawDataModels which is used here
 ## HAS_TESTS
 setMethod("drawCombined",
           signature(object = "CombinedAccountMovements"),
@@ -103,6 +106,9 @@ setMethod("drawCombined",
 ## calling function 'setDatasetsToMissing'.
 
 ## READY_TO_TRANSLATE
+## JAH 26 April 2019: translated but cannot check because of problems
+## loading unless bits of combined models are commented out
+## so cannot test
 ## HAS_TESTS
 ## Function is almost identical to 'updateDataModelsAccount' 
 setMethod("drawDataModels",

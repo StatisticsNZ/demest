@@ -161,7 +161,9 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau,
         if (near_sigma_star) {
             ans = sigma_star;
         }
-    }    
+    }
+
+
     return ans;
 }
 
@@ -893,15 +895,6 @@ updateEta(SEXP prior_R, double* beta, int J)
     }
     /*crossprod(Z, diag(1 / v)) in work1
      * keep work1 for b later */
-    #ifdef DEBUGGING
-        PrintValue(mkString(""));
-        PrintValue(mkString("in updateEta"));
-        PrintValue(mkString("v"));
-        printDblArray(v, J);
-        PrintValue(mkString("crossprod(Z, diag(1 / v)) in work1"));
-        printDblArray(work1, J*P);
-    #endif
-        
     /* stuff needed for mm and mv multiplication fortran routines */
     char transN = 'N';
     
@@ -915,10 +908,6 @@ updateEta(SEXP prior_R, double* beta, int J)
                             &beta_blas_zero, work2, &P);
     /* PxP  result is in work2 */       
         
-    #ifdef DEBUGGING
-        PrintValue(mkString("crossprod(Z, diag(1 / v)) %*% Z in work2"));
-        printDblArray(work2, P*P);
-    #endif
     /* U.eta <- c(A.eta.intercept^2, U.eta.coef)
     var.inv <- crossprod(Z, diag(1 / v)) %*% Z + diag(1 / U.eta)*/
     work2[0] += 1/(AEtaIntercept*AEtaIntercept);
@@ -928,11 +917,6 @@ updateEta(SEXP prior_R, double* beta, int J)
         work2[p * P + p] += 1/UEtaCoef[p-1];
     }
     /* var.inv in work2 */
-    #ifdef DEBUGGING 
-        PrintValue(mkString("var.inv in work2"));
-        printDblArray(work2, P*P);
-    #endif
-    
     /* keep a copy of var.inv in work3 for Choleski factorisation later */
     memcpy(work3, work2, P*P*sizeof(double));
         
@@ -948,21 +932,11 @@ updateEta(SEXP prior_R, double* beta, int J)
      * of the decomposition can be recovered,
      * and qraux contains the information required to be able to do this */
     
-    #ifdef DEBUGGING 
-        PrintValue(mkString("qr in work2"));
-        printDblArray(work2, P*P);
-    #endif
-    
     /*b <- crossprod(Z, diag(1 / v)) %*% beta */
     F77_CALL(dgemv)(&transN, &P, &J, &alpha_blas_one, work1, 
                         &P, beta, &inc_blas, &beta_blas_zero,
                         b, &inc_blas);   
 
-    #ifdef DEBUGGING 
-        PrintValue(mkString("b"));
-        printDblArray(b, P);
-    #endif
-    
     /*eta.hat <- qr.solve(qr, b)
      * qr.solve(a,b) does same as qr.coef(a,b) when a is a qr
      * ie solves using least squares, so C can use dqrsl
@@ -984,12 +958,6 @@ updateEta(SEXP prior_R, double* beta, int J)
                     &rsd, &xb, &job_sl, &info);
     if (info) error("error in dqrsl in updateEta: %d", info);
     
-    #ifdef DEBUGGING 
-        PrintValue(mkString("eta_hat"));
-        printDblArray(eta, P);
-    #endif
-
-
     /* eta.hat[-1L] <- eta.hat[-1L] + mean.eta.coef / U.eta.coef */
     /* Added by JB 24 December 2018                              */
     for (int p = 0; p < P - 1; ++p) {
@@ -1012,23 +980,10 @@ updateEta(SEXP prior_R, double* beta, int J)
       * UPLO, N, A, LDA, INFO */
     char uplo = 'U';
     
-    #ifdef DEBUGGING 
-        PrintValue(mkString("var.inv in work3"));
-        printDblArray(work3, P*P);
-    #endif 
-    
     F77_CALL(dpotrf)(&uplo, &P, work3, &P, &info);
     if (info) error("error in dpotrf in updateEta: %d", info);
     /* on exit, work3 contains U from factorisation var.inv = U**T*U
      * ie work3 contains R from R <- chol(var.inv)*/                        
-    
-    #ifdef DEBUGGING 
-        PrintValue(mkString("R <- chol(var.inv) work3"));
-        printDblArray(work3, P*P);
-        PrintValue(mkString("g"));
-        printDblArray(qty_and_g, P);
-    
-    #endif 
     
     /* epsilon <- backsolve(R, g) */
     
@@ -1041,24 +996,10 @@ updateEta(SEXP prior_R, double* beta, int J)
     if (info) error("error in dtrsl in updateEta: %d", info);
     /* after the call, qty_and_g contains the solution, epsilon */
     
-    #ifdef DEBUGGING 
-        PrintValue(mkString("epsilon"));
-        printDblArray(qty_and_g, P);
-    #endif
-    
     /* prior@eta@.Data <- eta.hat + epsilon */
     for (int p = 0; p < P; ++p) {
             eta[p] += qty_and_g[p];
     }
-    
-    #ifdef DEBUGGING 
-        PrintValue(mkString("eta"));
-        printDblArray(eta, P);
-        PrintValue(mkString("beta at end"));
-        printDblArray(beta, J);
-        PrintValue(mkString(""));
-        PrintValue(mkString("end updateEta"));
-    #endif
 }
 
 void
@@ -3730,7 +3671,6 @@ updateThetaAndValueAgFun_Binomial(SEXP object, SEXP y_R, SEXP exposure_R)
 	  double log_dens_ag_prop = dnorm(mean_ag, ag_prop, sd_ag, USE_LOG);
 	  double log_dens_ag_curr = dnorm(mean_ag, ag_curr, sd_ag, USE_LOG);
 	  log_diff += log_dens_ag_prop - log_dens_ag_curr;
-                    
                     
 #ifdef DEBUGGING
 	  PrintValue(mkString("contributes to ag"));
@@ -7043,6 +6983,7 @@ void
 updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
 			     SEXP datasets_R, SEXP transforms_R)
 {
+
 #ifdef DEBUGGING
   PrintValue(y_R);
   PrintValue(model_R);
@@ -7065,6 +7006,7 @@ updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
     transformSubtotals_R = GET_SLOT(y_R, transformSubtotals_sym);
   }
 
+
 #ifdef DEBUGGING
   PrintValue(ScalarInteger(100));
   PrintValue(ScalarInteger(has_subtotals));
@@ -7076,7 +7018,7 @@ updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
 
   for (int ir = 1; ir <= n_y; ++ir) {
 
-    if (strucZeroArray[ir - 1] != 0) {
+        if (strucZeroArray[ir - 1] != 0) {
 
 #ifdef DEBUGGING
       PrintValue(ScalarInteger(200));
@@ -7358,6 +7300,7 @@ updateDataModelsCounts(SEXP y_R, SEXP dataModels_R,
 void 
 updateDataModelsAccount(SEXP combined_R)
 {
+
   SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
   SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
   SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
@@ -7375,48 +7318,48 @@ updateDataModelsAccount(SEXP combined_R)
     
   for (int i = 0; i < nObs; ++i) {
 
-    if (updateDataModel[i]) {
-        
-      SEXP model_R = VECTOR_ELT(dataModels_R, i);
-      SEXP dataset_R = VECTOR_ELT(datasets_R, i);
-      SEXP transform_R = VECTOR_ELT(transforms_R, i);
-        
-      int seriesIndex_r = seriesIndices[i];
-      SEXP series_R = population_R;
-      if (seriesIndex_r > 0) {
-	series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
-      }
-        
-      SEXP seriesCollapsed_R;
+        if (updateDataModel[i]) {
 
-      int nProtect  = 0;
-      int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
-        
-      const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-      int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
-      if (found) {
-            
-	SEXP seriesCollapsed_tmp_R;
-	/* collapse_R in demographic is okay with series_R being integer
-	 * but type of contents of seriesCollapsed_R will be integer*/
-	PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+            SEXP model_R = VECTOR_ELT(dataModels_R, i);
+            SEXP dataset_R = VECTOR_ELT(datasets_R, i);
+            SEXP transform_R = VECTOR_ELT(transforms_R, i);
 
-	PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
-	nProtect  = 2;
-      }
-      else {
-            
-	PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
-	nProtect  = 1;
-      }
-        
-      /* seriesCollapsed_R should now be in appropriate state for model */
-      updateModelUseExp_Internal(model_R, dataset_R,
-				 seriesCollapsed_R, i_method_model);
+            int seriesIndex_r = seriesIndices[i];
+            SEXP series_R = population_R;
+            if (seriesIndex_r > 0) {
+                series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
+            }
 
-      UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
-      
+            SEXP seriesCollapsed_R;
+
+            int nProtect  = 0;
+            int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
+
+            const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+            int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
+            if (found) {
+                
+                SEXP seriesCollapsed_tmp_R;
+                /* collapse_R in demographic is okay with series_R being integer
+                * but type of contents of seriesCollapsed_R will be integer*/
+                PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
+
+                PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
+                nProtect  = 2;
+            }
+            else {
+                
+                PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
+                nProtect  = 1;
+            }
+
+            /* seriesCollapsed_R should now be in appropriate state for model */
+            updateModelUseExp_Internal(model_R, dataset_R,
+                     seriesCollapsed_R, i_method_model);
+
+            UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
+
+        }
+
     }
-
-  }
 }

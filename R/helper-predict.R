@@ -33,6 +33,14 @@ checkDataPredict <- function(data) {
     NULL
 }
 
+
+checkEstAndPredFilenamesDifferent <- function(filenameEst, filenamePred) {
+    if (isTRUE(all.equal(filenameEst, filenamePred)))
+        stop(gettextf("'%s' and '%s' are identical",
+                      "filenameEst", "filenamePred"))
+    NULL
+}
+
 ## HAS_TESTS
 initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                       covariates) {
