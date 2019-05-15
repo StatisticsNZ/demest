@@ -2462,7 +2462,6 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(drawModelUseExp_NormalFixedUseExp_R, 3),
   CALLDEF(drawModelUseExp_R, 3),
   
-  CALLDEF(updateBetasAndPriorsBetas_R, 1),
   /* draw combined */
   CALLDEF(drawCombined_CombinedModelBinomial_R, 2),
   CALLDEF(drawCombined_CombinedAccountMovements_R, 2),
