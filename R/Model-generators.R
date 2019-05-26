@@ -625,8 +625,12 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) rep(0, length(x)))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-              use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              if (useHMC) {
+                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
+                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              }
+              else
+                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -821,8 +825,12 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-              use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              if (useHMC) {
+                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
+                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              }
+              else
+                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -983,8 +991,12 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) rep(0, length(x)))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-              use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              if (useHMC) {
+                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
+                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              }
+              else
+                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -1135,8 +1147,12 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) rep(0, length(x)))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-              use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              if (useHMC) {
+                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
+                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              }
+              else
+                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -1326,8 +1342,12 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-              use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              if (useHMC) {
+                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
+                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
+              }
+              else
+                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),

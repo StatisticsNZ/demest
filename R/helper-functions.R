@@ -1202,10 +1202,10 @@ getLogPostMomentum <- function(object, useC = FALSE) {
         momentum.betas <- object@momentumBetas
         variances.betas <- object@variancesBetas
         priors.betas <- object@priorsBetas
-        beta.equals.mean <- object@betaEqualsMean
+        use.hmc.to.update.beta <- object@useHMCToUpdateBeta
         ans <- 0
         for (i in seq_along(momentum.betas)) {
-            if (!beta.equals.mean[i]) {
+            if (use.hmc.to.update.beta[i]) {
                 momentum <- momentum.betas[[i]]
                 variances <- variances.betas[[i]]
                 inv_sd <- 1 / sqrt(variances)
@@ -1267,10 +1267,10 @@ initializeMomentum <- function(object, useC = FALSE) {
     else {
         momentum.betas <- object@momentumBetas
         variances.betas <- object@variancesBetas
-        beta.equals.mean <- object@betaEqualsMean
+        use.hmc.to.update.beta <- object@useHMCToUpdateBeta
         priors <- object@priorsBetas
         for (i in seq_along(momentum.betas)) {
-            if (!beta.equals.mean[i]) {
+            if (use.hmc.to.update.beta[i]) {
                 all.struc.zero <- priors[[i]]@allStrucZero
                 n <- sum(!all.struc.zero)
                 inv_sd <- 1 / sqrt(variances.betas[[i]])

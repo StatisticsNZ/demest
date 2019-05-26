@@ -1890,11 +1890,8 @@ updateBetas <- function(object, useC = FALSE) {
         .Call(updateBetas_R, object)
     }
     else {
-        use.hmc <- object@useHMCBetas@.Data
-        if (use.hmc)
-            object <- updateBetasHMC(object)
-        else
-            object <- updateBetasGibbs(object)
+        object <- updateBetasGibbs(object)
+        object <- updateBetasHMC(object) # updates 'logPostBeta', even when no betas updated with HMC
         object
     }
 }
@@ -1917,47 +1914,47 @@ updateBetasGibbs <- function(object, useC = FALSE) {
         variances.betas <- object@variancesBetas
         priors.betas <- object@priorsBetas
         beta.equals.mean <- object@betaEqualsMean
+        use.hmc.to.update.beta <- object@useHMCToUpdateBeta
         sigma <- object@sigma@.Data
-        log.post <- 0
         for (i.beta in seq_along(object@betas)) {
             if (beta.equals.mean[i.beta])
                 object@betas[[i.beta]] <- means.betas[[i.beta]]
             else {
-                J <- length(object@betas[[i.beta]])
-                l <- makeVBarAndN(object = object,
-                                  iBeta = i.beta)
-                vbar <- l[[1L]] # vector of length J
-                n <- l[[2L]] # vector of length J
-                mean.beta <- means.betas[[i.beta]]
-                var.beta <- variances.betas[[i.beta]]
-                prior.beta <- priors.betas[[i.beta]]
-                all.struc.zero <- prior.beta@allStrucZero # vector of length J
-                for (j in seq_len(J)) {
-                    if (!all.struc.zero[j]) {
-                        prec.data <- n[j] / sigma^2
-                        prec.prior <- 1 / var.beta[j]
-                        var.post <- 1 / (prec.data + prec.prior)
-                        mean.post <- (prec.data * vbar[j] + prec.prior * mean.beta[j]) * var.post
-                        sd.post <- sqrt(var.post)
-                        val.post <- stats::rnorm(n = 1L,
-                                                 mean = mean.post,
-                                                 sd = sd.post)
-                        object@betas[[i.beta]][j] <- val.post
-                        log.post <- log.post + stats::dnorm(val.post,
-                                                            mean = mean.post,
-                                                            sd = sd.post,
-                                                            log = TRUE)
+                if (!use.hmc.to.update.beta[i.beta]) {
+                    J <- length(object@betas[[i.beta]])
+                    l <- makeVBarAndN(object = object,
+                                      iBeta = i.beta)
+                    vbar <- l[[1L]] # vector of length J
+                    n <- l[[2L]] # vector of length J
+                    mean.beta <- means.betas[[i.beta]]
+                    var.beta <- variances.betas[[i.beta]]
+                    prior.beta <- priors.betas[[i.beta]]
+                    all.struc.zero <- prior.beta@allStrucZero # vector of length J
+                    for (j in seq_len(J)) {
+                        if (!all.struc.zero[j]) {
+                            prec.data <- n[j] / sigma^2
+                            prec.prior <- 1 / var.beta[j]
+                            var.post <- 1 / (prec.data + prec.prior)
+                            mean.post <- (prec.data * vbar[j] + prec.prior * mean.beta[j]) * var.post
+                            sd.post <- sqrt(var.post)
+                            val.post <- stats::rnorm(n = 1L,
+                                                     mean = mean.post,
+                                                     sd = sd.post)
+                            object@betas[[i.beta]][j] <- val.post
+                        }
                     }
                 }
             }
         }
-        object@logPostBetas@.Data <- log.post
+        object <- updateMu(object)
         object
     }
 }
 
 ## TRANSLATED
 ## HAS_TESTS (comparing R and C versions)
+## updates 'logPostBetas' slot, even when
+## no beta are updated using HMC
 updateBetasHMC <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
@@ -1966,9 +1963,12 @@ updateBetasHMC <- function(object, useC = FALSE) {
     }
     else {
         object <- updateBetasWhereBetaEqualsMean(object)
+        object <- updateLogPostBetas(object)
+        use.hmc <- object@useHMCBetas@.Data
+        if (!use.hmc)
+            return(object)
         object <- initializeMomentum(object)
         object@betasOld <- object@betas # call 'updateBetasWhereBetaEqualsMean' first
-        object <- updateLogPostBetas(object)
         log.post.betas.curr <- object@logPostBetas # call 'updateLogPostBetas' first (priors have changed)
         log.post.momentum.curr <- getLogPostMomentum(object) # call 'initializeMomentum' first
         mean.size.step <- object@sizeStep@.Data
@@ -1979,6 +1979,7 @@ updateBetasHMC <- function(object, useC = FALSE) {
         n.step <- ceiling(stats::runif(n = 1L,
                                        min = 0,
                                        max = 2 * mean.n.step))
+        object <- updateGradientBetas(object)
         object <- updateMomentumOneStep(object,
                                         sizeStep = size.step,
                                         isFirstLast = TRUE)
@@ -2030,9 +2031,9 @@ updateBetasOneStep <- function(object, sizeStep, useC = FALSE) {
         momentum.betas <- object@momentumBetas
         variances.betas <- object@variancesBetas
         priors.betas <- object@priorsBetas
-        beta.equals.mean <- object@betaEqualsMean
+        use.hmc.to.update.beta <- object@useHMCToUpdateBeta
         for (i in seq_along(betas)) {
-            if (!beta.equals.mean[i]) {
+            if (use.hmc.to.update.beta[i]) {
                 momentum <- momentum.betas[[i]]
                 variances <- variances.betas[[i]]
                 all.struc.zero <- priors.betas[[i]]@allStrucZero
@@ -2084,7 +2085,7 @@ updateGradientBetas <- function(object, useC = FALSE) {
         betas <- object@betas
         means.betas <- object@meansBetas
         variances.betas <- object@variancesBetas
-        beta.equals.mean <- object@betaEqualsMean
+        use.hmc.to.update.beta <- object@useHMCToUpdateBeta
         priors <- object@priorsBetas
         n.theta <- length(theta.transformed)
         n.beta <- length(betas)
@@ -2102,7 +2103,7 @@ updateGradientBetas <- function(object, useC = FALSE) {
                 indices <- iterator@indices
                 diff <- (theta.transformed[i.theta] - mu[i.theta]) / var.theta
                 for (i.beta in seq_len(n.beta)) {
-                    if (!beta.equals.mean[i.beta]) {
+                    if (use.hmc.to.update.beta[i.beta]) {
                         all.struc.zero <- priors[[i.beta]]@allStrucZero
                         j <- indices[i.beta]
                         if (!all.struc.zero[j])
@@ -2114,7 +2115,7 @@ updateGradientBetas <- function(object, useC = FALSE) {
         }
         ## contribution from prior
         for (i.beta in seq_len(n.beta)) {
-            if (!beta.equals.mean[i.beta]) {
+            if (use.hmc.to.update.beta[i.beta]) {
                 all.struc.zero <- priors[[i.beta]]@allStrucZero
                 diff <- (betas[[i.beta]] - means.betas[[i.beta]]) / variances.betas[[i.beta]]
                 gradient.betas[[i.beta]][!all.struc.zero] <- (gradient.betas[[i.beta]][!all.struc.zero]
@@ -2206,13 +2207,13 @@ updateMomentumOneStep <- function(object, sizeStep, isFirstLast, useC = FALSE) {
     else {
         momentum.betas <- object@momentumBetas
         gradient.betas <- object@gradientBetas
-        beta.equals.mean <- object@betaEqualsMean
+        use.hmc.to.update.beta <- object@useHMCToUpdateBeta
         priors.betas <- object@priorsBetas
         mult <- sizeStep
         if (isFirstLast)
             mult <- 0.5 * mult
         for (i in seq_along(momentum.betas)) {
-            if (!beta.equals.mean[i]) {
+            if (use.hmc.to.update.beta[i]) {
                 momentum <- momentum.betas[[i]]
                 gradient <- gradient.betas[[i]]
                 all.struc.zero <- priors.betas[[i]]@allStrucZero

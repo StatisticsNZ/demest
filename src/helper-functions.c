@@ -1306,10 +1306,10 @@ getLogPostMomentum(SEXP object_R)
   int n_beta =  LENGTH(momentumBetas_R);
   SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
   SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
-  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));
+  int *useHMCToUpdateBeta = LOGICAL(GET_SLOT(object_R, useHMCToUpdateBeta_sym));
   double ans = 0;
   for (int i = 0; i < n_beta; ++i) {
-    if (!betaEqualsMean[i]) {
+    if (useHMCToUpdateBeta[i]) {
       double *momentum = REAL(VECTOR_ELT(momentumBetas_R, i));
       double *variances = REAL(VECTOR_ELT(variancesBetas_R, i));
       SEXP prior_R = VECTOR_ELT(priorsBetas_R, i);
@@ -1334,9 +1334,9 @@ initializeMomentum(SEXP object_R)
   int n_beta =  LENGTH(momentumBetas_R);
   SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
   SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
-  int *betaEqualsMean = LOGICAL(GET_SLOT(object_R, betaEqualsMean_sym));
+  int *useHMCToUpdateBeta = LOGICAL(GET_SLOT(object_R, useHMCToUpdateBeta_sym));
   for (int i = 0; i < n_beta; ++i) {
-    if (!betaEqualsMean[i]) {
+    if (useHMCToUpdateBeta[i]) {
       double *momentum = REAL(VECTOR_ELT(momentumBetas_R, i));
       double *variances = REAL(VECTOR_ELT(variancesBetas_R, i));
       SEXP prior_R = VECTOR_ELT(priorsBetas_R, i);

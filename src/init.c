@@ -2788,6 +2788,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(gradientBetas);
   ADD_SYM(momentumBetas);
   ADD_SYM(betaEqualsMean);
+  ADD_SYM(useHMCToUpdateBeta);
   ADD_SYM(sizeStep);
   ADD_SYM(nStep);
   ADD_SYM(acceptBeta);

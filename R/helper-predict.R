@@ -51,6 +51,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     names.betas <- model@namesBetas
     margins <- model@margins
     dims <- model@dims
+    useHMC <- model@useHMC
     i.method.model.first <- model@iMethodModel
     n.beta <- length(betas)
     metadata.pred <- makeMetadataPredict(metadata = metadata.first,
@@ -72,8 +73,8 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                        dim = dim(metadata.pred),
                        dimnames = dimnames(metadata.pred))
         struc.zero.array.pred <- methods::new("Counts",
-                                     .Data = .Data,
-                                     metadata = metadata.pred)
+                                              .Data = .Data,
+                                              metadata = metadata.pred)
     }
     theta <- ifelse(struc.zero.array.pred@.Data == 0L, 0, mean(theta.old))
     theta <- as.double(theta)
@@ -128,8 +129,12 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     momentumBetas <- val.betas
     fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
     beta.equals.mean <- sapply(priors.betas, fun)
-    fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-    use.hmc.to.update.beta <- sapply(priors.betas, fun)
+    if (useHMC) {
+        fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
+        use.hmc.to.update.beta <- sapply(priors.betas, fun)
+    }
+    else
+        use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
     iterator.betas <- BetaIterator(dim = dim, margins = margins)
     offsets.betas <- makeOffsetsBetas(model, offsetModel = offsetModel)
     offsets.priors.betas <- makeOffsetsPriorsBetas(model, offsetModel = offsetModel)

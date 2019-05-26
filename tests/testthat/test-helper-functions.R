@@ -3067,8 +3067,7 @@ test_that("R version of getLogPostMomentum works", {
     x <- updateModelNotUseExp(x, y = y, useC = TRUE)
     x <- initializeMomentum(x)
     ans.obtained <- getLogPostMomentum(x)
-    ans.expected <- sum(dnorm(x@momentumBetas[[1]], sd = 1/sqrt(x@variancesBetas[[1]]), log = TRUE)) +
-        sum(dnorm(x@momentumBetas[[2]][-1], sd = 1/sqrt(x@variancesBetas[[2]][-1]), log = TRUE))
+    ans.expected <- sum(dnorm(x@momentumBetas[[2]][-1], sd = 1/sqrt(x@variancesBetas[[2]][-1]), log = TRUE))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -3118,7 +3117,6 @@ test_that("R version of initializeMomentum works", {
     ans.obtained <- initializeMomentum(x)
     set.seed(1)
     ans.expected <- x
-    ans.expected@momentumBetas[[1]] <- rnorm(1, sd = 1/sqrt(x@variancesBetas[[1]]))
     ans.expected@momentumBetas[[2]][-1] <- rnorm(4, sd = 1/sqrt(x@variancesBetas[[2]][-1]))
     expect_identical(ans.obtained, ans.expected)
 })

@@ -4618,8 +4618,6 @@ test_that("R version of updateBetasOneStep works", {
     x <- initializeMomentum(x)
     ans.obtained <- updateBetasOneStep(x, sizeStep = 0.1)
     ans.expected <- x
-    ans.expected@betas[[1]] <- (ans.expected@betas[[1]]
-        + 0.1 * ans.expected@variancesBetas[[1]] * ans.expected@momentumBetas[[1]])
     ans.expected@betas[[2]][-1] <- (ans.expected@betas[[2]][-1]
             + 0.1 * ans.expected@variancesBetas[[2]][-1] * ans.expected@momentumBetas[[2]][-1])
     expect_identical(ans.obtained, ans.expected)
@@ -4847,10 +4845,8 @@ test_that("R version of updateMomentumOneStep works", {
     x <- initializeMomentum(x)
     ans.obtained <- updateMomentumOneStep(x, sizeStep = 0.1, isFirstLast = FALSE)
     ans.expected <- x
-    for (i in 1:2) {
-        ans.expected@momentumBetas[[i]] <- (ans.expected@momentumBetas[[i]]
-            + 0.1 * ans.expected@gradientBetas[[i]])
-    }
+    ans.expected@momentumBetas[[2]] <- (ans.expected@momentumBetas[[2]]
+        + 0.1 * ans.expected@gradientBetas[[2]])
     expect_identical(ans.obtained, ans.expected)
 })
 

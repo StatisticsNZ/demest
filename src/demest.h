@@ -65,6 +65,7 @@ SEXP
   gradientBetas_sym,
   momentumBetas_sym,
   betaEqualsMean_sym,
+  useHMCToUpdateBeta_sym,
   sizeStep_sym,
   nStep_sym,
   acceptBeta_sym,
