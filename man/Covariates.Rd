@@ -70,11 +70,14 @@ Any columns in \code{data} that are not referred to by the \code{formula}
 argument and that do do not serve as labels for the main effect or
 interaction are ignored.  Similarly, redundant rows are ignored.
 
-When modelling mortality rates with data that include the "infant"
-age group (ie age 0), it is good practice to include an indicator
+When modelling mortality rates with data that include an "infant"
+age group (ie an age group that includes infants, such as
+age group "0" or age group "0-4"),
+it is good practice to include an indicator
 variable for this age group, since its mortality rates are much
-higher than subsequent age groups.  If \code{infant} is \code{TRUE},
-then an indicator is set up automatically.
+higher would be predicted by subsequent age groups.
+If \code{infant} is \code{TRUE},
+then an infant indicator is set up automatically.
 
 \code{infant = TRUE} can only be used when specifying the prior
 for a main effect for age.  If \code{infant} is \code{TRUE},

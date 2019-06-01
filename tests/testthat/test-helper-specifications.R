@@ -19,6 +19,17 @@ test_that("addInfantToData works", {
     ans.expected <- data.frame(age = c("0", "1-4", "5-9", "10+"),
                                infant = c(1L, 0L, 0L, 0L))
     expect_identical(ans.obtained, ans.expected)
+    ## first age group is 0-4
+    metadata <- new("MetaData",
+                    nms = "age",
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = c(0, 5, 10, Inf))))
+    data <- new("data.frame")
+    ans.obtained <- addInfantToData(metadata = metadata,
+                                    data = data)
+    ans.expected <- data.frame(age = c("0-4", "5-9", "10+"),
+                               infant = c(1L, 0L, 0L))
+    expect_identical(ans.obtained, ans.expected)
     ## 'data' has values
     metadata <- new("MetaData",
                     nms = "age",
@@ -80,6 +91,15 @@ test_that("addInfantToData throws appropriate errors", {
     expect_error(addInfantToData(metadata = metadata,
                                  data = data),
                  "cannot make \"infant\" covariate, because dimension with dimtype \"age\" has length 1")
+    ## first age group does not start age age 0
+    metadata <- new("MetaData",
+                    nms = "age", 
+                    dimtypes = "age",
+                    DimScales = list(new("Intervals", dimvalues = c(1, 2, 5))))
+    data <- new("data.frame")
+    expect_error(addInfantToData(metadata = metadata,
+                                 data = data),
+                 "cannot make \"infant\" covariate, because first age group for dimension with dimtype \"age\" does not start at age 0")    
     ## no age dimension in data
     metadata <- new("MetaData",
                     nms = "age",
