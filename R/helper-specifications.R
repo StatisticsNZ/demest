@@ -22,8 +22,8 @@ addInfantToData <- function(metadata, data) {
         stop(gettextf("cannot make \"%s\" covariate, because dimension with %s \"%s\" has length %d",
                       "infant", "dimtype", "age", n.age))
     dimvalues <- DimScale@dimvalues
-    if (!isTRUE(all.equal(dimvalues[1:2], 0:1)))
-        stop(gettextf("can't make '%s' indicator variable, because first age group for dimension with %s \"%s\" is not \"%d\"",
+    if (!isTRUE(all.equal(dimvalues[1L], 0L)))
+        stop(gettextf("cannot make \"%s\" covariate, because first age group for dimension with %s \"%s\" does not start at age %d",
                       "infant", "dimtype", "age", 0L))
     infant <- c(1L, rep(0L, times = n.age - 1L))
     name.age <- names

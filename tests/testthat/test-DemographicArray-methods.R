@@ -255,6 +255,21 @@ test_that("checkForSubtotals works when y is ordinary Counts object", {
                      NULL)
 })
 
+test_that("checkForSubtotals works when y is Subtotals object", {
+    checkForSubtotals <- demest:::checkForSubtotals
+    y <- CountsOne(c(1:3, NA, NA), labels = 0:4, name = "age")
+    subtotals <- CountsOne(9, labels = "3-4", name = "age")
+    y <- attachSubtotals(y, subtotals = subtotals)
+    model <- Model(y ~ Poisson(mean ~ age))
+    expect_identical(checkForSubtotals(object = y, model = model),
+                     NULL)
+    model <- Model(y ~ Poisson(mean ~ age),
+                   aggregate = AgCertain(value = 3))
+    expect_error(checkForSubtotals(object = y, model = model),
+                 "aggregate values not permitted when 'y' has subtotals")
+})
+
+
 test_that("checkForSubtotals works when y has subtotals and model is Binomial", {
     checkForSubtotals <- demest:::checkForSubtotals
     y <- CountsOne(1:5, labels = 0:4, name = "age")
