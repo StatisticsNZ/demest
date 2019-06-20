@@ -545,7 +545,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              useHMC <- object@useHMC
               sizeStep <- object@sizeStep
               nStep <- object@nStep
               lower <- object@lower
@@ -625,12 +624,6 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) rep(0, length(x)))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              if (useHMC) {
-                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
-              }
-              else
-                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -660,14 +653,8 @@ setMethod("initialModel",
                                     betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
-                                    gradientBetas = val.betas,
-                                    momentumBetas = val.betas,
-                                    useHMCBetas = useHMC,
-                                    sizeStep = sizeStep,
-                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
-                                    useHMCToUpdateBeta = use.hmc.to.update.beta,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
@@ -698,7 +685,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              useHMC <- object@useHMC
               sizeStep <- object@sizeStep
               nStep <- object@nStep
               structural.zeros <- object@structuralZeros
@@ -825,12 +811,6 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              if (useHMC) {
-                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
-              }
-              else
-                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -867,14 +847,8 @@ setMethod("initialModel",
                                     betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
-                                    gradientBetas = val.betas,
-                                    momentumBetas = val.betas,
-                                    useHMCBetas = useHMC,
-                                    sizeStep = sizeStep,
-                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
-                                    useHMCToUpdateBeta = use.hmc.to.update.beta,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
@@ -915,7 +889,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              useHMC <- object@useHMC
               sizeStep <- object@sizeStep
               nStep <- object@nStep
               scale.theta <- object@scaleTheta
@@ -991,12 +964,6 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) rep(0, length(x)))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              if (useHMC) {
-                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
-              }
-              else
-                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -1028,14 +995,8 @@ setMethod("initialModel",
                                     betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
-                                    gradientBetas = val.betas,
-                                    momentumBetas = val.betas,
-                                    useHMCBetas = useHMC,
-                                    sizeStep = sizeStep,
-                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
-                                    useHMCToUpdateBeta = use.hmc.to.update.beta,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
@@ -1065,7 +1026,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              useHMC <- object@useHMC
               sizeStep <- object@sizeStep
               nStep <- object@nStep
               scale.theta <- object@scaleTheta
@@ -1147,12 +1107,6 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) rep(0, length(x)))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              if (useHMC) {
-                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
-              }
-              else
-                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -1186,14 +1140,8 @@ setMethod("initialModel",
                                     betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
-                                    gradientBetas = val.betas,
-                                    momentumBetas = val.betas,
-                                    useHMCBetas = useHMC,
-                                    sizeStep = sizeStep,
-                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
-                                    useHMCToUpdateBeta = use.hmc.to.update.beta,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
@@ -1223,7 +1171,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              useHMC <- object@useHMC
               sizeStep <- object@sizeStep
               nStep <- object@nStep
               structural.zeros <- object@structuralZeros
@@ -1342,12 +1289,6 @@ setMethod("initialModel",
               val.betas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
-              if (useHMC) {
-                  fun <- function(x) !(x@isZeroVar@.Data || x@isSaturated@.Data || methods::is(x, "ExchFixed"))
-                  use.hmc.to.update.beta <- sapply(priors.betas, fun)
-              }
-              else
-                  use.hmc.to.update.beta <- rep(FALSE, times = length(betas))                      
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
               dims <- makeDims(dim = dim, margins = margins)
               mu <- makeMu(n = length(theta),
@@ -1380,14 +1321,8 @@ setMethod("initialModel",
                                     betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
-                                    gradientBetas = val.betas,
-                                    momentumBetas = val.betas,
-                                    useHMCBetas = useHMC,
-                                    sizeStep = sizeStep,
-                                    nStep = nStep,
                                     priorsBetas = priors.betas,
                                     betaEqualsMean = beta.equals.mean,
-                                    useHMCToUpdateBeta = use.hmc.to.update.beta,
                                     namesBetas = names.betas,
                                     margins = margins,
                                     iteratorBetas = iterator.betas,
@@ -1617,7 +1552,6 @@ setMethod("initialModelPredict",
                                   momentumBetas = l$momentumBetas,
                                   priorsBetas = l$priorsBetas,
                                   betaEqualsMean = l$betaEqualsMean,
-                                  useHMCToUpdateBeta = l$useHMCToUpdateBeta,
                                   iteratorBetas = l$iteratorBetas,
                                   dims = l$dims,
                                   mu = l$mu,
@@ -1688,7 +1622,6 @@ setMethod("initialModelPredict",
                                   momentumBetas = l$momentumBetas,
                                   priorsBetas = l$priorsBetas,
                                   betaEqualsMean = l$betaEqualsMean,
-                                  useHMCToUpdateBeta = l$useHMCToUpdateBeta,
                                   strucZeroArray = l$strucZeroArray,
                                   iteratorBetas = l$iteratorBetas,
                                   dims = l$dims,
@@ -1861,7 +1794,6 @@ setMethod("initialModelPredict",
                                   momentumBetas = l$momentumBetas,
                                   priorsBetas = l$priorsBetas,
                                   betaEqualsMean = l$betaEqualsMean,
-                                  useHMCToUpdateBeta = l$useHMCToUpdateBeta,
                                   strucZeroArray = l$strucZeroArray,
                                   iteratorBetas = l$iteratorBetas,
                                   dims = l$dims,

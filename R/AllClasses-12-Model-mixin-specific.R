@@ -120,21 +120,13 @@ setClass("Betas",
          slots = c(betas = "list",
                    meansBetas = "list",
                    variancesBetas = "list",
-                   gradientBetas = "list",
-                   momentumBetas = "list",
-                   betasOld = "list",
                    namesBetas = "character",
                    priorsBetas = "list",
                    betaEqualsMean = "logical",
-                   useHMCToUpdateBeta = "logical",
                    iteratorBetas = "BetaIterator",
                    dims = "list",
                    logPostBetas = "Parameter",
                    logPostPriorsBetas = "Parameter",
-                   sizeStep = "Scale",
-                   nStep = "Length",
-                   acceptBeta = "integer",
-                   useHMCBetas = "LogicalFlag",
                    mu = "numeric"),
          contains = c("VIRTUAL", "Margins"),
          validity = function(object) {
@@ -143,13 +135,11 @@ setClass("Betas",
              margins <- object@margins
              priors <- object@priorsBetas
              betaEqualsMean <- object@betaEqualsMean
-             useHMCToUpdateBeta <- object@useHMCToUpdateBeta
              iteratorBetas <- object@iteratorBetas
              dims <- object@dims
              mu <- object@mu
              theta <- object@theta
              sizeStep <- object@sizeStep@.Data
-             acceptBeta <- object@acceptBeta
              hasNonPositive <- function(x) any(x <= 0L)
              hasMissing <- function(x) any(is.na(x))
              I <- length(object@theta)
@@ -166,10 +156,8 @@ setClass("Betas",
              ## first element of 'betas' has length 1
              if (!identical(length(betas[[1L]]), 1L))
                  return(gettextf("first element of '%s' does not have length 1", "betas"))
-             ## gradientBetas, momentumBetas, meansBetas, variancesBetas, betasOld:
-             for (name in c("gradientBetas", "momentumBetas",
-                            "meansBetas", "variancesBetas",
-                            "betasOld")) {
+             ## meansBetas, variancesBetas
+             for (name in c("meansBetas", "variancesBetas")) {
                  value <- methods::slot(object, name)
                  ## all elements have type "double"
                  if (!all(sapply(value, is.double)))
@@ -208,10 +196,6 @@ setClass("Betas",
              if (any(is.na(betaEqualsMean)))
                  return(gettextf("'%s' has missing values",
                                  "betaEqualsMean"))
-             ## 'useHMCToUpdateBeta' has no missing values
-             if (any(is.na(useHMCToUpdateBeta)))
-                 return(gettextf("'%s' has missing values",
-                                 "useHMCToUpdateBeta"))
              ## all elements of 'dims' are integer
              if (!all(sapply(dims, is.integer)))
                  return(gettextf("'%s' has elements not of type \"%s\"",
@@ -232,26 +216,12 @@ setClass("Betas",
              if (!identical(dims[[1L]], 0L))
                  return(gettextf("first element of '%s' is not %d",
                                  "dims", 0L))
-             ## 'acceptBeta' has length 1
-             if (!identical(length(acceptBeta), 1L))
-                 stop(gettext("'%s' does not have length %d",
-                              "acceptBeta", 1L))
-             ## 'acceptBeta' is 0 or 1
-             if (!(acceptBeta %in% 0:1))
-                 stop(gettextf("'%s' is not %d or %d",
-                               "acceptBeta", 0L, 1L))             
              ## 'mu' has type "double"
              if (!is.double(mu))
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "mu", "double"))
-             ## 'sizeStep' positive
-             if (!(sizeStep > 0))
-                 return(gettextf("'%s' is non-positive",
-                                 "sizeStep"))
-             ## gradientBetas, momentumBetas, meansBetas, variancesBetas, betasOld:
-             for (name in c("gradientBetas", "momentumBetas",
-                            "meansBetas", "variancesBetas",
-                            "betasOld")) {
+             ## meansBetas, variancesBetas:
+             for (name in c("meansBetas", "variancesBetas")) {
                  value <- methods::slot(object, name)
                  ## 'betas' and slot have same length
                  if (!identical(length(betas), length(value)))
@@ -272,10 +242,6 @@ setClass("Betas",
              if (!identical(length(betas), length(betaEqualsMean)))
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "betas", "betaEqualsMean"))
-             ## 'betas' and 'useHMCToUpdateBeta' have same length
-             if (!identical(length(betas), length(useHMCToUpdateBeta)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "betas", "useHMCToUpdateBeta"))
              ## 'betas' and 'namesBetas' have same length
              if (!identical(length(betas), length(names)))
                  return(gettextf("'%s' and '%s' have different lengths",
@@ -837,14 +803,6 @@ setClass("StructuralZerosMixin",
                  TRUE
              }
          })
-
-## NO_TESTS
-setClass("HMCBetaMixin",
-         slots = c(useHMC = "LogicalFlag",
-                   sizeStep = "Scale",
-                   nStep = "Length"),
-         contains = "VIRTUAL")
-
 
 ## NO_TESTS
 setClass("StrucZeroArrayMixin",

@@ -57,7 +57,6 @@ setGeneric("SkeletonMissingDataset",
 setGeneric("SpecModel",
            function(specInner, call, nameY, dots, 
                     lower, upper, priorSD, jump,
-                    useHMC, sizeStep, nStep,
                     series, aggregate)
                standardGeneric("SpecModel"))
 
