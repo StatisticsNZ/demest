@@ -124,20 +124,14 @@
 ##                `(Intercept)` ~ ExchFixed(mean = mean(log(births/expose)), sd = 0.05),
 ##                age ~ DLMS(l = TRUE, t = F, d = F, scale = 0.1),
 ##                year ~ DLMS(l = TRUE, t = F, d = F, scale = 0.1),
-##                jump = 0.1,
-##                useHMC = F,
-##                sizeStep = 0.082,
-##                nStep = 11)
+##                jump = 0.1)
 ## model <- Model(y ~ Poisson(mean ~ age + year),
 ##                 `(Intercept)` ~ ExchFixed(mean = mean(log(births/expose)), sd = 1),
 ##                age ~ DLMS(l = TRUE, t = F, scale = 0.45),
 ##                 year ~ DLMS(l = TRUE, t = F, scale = 0.02),
 ##                ## age ~ Exch(error = Error(scale = HalfT(scale = 0.9))),
 ##                ## year ~ Exch(error = Error(scale = HalfT(scale = 0.15))),
-##                jump = 0.1,
-##                useHMC = F,
-##                sizeStep = 0.0001,
-##                nStep = 100)
+##                jump = 0.1)
 ## filename.est <- tempfile()
 ## filename.pred <- tempfile()
 ## estimateModel(model,
@@ -148,7 +142,6 @@
 ##               nSim = 10000,
 ##               nThin = 4,
 ##               nChain = 4)
-## mean(fetch(filename.est, c("mod", "pr", "acceptBeta")))
 ## fetchSummary(filename.est)
 ## obj <- demest:::fetchResultsObject(filename.est)
 ## mod <- obj@final[[1]]@model
