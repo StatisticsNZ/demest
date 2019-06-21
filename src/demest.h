@@ -59,17 +59,10 @@ SEXP
   posDim_sym,
   lengthDim_sym,
   iMethodModel_sym,
-  betasOld_sym,
   meansBetas_sym,
   variancesBetas_sym,
-  gradientBetas_sym,
-  momentumBetas_sym,
   betaEqualsMean_sym,
-  useHMCToUpdateBeta_sym,
-  sizeStep_sym,
-  nStep_sym,
   acceptBeta_sym,
-  useHMCBetas_sym,
   priorsBetas_sym, 
   logPostPriorsBetas_sym,
   logPostBetas_sym,
@@ -541,8 +534,6 @@ double findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
                             double nuBeta, double nuTau,
                             double V, int n, double min, double max);
 
-double getLogPostMomentum(SEXP object_R);
-
 SEXP getV_R(SEXP prior_R);
 
 SEXP makeVBarAndN_R(SEXP object, SEXP iBeta_R);
@@ -767,16 +758,9 @@ void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
                     
 /* update-nongeneric */
 
-void initializeMomentum(SEXP object);
 void updateBetas(SEXP object);
-void updateBetasGibbs(SEXP object);
-void updateBetasHMC(SEXP object);
-void updateBetasOneStep(SEXP object, double sizeStep);
-void updateBetasWhereBetaEqualsMean(SEXP object);
-void updateGradientBetas(SEXP object);
 void updateLogPostBetas(SEXP object);
 void updateMeansBetas(SEXP object);
-void updateMomentumOneStep(SEXP object, double sizeStep, int isFirstLast);
 void updateVariancesBetas(SEXP object);
 void updateMu(SEXP object);
 

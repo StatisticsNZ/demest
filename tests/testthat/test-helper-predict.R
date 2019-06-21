@@ -97,8 +97,6 @@ test_that("initialModelPredictHelper works", {
                          betas = list(mod@betas[[1]], rep(0, 4), mod@betas[[3]]),
                          meansBetas = list(0, rep(0, 4), rep(0, 4)),
                          variancesBetas = list(0, rep(0, 4), rep(0, 4)),
-                         gradientBetas = list(0, rep(0, 4), rep(0, 4)),
-                         momentumBetas = list(0, rep(0, 4), rep(0, 4)),
                          strucZeroArray = strucZeroArray,
                          priorsBetas = list(new("TimeInvariant", J = new("Length", 1L),
                                                 isSaturated = new("LogicalFlag", FALSE)),
@@ -117,7 +115,6 @@ test_that("initialModelPredictHelper works", {
                                             new("TimeInvariant", J = new("Length", 4L),
                                                 isSaturated = new("LogicalFlag", FALSE))),
                          betaEqualsMean = c(TRUE, FALSE, TRUE),
-                         useHMCToUpdateBeta = c(FALSE, TRUE, FALSE),
                          iteratorBetas = BetaIterator(dim = c(4L, 4L),
                                                       margins = c(0L, 1L, 2L)),
                          dims = list(0L, 4L, 4L),
@@ -323,8 +320,8 @@ test_that("makeOffsetsPriorsBetas works", {
     mod <- initialModel(spec, y = y, exposure = exposure)
     ans.obtained <- makeOffsetsPriorsBetas(mod, offsetModel = 1L)
     ans.expected <- list(NULL,
-                         new("Offsets", c(35L, 50L)),
-                         new("Offsets", c(51L, 51L)))
+                         new("Offsets", c(34L, 49L)),
+                         new("Offsets", c(50L, 50L)))
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -339,7 +336,7 @@ test_that("makeOffsetsSigma works", {
     spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     ans.obtained <- makeOffsetsSigma(model, offsetModel = 1L)
-    offset <- 20L + 1L + 1L + sum(sapply(model@betas, length)) + 1L + 1L
+    offset <- 20L + 1L + 1L + sum(sapply(model@betas, length)) + 1L
     ans.expected <- new("Offsets", c(offset, offset))
     expect_identical(ans.obtained, ans.expected)
 })
@@ -1698,7 +1695,7 @@ test_that("transferParamPriorsBetas gives valid answer", {
                                                  useC = FALSE)
         ans.expected <- model.new
         ans.expected@priorsBetas[[2]] <- transferParamPrior(ans.expected@priorsBetas[[2]],
-                                                            values = data[35:50])
+                                                            values = data[34:49])
         expect_identical(ans.obtained, ans.expected)
     }
 })
@@ -2002,7 +1999,7 @@ test_that("transferParamSigma gives valid answer", {
                                     iteration = 2L,
                                     useC = FALSE)
         ans.obtained <- model@sigma@.Data
-        ans.expected <- data[49]
+        ans.expected <- data[48]
         expect_identical(ans.obtained, ans.expected)
     }
 })

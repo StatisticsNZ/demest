@@ -156,58 +156,6 @@ test_that("checkAndTidyJump works", {
                  "'jump' is non-positive")
 })
 
-test_that("checkAndTidyUseHMC works", {
-    checkAndTidyUseHMC <- demest:::checkAndTidyUseHMC
-    expect_identical(checkAndTidyUseHMC(NULL),
-                     new("LogicalFlag", FALSE))
-    expect_identical(checkAndTidyUseHMC(FALSE),
-                     new("LogicalFlag", FALSE))
-    expect_error(checkAndTidyUseHMC(c(FALSE, TRUE)),
-                 "'useHMC' does not have length 1")
-    expect_error(checkAndTidyUseHMC(NA),
-                 "'useHMC' is missing")
-    expect_error(checkAndTidyUseHMC("FALSE"),
-                 "'useHMC' does not have type \"logical\"")
-})
-
-test_that("checkAndTidySizeStep works", {
-    checkAndTidySizeStep <- demest:::checkAndTidySizeStep
-    expect_identical(checkAndTidySizeStep(NULL),
-                     new("Scale", 0.1))
-    expect_identical(checkAndTidySizeStep(0.5),
-                     new("Scale", 0.5))
-    expect_identical(checkAndTidySizeStep(1L),
-                     new("Scale", 1.0))
-    expect_error(checkAndTidySizeStep(c(1, 1)),
-                 "'sizeStep' does not have length 1")
-    expect_error(checkAndTidySizeStep(as.numeric(NA)),
-                 "'sizeStep' is missing")
-    expect_error(checkAndTidySizeStep("a"),
-                 "'sizeStep' is not numeric")
-    expect_error(checkAndTidySizeStep(0),
-                 "'sizeStep' is non-positive")
-})
-
-test_that("checkAndTidyNStep works", {
-    checkAndTidyNStep <- demest:::checkAndTidyNStep
-    expect_identical(checkAndTidyNStep(NULL),
-                     new("Length", 10L))
-    expect_identical(checkAndTidyNStep(5),
-                     new("Length", 5L))
-    expect_identical(checkAndTidyNStep(1L),
-                     new("Length", 1L))
-    expect_error(checkAndTidyNStep(c(1, 1)),
-                 "'nStep' does not have length 1")
-    expect_error(checkAndTidyNStep(as.numeric(NA)),
-                 "'nStep' is missing")
-    expect_error(checkAndTidyNStep("a"),
-                 "'nStep' is not numeric")
-    expect_error(checkAndTidyNStep(1.1),
-                 "'nStep' is not an integer")
-    expect_error(checkAndTidyNStep(0L),
-                 "'nStep' is non-positive")
-})
-
 
 test_that("checkAndTidySeries works", {
     checkAndTidySeries <- demest:::checkAndTidySeries

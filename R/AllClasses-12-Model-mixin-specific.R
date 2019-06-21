@@ -139,7 +139,6 @@ setClass("Betas",
              dims <- object@dims
              mu <- object@mu
              theta <- object@theta
-             sizeStep <- object@sizeStep@.Data
              hasNonPositive <- function(x) any(x <= 0L)
              hasMissing <- function(x) any(is.na(x))
              I <- length(object@theta)

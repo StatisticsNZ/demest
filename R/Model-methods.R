@@ -1133,8 +1133,6 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               w <- model@w
               betas.obj <- model@betas
-              size.step <- model@sizeStep@.Data
-              n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
               margins <- model@margins
@@ -1192,12 +1190,6 @@ setMethod("makeOutputModel",
                   }
               }
               names(betas) <- names.betas
-              ## make acceptBeta
-              first <- pos
-              pos <- first + 1L
-              accept.beta <- SkeletonAccept(first = first,
-                                            nChain = nChain,
-                                            nIteration = nIteration)
               ## make sigma
               first <- pos
               pos <- first + 1L
@@ -1222,9 +1214,6 @@ setMethod("makeOutputModel",
               ## assemble return value
               prior <- c(betas,
                          list(mean = mu),
-                         list(acceptBeta = accept.beta,
-                              sizeStep = size.step,
-                              nStep = n.step),
                          list(sd = sigma))
               if (methods::is(model, "Aggregate")) {
                   likelihood <- list(mean = theta,
@@ -1262,8 +1251,6 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
-              size.step <- model@sizeStep@.Data
-              n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
               margins <- model@margins
@@ -1311,12 +1298,6 @@ setMethod("makeOutputModel",
                   }
               }
               names(betas) <- names.betas
-              ## make acceptBeta
-              first <- pos
-              pos <- first + 1L
-              accept.beta <- SkeletonAccept(first = first,
-                                            nChain = nChain,
-                                            nIteration = nIteration)
               ## make sigma
               first <- pos
               pos <- first + 1L
@@ -1345,9 +1326,6 @@ setMethod("makeOutputModel",
                                  acceptProb = accept.theta)
               prior <- c(betas,
                          list(mean = mu),
-                         list(acceptBeta = accept.beta,
-                              sizeStep = size.step,
-                              nStep = n.step),
                          list(sd = sigma))
                          ans <- list(likelihood = likelihood,
                                      prior = prior,
@@ -1370,8 +1348,6 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
-              size.step <- model@sizeStep@.Data
-              n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
               margins <- model@margins
@@ -1435,12 +1411,6 @@ setMethod("makeOutputModel",
                   }
               }
               names(betas) <- names.betas
-              ## make acceptBeta
-              first <- pos
-              pos <- first + 1L
-              accept.beta <- SkeletonAccept(first = first,
-                                            nChain = nChain,
-                                            nIteration = nIteration)
               ## make sigma
               first <- pos
               pos <- first + 1L
@@ -1476,9 +1446,6 @@ setMethod("makeOutputModel",
               names(likelihood) <- names
               prior <- c(betas,
                          list(mean = mu),
-                         list(acceptBeta = accept.beta,
-                              sizeStep = size.step,
-                              nStep = n.step),
                          list(sd = sigma))
               ans <- list(likelihood = likelihood,
                           prior = prior,
@@ -1508,8 +1475,6 @@ setMethod("makeOutputModel",
               metadata <- model@metadataY
               scale.theta <- model@scaleTheta@.Data
               betas.obj <- model@betas
-              size.step <- model@sizeStep@.Data
-              n.step <- model@nStep@.Data
               priors.betas <- model@priorsBetas
               names.betas <- model@namesBetas
               margins <- model@margins
@@ -1594,12 +1559,6 @@ setMethod("makeOutputModel",
                   }
               }
               names(betas) <- names.betas
-              ## make acceptBeta
-              first <- pos
-              pos <- first + 1L
-              accept.beta <- SkeletonAccept(first = first,
-                                            nChain = nChain,
-                                            nIteration = nIteration)
               ## make sigma
               first <- pos
               pos <- first + 1L
@@ -1632,9 +1591,6 @@ setMethod("makeOutputModel",
                                      acceptRate = accept.theta,
                                      dispersion = nu.cmp)
                   prior <- c(betas,
-                             list(acceptBeta = accept.beta,
-                                  sizeStep = size.step,
-                                  nStep = n.step),
                              list(rate = list(mean = mu,
                                               sd = sigma)),
                              list(dispersion = list(mean = mean.log.nu.cmp,
@@ -1648,9 +1604,6 @@ setMethod("makeOutputModel",
                                      acceptCount = accept.theta,
                                      dispersion = nu.cmp)
                   prior <- c(betas,
-                             list(acceptBeta = accept.beta,
-                                  sizeStep = size.step,
-                                  nStep = n.step),
                              list(count = list(mean = mu,
                                                sd = sigma)),
                              list(dispersion = list(mean = mean.log.nu.cmp,
@@ -3749,19 +3702,6 @@ setMethod("whereAcceptance",
           function(object) list(NULL))
 
 
-## whereAcceptanceHMC ###################################################################
-
-## HAS_TESTS
-setMethod("whereAcceptanceHMC",
-          signature(object = "Varying"),
-          function(object) {
-              use.hmc <- object@useHMCBetas@.Data
-              if (use.hmc)
-                  list(c("prior", "acceptBeta"))
-              else
-                  list(NULL)
-          })
-
 ## whereAutocorr #####################################################################
 
 ## HAS_TESTS
@@ -3875,21 +3815,6 @@ setMethod("whereAutocorr",
 setMethod("whereAutocorr",
           signature(object = "TFixed"),
           function(object) list(NULL))
-
-
-
-## whereAutocorrHMC ###################################################################
-
-## HAS_TESTS
-setMethod("whereAutocorrHMC",
-          signature(object = "Varying"),
-          function(object) {
-              use.hmc <- object@useHMCBetas@.Data
-              if (use.hmc)
-                  list(c("prior", "mean"))
-              else
-                  list(NULL)
-          })
 
 
 ## whereJump #########################################################################
@@ -4226,21 +4151,6 @@ setMethod("whereEstimated",
           function(object) list(NULL))
 
 
-
-## whereNStep ###################################################################
-
-## HAS_TESTS
-setMethod("whereNStep",
-          signature(object = "Varying"),
-          function(object) {
-              use.hmc <- object@useHMCBetas@.Data
-              if (use.hmc)
-                  list(c("prior", "nStep"))
-              else
-                  list(NULL)
-          })
-
-
 ## whereNoProposal ###################################################################
 
 ## HAS_TESTS
@@ -4389,20 +4299,6 @@ setMethod("whereNoProposal",
 setMethod("whereNoProposal",
           signature(object = "TFixed"),
           function(object) list(NULL))
-
-
-## whereSizeStep ###################################################################
-
-## HAS_TESTS
-setMethod("whereSizeStep",
-          signature(object = "Varying"),
-          function(object) {
-              use.hmc <- object@useHMCBetas@.Data
-              if (use.hmc)
-                  list(c("prior", "sizeStep"))
-              else
-                  list(NULL)
-          })
 
 
 ## whereTheta #########################################################################

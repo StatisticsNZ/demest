@@ -93,10 +93,7 @@
 ##                           trend = Trend(scale = HalfT(scale = 0.2))),
 ##                year:age ~ DLM(level = Level(scale = HalfT(scale = 0.1)),
 ##                               trend = Trend(scale = HalfT(scale = 0.1))),
-##                jump = 0.1,
-##                useHMC = TRUE,
-##                sizeStep = 0.1,
-##                nStep = 10)
+##                jump = 0.1)
 ## filename.est <- tempfile()
 ## filename.pred <- tempfile()
 ## estimateModel(model,
@@ -156,15 +153,6 @@
 ## obj <- demest:::fetchResultsObject(filename.est)
 ## mod <- obj@final[[1]]@model
 
-
-
-## ## demest:::getDataFromFile(filename.est, 280L, 280L, lengthIter = demest:::lengthValues(mod), iterations = 1:10)
-## ## update beta
-## lapply(1:3, function(i) round(mod@variancesBetas[[i]] * mod@momentumBetas[[i]] * mod@sizeStep@.Data / mod@betas[[i]], 6))
-## lapply(1:3, function(i) round(mod@variancesBetas[[i]] * mod@momentumBetas[[i]] * mod@sizeStep@.Data * 1000000000))
-## ## update momentum
-## lapply(1:3, function(i) round(mod@gradientBetas[[i]] * mod@sizeStep@.Data / mod@momentumBetas[[i]], 6))
-## lapply(1:3, function(i) round(mod@gradientBetas[[i]] * mod@sizeStep@.Data , 6))
 
 ## lapply(1:3, function(i) round((mod@betas[[i]] - mod@meansBetas[[i]])/sqrt(mod@variancesBetas[[i]]), 1))
 

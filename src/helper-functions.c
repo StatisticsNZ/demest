@@ -1298,62 +1298,6 @@ double identity(double x)
     return x;
 }
 
-
-double
-getLogPostMomentum(SEXP object_R)
-{
-  SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
-  int n_beta =  LENGTH(momentumBetas_R);
-  SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
-  SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
-  int *useHMCToUpdateBeta = LOGICAL(GET_SLOT(object_R, useHMCToUpdateBeta_sym));
-  double ans = 0;
-  for (int i = 0; i < n_beta; ++i) {
-    if (useHMCToUpdateBeta[i]) {
-      double *momentum = REAL(VECTOR_ELT(momentumBetas_R, i));
-      double *variances = REAL(VECTOR_ELT(variancesBetas_R, i));
-      SEXP prior_R = VECTOR_ELT(priorsBetas_R, i);
-      int J = *INTEGER(GET_SLOT(prior_R, J_sym));
-      int *allStrucZero = LOGICAL(GET_SLOT(prior_R, allStrucZero_sym));
-      for (int j = 0; j < J; ++j) {
-	if (!allStrucZero[j]) {
-	  double inv_sd = 1 / sqrt(variances[j]);
-	  ans += dnorm(momentum[j], 0, inv_sd, USE_LOG);
-	}
-      }
-    }
-  }
-  return ans;
-}
-
-
-void
-initializeMomentum(SEXP object_R)
-{
-  SEXP momentumBetas_R = GET_SLOT(object_R, momentumBetas_sym);
-  int n_beta =  LENGTH(momentumBetas_R);
-  SEXP variancesBetas_R = GET_SLOT(object_R, variancesBetas_sym);
-  SEXP priorsBetas_R = GET_SLOT(object_R, priorsBetas_sym);
-  int *useHMCToUpdateBeta = LOGICAL(GET_SLOT(object_R, useHMCToUpdateBeta_sym));
-  for (int i = 0; i < n_beta; ++i) {
-    if (useHMCToUpdateBeta[i]) {
-      double *momentum = REAL(VECTOR_ELT(momentumBetas_R, i));
-      double *variances = REAL(VECTOR_ELT(variancesBetas_R, i));
-      SEXP prior_R = VECTOR_ELT(priorsBetas_R, i);
-      int J = *INTEGER(GET_SLOT(prior_R, J_sym));
-      int *allStrucZero = LOGICAL(GET_SLOT(prior_R, allStrucZero_sym));
-      for (int j = 0; j < J; ++j) {
-	if (!allStrucZero[j]) {
-	  double inv_sd = 1 / sqrt(variances[j]);
-	  momentum[j] = rnorm(0, inv_sd);
-	}
-      }
-    }
-  }
-}
-
-
-
 double
 logPostPhiMix(double phi, double *level, double meanLevel, int nAlong, 
                 int indexClassMaxMix_r, double omega)

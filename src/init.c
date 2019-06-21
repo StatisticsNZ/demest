@@ -631,15 +631,6 @@ findOneRootLogPostSigmaRobust_R(SEXP sigma0_R, SEXP z_R, SEXP A_R,
     return ScalarReal(ans);
 }
 
-
-SEXP getLogPostMomentum_R(SEXP object_R)
-{
-  double ans = getLogPostMomentum(object_R);
-  return ScalarReal(ans);
-}
-
-
-
 /* one off wrapper for modePhiMix */
 SEXP modePhiMix_R(SEXP level_R, SEXP meanLevel_R, SEXP nAlong_R,
               SEXP indexClassMax_R, SEXP omega_R, SEXP tolerance_R)
@@ -1201,29 +1192,6 @@ SEXP updateSDRobust_R(SEXP sigma_R,
 
 }
 
-SEXP
-updateBetasOneStep_R(SEXP object_R, SEXP sizeStep_R)
-{
-  double sizeStep = *REAL(sizeStep_R);
-  SEXP ans_R;
-  PROTECT(ans_R = duplicate(object_R));
-  updateBetasOneStep(ans_R, sizeStep);
-  UNPROTECT(1); /* ans_R */
-  return ans_R;
-}
-
-SEXP
-updateMomentumOneStep_R(SEXP object_R, SEXP sizeStep_R, SEXP isFirstLast_R)
-{
-  double sizeStep = *REAL(sizeStep_R);
-  int isFirstLast = *INTEGER(isFirstLast_R);
-  SEXP ans_R;
-  PROTECT(ans_R = duplicate(object_R));
-  updateMomentumOneStep(ans_R, sizeStep, isFirstLast);
-  UNPROTECT(1); /* ans_R */
-  return ans_R;
-}
-
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateAlphaMix);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateEta);
 UPDATEOBJECT_WRAPPER_R(updateComponentWeightMix);
@@ -1233,12 +1201,7 @@ UPDATEPRIORWITHBETA_WRAPPER_R(updateAlphaDeltaDLMWithTrend);
 UPDATEPRIORWITHBETA_WRAPPER_R(updateSeason);
 
 /* updating betas */
-UPDATEOBJECT_WRAPPER_R(initializeMomentum);
 UPDATEOBJECT_WRAPPER_R(updateBetas);
-UPDATEOBJECT_WRAPPER_R(updateBetasGibbs);
-UPDATEOBJECT_WRAPPER_R(updateBetasHMC);
-UPDATEOBJECT_NOPRNG_WRAPPER_R(updateBetasWhereBetaEqualsMean);
-UPDATEOBJECT_NOPRNG_WRAPPER_R(updateGradientBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateLogPostBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateMeansBetas);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateVariancesBetas);
@@ -2256,7 +2219,6 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(betaHatSeason_R, 1),
   CALLDEF(findOneRootLogPostSigmaNorm_R, 8),
   CALLDEF(findOneRootLogPostSigmaRobust_R, 9),
-  CALLDEF(getLogPostMomentum_R, 1),
   CALLDEF(getV_R, 1),
   
   CALLDEF(makeVBarAndN_R, 2),
@@ -2335,16 +2297,9 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2), 
   CALLDEF(updateSeason_R, 2),
 
-  CALLDEF(initializeMomentum_R, 1),
   CALLDEF(updateBetas_R, 1),
-  CALLDEF(updateBetasGibbs_R, 1),
-  CALLDEF(updateBetasHMC_R, 1),
-  CALLDEF(updateBetasOneStep_R, 2),
-  CALLDEF(updateBetasWhereBetaEqualsMean_R, 1),
-  CALLDEF(updateGradientBetas_R, 1),
   CALLDEF(updateLogPostBetas_R, 1),
   CALLDEF(updateMeansBetas_R, 1),
-  CALLDEF(updateMomentumOneStep_R, 3),
   CALLDEF(updateVariancesBetas_R, 1),
   CALLDEF(updateMu_R, 1),
 
@@ -2782,17 +2737,10 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iteratorBetas);
   ADD_SYM(dims);
   ADD_SYM(prob);
-  ADD_SYM(betasOld);
   ADD_SYM(meansBetas);
   ADD_SYM(variancesBetas);
-  ADD_SYM(gradientBetas);
-  ADD_SYM(momentumBetas);
   ADD_SYM(betaEqualsMean);
-  ADD_SYM(useHMCToUpdateBeta);
-  ADD_SYM(sizeStep);
-  ADD_SYM(nStep);
   ADD_SYM(acceptBeta);
-  ADD_SYM(useHMCBetas);
   ADD_SYM(tolerance);
   ADD_SYM(betaIsPredicted);
   ADD_SYM(mean);

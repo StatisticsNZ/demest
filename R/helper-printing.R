@@ -311,19 +311,6 @@ printExchFixedEqns <- function(object, name) {
     cat(name, "[j] ~ N(", mean, ", ", squaredOrNA(sd), ")\n", sep = "")
 }
 
-printHMC <- function(object) {
-    useHMC <- object@useHMC@.Data
-    if (useHMC) {
-        size.step <- object@sizeStep@.Data
-        n.step <- object@nStep@.Data
-        cat("\nHMC:\n")
-        cat("    sizeStep: ", size.step, "\n")
-        cat("       nStep: ", n.step, "\n")
-    }
-    else
-        invisible()
-}
-
 printJump <- function(object) {
     aggregate <- object@aggregate
     scale.theta <- stringScaleTheta(object)

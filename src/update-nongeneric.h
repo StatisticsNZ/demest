@@ -13,21 +13,9 @@
 
     void updateBetas(SEXP object_R);
 
-    void updateBetasGibbs(SEXP object_R);
-
-    void updateBetasHMC(SEXP object_R);
-
-    void updateBetasOneStep(SEXP object_R, double sizeStep);
-
-    void updateBetasWhereBetaEqualsMean(SEXP object_R);
-
-    void updateGradientBetas(SEXP object_R);
-
     void updateLogPostBetas(SEXP object_R);
 
     void updateMeansBetas(SEXP object_R);
-
-    void updateMomentumOneStep(SEXP object_R, double sizeStep, int isFirstLast);
 
     void updateVariancesBetas(SEXP object_R);
 

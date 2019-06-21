@@ -628,19 +628,9 @@ setGeneric("whereAcceptance",
            function(object)
                standardGeneric("whereAcceptance"))
 
-setGeneric("whereAcceptanceHMC",
-           function(object) {
-               list(NULL)
-           })
-
 setGeneric("whereAutocorr",
            function(object)
                standardGeneric("whereAutocorr"))
-
-setGeneric("whereAutocorrHMC",
-           function(object) {
-               list(NULL)
-           })
 
 setGeneric("whereEstimated",
            function(object)
@@ -657,11 +647,6 @@ setGeneric("whereJump",
 setGeneric("whereMetropStat",
            function(object, FUN)
                standardGeneric("whereMetropStat"))
-
-setGeneric("whereNStep",
-           function(object) {
-               list(NULL)
-           })
 
 setGeneric("whereNoProposal",
            function(object)

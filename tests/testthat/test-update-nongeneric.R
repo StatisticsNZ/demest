@@ -4446,7 +4446,6 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 test_that("R and C versions of updatePriorsBetas give same answer", {
     updatePriorsBetas <- demest:::updatePriorsBetas
-    initializeMomentum <- demest:::initializeMomentum
     initialModel <- demest:::initialModel
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     updateMeansBetas <- demest:::updateMeansBetas
@@ -4471,11 +4470,8 @@ test_that("R and C versions of updatePriorsBetas give same answer", {
     }
 })
 
-
-
-test_that("R and C versions of updateBetas give same answer", {
+test_that("R and C versions of updateBetas give same answer - no structural zeros", {
     updateBetas <- demest:::updateBetas
-    initializeMomentum <- demest:::initializeMomentum
     initialModel <- demest:::initialModel
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     updateMeansBetas <- demest:::updateMeansBetas
@@ -4503,39 +4499,8 @@ test_that("R and C versions of updateBetas give same answer", {
     }
 })
 
-test_that("R and C versions of updateBetasGibbs give same answer - no structural zeros", {
-    updateBetasGibbs <- demest:::updateBetasGibbs
-    initializeMomentum <- demest:::initializeMomentum
-    initialModel <- demest:::initialModel
-    updateModelNotUseExp <- demest:::updateModelNotUseExp
-    updateMeansBetas <- demest:::updateMeansBetas
-    updateVariancesBetas <- demest:::updateVariancesBetas
-    y <- Counts(array(rpois(n = 20, lambda = 30),
-                      dim = 5:4,
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
-                  age ~ Exch(),
-                  region ~ Zero())
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        x <- initialModel(spec, y = y, exposure = NULL)
-        x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-        x <- updateMeansBetas(x)
-        x <- updateVariancesBetas(x)
-        set.seed(seed)
-        ans.R <- updateBetasGibbs(x, useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateBetasGibbs(x, useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-})
-
-test_that("R and C versions of updateBetasGibbs give same answer - with structural zeros", {
-    updateBetasGibbs <- demest:::updateBetasGibbs
-    initializeMomentum <- demest:::initializeMomentum
+test_that("R and C versions of updateBetas give same answer - with structural zeros", {
+    updateBetas <- demest:::updateBetas
     initialModel <- demest:::initialModel
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     updateMeansBetas <- demest:::updateMeansBetas
@@ -4557,141 +4522,14 @@ test_that("R and C versions of updateBetasGibbs give same answer - with structur
         x <- updateMeansBetas(x)
         x <- updateVariancesBetas(x)
         set.seed(seed)
-        ans.R <- updateBetasGibbs(x, useC = FALSE)
+        ans.R <- updateBetas(x, useC = FALSE)
         set.seed(seed)
-        ans.C <- updateBetasGibbs(x, useC = TRUE)
+        ans.C <- updateBetas(x, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
     }
-})
-
-test_that("R and C versions of updateBetasHMC give same answer", {
-    updateBetasHMC <- demest:::updateBetasHMC
-    initializeMomentum <- demest:::initializeMomentum
-    initialModel <- demest:::initialModel
-    updateModelNotUseExp <- demest:::updateModelNotUseExp
-    updateVariancesBetas <- demest:::updateVariancesBetas
-    y <- Counts(array(rpois(n = 20, lambda = 30),
-                      dim = 5:4,
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
-                  age ~ Exch(),
-                  region ~ Zero())
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        x <- initialModel(spec, y = y, exposure = NULL)
-        x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-        x <- updateVariancesBetas(x)
-        x <- initializeMomentum(x)
-        set.seed(seed)
-        ans.R <- updateBetasHMC(x, useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateBetasHMC(x, useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-})
-
-test_that("R version of updateBetasOneStep works", {
-    updateBetasOneStep <- demest:::updateBetasOneStep
-    initializeMomentum <- demest:::initializeMomentum
-    initialModel <- demest:::initialModel
-    updateModelNotUseExp <- demest:::updateModelNotUseExp
-    updateVariancesBetas <- demest:::updateVariancesBetas
-    y <- Counts(array(rpois(n = 20, lambda = 30),
-                      dim = 5:4,
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    y[1,] <- 0L
-    structuralZeros <- ValuesOne(c(0,1,1,1,1), labels = 0:4, name = "age")
-    spec <- Model(y ~ Poisson(mean ~ age + region,
-                              useExpose = FALSE,
-                              structuralZeros = structuralZeros),                              
-                  age ~ Exch(),
-                  region ~ Zero())
-    x <- initialModel(spec, y = y, exposure = NULL)
-    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-    x <- updateVariancesBetas(x)
-    x <- initializeMomentum(x)
-    ans.obtained <- updateBetasOneStep(x, sizeStep = 0.1)
-    ans.expected <- x
-    ans.expected@betas[[2]][-1] <- (ans.expected@betas[[2]][-1]
-            + 0.1 * ans.expected@variancesBetas[[2]][-1] * ans.expected@momentumBetas[[2]][-1])
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("R and C versions of updateBetasOneStep give same answer", {
-    updateBetasOneStep <- demest:::updateBetasOneStep
-    initializeMomentum <- demest:::initializeMomentum
-    initialModel <- demest:::initialModel
-    updateModelNotUseExp <- demest:::updateModelNotUseExp
-    updateVariancesBetas <- demest:::updateVariancesBetas
-    structuralZeros <- ValuesOne(c(0,1,1,1,1), labels = 0:4, name = "age")
-    y <- Counts(array(rpois(n = 20, lambda = 30),
-                      dim = 5:4,
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    y[1,] <- 0L
-    spec <- Model(y ~ Poisson(mean ~ age + region,
-                              useExpose = FALSE,
-                              structuralZeros = structuralZeros),
-                  age ~ Exch(),
-                  region ~ Zero())
-    x <- initialModel(spec, y = y, exposure = NULL)
-    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-    x <- updateVariancesBetas(x)
-    x <- initializeMomentum(x)
-    ans.R <- updateBetasOneStep(x, sizeStep = 0.1, useC = FALSE)
-    ans.C <- updateBetasOneStep(x, sizeStep = 0.1, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
-})
-
-test_that("R version of updateBetasWhereBetaEqualsMean works", {
-    updateBetasWhereBetaEqualsMean <- demest:::updateBetasWhereBetaEqualsMean
-    initialModel <- demest:::initialModel
-    updateModelNotUseExp <- demest:::updateModelNotUseExp
-    betaHat <- demest:::betaHat
-    updateMeansBetas <- demest:::updateMeansBetas
-    y <- Counts(array(rpois(n = 20, lambda = 30),
-                      dim = 5:4,
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age * region,
-                              useExpose = FALSE),
-                  age ~ Exch(),
-                  age:region ~ DLM(trend = NULL, damp = NULL))
-    x <- initialModel(spec, y = y, exposure = NULL)
-    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-    x@betas[[4]][] <- -100
-    x <- updateMeansBetas(x)
-    ans.obtained <- updateBetasWhereBetaEqualsMean(x)
-    ans.expected <- x
-    ans.expected@betas[[4]] <- betaHat(x@priorsBetas[[4]])
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("R and C versions of updateBetasWhereBetaEqualsMean give same answer", {
-    updateBetasWhereBetaEqualsMean <- demest:::updateBetasWhereBetaEqualsMean
-    initialModel <- demest:::initialModel
-    updateModelNotUseExp <- demest:::updateModelNotUseExp
-    updateMeansBetas <- demest:::updateMeansBetas
-    y <- Counts(array(rpois(n = 20, lambda = 30),
-                      dim = 5:4,
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age * region, useExpose = FALSE),
-                  age ~ Exch(),
-                  age:region ~ DLM(trend = NULL, damp = NULL))
-    x <- initialModel(spec, y = y, exposure = NULL)
-    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-    x@betas[[4]][] <- -100
-    x <- updateMeansBetas(x)
-    ans.R <- updateBetasWhereBetaEqualsMean(x, useC = FALSE)
-    ans.C <- updateBetasWhereBetaEqualsMean(x, useC = TRUE)
-    expect_identical(ans.R, ans.C)
 })
 
 test_that("R version of updateLogPostBetas works", {
@@ -4724,35 +4562,10 @@ test_that("R version of updateLogPostBetas works", {
         sum(dnorm(x@betas[[1]], x@meansBetas[[1]], sqrt(x@variancesBetas[[1]]), log = TRUE)) +
         sum(dnorm(x@betas[[2]][-5], x@meansBetas[[2]][-5], sqrt(x@variancesBetas[[2]][-5]), log = TRUE)) +
         sum(dnorm(x@betas[[3]], x@meansBetas[[3]], sqrt(x@variancesBetas[[3]]), log = TRUE))
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("R and C versions of updateGadientBetas give same answer", {
-    updateGradientBetas <- demest:::updateGradientBetas
-    initialModel <- demest:::initialModel
-    updateModelNotUseExp <- demest:::updateModelNotUseExp
-    updateMeansBetas <- demest:::updateMeansBetas
-    updateVariancesBetas <- demest:::updateVariancesBetas
-    y <- Counts(array(rpois(n = 20, lambda = 30),
-                      dim = 5:4,
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    y[1] <- NA
-    y[5,] <- 0L
-    structuralZeros <- ValuesOne(c(1,1,1,1,0), labels = 0:4, name = "age")
-    spec <- Model(y ~ Poisson(mean ~ age + region,
-                              useExpose = FALSE,
-                              structuralZeros = structuralZeros),
-                  age ~ Exch())
-    x <- initialModel(spec, y = y, exposure = NULL)
-    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-    x <- updateMeansBetas(x)
-    x <- updateVariancesBetas(x)
-    ans.R <- updateGradientBetas(x, useC = FALSE)
-    ans.C <- updateGradientBetas(x, useC = TRUE)
     if (test.identity)
-        expect_identical(ans.R, ans.C)
+        expect_identical(ans.obtained, ans.expected)
     else
-        expect_equal(ans.R, ans.C)
+        expect_equal(ans.obtained, ans.expected)
 })
 
 test_that("R and C versions of updateLogPostBetas give same answer", {
@@ -4822,63 +4635,6 @@ test_that("R and C versions of updateMeansBetas give same answer", {
     ans.R <- updateMeansBetas(x, useC = FALSE)
     ans.C <- updateMeansBetas(x, useC = TRUE)
     expect_identical(ans.R, ans.C)
-})
-
-test_that("R version of updateMomentumOneStep works", {
-    updateMomentumOneStep <- demest:::updateMomentumOneStep
-    initializeMomentum <- demest:::initializeMomentum
-    initialModel <- demest:::initialModel
-    updateModelNotUseExp <- demest:::updateModelNotUseExp
-    updateVariancesBetas <- demest:::updateVariancesBetas
-    y <- Counts(array(rpois(n = 20, lambda = 30),
-                      dim = 5:4,
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
-                  age ~ Exch(),
-                  region ~ Zero())
-    x <- initialModel(spec, y = y, exposure = NULL)
-    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-    x <- updateVariancesBetas(x)
-    x@gradientBetas[[1]] <- rnorm(1)
-    x@gradientBetas[[2]] <- rnorm(5)
-    x@gradientBetas[[3]] <- rnorm(4)
-    x <- initializeMomentum(x)
-    ans.obtained <- updateMomentumOneStep(x, sizeStep = 0.1, isFirstLast = FALSE)
-    ans.expected <- x
-    ans.expected@momentumBetas[[2]] <- (ans.expected@momentumBetas[[2]]
-        + 0.1 * ans.expected@gradientBetas[[2]])
-    expect_identical(ans.obtained, ans.expected)
-})
-
-test_that("R and C versions of updateMomentumOneStep give same answer", {
-    updateMomentumOneStep <- demest:::updateMomentumOneStep
-    initializeMomentum <- demest:::initializeMomentum
-    initialModel <- demest:::initialModel
-    updateModelNotUseExp <- demest:::updateModelNotUseExp
-    updateVariancesBetas <- demest:::updateVariancesBetas
-    y <- Counts(array(rpois(n = 20, lambda = 30),
-                      dim = 5:4,
-                      dimnames = list(age = 0:4, region = letters[1:4])))
-    y[5,] <- 0L
-    structuralZeros <- ValuesOne(c(1,1,1,1,0), labels = 0:4, name = "age")
-    spec <- Model(y ~ Poisson(mean ~ age + region,
-                              useExpose = FALSE,
-                              structuralZeros = structuralZeros),
-                  age ~ Exch(),
-                  region ~ Zero())
-    x <- initialModel(spec, y = y, exposure = NULL)
-    x <- updateModelNotUseExp(x, y = y, useC = TRUE)
-    x@gradientBetas[[1]] <- rnorm(1)
-    x@gradientBetas[[2]][1:4] <- rnorm(4)
-    x@gradientBetas[[3]] <- rnorm(4)
-    x <- initializeMomentum(x)
-    x <- updateVariancesBetas(x)
-    ans.R <- updateMomentumOneStep(x, sizeStep = 0.1, isFirstLast = FALSE, useC = FALSE)
-    ans.C <- updateMomentumOneStep(x, sizeStep = 0.1, isFirstLast = FALSE, useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
 })
 
 test_that("R version of updateMu works", {

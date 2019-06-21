@@ -93,3 +93,23 @@ setClass("SpecVarying",
 ## AllClasses-15-Model-hierarchy.R
 
 useHMCBetas = methods::new("LogicalFlag", TRUE),
+
+
+
+## update-nongeneric
+
+
+## TRANSLATED
+## HAS_TESTS (comparing R and C versions)
+updateBetas <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateBetas_R, object)
+    }
+    else {
+        object <- updateBetasGibbs(object)
+        object <- updateBetasHMC(object) # updates 'logPostBeta', even when no betas updated with HMC
+        object
+    }
+}

@@ -545,8 +545,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              sizeStep <- object@sizeStep
-              nStep <- object@nStep
               lower <- object@lower
               upper <- object@upper
               tolerance <- object@tolerance
@@ -650,7 +648,6 @@ setMethod("initialModel",
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
                                     betas = betas,
-                                    betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
                                     priorsBetas = priors.betas,
@@ -685,8 +682,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              sizeStep <- object@sizeStep
-              nStep <- object@nStep
               structural.zeros <- object@structuralZeros
               box.cox.param <- object@boxCoxParam
               scale.theta <- object@scaleTheta
@@ -844,7 +839,6 @@ setMethod("initialModel",
                                     meanLogNuCMP = meanLogNuCMP,
                                     nuCMP = nuCMP,
                                     betas = betas,
-                                    betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
                                     priorsBetas = priors.betas,
@@ -889,8 +883,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              sizeStep <- object@sizeStep
-              nStep <- object@nStep
               scale.theta <- object@scaleTheta
               lower <- object@lower
               upper <- object@upper
@@ -992,7 +984,6 @@ setMethod("initialModel",
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
                                     betas = betas,
-                                    betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
                                     priorsBetas = priors.betas,
@@ -1026,8 +1017,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              sizeStep <- object@sizeStep
-              nStep <- object@nStep
               scale.theta <- object@scaleTheta
               lower <- object@lower
               upper <- object@upper
@@ -1137,7 +1126,6 @@ setMethod("initialModel",
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
                                     betas = betas,
-                                    betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
                                     priorsBetas = priors.betas,
@@ -1171,8 +1159,6 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
-              sizeStep <- object@sizeStep
-              nStep <- object@nStep
               structural.zeros <- object@structuralZeros
               box.cox.param <- object@boxCoxParam
               scale.theta <- object@scaleTheta
@@ -1318,7 +1304,6 @@ setMethod("initialModel",
                                     ASigma = A.sigma,
                                     nuSigma = nu.sigma,
                                     betas = betas,
-                                    betasOld = betas,
                                     meansBetas = val.betas,
                                     variancesBetas = val.betas,
                                     priorsBetas = priors.betas,
@@ -1545,11 +1530,8 @@ setMethod("initialModelPredict",
                                   upper = upper,
                                   nFailedPropTheta = methods::new("Counter", 0L),
                                   betas = l$betas,
-                                  betasOld = l$betas,
                                   meansBetas = l$meansBetas,
                                   variancesBetas = l$variancesBetas,
-                                  gradientBetas = l$gradientBetas,
-                                  momentumBetas = l$momentumBetas,
                                   priorsBetas = l$priorsBetas,
                                   betaEqualsMean = l$betaEqualsMean,
                                   iteratorBetas = l$iteratorBetas,
@@ -1615,11 +1597,8 @@ setMethod("initialModelPredict",
                                   upper = upper,
                                   nFailedPropTheta = methods::new("Counter", 0L),
                                   betas = l$betas,
-                                  betasOld = l$betas,
                                   meansBetas = l$meansBetas,
                                   variancesBetas = l$variancesBetas,
-                                  gradientBetas = l$gradientBetas,
-                                  momentumBetas = l$momentumBetas,
                                   priorsBetas = l$priorsBetas,
                                   betaEqualsMean = l$betaEqualsMean,
                                   strucZeroArray = l$strucZeroArray,
@@ -1682,14 +1661,10 @@ setMethod("initialModelPredict",
                              upper = upper,
                              nFailedPropTheta = methods::new("Counter", 0L),
                              betas = l$betas,
-                             betasOld = l$betas,
                              meansBetas = l$meansBetas,
                              variancesBetas = l$variancesBetas,
-                             gradientBetas = l$gradientBetas,
-                             momentumBetas = l$momentumBetas,
                              priorsBetas = l$priorsBetas,
                              betaEqualsMean = l$betaEqualsMean,
-                             useHMCToUpdateBeta = l$useHMCToUpdateBeta,
                              iteratorBetas = l$iteratorBetas,
                              dims = l$dims,
                              mu = l$mu,
@@ -1711,14 +1686,10 @@ setMethod("initialModelPredict",
                              upper = upper,
                              nFailedPropTheta = methods::new("Counter", 0L),
                              betas = l$betas,
-                             betasOld = l$betas,
                              meansBetas = l$meansBetas,
                              variancesBetas = l$variancesBetas,
-                             gradientBetas = l$gradientBetas,
-                             momentumBetas = l$momentumBetas,
                              priorsBetas = l$priorsBetas,
                              betaEqualsMean = l$betaEqualsMean,
-                             useHMCToUpdateBeta = l$useHMCToUpdateBeta,
                              iteratorBetas = l$iteratorBetas,
                              dims = l$dims,
                              mu = l$mu,
@@ -1787,11 +1758,8 @@ setMethod("initialModelPredict",
                                   upper = upper,
                                   nFailedPropTheta = methods::new("Counter", 0L),
                                   betas = l$betas,
-                                  betasOld = l$betas,
                                   meansBetas = l$meansBetas,
                                   variancesBetas = l$variancesBetas,
-                                  gradientBetas = l$gradientBetas,
-                                  momentumBetas = l$momentumBetas,
                                   priorsBetas = l$priorsBetas,
                                   betaEqualsMean = l$betaEqualsMean,
                                   strucZeroArray = l$strucZeroArray,

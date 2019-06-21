@@ -1724,27 +1724,21 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - no aggregate"
                       first = 35L,
                       last = 44L,
                       metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 45L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 46L)
+    sigma <- new("SkeletonOneValues", first = 45L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
     expect_identical(ans.obtained, ans.expected)
-    expect_identical(lengthValues(model) + pos - 1L, 47L)
+    expect_identical(lengthValues(model) + pos - 1L, 46L)
 })
 
 test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
@@ -1798,23 +1792,17 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
                             first = 36L,
                             last = 45L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 46L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 47L)
+    sigma <- new("SkeletonOneValues", first = 46L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 48L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     aggregate <- makeOutputAggregate(model)
     ans.expected <- list(likelihood = likelihood,
@@ -1822,7 +1810,7 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
                          hyper = hyper,
                          aggregate = aggregate)
     expect_identical(ans.obtained, ans.expected)
-    expect_identical(lengthValues(model) + pos - 1L, 48L)
+    expect_identical(lengthValues(model) + pos - 1L, 47L)
 })
 
 test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
@@ -1877,26 +1865,20 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
                             first = 36L,
                             last = 45L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 46L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 47L)
+    sigma <- new("SkeletonOneValues", first = 46L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 48L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     aggregate <- makeOutputAggregate(model,
-                                     pos = 49L,
+                                     pos = 48L,
                                      nChain = 2L,
                                      nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -1951,20 +1933,14 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - no aggregat
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 45L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 46L)
+    sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2026,20 +2002,14 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgCertain",
                             first = 36L,
                             last = 45L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 46L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 47L)
+    sigma <- new("SkeletonOneValues", first = 46L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 48L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2107,26 +2077,20 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaUnknown - AgNormal", 
                             first = 37L,
                             last = 46L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 47L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 48L)
+    sigma <- new("SkeletonOneValues", first = 47L)
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 49L),
+                                              first = 48L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     aggregate <- makeOutputAggregate(model,
-                                     pos = 50L,
+                                     pos = 49L,
                                      nChain = 2L,
                                      nIteration = 20L)
     ans.expected <- list(likelihood = likelihood,
@@ -2181,20 +2145,14 @@ test_that("makeOutputModel works with BinomialVarying - no aggregate", {
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 45L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 46L)
+    sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2251,20 +2209,14 @@ test_that("makeOutputModel works with BinomialVarying - AgCertain", {
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 45L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 46L)
+    sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2325,20 +2277,14 @@ test_that("makeOutputModel works with BinomialVarying - AgNormal", {
                             first = 36L,
                             last = 45L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 46L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 47L)
+    sigma <- new("SkeletonOneValues", first = 46L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 48L),
+                                              first = 47L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2393,20 +2339,14 @@ test_that("makeOutputModel works with PoissonVarying - no aggregate", {
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 45L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 46L)
+    sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2462,20 +2402,14 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgCertain", {
                             first = 35L,
                             last = 44L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 45L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 46L)
+    sigma <- new("SkeletonOneValues", first = 45L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = list(scaleError = new("SkeletonOneValues",
-                                              first = 47L),
+                                              first = 46L),
                              dfScaleError = model@priorsBetas[[3]]@nuTau@.Data,
                              scaleScaleError = model@priorsBetas[[3]]@ATau@.Data),
                   sd = list(df = model@nuSigma@.Data,
@@ -2536,21 +2470,15 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgNormal", {
                             first = 46L,
                             last = 55L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 56L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 57L)
+    sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                                         metadata = model@metadataY[2],
-                                        pos = 58L),
+                                        pos = 57L),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
@@ -2610,21 +2538,15 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgFun", {
                             first = 46L,
                             last = 55L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 56L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 57L)
+    sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                                         metadata = model@metadataY[2],
-                                        pos = 58L),
+                                        pos = 57L),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
@@ -2683,21 +2605,15 @@ test_that("makeOutputModel works with PoissonVaryingUseExp - AgPoisson", {
                       first = 46L,
                       last = 55L,
                       metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 56L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 57L)
+    sigma <- new("SkeletonOneValues", first = 56L)
     prior <- c(betas,
                list(mean = mu,
-                    acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
                     sd = sigma))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                       metadata = model@metadataY[2],
-                      pos = 58L),
+                      pos = 57L),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     aggregate <- makeOutputAggregate(model, pos = hyper$age$scaleError@first + 1L,
@@ -2757,21 +2673,15 @@ test_that("makeOutputModel works with CMP - no aggregate", {
                             first = 56L,
                             last = 65L,
                             metadata = metadata[2]))
-    accept.beta <- SkeletonAccept(first = 66L,
-                                  nChain = mcmc[["nChain"]],
-                                  nIteration = mcmc[["nIteration"]])
-    sigma <- new("SkeletonOneValues", first = 67L)
+    sigma <- new("SkeletonOneValues", first = 66L)
     prior <- c(betas,
-               list(acceptBeta = accept.beta,
-                    sizeStep = 0.1,
-                    nStep = 10L,
-                    count = list(mean = mu, sd = sigma),
+               list(count = list(mean = mu, sd = sigma),
                     dispersion = list(mean = model@meanLogNuCMP@.Data, sd = model@sdLogNuCMP@.Data)))
     hyper <- list("(Intercept)" = list(scaleError = model@priorsBetas[[1]]@tau@.Data),
                   sex = list(scaleError = model@priorsBetas[[2]]@tau@.Data),
                   age = makeOutputPrior(prior = model@priorsBetas[[3]],
                                         metadata = model@metadataY[2],
-                                        pos = 68L),
+                                        pos = 67L),
                   sd = list(df = model@nuSigma@.Data,
                             scale = model@ASigma@.Data))
     ans.expected <- list(likelihood = likelihood, prior = prior, hyper = hyper)
@@ -4633,14 +4543,12 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
 test_that("updateModelNotUseExp for CMPVaryingNotUseExp updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE),
-                      age ~ Exch(),
-                      sizeStep = 0.01)                      
+                      age ~ Exch())                      
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
@@ -4648,33 +4556,27 @@ test_that("updateModelNotUseExp for CMPVaryingNotUseExp updates the correct slot
         expect_false(all(x1@nuCMP == x0@nuCMP))
         expect_true(x1@meanLogNuCMP == x0@meanLogNuCMP)
         expect_true(x1@sdLogNuCMP == x0@sdLogNuCMP)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_false(identical(x1@mu, x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_false(identical(x1@mu, x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("never updated beta")
 })
 
 test_that("R and C versions of updateModelNotUseExp give same answer with CMPVaryingNotUseExp", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE),
-                      age ~ Exch(), sizeStep = 0.001)                      
+                      age ~ Exch())                      
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateModelNotUseExp(x, y = y, useC = FALSE)
@@ -4687,18 +4589,13 @@ test_that("R and C versions of updateModelNotUseExp give same answer with CMPVar
         else
             expect_equal(ans.R, ans.C.generic)
         expect_identical(ans.C.generic, ans.C.specific)
-        if (ans.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("never updated beta")
 })
 
 ## Only test that appropriate slots are updated.  
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown with sd = 0 updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         y <- Values(array(rnorm(20),
@@ -4707,34 +4604,29 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown with sd = 0 updat
         weights <- Counts(array(rbeta(n = 20, shape1 = 5, shape2 = 5),
                                 dim = 5:4,
                                 dimnames = list(age = 0:4, region = letters[1:4])))
-        spec <- Model(y ~ Normal(mean ~ age + region, sd = 0), sizeStep = 0.01)
+        spec <- Model(y ~ Normal(mean ~ age + region, sd = 0))
         x0 <- initialModel(spec, y = y, weights = weights)
         set.seed(seed + 1)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         expect_true(all(x1@theta == x0@theta))
         expect_true(x1@sigma != x0@sigma)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
+              for (b in seq_along(x1@betas)) {
                 expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
                 if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                     expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
                 expect_true(all(x1@mu != x0@mu))
                 updated.beta <- TRUE
             }
-        }
-        for (name in c("w", "slotsToExtract", "iMethodModel", "namesBetas",
+          for (name in c("w", "slotsToExtract", "iMethodModel", "namesBetas",
                        "varsigma", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("never updated beta")
 })
 
 ## tests equal but not identical
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaKnown give same answer with sd = 0", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         y <- Values(array(rnorm(20),
@@ -4757,11 +4649,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(ans.R, ans.C.generic)
         expect_identical(ans.C.generic, ans.C.specific)
-        if (ans.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("never updated beta")
 })
 
 
@@ -4771,7 +4659,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         y <- Values(array(rnorm(20),
@@ -4786,28 +4673,22 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown updates the corre
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         expect_true(all(x1@theta != x0@theta))
         expect_true(x1@sigma != x0@sigma)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("w", "slotsToExtract", "iMethodModel", "namesBetas",
                        "varsigma", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## tests equal but not identical
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaKnown give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         y <- Values(array(rnorm(20),
@@ -4830,11 +4711,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(ans.R, ans.C.generic)
         expect_identical(ans.C.generic, ans.C.specific)
-        if (ans.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## Only test that appropriate slots are updated.  Check that values are correct in
@@ -4842,7 +4719,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknown updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         y <- Values(array(rnorm(20),
@@ -4859,28 +4735,22 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknown updates the cor
         expect_true(all(x1@theta != x0@theta))
         expect_true(x1@sigma != x0@sigma)
         expect_true(x1@varsigma != x0@varsigma)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("w", "slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## tests equal but not identical
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaUnknown give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         y <- Values(array(rnorm(20),
@@ -4909,12 +4779,8 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
             set.seed(seed + i)
             ans.C.specific <- updateModelNotUseExp(ans.C.specific, y = y, useC = TRUE, useSpecific = TRUE)
             expect_equal(ans.R, ans.C.specific)
-            if (ans.R@acceptBeta)
-                updated.beta <- TRUE
         }
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## Only test that appropriate slots are updated.  Check that values are correct in
@@ -4922,7 +4788,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for PoissonVaryingNotUseExp updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
                           dim = 5:4,
@@ -4933,28 +4798,22 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExp updates the correct 
         set.seed(seed + 1)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
         expect_identical(sum(x1@theta != x0@theta), x1@nAcceptTheta@.Data)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## tests equal but not identical
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for PoissonVaryingNotUseExp give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 20)),
                           dim = 5:4,
@@ -4973,11 +4832,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(ans.R, ans.C.generic)
         expect_identical(ans.C.generic, ans.C.specific)
-        if (ans.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 
@@ -4986,7 +4841,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgCertain updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rnorm(2, sd = 3), dim = 2, dimnames = list(sex = c("f", "m"))))
@@ -5004,27 +4858,21 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgCertain updates 
             expect_false(identical(x1@theta, x0@theta))
         else
             stop("no theta updated")
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaKnownAgCertain give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rnorm(n = 3), dim = 3, dimnames = list(age = 0:2)))
@@ -5044,11 +4892,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgCertain
@@ -5056,7 +4900,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgCertain updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rnorm(n = 3), dim = 3, dimnames = list(age = 0:2)))
@@ -5070,27 +4913,21 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgCertain update
             expect_false(identical(x1@theta, x0@theta))
         else
             stop("no theta updated")
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas",  "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaUnknownAgCertain give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rnorm(n = 3), dim = 3, dimnames = list(age = 0:2)))
@@ -5110,11 +4947,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelNotUseExp for PoissonVaryingNotUseExpAgCertain
@@ -5122,7 +4955,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgCertain updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(10, dim = 3, dimnames = list(age = 0:2)))
@@ -5136,27 +4968,21 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgCertain updates the
             expect_false(identical(x1@theta, x0@theta))
         else
             expect_identical(x1@theta, x0@theta)
-        if (x1@acceptBeta) {
         for (b in seq_along(x1@betas)) {
             expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
         expect_true(all(x1@mu != x0@mu))
-        updated.beta <- TRUE
-        }
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for PoissonVaryingNotUseExpAgCertain give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -5176,11 +5002,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 
@@ -5189,7 +5011,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgNormal updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rnorm(n = 3), dim = 3, dimnames = list(age = 0:2)))
@@ -5203,27 +5024,21 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgNormal updates t
             expect_false(identical(x1@theta, x0@theta))
         else
             stop("'theta' not updated")
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaKnownAgNormal give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -5243,11 +5058,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgNormal
@@ -5269,21 +5080,16 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgNormal updates
             expect_false(identical(x1@theta, x0@theta))
         else
             stop("'theta' not updated")
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaUnknownAgNormal give same answer", {
@@ -5309,11 +5115,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 
@@ -5339,26 +5141,21 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnownAgFun updates the 
             expect_false(identical(x1@theta, x0@theta))
         else
             stop("'theta' not updated")
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaKnownAgFun give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -5380,11 +5177,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgFun
@@ -5392,7 +5185,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgFun updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -5409,26 +5201,21 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknownAgFun updates th
             expect_false(identical(x1@theta, x0@theta))
         else
             stop("'theta' not updated")
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for NormalVaryingVarsigmaUnknownAgFun give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -5450,11 +5237,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updatedBeta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelNotUseExp for PoissonVaryingNotUseExpAgNormal
@@ -5462,7 +5245,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgNormal updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(10, dim = 3, dimnames = list(age = 0:2)))
@@ -5476,26 +5258,21 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgNormal updates the 
             expect_false(identical(x1@theta, x0@theta))
         else
             expect_identical(x1@theta, x0@theta)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for PoissonVaryingNotUseExpAgNormal give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -5515,11 +5292,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- FALSE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelNotUseExp for PoissonVaryingNotUseExpAgFun
@@ -5527,7 +5300,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgFun updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(10, dim = 3, dimnames = list(age = 0:2)))
@@ -5544,27 +5316,21 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgFun updates the cor
             expect_false(identical(x1@theta, x0@theta))
         else
             expect_identical(x1@theta, x0@theta)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }        
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
-        }
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
+        }        
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for PoissonVaryingNotUseExpAgFun give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2))) + 1
@@ -5586,11 +5352,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelNotUseExp for PoissonVaryingNotUseExpAgPoisson
@@ -5598,7 +5360,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgPoisson updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(10, dim = 3, dimnames = list(age = 0:2)))
@@ -5612,27 +5373,21 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgPoisson updates the
             expect_false(identical(x1@theta, x0@theta))
         else
             expect_identical(x1@theta, x0@theta)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelNotUseExp method for PoissonVaryingNotUseExpAgPoisson give same answer", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -5652,11 +5407,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("updateModelNotUseExp for NormalFixedNotUseExp works", {
@@ -5753,7 +5504,6 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
 test_that("updateModelUseExp for BinomialVarying updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         mu <- runif(1, 0.2, 0.8)
@@ -5768,27 +5518,22 @@ test_that("updateModelUseExp for BinomialVarying updates the correct slots", {
         set.seed(seed + 1)
         x1 <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
         expect_identical(sum(x1@theta != x0@theta), x1@nAcceptTheta@.Data)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_false(identical(x1@mu, x0@mu))
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_false(identical(x1@mu, x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## tests equal but not identical
 test_that("R, generic C, and specific C versions updateModelUseExp method for BinomialVarying give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         mu <- runif(1, 0.2, 0.8)
@@ -5811,11 +5556,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
         else
             expect_equal(ans.R, ans.C.generic)
         expect_identical(ans.C.generic, ans.C.specific)
-        if (ans.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 
@@ -5824,7 +5565,6 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
 test_that("updateModelUseExp for CMPVaryingUseExp updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         exposure <- Counts(array(runif(n = 20, max = 10),
                                  dim = 5:4,
@@ -5841,26 +5581,21 @@ test_that("updateModelUseExp for CMPVaryingUseExp updates the correct slots", {
         expect_false(all(x1@nuCMP == x0@nuCMP))
         expect_true(x1@meanLogNuCMP == x0@meanLogNuCMP)
         expect_true(x1@sdLogNuCMP == x0@sdLogNuCMP)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R and C versions of updateModelUseExp give same answer with CMPVaryingUseExp", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         exposure <- Counts(array(runif(n = 20, max = 10),
                                 dim = 5:4,
@@ -5882,11 +5617,7 @@ test_that("R and C versions of updateModelUseExp give same answer with CMPVaryin
         else
             expect_equal(ans.R, ans.C.generic)
         expect_identical(ans.C.generic, ans.C.specific)
-        if (ans.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 
@@ -5895,7 +5626,6 @@ test_that("R and C versions of updateModelUseExp give same answer with CMPVaryin
 test_that("updateModelUseExp for PoissonVaryingUseExp updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         mu <- runif(1, 0.2, 0.8)
@@ -5910,28 +5640,22 @@ test_that("updateModelUseExp for PoissonVaryingUseExp updates the correct slots"
         set.seed(seed + 1)
         x1 <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
         expect_identical(sum(x1@theta != x0@theta), x1@nAcceptTheta@.Data)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## tests equal but not identical
 test_that("R, generic C, and specific C versions updateModelUseExp method for PoissonVaryingUseExp give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         mu <- runif(1, 0.2, 0.8)
@@ -5954,11 +5678,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
         else
             expect_equal(ans.R, ans.C.generic)
         expect_identical(ans.C.generic, ans.C.specific)
-        if (ans.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, C specific and C generic versions of updateModelUseExp for PoissonBinomialMixture returns object unchanged", {
@@ -6002,7 +5722,6 @@ test_that("R, C specific and C generic versions of updateModelUseExp for Round3 
 test_that("updateModelUseExp for BinomialVaryingAgCertain updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6019,27 +5738,21 @@ test_that("updateModelUseExp for BinomialVaryingAgCertain updates the correct sl
             expect_false(identical(x1@theta, x0@theta))
         else
             expect_identical(x1@theta, x0@theta)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelUseExp method for BinomialVaryingAgCertain (deterministic) give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6062,11 +5775,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelUseExp for PoissonVaryingUseExpAgCertain
@@ -6074,7 +5783,6 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
 test_that("updateModelUseExp for PoissonVaryingUseExpAgCertain updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6092,27 +5800,21 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgCertain updates the corre
         else
             expect_identical(x1@theta, x0@theta)
         expect_false(identical(x1@sigma, x0@sigma))
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelUseExp method for PoissonVaryingUseExpAgCertain give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6135,11 +5837,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 
@@ -6148,7 +5846,6 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
 test_that("updateModelUseExp for BinomialVaryingAgNormal updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6165,27 +5862,21 @@ test_that("updateModelUseExp for BinomialVaryingAgNormal updates the correct slo
             expect_false(identical(x1@theta, x0@theta))
         else
             expect_identical(x1@theta, x0@theta)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- FALSE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelUseExp method for BinomialVaryingAgNormal give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6208,11 +5899,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE        
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelUseExp for BinomialVaryingAgFun
@@ -6220,7 +5907,6 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
 test_that("updateModelUseExp for BinomialVaryingAgFun updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6240,27 +5926,21 @@ test_that("updateModelUseExp for BinomialVaryingAgFun updates the correct slots"
             expect_false(identical(x1@theta, x0@theta))
         else
             expect_identical(x1@theta, x0@theta)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelUseExp method for BinomialVaryingAgFun give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6284,11 +5964,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 
@@ -6297,7 +5973,6 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Bi
 test_that("updateModelUseExp for PoissonVaryingUseExpAgNormal updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6315,27 +5990,21 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgNormal updates the correc
         else
             expect_identical(x1@theta, x0@theta)
         expect_false(identical(x1@sigma, x0@sigma))
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelUseExp method for PoissonVaryingUseExpAgNormal give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6358,11 +6027,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 ## updateModelUseExp for PoissonVaryingUseExpAgFun
@@ -6370,7 +6035,6 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
 test_that("updateModelUseExp for PoissonVaryingUseExpAgFun updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(10, dim = 3, dimnames = list(age = 0:2)))
@@ -6390,27 +6054,21 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgFun updates the correct s
             expect_false(identical(x1@theta, x0@theta))
         else
             expect_identical(x1@theta, x0@theta)
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelUseExp method for PoissonVaryingUseExpAgFun give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rpois(n = 3, lambda = 5), dim = 3, dimnames = list(age = 0:2))) + 1
@@ -6437,11 +6095,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 
@@ -6450,7 +6104,6 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
 test_that("updateModelUseExp for PoissonVaryingUseExpAgLife updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
@@ -6472,27 +6125,21 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgLife updates the correct 
         else
             expect_identical(x1@theta, x0@theta)
         expect_false(identical(x1@sigma, x0@sigma))
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelUseExp method for PoissonVaryingUseExpAgLife give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         theta <- rgamma(n = 20, shape = 2, rate = 0.5) / 10
@@ -6517,11 +6164,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 
@@ -6531,7 +6174,6 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
 test_that("updateModelUseExp for PoissonVaryingUseExpAgPoisson updates the correct slots", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6549,27 +6191,21 @@ test_that("updateModelUseExp for PoissonVaryingUseExpAgPoisson updates the corre
         else
             expect_identical(x1@theta, x0@theta)
         expect_false(identical(x1@sigma, x0@sigma))
-        if (x1@acceptBeta) {
-            for (b in seq_along(x1@betas)) {
-                expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
-                if (!is(x1@priorsBetas[[b]], "ExchFixed"))
-                    expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-            }
-            expect_true(all(x1@mu != x0@mu))
-            updated.beta <- TRUE
+        for (b in seq_along(x1@betas)) {
+            expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
+            if (!is(x1@priorsBetas[[b]], "ExchFixed"))
+                expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
         }
+        expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
             expect_identical(slot(x1, name), slot(x0, name))
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("R, generic C, and specific C versions updateModelUseExp method for PoissonVaryingUseExpAgPoisson give same answer", {
     updateModelUseExp <- demest:::updateModelUseExp
     initialModel <- demest:::initialModel
-    updated.beta <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         value <- Values(array(rbeta(n = 3, shape1 = 20, shape2 = 5), dim = 3, dimnames = list(age = 0:2)))
@@ -6592,11 +6228,7 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for Po
         else
             expect_equal(x.R, x.C.generic)
         expect_identical(x.C.generic, x.C.specific)
-        if (x.R@acceptBeta)
-            updated.beta <- TRUE
     }
-    if (!updated.beta)
-        warning("beta never updated")
 })
 
 test_that("updateModelUseExp for NormalFixedUseExp works", {
@@ -6812,19 +6444,6 @@ test_that("whereAcceptance works", {
 })
 
 
-## whereAcceptanceHMC ################################################################
-
-test_that("whereAcceptanceHMC works", {
-    whereAcceptanceHMC <- demest:::whereAcceptanceHMC
-    x <- new("NormalVaryingVarsigmaUnknown")
-    expect_identical(whereAcceptanceHMC(x), list(c("prior", "acceptBeta")))
-    x@useHMCBetas@.Data <- FALSE
-    expect_identical(whereAcceptanceHMC(x), list(NULL))
-    x <- new("PoissonBinomialMixture")
-    expect_identical(whereAcceptanceHMC(x), list(NULL))
-})
-
-
 ## whereAutocorr #####################################################################
 
 test_that("whereAutocorr works", {
@@ -6889,18 +6508,6 @@ test_that("whereAutocorr works", {
     x <- new("TFixedNotUseExp")
     expect_identical(whereAutocorr(x),
                      list(NULL))
-})
-
-## whereAutocorrHMC ################################################################
-
-test_that("whereAutocorrHMC works", {
-    whereAutocorrHMC <- demest:::whereAutocorrHMC
-    x <- new("NormalVaryingVarsigmaUnknown")
-    expect_identical(whereAutocorrHMC(x), list(c("prior", "mean")))
-    x@useHMCBetas@.Data <- FALSE
-    expect_identical(whereAutocorrHMC(x), list(NULL))
-    x <- new("PoissonBinomialMixture")
-    expect_identical(whereAutocorrHMC(x), list(NULL))
 })
 
 
@@ -7469,19 +7076,6 @@ test_that("whereEstimated works with TFixed", {
 })
 
 
-## whereNStep ################################################################
-
-test_that("whereNStep works", {
-    whereNStep <- demest:::whereNStep
-    x <- new("NormalVaryingVarsigmaUnknown")
-    expect_identical(whereNStep(x), list(c("prior", "nStep")))
-    x@useHMCBetas@.Data <- FALSE
-    expect_identical(whereNStep(x), list(NULL))
-    x <- new("PoissonBinomialMixture")
-    expect_identical(whereNStep(x), list(NULL))
-})
-
-
 ## whereNoProposal ####################################################################
 
 test_that("whereNoProposal works", {
@@ -7560,18 +7154,6 @@ test_that("whereNoProposal works", {
     x <- new("TFixedNotUseExp")
     expect_identical(whereNoProposal(x),
                      list(NULL))
-})
-
-## whereSizeStep ################################################################
-
-test_that("whereSizeStep works", {
-    whereSizeStep <- demest:::whereSizeStep
-    x <- new("NormalVaryingVarsigmaUnknown")
-    expect_identical(whereSizeStep(x), list(c("prior", "sizeStep")))
-    x@useHMCBetas@.Data <- FALSE
-    expect_identical(whereSizeStep(x), list(NULL))
-    x <- new("PoissonBinomialMixture")
-    expect_identical(whereSizeStep(x), list(NULL))
 })
 
 

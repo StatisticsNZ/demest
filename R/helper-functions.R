@@ -1189,40 +1189,6 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
 
 ## TRANSLATED
 ## HAS_TESTS
-## Don't store results in object, since values
-## for momentum, and hence value for log posterior,
-## are thrown away at the end of each update.
-getLogPostMomentum <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(getLogPostMomentum_R, object) 
-    }
-    else {
-        momentum.betas <- object@momentumBetas
-        variances.betas <- object@variancesBetas
-        priors.betas <- object@priorsBetas
-        use.hmc.to.update.beta <- object@useHMCToUpdateBeta
-        ans <- 0
-        for (i in seq_along(momentum.betas)) {
-            if (use.hmc.to.update.beta[i]) {
-                momentum <- momentum.betas[[i]]
-                variances <- variances.betas[[i]]
-                inv_sd <- 1 / sqrt(variances)
-                prior <- priors.betas[[i]]
-                all.struc.zero <- prior@allStrucZero
-                ans <- ans + sum(stats::dnorm(momentum[!all.struc.zero],
-                                              mean = 0,
-                                              sd = inv_sd[!all.struc.zero],
-                                              log = TRUE))
-            }
-        }
-        ans
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
 getV <- function(prior, useC = FALSE) {
     stopifnot(methods::is(prior, "Prior"))
     stopifnot(methods::validObject(prior))
@@ -1253,35 +1219,6 @@ getV <- function(prior, useC = FALSE) {
         }
         ans[all.struc.zero] <- NA
         ans
-    }
-}
-
-## TRANSLATED
-## HAS_TESTS
-initializeMomentum <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
-    stopifnot(methods::validObject(object))
-    if (useC) {
-        .Call(initializeMomentum_R, object)
-    }
-    else {
-        momentum.betas <- object@momentumBetas
-        variances.betas <- object@variancesBetas
-        use.hmc.to.update.beta <- object@useHMCToUpdateBeta
-        priors <- object@priorsBetas
-        for (i in seq_along(momentum.betas)) {
-            if (use.hmc.to.update.beta[i]) {
-                all.struc.zero <- priors[[i]]@allStrucZero
-                n <- sum(!all.struc.zero)
-                inv_sd <- 1 / sqrt(variances.betas[[i]])
-                momentum.betas[[i]][!all.struc.zero] <-
-                    stats::rnorm(n = n,
-                                 mean = 0,
-                                 sd = inv_sd[!all.struc.zero])
-            }
-        }
-        object@momentumBetas <- momentum.betas
-        object
     }
 }
 
@@ -3241,34 +3178,6 @@ makeMetropolis <- function(object, filename, nSample) {
     autocorr <- lapply(where.autocorr, function(where) fetchMCMC(filename, where, nSample = nSample))
     autocorr <- sapply(autocorr, makeAutocorr)
     ans <- data.frame(jump, acceptance, autocorr)
-    rownames <- sapply(where.autocorr, function(x) paste(x, collapse = "."))
-    rownames(ans) <- rownames
-    ans
-}
-
-
-## NO_TESTS
-makeHMC <- function(object, filename, nSample) {
-    if (!methods::is(object, "Results"))
-        stop(gettextf("'%s' has class \"%s\"",
-                      "object", class(object)))
-    if (identical(dembase::nIteration(object), 0L))
-        return(NULL)
-    use.hmc <- object@final[[1L]]@useHMCBeta@.Data
-    if (!use.hmc)
-        return(NULL)
-    where.size.step <- whereMetropStat(object, FUN = whereSizeStep)
-    where.n.step <- whereMetropStat(object, FUN = whereNStep)
-    where.acceptance <- whereMetropStat(object, FUN = whereAcceptanceHMC)
-    where.autocorr <- whereMetropStat(object, FUN = whereAutocorrHMC)
-    size.step <- sapply(where.size.step, function(where) fetch(filename, where))
-    n.step <- sapply(where.n.step, function(where) fetch(filename, where))
-    acceptance <- lapply(where.acceptance, function(where) fetch(filename, where))
-    acceptance <- sapply(acceptance, mean)
-    autocorr <- lapply(where.autocorr,
-                       function(where) fetchMCMC(filename, where, nSample = nSample))
-    autocorr <- sapply(autocorr, makeAutocorr)
-    ans <- data.frame(size.step, n.step, acceptance, autocorr)
     rownames <- sapply(where.autocorr, function(x) paste(x, collapse = "."))
     rownames(ans) <- rownames
     ans

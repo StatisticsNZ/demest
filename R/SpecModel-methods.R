@@ -380,7 +380,6 @@ setMethod("show",
               printSDEqns(object)
               printSpecAggregateEqns(object)
               printJump(object)
-              printHMC(object)
           })
 
 #' @rdname show-methods
@@ -395,7 +394,6 @@ setMethod("show",
               printSDEqns(object)
               printSpecAggregateEqns(object)
               printJump(object)
-              printHMC(object)
           })
 
 #' @rdname show-methods
@@ -410,7 +408,6 @@ setMethod("show",
               printSDEqns(object)
               printSpecAggregateEqns(object)
               printJump(object)
-              printHMC(object)
           })
 
 #' @rdname show-methods
@@ -425,7 +422,6 @@ setMethod("show",
               printSDEqns(object)
               printSpecAggregateEqns(object)
               printJump(object)
-              printHMC(object)
           })
 
 #' @rdname show-methods
@@ -440,7 +436,6 @@ setMethod("show",
               printSDEqns(object)
               printSpecAggregateEqns(object)
               printJump(object)
-              printHMC(object)
           })
 
 #' @rdname show-methods

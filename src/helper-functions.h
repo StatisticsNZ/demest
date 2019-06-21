@@ -39,8 +39,6 @@
     void getTwoMultinomialProposalsNoExp (int *yProp,
                     int *y, double *theta, int ir, int ir_other);
 
-    void initializeMomentum(SEXP object_R);
-    
     void getTwoMultinomialProposalsWithExp (int *yProp,
                     int *y, double *theta, double *exposure,
                     int ir, int ir_other);
