@@ -233,9 +233,10 @@ setClass("Betas",
                                          i, name, i, "betas"))
                  ## slot has missing values iff beta has missing values
                  for (i in seq_along(value))
-                     if (!identical(is.na(value[[i]]), is.na(betas[[i]])))
+                     if (!identical(is.na(value[[i]]), is.na(betas[[i]]))) {
                          return(gettextf("element %d of '%s' and element %d of '%s' have different patterns of missingness",
                                          i, name, i, "betas"))
+                     }
              }
              ## 'betas' and 'betaEqualsMean' have same length
              if (!identical(length(betas), length(betaEqualsMean)))

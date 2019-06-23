@@ -80,7 +80,7 @@ setMethod("drawCombined",
                   if (useSpecific)
                       .Call(drawCombined_CombinedAccountMovements_R, object, nUpdate)
                   else
-                      .Call(drawCombined_R, object, nUpdate)
+                      .Call( drawCombined_R, object, nUpdate)
               }
               else {
                   object <- drawSystemModels(object)
@@ -89,7 +89,7 @@ setMethod("drawCombined",
                   ## updating functions use 'updateSystemModel' and
                   ## 'updateDataModel' flags to decide what to update
                   for (i in seq_len(nUpdate)) {
-                      object <- updateSystemModels(object, useC = TRUE)
+                      object <- updateSystemModels(object, useC = FALSE)
                       object <- updateExpectedExposure(object, useC = TRUE)
                       object <- updateAccount(object, useC = TRUE)
                       object <- updateDataModelsAccount(object, useC = TRUE)
@@ -959,7 +959,6 @@ setMethod("updateSystemModels",
                   system.models <- combined@systemModels
                   population <- combined@account@population
                   components <- combined@account@components
-                  has.age <- combined@hasAge
                   model.uses.exposure <- combined@modelUsesExposure
                   update.system.model <- combined@updateSystemModel
                   transforms.exp.to.comp <- combined@transformsExpToComp
