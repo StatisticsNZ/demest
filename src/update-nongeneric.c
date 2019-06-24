@@ -24,18 +24,45 @@ updateSDNorm(double sigma, double A, double nu, double V, int n, double max)
     double ans = -99;       /* default answer */
 
     double sigmaSq = sigma * sigma;
-    double nuPlusOne = nu + 1;
-    double nPlusNuPlusOne = n + nuPlusOne;
-    double nuASq = nu * A * A;
-    double n_nuASq = n*nuASq;
+    double ASq = A * A;
+
+    double nuPlusOne;
+    double nPlusNuPlusOne;
+    double nuASq;
+    double n_nuASq;
+    double twoASq;
+    double f0;
+    double numerator;
+    double denominator;
+    double fmax;
+
+    int nu_finite = R_finite(nu);
+
+    if (nu_finite) {
+      nuPlusOne = nu + 1;
+      nPlusNuPlusOne = n + nuPlusOne;
+      nuASq = nu * ASq;
+      n_nuASq = n * nuASq;
+    }
+    else {
+      twoASq = 2 * ASq;
+    }
+
+    if (nu_finite)
+      f0 = -n*log(sigma) - V/(2*sigmaSq) - nuPlusOne/2 * log(sigmaSq + nuASq);
+    else
+      f0 = -n*log(sigma) - V/(2*sigmaSq) - sigmaSq/twoASq;
     
-    double f0 = -n*log(sigma) - V/(2*sigmaSq) 
-                        - nuPlusOne/2 * log(sigmaSq + nuASq);
     double e = rexp(1.0);
     double z = f0 - e;
-    double numerator = V - n_nuASq 
-        + sqrt((V - n_nuASq)*(V - n_nuASq) + 4*nPlusNuPlusOne*V*nuASq);
-    double denominator = 2*nPlusNuPlusOne;
+    if (nu_finite) {
+      numerator = V - n_nuASq + sqrt((V - n_nuASq)*(V - n_nuASq) + 4*nPlusNuPlusOne*V*nuASq);
+      denominator = 2*nPlusNuPlusOne;
+    }
+    else {
+      numerator = -n * ASq + sqrt(n * n * ASq * ASq + 4 * ASq * V);
+      denominator = 2;
+    }
     double sigma_star = sqrt(numerator/denominator);
 
     double sigma0_left = 0.5*sigma_star;
@@ -50,7 +77,10 @@ updateSDNorm(double sigma, double A, double nu, double V, int n, double max)
     
         if (R_finite(max)) {
             double maxSq = max * max;
-            double fmax = -n*log(max) - V/(2*maxSq) - nuPlusOne/2 * log(maxSq + nuASq);
+	    if (nu_finite)
+	      fmax = -n*log(max) - V/(2*maxSq) - nuPlusOne/2 * log(maxSq + nuASq);
+	    else
+	      fmax = -n*log(max) - V/(2*maxSq) - maxSq/twoASq;
             rootLessThanMax = (z > fmax);
             if (rootLessThanMax) {
                 sigma0_right = 1.5*sigma_star;
@@ -98,19 +128,34 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau,
 {
     double ans = -99;       /* default answer */
 
+    double ASq = A * A;
     double sigmaSq = sigma * sigma;
-    double nuTauPlusOne = nuTau + 1;
-    double nuTauASq = nuTau * A * A;
     double n_nuBeta = n*nuBeta;
+    double nuTauPlusOne;
+    double nuTauASq;
+
+    int nuFinite = R_finite(nuTau);
+    if (nuFinite) {
+      nuTauPlusOne = nuTau + 1;
+      nuTauASq = nuTau * ASq;
+    }
     
-    double f0 = n_nuBeta*log(sigma) - nuBeta/2 *sigmaSq* V - nuTauPlusOne/2 * log(sigmaSq + nuTauASq);
+    double f0;
+    if (nuFinite)
+      f0 = n_nuBeta*log(sigma) - nuBeta/2 *sigmaSq* V - nuTauPlusOne/2 * log(sigmaSq + nuTauASq);
+    else
+      f0 = n_nuBeta*log(sigma) - nuBeta/2 *sigmaSq* V - sigmaSq/(2*ASq);
     double e = rexp(1.0);
     double z = f0 - e;
-    double H1 = nuBeta*V;
-    double H2 = H1 * nuTauASq + nuTauPlusOne - n_nuBeta;
-    double H3 = -n_nuBeta*nuTauASq;
-    double sigma_star = sqrt((-H2 +sqrt(H2*H2 - 4*H1*H3))/(2*H1));
-
+    double sigma_star;
+    if (nuFinite) {
+      double H1 = nuBeta*V;
+      double H2 = H1 * nuTauASq + nuTauPlusOne - n_nuBeta;
+      double H3 = -n_nuBeta*nuTauASq;
+      sigma_star = sqrt((-H2 +sqrt(H2*H2 - 4*H1*H3))/(2*H1));
+    }
+    else
+      sigma_star = sqrt((n * nuBeta) / (nuBeta * V + 1/ASq));
     double sigma0_left = 0.5*sigma_star;
     double rootLeft = findOneRootLogPostSigmaRobust(sigma0_left,
                             z, A, nuBeta, nuTau, V, n, 0, sigma_star);
@@ -122,8 +167,11 @@ updateSDRobust(double sigma, double A, double nuBeta, double nuTau,
 
         if (R_finite(max)) {
             double maxSq = max * max;
-            double fmax = n_nuBeta*log(max) - nuBeta/2 *maxSq* V 
-                            - nuTauPlusOne/2 * log(maxSq + nuTauASq);
+	    double fmax;
+	    if (nuFinite)
+	      fmax = n_nuBeta*log(max) - nuBeta/2 *maxSq* V - nuTauPlusOne/2 * log(maxSq + nuTauASq);
+	    else
+	      fmax = n_nuBeta*log(max) - nuBeta/2 *maxSq* V - maxSq/(2*ASq);
             rootLessThanMax = (z > fmax);
 
             if (rootLessThanMax) {
@@ -2530,14 +2578,20 @@ updateBetas(SEXP object_R)
       for (int j = 0; j < J; ++j) {
 	int all_struc_zero = struc_zero_ptr[i_beta][j];
 	if (!all_struc_zero) {
-	  double prec_data = n_vec[j] / sigma_sq;
-	  double prec_prior = 1 / var_ptr[i_beta][j];
-	  double var_post = 1 / (prec_prior + prec_data);
-	  double mean_data = vbar[j];
-	  double mean_prior = mean_ptr[i_beta][j];
-	  double mean_post = (prec_data * mean_data + prec_prior * mean_prior) * var_post;
-	  double sd_post = sqrt(var_post);
-	  double val_post = rnorm(mean_post, sd_post);
+	  double mean_prior = mean_ptr[i_beta][j];	  
+	  double var_prior = var_ptr[i_beta][j];
+	  double val_post;
+	  if (var_prior > 0) {
+	    double prec_data = n_vec[j] / sigma_sq;
+	    double prec_prior = 1 / var_prior;
+	    double var_post = 1 / (prec_prior + prec_data);
+	    double mean_data = vbar[j];
+	    double mean_post = (prec_data * mean_data + prec_prior * mean_prior) * var_post;
+	    double sd_post = sqrt(var_post);
+	    val_post = rnorm(mean_post, sd_post);
+	  }
+	  else
+	    val_post = mean_prior;
 	  beta_ptr[i_beta][j] = val_post;
 	}
       }

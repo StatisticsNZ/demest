@@ -1029,22 +1029,35 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
         kTolerance <- 1e-20           ## C version can use macros to set these
         kEpsilon <- 1e-15     ## NEW
         kMaxIter <- 1000L
+        nu.finite <- is.finite(nu)
         ## check that a value can be found
         min.tol <- min + kTolerance
-        fmin <- -n*log(min.tol) - V/(2*(min.tol)^2) - ((nu + 1)/2) * log((min.tol)^2 + nu*A^2)
+        if (nu.finite)
+            fmin <- -n*log(min.tol) - V/(2*(min.tol)^2) - ((nu + 1)/2) * log((min.tol)^2 + nu*A^2)
+        else
+            fmin <- -n*log(min.tol) - V/(2*(min.tol)^2) - (min.tol^2)/(2*A^2)
         if (is.finite(max)) {
             max.tol <- max - kTolerance
-            fmax <- -n*log(max.tol) - V/(2*(max.tol)^2) - ((nu + 1)/2) * log((max.tol)^2 + nu*A^2)
+            if (nu.finite)
+                fmax <- -n*log(max.tol) - V/(2*(max.tol)^2) - ((nu + 1)/2) * log((max.tol)^2 + nu*A^2)
+            else
+                fmax <- -n*log(max.tol) - V/(2*(max.tol)^2) - (max.tol^2)/(2*A^2)
         }
         else
             fmax <- -Inf
         if (((fmin < z) && (fmax < z)) || ((fmin > z) && (fmax > z)))
             return(-99.0)
         ## find root
-        f0 <- -n*log(sigma0) - V/(2*sigma0^2) - ((nu + 1)/2) * log(sigma0^2 + nu*A^2)
+        if (nu.finite)
+            f0 <- -n*log(sigma0) - V/(2*sigma0^2) - ((nu + 1)/2) * log(sigma0^2 + nu*A^2)
+        else
+            f0 <- -n*log(sigma0) - V/(2*sigma0^2) - (sigma0^2)/(2*A^2)
         g0 <- (f0 - z)^2
         for (i in seq_len(kMaxIter)) {
-            f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
+            if (nu.finite)
+                f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
+            else
+                f0prime <- -n/sigma0 + V/(sigma0^3) - sigma0/(A^2)
             deriv.near.zero <- abs(f0prime) < kEpsilon ## NEW
             if (deriv.near.zero) ## NEW
                 return(-1.0) ## NEW
@@ -1056,7 +1069,10 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
                 rho <- rho / 2
             }
             repeat {
-                f1 <- -n*log(sigma1) - V/(2*sigma1^2) - ((nu + 1)/2) * log(sigma1^2 + nu*A^2)
+                if (nu.finite)
+                    f1 <- -n*log(sigma1) - V/(2*sigma1^2) - ((nu + 1)/2) * log(sigma1^2 + nu*A^2)
+                else
+                    f1 <- -n*log(sigma1) - V/(2*sigma1^2) - (sigma1^2)/(2*A^2)
                 g1 <- (f1 - z)^2
                 if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
                     break
@@ -1140,23 +1156,36 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
         kEpsilon <- 1e-15     ## NEW
         kMaxIter <- 1000L
         min.tol <- min + kTolerance
-        fmin <- n*nuBeta*log(min.tol) - (nuBeta/2)*(min.tol^2)*V - ((nuTau+1)/2)*log(min.tol^2 + nuTau*A^2)
+        nu.finite <- is.finite(nuTau)
+        if (nu.finite)
+            fmin <- n*nuBeta*log(min.tol) - (nuBeta/2)*(min.tol^2)*V - ((nuTau+1)/2)*log(min.tol^2 + nuTau*A^2)
+        else
+            fmin <- n*nuBeta*log(min.tol) - (nuBeta/2)*(min.tol^2)*V - (min.tol^2)/(2*A^2)
         if (is.finite(max)) {
             max.tol <- max - kTolerance
-            fmax <- n*nuBeta*log(max.tol) - (nuBeta/2)*(max.tol^2)*V - ((nuTau+1)/2)*log(max.tol^2 + nuTau*A^2)
+            if (nu.finite)
+                fmax <- n*nuBeta*log(max.tol) - (nuBeta/2)*(max.tol^2)*V - ((nuTau+1)/2)*log(max.tol^2 + nuTau*A^2)
+            else
+                fmax <- n*nuBeta*log(max.tol) - (nuBeta/2)*(max.tol^2)*V - (max.tol^2)/(2*A^2)
         }
         else
             fmax <- -Inf
         if ((fmin < z && fmax < z) || (fmin>z && fmax>z))
             return(-99.0)
         ## find root
-        f0 <- n*nuBeta*log(sigma0) - (nuBeta/2)*(sigma0^2)*V - ((nuTau+1)/2)*log(sigma0^2 + nuTau*A^2)
+        if (nu.finite)
+            f0 <- n*nuBeta*log(sigma0) - (nuBeta/2)*(sigma0^2)*V - ((nuTau+1)/2)*log(sigma0^2 + nuTau*A^2)
+        else
+            f0 <- n*nuBeta*log(sigma0) - (nuBeta/2)*(sigma0^2)*V - (sigma0^2)/(2*A^2)
         g0 <- (f0 - z)^2
         for (i in seq_len(kMaxIter)) {
-            f0prime <- n*nuBeta/sigma0 - nuBeta*sigma0*V - ((nuTau + 1)*sigma0)/(sigma0^2 + nuTau*A^2)
-            deriv.near.zero <- abs(f0prime) < kEpsilon ## NEW
-            if (deriv.near.zero) ## NEW
-                return(-1.0) ## NEW
+            if (nu.finite)
+                f0prime <- n*nuBeta/sigma0 - nuBeta*sigma0*V - ((nuTau + 1)*sigma0)/(sigma0^2 + nuTau*A^2)
+            else
+                f0prime <- n*nuBeta/sigma0 - nuBeta*sigma0*V - sigma0/(A^2)
+            deriv.near.zero <- abs(f0prime) < kEpsilon
+            if (deriv.near.zero)
+                return(-1.0)
             rho <- 1
             repeat {
                 sigma1 <- sigma0 - rho * (f0 - z) / f0prime
@@ -1165,7 +1194,10 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
                 rho <- rho / 2
             }
             repeat {
-                f1 <- n*nuBeta*log(sigma1) - (nuBeta/2)*(sigma1^2)*V - ((nuTau+1)/2)*log(sigma1^2 + nuTau*A^2)
+                if (nu.finite)
+                    f1 <- n*nuBeta*log(sigma1) - (nuBeta/2)*(sigma1^2)*V - ((nuTau+1)/2)*log(sigma1^2 + nuTau*A^2)
+                else
+                    f1 <- n*nuBeta*log(sigma1) - (nuBeta/2)*(sigma1^2)*V - (sigma1^2)/(2*A^2)
                 g1 <- (f1 - z)^2
                 if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
                     break

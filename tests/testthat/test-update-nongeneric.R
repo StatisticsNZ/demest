@@ -9,7 +9,7 @@ test.extended <- FALSE
 ## UPDATING STANDARD DEVIATION (VIA SLICE SAMPLING) #################################
 
 if (test.extended) {
-    test_that("updateSDNorm works with no upper limit", {
+    test_that("updateSDNorm works with no upper limit and finite nu", {
         updateSDNorm <- demest:::updateSDNorm
         sigma <- runif(n = 1, 0.0001, max = 10)
         A <- runif(n = 1, min = 0.1, max = 10)
@@ -48,7 +48,46 @@ if (test.extended) {
 }
 
 if (test.extended) {
-    test_that("updateSDNorm works with upper limit", {
+    test_that("updateSDNorm works with no upper limit and infinite nu", {
+        updateSDNorm <- demest:::updateSDNorm
+        sigma <- runif(n = 1, 0.0001, max = 10)
+        A <- runif(n = 1, min = 0.1, max = 10)
+        nu <- Inf
+        V <- runif(n = 1, 0.01, 10)
+        n <- rpois(n = 1, lambda = 10)
+        f <- function(sigma) {
+            sigma^(-n) * exp(-V/(2*sigma^2)) * exp(-(sigma^2)/(2*A^2))
+        }
+        n.sample <- 100000
+        ans <- numeric(length = n.sample)
+        for (i in 1:n.sample) {
+            sigma <- updateSDNorm(sigma = sigma,
+                                  A = A,
+                                  nu = nu,
+                                  V = V,
+                                  n = n,
+                                  max = Inf,
+                                  useC = TRUE)
+            ans[i] <- sigma
+        }
+        d <- density(ans)
+        y <- d$y
+        x <- d$x
+        non.zero <- y > 0
+        y <- y[non.zero]
+        x <- x[non.zero]
+        f.sigma <- f(x)
+        f.sigma <- f.sigma * max(y) / max(f.sigma)
+        expect_true(cor(f.sigma, y) > 0.99)
+        if (FALSE) {
+            plot(y ~ x, type = "l")
+            lines(y = f.sigma, x = x, col = "red")
+        }
+    })
+}
+
+if (test.extended) {
+    test_that("updateSDNorm works with upper limit and finite nu", {
         updateSDNorm <- demest:::updateSDNorm
         sigma <- runif(n = 1, 0.0001, max = 10)
         A <- runif(n = 1, min = 0.1, max = 10)
@@ -91,7 +130,51 @@ if (test.extended) {
     })
 }
 
-test_that("R and C versions of updateSDNorm give same answer with no upper limit", {
+if (test.extended) {
+    test_that("updateSDNorm works with upper limit and infinite nu", {
+        updateSDNorm <- demest:::updateSDNorm
+        sigma <- runif(n = 1, 0.0001, max = 10)
+        A <- runif(n = 1, min = 0.1, max = 10)
+        nu <- Inf
+        V <- runif(n = 1, 0.01, 10)
+        n <- rpois(n = 1, lambda = 10)
+        f <- function(sigma) {
+            sigma^(-n) * exp(-V/(2*sigma^2)) * exp(-(sigma^2)/(2*A^2))
+        }
+        numerator <- -n*A^2 + sqrt(n^2 * A^4 + 4 * A^2 * V)
+        denominator <- 2
+        sigma.star <- sqrt(numerator / denominator)
+        max <- sigma.star * 1.5
+        n.sample <- 100000
+        ans <- numeric(length = n.sample)
+        for (i in 1:n.sample) {
+            sigma <- updateSDNorm(sigma = sigma,
+                                  A = A,
+                                  nu = nu,
+                                  V = V,
+                                  n = n,
+                                  max = max,
+                                  useC = TRUE)
+            ans[i] <- sigma
+        }
+        d <- density(ans, to = 0.98 * max)
+        y <- d$y
+        x <- d$x
+        non.zero <- y > 0
+        y <- y[non.zero]
+        x <- x[non.zero]
+        f.sigma <- f(x)
+        f.sigma <- f.sigma * max(y) / max(f.sigma)
+        expect_true(cor(f.sigma, y) > 0.99)
+        expect_true(all(ans < max))
+        if (FALSE) {
+            plot(y ~ x, type = "l")
+            lines(y = f.sigma, x = x, col = "red")
+        }
+    })
+}
+
+test_that("R and C versions of updateSDNorm give same answer with no upper limit and finite nu", {
     updateSDNorm <- demest:::updateSDNorm
     set.seed(1)
     sigma <- runif(n = 1, 0.0001, max = 10)
@@ -130,7 +213,46 @@ test_that("R and C versions of updateSDNorm give same answer with no upper limit
         expect_equal(ans.R, ans.C)
 })
 
-test_that("R and C versions of updateSDNorm give same answer with upper limit", {
+test_that("R and C versions of updateSDNorm give same answer with no upper limit and infinite nu", {
+    updateSDNorm <- demest:::updateSDNorm
+    set.seed(1)
+    sigma <- runif(n = 1, 0.0001, max = 10)
+    A <- runif(n = 1, min = 0.1, max = 10)
+    nu <- Inf
+    V <- runif(n = 1, 0.01, 10)
+    n <- as.integer(rpois(n = 1, lambda = 10))
+    n.sample <- 100
+    ans.R <- numeric(length = n.sample)
+    ans.C <- numeric(length = n.sample)
+    sigma.R <- sigma
+    sigma.C <- sigma
+    for (i in 1:n.sample) {
+        set.seed(i)
+        sigma.R <- updateSDNorm(sigma = sigma.R,
+                                A = A,
+                                nu = nu,
+                                V = V,
+                                n = n,
+                                max = Inf,
+                                useC = FALSE)
+        ans.R[i] <- sigma.R
+        set.seed(i)
+        sigma.C <- updateSDNorm(sigma = sigma.C,
+                                A = A,
+                                nu = nu,
+                                V = V,
+                                n = n,
+                                max = Inf,
+                                useC = TRUE)
+        ans.C[i] <- sigma.C
+    }
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
+test_that("R and C versions of updateSDNorm give same answer with upper limit and finite nu", {
     updateSDNorm <- demest:::updateSDNorm
     set.seed(1)
     sigma <- runif(n = 1, 0.0001, max = 10)
@@ -173,8 +295,51 @@ test_that("R and C versions of updateSDNorm give same answer with upper limit", 
         expect_equal(ans.R, ans.C)
 })
 
+test_that("R and C versions of updateSDNorm give same answer with upper limit and infinite nu", {
+    updateSDNorm <- demest:::updateSDNorm
+    set.seed(1)
+    sigma <- runif(n = 1, 0.0001, max = 10)
+    A <- runif(n = 1, min = 0.1, max = 10)
+    nu <- Inf
+    V <- runif(n = 1, 0.01, 10)
+    n <- as.integer(rpois(n = 1, lambda = 10))
+    numerator <- -n*A^2 + sqrt(n^2 * A^4 + 4 * A^2 * V)
+    denominator <- 2
+    sigma.star <- sqrt(numerator / denominator)
+    max <- sigma.star * 1.5
+    n.sample <- 100
+    ans.R <- numeric(length = n.sample)
+    ans.C <- numeric(length = n.sample)
+    sigma.R <- sigma
+    sigma.C <- sigma
+    for (i in 1:n.sample) {
+        set.seed(i)
+        sigma.R <- updateSDNorm(sigma = sigma.R,
+                                A = A,
+                                nu = nu,
+                                V = V,
+                                n = n,
+                                max = sigma.star,
+                                useC = FALSE)
+        ans.R[i] <- sigma.R
+        set.seed(i)
+        sigma.C <- updateSDNorm(sigma = sigma.C,
+                                A = A,
+                                nu = nu,
+                                V = V,
+                                n = n,
+                                max = sigma.star,
+                                useC = TRUE)
+        ans.C[i] <- sigma.C
+    }
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
 if (test.extended) {
-    test_that("updateSDRobust works with no upper limit", {
+    test_that("updateSDRobust works with no upper limit - nuTau finite", {
         updateSDRobust <- demest:::updateSDRobust
         sigma <- runif(n = 1, 0.0001, max = 10)
         A <- runif(n = 1, min = 0.1, max = 10)
@@ -215,7 +380,49 @@ if (test.extended) {
 }
 
 if (test.extended) {
-    test_that("updateSDRobust works with upper limit", {
+    test_that("updateSDRobust works with no upper limit - nuTau infinite", {
+        updateSDRobust <- demest:::updateSDRobust
+        sigma <- runif(n = 1, 0.0001, max = 10)
+        A <- runif(n = 1, min = 0.1, max = 10)
+        nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
+        nuTau <- Inf
+        V <- runif(n = 1, 0.01, 10)
+        n <- rpois(n = 1, lambda = 10)
+        f <- function(sigma) {
+            sigma^(n * nuBeta) * exp(-nuBeta*sigma^2*V/2) * exp(-(sigma^2)/(2*A^2))
+        }
+        n.sample <- 100000
+        ans <- numeric(length = n.sample)
+        for (i in 1:n.sample) {
+            sigma <- updateSDRobust(sigma = sigma,
+                                    A = A,
+                                    nuBeta = nuBeta,
+                                    nuTau = nuTau,
+                                    V = V,
+                                    n = n,
+                                    max = Inf,
+                                    useC = TRUE)
+            ans[i] <- sigma
+        }
+        d <- density(ans)
+        y <- d$y
+        x <- d$x
+        non.zero <- y > 0
+        y <- y[non.zero]
+        x <- x[non.zero]
+        f.sigma <- f(x)
+        f.sigma <- f.sigma * max(y) / max(f.sigma)
+        expect_true(cor(f.sigma, y) > 0.99)
+        if (FALSE) {
+            plot(y ~ x, type = "l")
+            lines(y = f.sigma, x = x, col = "red")
+        }
+    })
+}
+
+
+if (test.extended) {
+    test_that("updateSDRobust works with upper limit - nuTau finite", {
         updateSDRobust <- demest:::updateSDRobust
         sigma <- runif(n = 1, 0.0001, max = 10)
         A <- runif(n = 1, min = 0.1, max = 10)
@@ -261,7 +468,51 @@ if (test.extended) {
     })
 }
 
-test_that("R and C versions of updateSDRobust give same answer with no upper limit", {
+if (test.extended) {
+    test_that("updateSDRobust works with upper limit - nuTau infinite", {
+        updateSDRobust <- demest:::updateSDRobust
+        sigma <- runif(n = 1, 0.0001, max = 10)
+        A <- runif(n = 1, min = 0.1, max = 10)
+        nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
+        nuTau <- Inf
+        V <- runif(n = 1, 0.01, 10)
+        n <- rpois(n = 1, lambda = 10)
+        sigma.star <- sqrt((n * nuBeta) / (nuBeta * V + 1/(A^2)))
+        max <- sigma.star
+        f <- function(sigma) {
+            sigma^(n * nuBeta) * exp(-nuBeta*sigma^2*V/2) * exp(-(sigma^2)/(2*A^2))
+        }
+        n.sample <- 100000
+        ans <- numeric(length = n.sample)
+        for (i in 1:n.sample) {
+            sigma <- updateSDRobust(sigma = sigma,
+                                    A = A,
+                                    nuBeta = nuBeta,
+                                    nuTau = nuTau,
+                                    V = V,
+                                    n = n,
+                                    max = max,
+                                    useC = TRUE)
+            ans[i] <- sigma
+        }
+        d <- density(ans, to = 0.98 * max)
+        y <- d$y
+        x <- d$x
+        non.zero <- y > 0
+        y <- y[non.zero]
+        x <- x[non.zero]
+        f.sigma <- f(x)
+        f.sigma <- f.sigma * max(y) / max(f.sigma)
+        expect_true(cor(f.sigma, y) > 0.99)
+        expect_true(all(ans < max))
+        if (FALSE) {
+            plot(y ~ x, type = "l")
+            lines(y = f.sigma, x = x, col = "red")
+        }
+    })
+}
+
+test_that("R and C versions of updateSDRobust give same answer with no upper limit - nuTau finite", {
     updateSDRobust <- demest:::updateSDRobust
     set.seed(1)
     sigma <- runif(n = 1, 0.0001, max = 10)
@@ -303,7 +554,49 @@ test_that("R and C versions of updateSDRobust give same answer with no upper lim
         expect_equal(ans.R, ans.C)
 })
 
-test_that("R and C versions of updateSDRobust give same answer with upper limit", {
+test_that("R and C versions of updateSDRobust give same answer with no upper limit - nuTau infinite", {
+    updateSDRobust <- demest:::updateSDRobust
+    set.seed(1)
+    sigma <- runif(n = 1, 0.0001, max = 10)
+    A <- runif(n = 1, min = 0.1, max = 10)
+    nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
+    nuTau <- Inf
+    V <- runif(n = 1, 0.01, 10)
+    n <- as.integer(rpois(n = 1, lambda = 10))
+    n.sample <- 100
+    ans.R <- numeric(length = n.sample)
+    ans.C <- numeric(length = n.sample)
+    sigma.R <- sigma
+    sigma.C <- sigma
+    for (i in 1:n.sample) {
+        set.seed(i)
+        sigma.R <- updateSDRobust(sigma = sigma.R,
+                                  A = A,
+                                  nuBeta = nuBeta,
+                                  nuTau = nuTau,
+                                  V = V,
+                                  n = n,
+                                  max = 3,
+                                  useC = FALSE)
+        ans.R[i] <- sigma.R
+        set.seed(i)
+        sigma.C <- updateSDRobust(sigma = sigma.C,
+                                  A = A,
+                                  nuBeta = nuBeta,
+                                  nuTau = nuTau,
+                                  V = V,
+                                  n = n,
+                                  max = 3,
+                                  useC = TRUE)
+        ans.C[i] <- sigma.C
+    }
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
+test_that("R and C versions of updateSDRobust give same answer with upper limit - nuTau finite", {
     updateSDRobust <- demest:::updateSDRobust
     set.seed(1)
     sigma <- runif(n = 1, 0.0001, max = 10)
@@ -349,6 +642,52 @@ test_that("R and C versions of updateSDRobust give same answer with upper limit"
     else
         expect_equal(ans.R, ans.C)
 })
+
+
+test_that("R and C versions of updateSDRobust give same answer with upper limit - nuTau infinite", {
+    updateSDRobust <- demest:::updateSDRobust
+    set.seed(1)
+    sigma <- runif(n = 1, 0.0001, max = 10)
+    A <- runif(n = 1, min = 0.1, max = 10)
+    nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
+    nuTau <- Inf
+    V <- runif(n = 1, 0.01, 10)
+    n <- as.integer(rpois(n = 1, lambda = 10))
+    n.sample <- 100
+    sigma.star <- sqrt((n * nuBeta) / (nuBeta * V + 1/(A^2)))
+    max <- sigma.star
+    ans.R <- numeric(length = n.sample)
+    ans.C <- numeric(length = n.sample)
+    sigma.R <- sigma
+    sigma.C <- sigma
+    for (i in 1:n.sample) {
+        set.seed(i)
+        sigma.R <- updateSDRobust(sigma = sigma.R,
+                                  A = A,
+                                  nuBeta = nuBeta,
+                                  nuTau = nuTau,
+                                  V = V,
+                                  n = n,
+                                  max = sigma.star,
+                                  useC = FALSE)
+        ans.R[i] <- sigma.R
+        set.seed(i)
+        sigma.C <- updateSDRobust(sigma = sigma.C,
+                                  A = A,
+                                  nuBeta = nuBeta,
+                                  nuTau = nuTau,
+                                  V = V,
+                                  n = n,
+                                  max = sigma.star,
+                                  useC = TRUE)
+        ans.C[i] <- sigma.C
+    }
+    if (test.identity)
+        expect_identical(ans.R, ans.C)
+    else
+        expect_equal(ans.R, ans.C)
+})
+
 
 
 
