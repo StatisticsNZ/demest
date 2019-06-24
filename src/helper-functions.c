@@ -919,19 +919,27 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
     
     double minTol = min + K_TOLERANCE;
     double maxTol = max - K_TOLERANCE;
-    
+
     double minTolSq = minTol * minTol;
     double logMinTol = log(minTol);
     double maxTolSq = maxTol * maxTol;
     double logMaxTol = log(maxTol);
-    
-    double fmin = -n * logMinTol - V/(2 * minTolSq) 
-                                    - nuPlus1/2 * log(minTolSq + nuASq);
+    double ASq = A * A;
+
+    int nu_finite = R_finite(nu);
+
+    double fmin;
+    if (nu_finite)
+      fmin = -n * logMinTol - V/(2 * minTolSq) - nuPlus1/2 * log(minTolSq + nuASq);
+    else
+      fmin = -n * logMinTol - V/(2 * minTolSq) - minTolSq/(2 * ASq);
     
     double fmax = R_NegInf;
     if ( R_finite(max) ) {
-        fmax = -n * logMaxTol - V/(2 * maxTolSq) 
-                                    - nuPlus1/2 * log(maxTolSq + nuASq);
+      if (nu_finite)
+        fmax = -n * logMaxTol - V/(2 * maxTolSq) - nuPlus1/2 * log(maxTolSq + nuASq);
+      else
+	fmax = -n * logMaxTol - V/(2 * maxTolSq) - maxTolSq/(2 * ASq);
     }
     
     if ( !(( (fmin < z) && (fmax < z ) ) || ( (fmin > z) && (fmax > z) ) ) ) {
@@ -941,8 +949,11 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
     
         double sigma0Sq = sigma0 * sigma0;
     
-        double f0 = -n * log(sigma0) - V/(2 * sigma0Sq) 
-                                - nuPlus1/2 * log(sigma0Sq + nuASq);
+        double f0;
+	if (nu_finite)
+	  f0 = -n * log(sigma0) - V/(2 * sigma0Sq) - nuPlus1/2 * log(sigma0Sq + nuASq);
+	else
+	  f0 = -n * log(sigma0) - V/(2 * sigma0Sq) - sigma0Sq/(2 * ASq);
         double g0 = (f0 - z)*(f0 - z); 
             
         while ( !found && (kIter < K_MAX_ITER) ) {
@@ -951,12 +962,11 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
             
             double sigma0Cubed = sigma0Sq * sigma0;
  
- /*  f0prime <- -n/sigma0 + V/(sigma0^3) - ((nu + 1)*sigma0) / (sigma0^2 + nu*A^2)
-          */
-                     
-            double f0prime = -n/sigma0 + V/sigma0Cubed 
-                            - nuPlus1 * sigma0 / (sigma0Sq + nuASq);
-           
+            double f0prime;
+	    if (nu_finite)
+	      f0prime = -n/sigma0 + V/sigma0Cubed - nuPlus1 * sigma0 / (sigma0Sq + nuASq);
+	    else
+	      f0prime = -n/sigma0 + V/sigma0Cubed - sigma0/ASq;           
             
             int derivNearZero = ( fabs(f0prime) < K_EPSILON );
             
@@ -976,16 +986,21 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
                 }
                 
                 double sigma1Sq = sigma1 * sigma1;
-                double f1 = -n*log(sigma1) - V/(2*sigma1Sq) 
-                                        - nuPlus1/2 * log(sigma1Sq + nuASq);
+                double f1;
+		if (nu_finite)
+		  f1 = -n*log(sigma1) - V/(2*sigma1Sq) - nuPlus1/2 * log(sigma1Sq + nuASq);
+		else
+		  f1 = -n*log(sigma1) - V/(2*sigma1Sq) - sigma1Sq/(2*ASq);
                 double g1 = (f1 - z)*(f1 - z);
                 while ( (g1 > g0) && ( fabs(g1 - g0) >= K_TOLERANCE ) 
                                                 && (rho >= K_TOLERANCE)) {
                     rho /= 2;
                     sigma1 = sigma0 - rho * f0MinusZOverF0prime;
                     sigma1Sq = sigma1 * sigma1;
-                    f1 = -n*log(sigma1) - V/(2*sigma1Sq) 
-                                        - nuPlus1/2 * log(sigma1Sq + nuASq);
+		    if (nu_finite)
+		      f1 = -n*log(sigma1) - V/(2*sigma1Sq) - nuPlus1/2 * log(sigma1Sq + nuASq);
+		    else
+		      f1 = -n*log(sigma1) - V/(2*sigma1Sq) - sigma1Sq/(2*ASq);
                     g1 = (f1 - z)*(f1 - z);
                     
                 }
@@ -1017,32 +1032,45 @@ findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
 
 double
 findOneRootLogPostSigmaRobust(double sigma0, double z, double A, 
-                            double nuBeta, double nuTau,
-                            double V, int n, double min, double max)
+			      double nuBeta, double nuTau,
+			      double V, int n, double min, double max)
 {
-    double n_nuBeta = n * nuBeta;
-    double nuBeta_V = nuBeta * V;
-    double nuBeta_V_div2 = nuBeta_V/2;
-    double nuTauPlus1 = nuTau + 1;
-    double nuTauASq = nuTau * A * A;
-    
-    double retValue = -99.0;
+  double ASq = A * A;
+  double n_nuBeta = n * nuBeta;
+  double nuBeta_V = nuBeta * V;
+  double nuBeta_V_div2 = nuBeta_V/2;
+  double nuTauPlus1;
+  double nuTauASq;
 
-    double minTol = min + K_TOLERANCE;
-    double maxTol = max - K_TOLERANCE;
+  int nuFinite = R_finite(nuTau);
+
+  if (nuFinite) {
+    nuTauPlus1 = nuTau + 1;
+    nuTauASq = nuTau * ASq;
+  }
+
+  double retValue = -99.0;
+
+  double minTol = min + K_TOLERANCE;
+  double maxTol = max - K_TOLERANCE;
     
-    double minTolSq = minTol * minTol;
-    double logMinTol = log(minTol);
-    double maxTolSq = maxTol * maxTol;
-    double logMaxTol = log(maxTol);
+  double minTolSq = minTol * minTol;
+  double logMinTol = log(minTol);
+  double maxTolSq = maxTol * maxTol;
+  double logMaxTol = log(maxTol);
     
-    double fmin = n_nuBeta * logMinTol - nuBeta_V_div2 * minTolSq
-                                    - nuTauPlus1/2 * log(minTolSq + nuTauASq);
+  double fmin;
+  if (nuFinite)
+    fmin = n_nuBeta * logMinTol - nuBeta_V_div2 * minTolSq - nuTauPlus1/2 * log(minTolSq + nuTauASq);
+  else
+    fmin = n_nuBeta * logMinTol - nuBeta_V_div2 * minTolSq - minTolSq / (2*ASq);
     
     double fmax = R_NegInf;
     if ( R_finite(max) ) {
-        fmax = n_nuBeta * logMaxTol - nuBeta_V_div2 * maxTolSq
-                                    - nuTauPlus1/2 * log(maxTolSq + nuTauASq);
+      if (nuFinite)
+        fmax = n_nuBeta * logMaxTol - nuBeta_V_div2 * maxTolSq - nuTauPlus1/2 * log(maxTolSq + nuTauASq);
+      else
+	fmax = n_nuBeta * logMaxTol - nuBeta_V_div2 * maxTolSq - maxTolSq / (2*ASq);
     }
     
     if ( !(( (fmin < z) && (fmax < z ) ) || ( (fmin > z) && (fmax > z) ) ) ) {
@@ -1052,8 +1080,11 @@ findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
     
         double sigma0Sq = sigma0 * sigma0;
         
-        double f0 = n_nuBeta * log(sigma0) - nuBeta_V_div2 * sigma0Sq
-                                    - nuTauPlus1/2 * log(sigma0Sq + nuTauASq);
+        double f0;
+	if (nuFinite)
+	  f0 = n_nuBeta * log(sigma0) - nuBeta_V_div2 * sigma0Sq - nuTauPlus1/2 * log(sigma0Sq + nuTauASq);
+	else
+	  f0 = n_nuBeta * log(sigma0) - nuBeta_V_div2 * sigma0Sq - sigma0Sq / (2*ASq);
                                     
         double g0 = (f0 - z)*(f0 - z); 
             
@@ -1061,8 +1092,11 @@ findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
             /* sigma0, f0, g0 can change in each iteration */
             sigma0Sq = sigma0 * sigma0;
             
-            double f0prime = n_nuBeta/sigma0 - nuBeta_V * sigma0
-                            - nuTauPlus1 * sigma0 / (sigma0Sq + nuTauASq);
+            double f0prime;
+	    if (nuFinite)
+	      f0prime = n_nuBeta/sigma0 - nuBeta_V * sigma0 - nuTauPlus1 * sigma0 / (sigma0Sq + nuTauASq);
+	    else
+	      f0prime = n_nuBeta/sigma0 - nuBeta_V * sigma0 - sigma0 / ASq;
             
             int derivNearZero = ( fabs(f0prime) < K_EPSILON );
             
@@ -1081,16 +1115,21 @@ findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
                 }
                 
                 double sigma1Sq = sigma1 * sigma1;
-                double f1 = n_nuBeta*log(sigma1) - nuBeta_V_div2 * sigma1Sq
-                                        - nuTauPlus1/2 * log(sigma1Sq + nuTauASq);
+                double f1;
+		if (nuFinite)
+		  f1 = n_nuBeta*log(sigma1) - nuBeta_V_div2 * sigma1Sq - nuTauPlus1/2 * log(sigma1Sq + nuTauASq);
+		else
+		  f1 = n_nuBeta*log(sigma1) - nuBeta_V_div2 * sigma1Sq - sigma1Sq / (2*ASq);
                 double g1 = (f1 - z)*(f1 - z);
                 while ( (g1 > g0) && ( fabs(g1 - g0) >= K_TOLERANCE ) 
                                                 && (rho >= K_TOLERANCE)) {
                     rho /= 2;
                     sigma1 = sigma0 - rho * f0MinusZOverF0prime;
                     sigma1Sq = sigma1 * sigma1;
-                    f1 = n_nuBeta*log(sigma1) - nuBeta_V_div2 * sigma1Sq
-                                        - nuTauPlus1/2 * log(sigma1Sq + nuTauASq);
+		    if (nuFinite)
+		      f1 = n_nuBeta*log(sigma1) - nuBeta_V_div2 * sigma1Sq - nuTauPlus1/2 * log(sigma1Sq + nuTauASq);
+		    else
+		      f1 = n_nuBeta*log(sigma1) - nuBeta_V_div2 * sigma1Sq - sigma1Sq / (2*ASq);
                     g1 = (f1 - z)*(f1 - z);
                     
                 }

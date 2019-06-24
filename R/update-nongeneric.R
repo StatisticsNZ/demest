@@ -45,11 +45,21 @@ updateSDNorm <- function(sigma, A, nu, V, n, max, useC = FALSE) {
         .Call(updateSDNorm_R, sigma, A, nu, V, n, max)
     }
     else {
-        f0 <- -n*log(sigma) - V/(2*sigma^2) - ((nu + 1)/2) * log(sigma^2 + nu*A^2)
+        nu.finite <- is.finite(nu)
+        if (nu.finite)
+            f0 <- -n*log(sigma) - V/(2*sigma^2) - ((nu + 1)/2) * log(sigma^2 + nu*A^2)
+        else
+            f0 <- -n*log(sigma) - V/(2*sigma^2) - (sigma^2)/(2*A^2)
         e <- stats::rexp(n = 1L, rate = 1)
         z <- f0 - e
-        numerator <- V - n*nu*A^2 + sqrt((V - n*nu*A^2)^2 + 4*(n + nu + 1)*V*nu*A^2)
-        denominator <- 2*(n + nu + 1)
+        if (nu.finite) {
+            numerator <- V - n*nu*A^2 + sqrt((V - n*nu*A^2)^2 + 4*(n + nu + 1)*V*nu*A^2)
+            denominator <- 2*(n + nu + 1)
+        }
+        else {
+            numerator <- -n * A^2 + sqrt(n^2 * A^4 + 4 * A^2 * V)
+            denominator <- 2
+        }
         sigma.star <- sqrt(numerator / denominator)
         sigma0.left <- 0.5 * sigma.star
         root.left <- findOneRootLogPostSigmaNorm(sigma0 = sigma0.left,
@@ -64,7 +74,10 @@ updateSDNorm <- function(sigma, A, nu, V, n, max, useC = FALSE) {
         found.root.left <- root.left > 0
         if (found.root.left) {
             if (is.finite(max)) {
-                f.max <- -n*log(max) - V/(2*max^2) - ((nu + 1)/2) * log(max^2 + nu*A^2)
+                if (nu.finite)
+                    f.max <- -n*log(max) - V/(2*max^2) - ((nu + 1)/2) * log(max^2 + nu*A^2)
+                else
+                    f.max <- -n*log(max) - V/(2*max^2) - (max^2)/(2*A^2)
                 root.less.than.max <- z > f.max
                 if (root.less.than.max) {
                     sigma0.right <- 1.5 * sigma.star
@@ -162,13 +175,21 @@ updateSDRobust <- function(sigma, A, nuBeta, nuTau, V, n, max, useC = FALSE) {
         .Call(updateSDRobust_R, sigma, A, nuBeta, nuTau, V, n, max)
     }
     else {
-        f0 <- n*nuBeta*log(sigma) - (nuBeta/2)*(sigma^2)*V - ((nuTau+1)/2)*log(sigma^2 + nuTau*A^2)
+        nu.finite <- is.finite(nuTau)
+        if (nu.finite)
+            f0 <- n*nuBeta*log(sigma) - (nuBeta/2)*(sigma^2)*V - ((nuTau+1)/2)*log(sigma^2 + nuTau*A^2)
+        else
+            f0 <- n*nuBeta*log(sigma) - (nuBeta/2)*(sigma^2)*V - (sigma^2)/(2*A^2)
         e <- stats::rexp(n = 1L, rate = 1)
         z <- f0 - e
-        H1 <- nuBeta * V
-        H2 <- nuBeta * nuTau * V * A^2 + nuTau + 1 - n * nuBeta
-        H3 <- -n * nuBeta * nuTau * A^2
-        sigma.star <- sqrt((-H2 + sqrt(H2^2 - 4*H1*H3))/(2*H1))
+        if (nu.finite) {
+            H1 <- nuBeta * V
+            H2 <- nuBeta * nuTau * V * A^2 + nuTau + 1 - n * nuBeta
+            H3 <- -n * nuBeta * nuTau * A^2
+            sigma.star <- sqrt((-H2 + sqrt(H2^2 - 4*H1*H3))/(2*H1))
+        }
+        else
+            sigma.star <- sqrt((n * nuBeta) / (nuBeta * V + 1/(A^2)))
         sigma0.left <- 0.5 * sigma.star
         root.left <- findOneRootLogPostSigmaRobust(sigma0 = sigma0.left,
                                                    z = z,
@@ -183,7 +204,10 @@ updateSDRobust <- function(sigma, A, nuBeta, nuTau, V, n, max, useC = FALSE) {
         found.root.left <- root.left > 0
         if (found.root.left) {
             if (is.finite(max)) {
-                f.max <- n*nuBeta*log(max) - (nuBeta/2)*(max^2)*V - ((nuTau+1)/2)*log(max^2 + nuTau*A^2)
+                if (nu.finite)
+                    f.max <- n*nuBeta*log(max) - (nuBeta/2)*(max^2)*V - ((nuTau+1)/2)*log(max^2 + nuTau*A^2)
+                else
+                    f.max <- n*nuBeta*log(max) - (nuBeta/2)*(max^2)*V - (max^2)/(2*A^2)
                 root.less.than.max <- z > f.max
                 if (root.less.than.max) {
                     sigma0.right <- 1.5 * sigma.star
@@ -1894,7 +1918,7 @@ updateBetas <- function(object, useC = FALSE) {
         ## work with 'object@betas', since betas
         ## are updated within function, but
         ## 'makeVBarAndN' is called on whole
-        ## object        
+        ## object
         means.betas <- object@meansBetas
         variances.betas <- object@variancesBetas
         priors.betas <- object@priorsBetas
@@ -1915,14 +1939,18 @@ updateBetas <- function(object, useC = FALSE) {
                 all.struc.zero <- prior.beta@allStrucZero # vector of length J
                 for (j in seq_len(J)) {
                     if (!all.struc.zero[j]) {
-                        prec.data <- n[j] / sigma^2
-                        prec.prior <- 1 / var.beta[j]
-                        var.post <- 1 / (prec.data + prec.prior)
-                        mean.post <- (prec.data * vbar[j] + prec.prior * mean.beta[j]) * var.post
-                        sd.post <- sqrt(var.post)
-                        val.post <- stats::rnorm(n = 1L,
-                                                 mean = mean.post,
-                                                 sd = sd.post)
+                        if (var.beta[j] > 0) {
+                            prec.data <- n[j] / sigma^2
+                            prec.prior <- 1 / var.beta[j]
+                            var.post <- 1 / (prec.data + prec.prior)
+                            mean.post <- (prec.data * vbar[j] + prec.prior * mean.beta[j]) * var.post
+                            sd.post <- sqrt(var.post)
+                            val.post <- stats::rnorm(n = 1L,
+                                                     mean = mean.post,
+                                                     sd = sd.post)
+                        }
+                        else
+                            val.post <- mean.beta[j]
                         object@betas[[i.beta]][j] <- val.post
                     }
                 }

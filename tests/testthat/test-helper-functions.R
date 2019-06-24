@@ -2756,7 +2756,7 @@ test_that("R and C versions of betaHatSeason give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
-test_that("findOneRootLogPostSigmaNorm works", {
+test_that("findOneRootLogPostSigmaNorm works with nu finite", {
     findOneRootLogPostSigmaNorm <- demest:::findOneRootLogPostSigmaNorm
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2814,9 +2814,10 @@ test_that("findOneRootLogPostSigmaNorm works", {
     }
 })
 
+
 ## NOTE: C version of this function can give different results due
 ## to effect of kEpsilon test for deriv near zero.
-test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
+test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer with nu finite", {
     findOneRootLogPostSigmaNorm <- demest:::findOneRootLogPostSigmaNorm
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2899,7 +2900,149 @@ test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer", {
     }
 })
 
-test_that("findOneRootLogPostSigmaRobust works", {
+test_that("findOneRootLogPostSigmaNorm works with nu infinite", {
+    findOneRootLogPostSigmaNorm <- demest:::findOneRootLogPostSigmaNorm
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        A <- runif(n = 1, min = 0.1, max = 10)
+        nu <- Inf
+        V <- runif(n = 1, 0.01, 20)
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
+        sigma <- runif(n = 1, min = 0.001, max = 10)
+        sigma.max <- sqrt((-n*A^2 + sqrt(n^2 * A^4 + 4 * A^2 * V)) / 2)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        ## sigma.left <- runif(n = 1, min = 0.000, max = sigma.max)
+        ## sigma.right <- runif(n = 1, min = sigma.max, max = 3*sigma.max)
+        sigma.left <- 0.5 * sigma.max
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2)
+        f <- function(sigma) {
+            -n*log(sigma) - V/(2*sigma^2) - (sigma^2)/(2*A^2)
+        }
+        z <- f(sigma) - rexp(1, 1)
+        root.left <- findOneRootLogPostSigmaNorm(sigma0 = sigma.left,
+                                                 z = z,
+                                                 A = A,
+                                                 nu = nu,
+                                                 V = V,
+                                                 n = n,
+                                                 min = 0,
+                                                 max = sigma.max,
+                                                 useC = FALSE)
+        root.right <- findOneRootLogPostSigmaNorm(sigma0 = sigma.right,
+                                                  z = z,
+                                                  A = A,
+                                                  nu = nu,
+                                                  V = V,
+                                                  n = n,
+                                                  min = sigma.max,
+                                                  max = max.right,
+                                                  useC = FALSE)
+        if (root.left > 0)
+            expect_equal(f(root.left), z)
+        if (root.right > 0)
+            expect_equal(f(root.right), z)
+        ans.at.max <- findOneRootLogPostSigmaNorm(sigma0 = sigma.max,
+                                                  z = z,
+                                                  A = A,
+                                                  nu = nu,
+                                                  V = V,
+                                                  n = n,
+                                                  min = sigma.max,
+                                                  max = max.right, ## NEW
+                                                  useC = FALSE)
+        expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
+                    || isTRUE(all.equal(ans.at.max, -1))
+                    || isTRUE(all.equal(ans.at.max, root.left))
+                    || isTRUE(all.equal(ans.at.max, root.right)))
+    }
+})
+
+
+## NOTE: C version of this function can give different results due
+## to effect of kEpsilon test for deriv near zero.
+test_that("R and C versions of findOneRootLogPostSigmaNorm give same answer with nu infinite", {
+    findOneRootLogPostSigmaNorm <- demest:::findOneRootLogPostSigmaNorm
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        A <- runif(n = 1, min = 0.1, max = 10)
+        nu <- Inf
+        V <- runif(n = 1, 0.01, 10)
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
+        sigma <- runif(1, 0, 10)
+        sigma.max <- sqrt((n + sqrt(n^2 + 4)) / 2)
+        f <- function(sigma) {
+            -n*log(sigma) - V/(2*sigma^2) - (sigma^2)/(2*A^2)
+        }
+        z <- f(sigma) - rexp(n = 1, 1)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
+        root.left.R <- findOneRootLogPostSigmaNorm(sigma0 = sigma.left,
+                                                   z = z,
+                                                   A = A,
+                                                   nu = nu,
+                                                   V = V,
+                                                   n = n,
+                                                   min = 0,
+                                                   max = sigma.max,
+                                                   useC = FALSE)
+        root.left.C <- findOneRootLogPostSigmaNorm(sigma0 = sigma.left,
+                                                   z = z,
+                                                   A = A,
+                                                   nu = nu,
+                                                   V = V,
+                                                   n = n,
+                                                   min = 0,
+                                                   max = sigma.max,
+                                                   useC = TRUE)
+        root.right.R <- findOneRootLogPostSigmaNorm(sigma0 = sigma.right,
+                                                    z = z,
+                                                    A = A,
+                                                    nu = nu,
+                                                    V = V,
+                                                    n = n,
+                                                    min = sigma.max,
+                                                    max = max.right,
+                                                    useC = FALSE)
+        root.right.C <- findOneRootLogPostSigmaNorm(sigma0 = sigma.right,
+                                                    z = z,
+                                                    A = A,
+                                                    nu = nu,
+                                                    V = V,
+                                                    n = n,
+                                                    min = sigma.max,
+                                                    max = max.right,
+                                                    ##max = Inf, JAH changed for line above
+                                                    useC = TRUE)
+        expect_equal(root.left.R, root.left.C)
+        expect_equal(root.right.R, root.right.C)
+        ans.at.max.R <- findOneRootLogPostSigmaNorm(sigma0 = sigma.max,
+                                                    z = z,
+                                                    A = A,
+                                                    nu = nu,
+                                                    V = V,
+                                                    n = n,
+                                                    min = sigma.max,
+                                                    max = max.right, ## NEW
+                                                    useC = FALSE)
+        ans.at.max.C <- findOneRootLogPostSigmaNorm(sigma0 = sigma.max,
+                                                    z = z,
+                                                    A = A,
+                                                    nu = nu,
+                                                    V = V,
+                                                    n = n,
+                                                    min = sigma.max,
+                                                    max = max.right, ## NEW
+                                                    useC = TRUE)
+        expect_equal(ans.at.max.R, ans.at.max.C)
+        expect_true(isTRUE(all.equal(ans.at.max.R, sigma.max))
+                    || isTRUE(all.equal(ans.at.max.R, -1))
+                    || isTRUE(all.equal(ans.at.max.R, root.left.R))
+                    || isTRUE(all.equal(ans.at.max.R, root.right.R)))
+    }
+})
+
+test_that("findOneRootLogPostSigmaRobust works with nuTau finite", {
     findOneRootLogPostSigmaRobust <- demest:::findOneRootLogPostSigmaRobust
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2963,9 +3106,69 @@ test_that("findOneRootLogPostSigmaRobust works", {
     }
 })
 
+test_that("findOneRootLogPostSigmaRobust works with nuTau infinite", {
+    findOneRootLogPostSigmaRobust <- demest:::findOneRootLogPostSigmaRobust
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        A <- runif(n = 1, min = 0.1, max = 10)
+        nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
+        nuTau <- Inf
+        V <- runif(n = 1, 0.01, 10)
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
+        sigma.max <- sqrt((n * nuBeta) / (nuBeta * V + (1/A^2)))
+        f <- function(sigma) {
+            n*nuBeta*log(sigma) - (nuBeta/2)*(sigma^2)*V - (sigma^2)/(2*A^2)
+        }
+        sigma <- runif(1, 0.05, 10)
+        z <- f(sigma) - rexp(n = 1, 1)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf
+        sigma.left <- 0.5 * sigma.max
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2)
+        root.left <- findOneRootLogPostSigmaRobust(sigma0 = sigma.left,
+                                                   z = z,
+                                                   A = A,
+                                                   nuBeta = nuBeta,
+                                                   nuTau = nuTau,
+                                                   V = V,
+                                                   n = n,
+                                                   min = 0,
+                                                   max = sigma.max,
+                                                   useC = FALSE)
+        root.right <- findOneRootLogPostSigmaRobust(sigma0 = sigma.right,
+                                                    z = z,
+                                                    A = A,
+                                                    nuBeta = nuBeta,
+                                                    nuTau = nuTau,
+                                                    V = V,
+                                                    n = n,
+                                                    min = sigma.max,
+                                                    max = max.right,
+                                                    useC = FALSE)
+        if (root.left > 0)
+            expect_equal(f(root.left), z)
+        if (root.right > 0)
+            expect_equal(f(root.right), z)
+        ans.at.max <- findOneRootLogPostSigmaRobust(sigma0 = sigma.max,
+                                                    z = z,
+                                                    A = A,
+                                                    nuBeta = nuBeta,
+                                                    nuTau = nuTau,
+                                                    V = V,
+                                                    n = n,
+                                                    min = sigma.max,
+                                                    max = max.right,
+                                                    useC = FALSE)
+        expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
+                    || isTRUE(all.equal(ans.at.max, -1))
+                    || isTRUE(all.equal(ans.at.max, root.left))
+                    || isTRUE(all.equal(ans.at.max, root.right)))
+    }
+})
+
+
 ## NOTE: C version of this function can give different results due
 ## to effect of kEpsilon test for deriv near zero.
-test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", {
+test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer with nuTau finite", {
     findOneRootLogPostSigmaRobust <- demest:::findOneRootLogPostSigmaRobust
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -3046,6 +3249,88 @@ test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer", 
                     || isTRUE(all.equal(ans.at.max, root.right.C)))
     }
 })
+
+## NOTE: C version of this function can give different results due
+## to effect of kEpsilon test for deriv near zero.
+test_that("R and C versions of findOneRootLogPostSigmaRobust give same answer with nuTau infinite", {
+    findOneRootLogPostSigmaRobust <- demest:::findOneRootLogPostSigmaRobust
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        A <- runif(n = 1, min = 0.1, max = 10)
+        nuBeta <- 1.0 * max(rpois(n = 1, lambda = 5), 1)
+        nuTau <- Inf
+        V <- runif(n = 1, 0.01, 10)
+        n <- as.integer(rpois(n = 1, lambda = 10)) + 1L
+        sigma.max <- sqrt((n * nuBeta) / (nuBeta * V + (1/A^2)))
+        f <- function(sigma) {
+            n*nuBeta*log(sigma) - (nuBeta/2)*(sigma^2)*V - (sigma^2)/(2*A^2)
+        }
+        sigma <- runif(1, 0.005, 5)
+        z <- f(sigma) - rexp(n = 1, 1)
+        max.right <- if (runif(1) < 0.7) runif(1, sigma.max, 10 * sigma.max) else Inf ## NEW
+        ## sigma.left <- runif(n = 1, min = 0.001, max = sigma.max)
+        ## sigma.right <- runif(n = 1, min = sigma.max, max = 10*sigma.max)
+        sigma.left <- 0.5 * sigma.max ## NEW
+        sigma.right <- min(1.5 * sigma.max, (sigma.max + max.right) / 2) ## NEW
+        root.left.R <- findOneRootLogPostSigmaRobust(sigma0 = sigma.left,
+                                                     z = z,
+                                                     A = A,
+                                                     nuBeta = nuBeta,
+                                                     nuTau = nuTau,
+                                                     V = V,
+                                                     n = n,
+                                                     min = 0,
+                                                     max = sigma.max,
+                                                     useC = FALSE)
+        root.left.C <- findOneRootLogPostSigmaRobust(sigma0 = sigma.left,
+                                                     z = z,
+                                                     A = A,
+                                                     nuBeta = nuBeta,
+                                                     nuTau = nuTau,
+                                                     V = V,
+                                                     n = n,
+                                                     min = 0,
+                                                     max = sigma.max,
+                                                     useC = TRUE)
+        root.right.R <- findOneRootLogPostSigmaRobust(sigma0 = sigma.right,
+                                                      z = z,
+                                                      A = A,
+                                                      nuBeta = nuBeta,
+                                                      nuTau = nuTau,
+                                                      V = V,
+                                                      n = n,
+                                                      min = sigma.max,
+                                                      max = max.right,
+                                                      useC = FALSE)
+        root.right.C <- findOneRootLogPostSigmaRobust(sigma0 = sigma.right,
+                                                      z = z,
+                                                      A = A,
+                                                      nuBeta = nuBeta,
+                                                      nuTau = nuTau,
+                                                      V = V,
+                                                      n = n,
+                                                      min = sigma.max,
+                                                      max = max.right,
+                                                      useC = TRUE)
+        expect_equal(root.left.R, root.left.C)
+        expect_equal(root.right.R, root.right.C)
+        ans.at.max <- findOneRootLogPostSigmaRobust(sigma0 = sigma.max,
+                                                    z = z,
+                                                    A = A,
+                                                    nuBeta = nuBeta,
+                                                    nuTau = nuTau,
+                                                    V = V,
+                                                    n = n,
+                                                    min = sigma.max,
+                                                    max = max.right,
+                                                    useC = TRUE)
+        expect_true(isTRUE(all.equal(ans.at.max, sigma.max))
+                    || isTRUE(all.equal(ans.at.max, -1))
+                    || isTRUE(all.equal(ans.at.max, root.left.C))
+                    || isTRUE(all.equal(ans.at.max, root.right.C)))
+    }
+})
+
 
 test_that("logPostPhiMix works", {
     logPostPhiMix <- demest:::logPostPhiMix
