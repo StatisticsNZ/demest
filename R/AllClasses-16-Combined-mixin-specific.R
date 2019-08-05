@@ -110,10 +110,14 @@ setClass("ProbAccountMixin",
              if (!is.double(probPopn))
                  return(gettextf("'%s' does not have type \"%s\"",
                                  "probPopn", "double"))
-             ## 'probPopn' is between 0 and 1
-             if ((probPopn < 0) || (probPopn > 1))
-                 return(gettextf("'%s' is not between %d and %d",
-                                 "probPopn", 0L, 1L))
+             ## 'probPopn' is less than 1
+             ## (allow for less than 0, since we sometimes
+             ## want to guarantee that a random number
+             ## is less than probPopn
+             
+             if (probPopn > 1)
+                 return(gettextf("'%s' is greater than %d",
+                                 "probPopn", 1L))
              TRUE
          })
 
@@ -1142,6 +1146,11 @@ setClass("UpdateSystemModelMixin",
                                  "updateSystemModel", "systemModels"))
              TRUE             
          })
+
+## NO_TESTS
+setClass("UsePriorPopnMixin",
+         slots = c(usePriorPopn = "LogicalFlag"),
+         contains = "VIRTUAL")
           
 ## HAS_TESTS
 setClass("Y",

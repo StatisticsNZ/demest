@@ -87,8 +87,10 @@ simulateAccount <- function(account, systemModels,
                             datasets = list(), dataModels = list(), 
                             concordances = list(), weights = list(),
                             dominant = c("Female", "Male"),
-                            updateSystemModel = "population",
+                            usePriorPopn = TRUE,
+                            updateSystemModel = NULL,
                             updateDataModel = NULL,
+                            updateInitialPopn = TRUE,
                             scaleNoise = 0,
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
@@ -98,6 +100,8 @@ simulateAccount <- function(account, systemModels,
     call <- match.call()
     methods::validObject(account)
     dominant <- match.arg(dominant)
+    updateInitialPopn <- checkAndTidyLogicalFlag(x = updateInitialPopn,
+                                                 name = "updateInitialPopn")
     checkNonNegativeNumeric(x = scaleNoise,
                             name = "scaleNoise")
     ## make account consistent, if necessary
@@ -149,7 +153,9 @@ simulateAccount <- function(account, systemModels,
         namesDatasets <- character()
         transforms <- list()
     }
-    ## 'updateSystemModel' and 'updateDataModel'
+    ## usePriorPopn, 'updateSystemModel', and 'updateDataModel'
+    usePriorPopn <- checkAndTidyLogicalFlag(x = usePriorPopn,
+                                            name = "usePriorPopn")
     component.names <- componentNames(account)
     updateSystemModel <- checkAndTidyUpdateSystemModel(updateSystemModel = updateSystemModel,
                                                        systemModels = systemModels,
@@ -181,6 +187,8 @@ simulateAccount <- function(account, systemModels,
                                                namesDatasets = namesDatasets,
                                                transforms = transforms,
                                                dominant = dominant,
+                                               updateInitialPopn = updateInitialPopn,
+                                               usePriorPopn = usePriorPopn,
                                                scaleNoise = scaleNoise,
                                                updateSystemModel = updateSystemModel,
                                                updateDataModel = updateDataModel)

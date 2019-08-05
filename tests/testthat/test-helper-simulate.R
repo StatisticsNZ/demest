@@ -495,6 +495,8 @@ test_that("drawDataModelsAccount works with CombinedAccountMovements", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                         Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
                      subarray(population, time < 2090, drop = FALSE) - 1L)
     namesDatasets <- c("tax", "census")
@@ -506,6 +508,8 @@ test_that("drawDataModelsAccount works with CombinedAccountMovements", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -556,6 +560,8 @@ test_that("R and C versions of drawDataModelsAccount give same answer", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
                      subarray(population, time < 2090, drop = FALSE) - 1L)
     namesDatasets <- c("tax", "census")
@@ -567,6 +573,8 @@ test_that("R and C versions of drawDataModelsAccount give same answer", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,                                
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -1749,6 +1757,8 @@ test_that("setDatasetsToMissing works", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                         Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -1764,6 +1774,8 @@ test_that("setDatasetsToMissing works", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)

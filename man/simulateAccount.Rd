@@ -6,8 +6,9 @@
 \usage{
 simulateAccount(account, systemModels, datasets = list(),
   dataModels = list(), concordances = list(), weights = list(),
-  dominant = c("Female", "Male"), updateSystemModel = "population",
-  updateDataModel = NULL, scaleNoise = 0, filename = NULL,
+  dominant = c("Female", "Male"), usePriorPopn = TRUE,
+  updateSystemModel = NULL, updateDataModel = NULL,
+  updateInitialPopn = TRUE, scaleNoise = 0, filename = NULL,
   nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
   parallel = TRUE, nCore = NULL, outfile = NULL, nUpdateMax = 50,
   verbose = TRUE, useC = TRUE)
@@ -40,6 +41,10 @@ providing weights for any Normal models among the system models.}
 Determines which sex is used to generate exposures in the system
 model for births.}
 
+\item{usePriorPopn}{Whether to take account of the prior model
+for population when inferring values for the account.
+Defaults to \code{TRUE}.}
+
 \item{updateSystemModel}{Names of any system models containing
 parameters that need to be estimated (as oppsed to simply drawn
 from the prior distribution) as part of the simulation.}
@@ -47,6 +52,11 @@ from the prior distribution) as part of the simulation.}
 \item{updateDataModel}{Names of any data models containing
 parameters that need to be estimated (as oppsed to simply drawn
 from the prior distribution) as part of the simulation.}
+
+\item{updateInitialPopn}{If \code{TRUE} (the default) population counts
+in the first year of the account are inferred as part of
+the overall estimation process. If \code{FALSE}, the values supplied
+for the first year are treated as error-free and never updated.}
 
 \item{scaleNoise}{Governs noise added to Metropolis-Hastings
 ratio. Should be non-zero only when trying to generate

@@ -6,10 +6,10 @@
 \usage{
 estimateAccount(account, systemModels, datasets, dataModels,
   concordances = list(), weights = list(), dominant = c("Female",
-  "Male"), scaleNoise = 0, filename = NULL, nBurnin = 1000,
-  nSim = 1000, nChain = 4, nThin = 1, parallel = TRUE,
-  nCore = NULL, outfile = NULL, nUpdateMax = 50, verbose = FALSE,
-  useC = TRUE)
+  "Male"), updateInitialPopn = TRUE, usePriorPopn = TRUE,
+  scaleNoise = 0, filename = NULL, nBurnin = 1000, nSim = 1000,
+  nChain = 4, nThin = 1, parallel = TRUE, nCore = NULL,
+  outfile = NULL, nUpdateMax = 50, verbose = FALSE, useC = TRUE)
 }
 \arguments{
 \item{account}{An object of class
@@ -38,6 +38,15 @@ providing weights for any Normal models among the system models.}
 \item{dominant}{Either \code{"Female"} (the default) or \code{"Male"}.
 Determines which sex is used to generate exposures in the system
 model for births.}
+
+\item{updateInitialPopn}{If \code{TRUE} (the default) population counts
+in the first year of the account are inferred as part of
+the overall estimation process. If \code{FALSE}, the values supplied
+for the first year are treated as error-free and never updated.}
+
+\item{usePriorPopn}{Whether to take account of the prior model
+for population when inferring values for the account.
+Defaults to \code{TRUE}.}
 
 \item{scaleNoise}{Governs noise added to Metropolis-Hastings
 ratio. Should be non-zero only when trying to generate

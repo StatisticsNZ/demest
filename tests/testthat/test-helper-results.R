@@ -1076,6 +1076,8 @@ test_that("makeResultsAccount works", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                         Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -1092,6 +1094,8 @@ test_that("makeResultsAccount works", {
                                                        systemWeights = systemWeights,
                                                        dataModels = data.models,
                                                        seriesIndices = seriesIndices,
+                                                       updateInitialPopn = updateInitialPopn,
+                                                       usePriorPopn = usePriorPopn,
                                                        datasets = datasets,
                                                        namesDatasets = namesDatasets,
                                                        transforms = transforms))

@@ -1287,6 +1287,17 @@ updateModelUseExp_TFixedUseExp(SEXP object, SEXP y_R, SEXP exposure_R)
 /* models not using exposure */
 
 static __inline__ void
+drawModelNotUseExp_NormalVaryingVarsigmaKnown_i(SEXP object_R, SEXP y_R)
+{
+    drawPriors(object_R);
+    drawBetas(object_R);
+    updateMu(object_R);
+    drawSigma_Varying(object_R);
+    updateTheta_NormalVarying(object_R, y_R);
+                                                      
+}
+
+static __inline__ void
 drawModelNotUseExp_NormalVaryingVarsigmaUnknown_i(SEXP object_R, SEXP y_R)
 {
     drawPriors(object_R);
@@ -1360,6 +1371,9 @@ drawModelNotUseExp_Internal(SEXP object_R, SEXP y_R, int i_method_model)
 {
     switch(i_method_model)
     {
+        case 4:
+            drawModelNotUseExp_NormalVaryingVarsigmaKnown_i(object_R, y_R);
+            break;
         case 5:
             drawModelNotUseExp_NormalVaryingVarsigmaUnknown_i(object_R, y_R);
             break;
@@ -1408,12 +1422,18 @@ drawModelUseExp_Internal(SEXP object_R, SEXP y_R, SEXP exposure_R,
 
 /* specific functions for models not using exposure */
 void
+drawModelNotUseExp_NormalVaryingVarsigmaKnown(SEXP object_R, SEXP y_R) 
+{
+    drawModelNotUseExp_NormalVaryingVarsigmaKnown_i(object_R, y_R);
+    
+}
+
+void
 drawModelNotUseExp_NormalVaryingVarsigmaUnknown(SEXP object_R, SEXP y_R) 
 {
     drawModelNotUseExp_NormalVaryingVarsigmaUnknown_i(object_R, y_R);
     
 }
-
 
 void
 drawModelNotUseExp_PoissonVarying(SEXP object_R, SEXP y_R) 

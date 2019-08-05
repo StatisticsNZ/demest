@@ -175,7 +175,7 @@ setMethod("drawHyperParam",
 ## drawModelNotUseExp ##################################################################
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawModelNotUseExp",
           signature(object = "NormalVaryingVarsigmaKnown"),

@@ -60,10 +60,7 @@ setMethod("drawCombined",
               }
           })
 
-## READY_TO_TRANSLATE
-## JAH 26 April 2019: delayed translating because of problems
-## loading unless bits of combined models are commented out
-## so cannot test drawDataModels which is used here
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawCombined",
           signature(object = "CombinedAccountMovements"),
@@ -80,20 +77,12 @@ setMethod("drawCombined",
                   if (useSpecific)
                       .Call(drawCombined_CombinedAccountMovements_R, object, nUpdate)
                   else
-                      .Call( drawCombined_R, object, nUpdate)
+                      .Call(drawCombined_R, object, nUpdate)
               }
               else {
                   object <- drawSystemModels(object)
                   object <- updateExpectedExposure(object, useC = TRUE)
                   object <- drawDataModels(object)
-                  ## updating functions use 'updateSystemModel' and
-                  ## 'updateDataModel' flags to decide what to update
-                  for (i in seq_len(nUpdate)) {
-                      object <- updateSystemModels(object, useC = TRUE)
-                      object <- updateExpectedExposure(object, useC = TRUE)
-                      object <- updateAccount(object, useC = TRUE)
-                      object <- updateDataModelsAccount(object, useC = TRUE)
-                  }
                   object
               }
           })
@@ -105,10 +94,7 @@ setMethod("drawCombined",
 ## 'drawDataModels' is called. Normally this is done by
 ## calling function 'setDatasetsToMissing'.
 
-## READY_TO_TRANSLATE
-## JAH 26 April 2019: translated but cannot check because of problems
-## loading unless bits of combined models are commented out
-## so cannot test
+## TRANSLATED
 ## HAS_TESTS
 ## Function is almost identical to 'updateDataModelsAccount' 
 setMethod("drawDataModels",
@@ -156,13 +142,13 @@ setMethod("drawDataModels",
 
 ## drawSystemModels ################################################################
 
-## Unlike with 'drawSystemModels', 'drawSystemModels' does
+## Unlike with 'drawDataModels', 'drawSystemModels' does
 ## not assume that outcome variables (ie the demographic series)
 ## have been set to missing, since, unlike the datasets,
-## the series are generated as part of the estimation process,
+## the series are generated as part of the simulation process,
 ## rather than imputed afterwards.
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawSystemModels",
           signature(combined = "CombinedAccountMovements"),
@@ -770,7 +756,10 @@ setMethod("diffLogDensAccount",
                   is.orig.dest <- i.comp == i.orig.dest
                   is.pool <- i.comp == i.pool
                   is.int.net <- i.comp == i.int.net
-                  ans <- diffLogDensPopn(combined)
+                  use.prior.popn <- combined@usePriorPopn@.Data
+                  ans <- 0
+                  if (use.prior.popn)
+                      ans <- ans + diffLogDensPopn(combined)
                   if (is.popn)
                       ans <- ans + diffLogDensExpPopn(combined)
                   else if (is.orig.dest) {
@@ -910,7 +899,6 @@ setMethod("updateExpectedExposure",
               }
               else {
                   expected.exposure <- combined@expectedExposure
-                  update.system.model <- combined@updateSystemModel
                   age.time.step <- combined@ageTimeStep
                   theta <- combined@systemModels[[1L]]@theta
                   description <- combined@descriptions[[1L]]
@@ -922,24 +910,21 @@ setMethod("updateExpectedExposure",
                   length.exp.no.tri <- (length.popn %/% n.time.popn) * n.time.exp # excludes triangle dim, if any
                   length.slice.popn <- n.time.popn * step.time
                   length.slice.exp <- n.time.exp * step.time
-                  update.popn <- update.system.model[1L]
-                  if (update.popn) {
-                      for (i in seq_len(length.exp.no.tri)) {
-                          i.popn.start <- (((i - 1L) %/% length.slice.exp) * length.slice.popn
-                              + (i - 1L) %% length.slice.exp
-                              + 1)
-                          i.popn.end <- i.popn.start + step.time
-                          exp.start <- 0.5 * age.time.step * theta[i.popn.start]
-                          exp.end <- 0.5 * age.time.step * theta[i.popn.end]
-                          if (has.age) {
-                              expected.exposure[i + length.exp.no.tri] <- exp.start # upper triangle
-                              expected.exposure[i] <- exp.end # lower triangle
-                          }
-                          else
-                              expected.exposure[i] <- exp.start + exp.end
+                  for (i in seq_len(length.exp.no.tri)) {
+                      i.popn.start <- (((i - 1L) %/% length.slice.exp) * length.slice.popn
+                          + (i - 1L) %% length.slice.exp
+                          + 1)
+                      i.popn.end <- i.popn.start + step.time
+                      exp.start <- 0.5 * age.time.step * theta[i.popn.start]
+                      exp.end <- 0.5 * age.time.step * theta[i.popn.end]
+                      if (has.age) {
+                          expected.exposure[i + length.exp.no.tri] <- exp.start # upper triangle
+                          expected.exposure[i] <- exp.end # lower triangle
                       }
-                      combined@expectedExposure <- expected.exposure
+                      else
+                          expected.exposure[i] <- exp.start + exp.end
                   }
+                  combined@expectedExposure <- expected.exposure
                   combined
               }
           })

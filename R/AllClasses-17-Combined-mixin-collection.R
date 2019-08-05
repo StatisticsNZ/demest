@@ -21,7 +21,8 @@
                       "ScaleNoiseMixin",
                       "UpdateComponentMixin",
                       "UpdateDataModelMixin",
-                      "UpdateSystemModelMixin"))
+                      "UpdateSystemModelMixin",
+                      "UsePriorPopnMixin"))
 
 
 setClass("MovementsAgeMixin",

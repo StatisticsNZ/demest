@@ -96,29 +96,27 @@ drawDataModelsAccount(SEXP combined_R)
 
         int nProtect  = 0;
         int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
-        
         const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
-        int found = !((strstr(class_name, "Poisson") == NULL) && (strstr(class_name, "CMP") == NULL));
-        if (found) {
-            
+	int contains_pois = strstr(class_name, "Poisson") != NULL;
+	int contains_poisbin = strstr(class_name, "PoissonBinomial") != NULL;
+	int contains_cmp = strstr(class_name, "CMP") != NULL;
+	int contains_normal = strstr(class_name, "Normal") != NULL;
+	int need_to_coerce = (contains_pois && !contains_poisbin) || contains_cmp || contains_normal;
+        if (need_to_coerce) {
             SEXP seriesCollapsed_tmp_R;
             /* collapse_R in demographic is okay with series_R being integer
              * but type of contents of seriesCollapsed_R will be integer*/
             PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
-
             PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
             nProtect  = 2;
         }
         else {
-            
             PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
             nProtect  = 1;
         }
-        
         /* seriesCollapsed_R should now be in appropriate state for model */
         drawModelUseExp_Internal(model_R, dataset_R,
                                     seriesCollapsed_R, i_method_model);
-
         UNPROTECT(nProtect); /* seriesCollapsed_R and possibly also series_Collapsed_tmp_R*/
     }    
 }

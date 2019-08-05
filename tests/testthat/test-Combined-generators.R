@@ -733,7 +733,9 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                transforms = transforms,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE))
     expect_true(validObject(x))
     expect_is(x, "CombinedAccountMovements")
     expect_identical(x@modelUsesExposure, c(FALSE, TRUE, TRUE))
@@ -849,9 +851,23 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                transforms = transforms,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE))
     expect_true(validObject(x))
     expect_is(x, "CombinedAccountMovementsHasAge")
+    expect_identical(x@usePriorPopn, new("LogicalFlag", TRUE))
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", FALSE))
+    expect_false(x@usePriorPopn@.Data)
 })
 
 test_that("initialCombinedAccountSimulate creates object of class CombinedAccountMovements from valid inputs", {
@@ -927,27 +943,11 @@ test_that("initialCombinedAccountSimulate creates object of class CombinedAccoun
                                         namesDatasets = namesDatasets,
                                         transforms = transforms,
                                         updateSystemModel = updateSystemModel,
-                                        updateDataModel = updateDataModel)
+                                        updateDataModel = updateDataModel,
+                                        updateInitialPopn = new("LogicalFlag", TRUE),
+                                        usePriorPopn = new("LogicalFlag", TRUE))
     expect_true(validObject(x))
     expect_is(x, "CombinedAccountMovements")
-    ## add aggregate to model for births
-    systemModels[[2]] <- Model(births ~ Poisson(mean ~ time),
-                               `(Intercept)` ~ ExchFixed(mean = -1, sd = 1),
-                               time ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
-                               priorSD = HalfT(scale = 0.1),
-                               aggregate = AgCertain(1))
-    updateSystemModel <- rep(TRUE, 3)
-    x <- initialCombinedAccountSimulate(account = account,
-                                        systemModels = systemModels,
-                                        systemWeights = systemWeights,
-                                        dataModels = data.models,
-                                        seriesIndices = seriesIndices,
-                                        datasets = datasets,
-                                        namesDatasets = namesDatasets,
-                                        transforms = transforms,
-                                        updateSystemModel = updateSystemModel,
-                                        updateDataModel = updateDataModel)
-    expect_identical(x@updateSystemModel, rep(TRUE, 3))
 })
 
 

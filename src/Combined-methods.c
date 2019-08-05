@@ -23,49 +23,12 @@ drawCombined_CombinedModelBinomial(SEXP object_R, int nUpdate)
 }
 
 
-
-/*
-## READY_TO_TRANSLATE
-## HAS_TESTS
-setMethod("drawCombined",
-          signature(object = "CombinedAccountMovements"),
-          function(object, nUpdate = 1L,
-                   useC = FALSE, useSpecific = FALSE) {
-              ## object
-              methods::validObject(object)
-              ## nUpdate
-              stopifnot(identical(length(nUpdate), 1L))
-              stopifnot(is.integer(nUpdate))
-              stopifnot(!is.na(nUpdate))
-              stopifnot(nUpdate >= 0L)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(drawCombined_CombinedAccountMovements_R, object, nUpdate)
-                  else
-                      .Call(drawCombined_R, object, nUpdate)
-              }
-              else {
-                  object <- drawSystemModels(object)
-                  object <- updateExpectedExposure(object, useC = TRUE)
-                  object <- drawDataModels(object)
-                  ## updating functions use 'updateSystemModel' and
-                  ## 'updateDataModel' flags to decide what to update
-                  for (i in seq_len(nUpdate)) {
-                      object <- updateSystemModels(object, useC = TRUE)
-                      object <- updateExpectedExposure(object, useC = TRUE)
-                      object <- updateAccount(object, useC = TRUE)
-                      object <- updateDataModelsAccount(object, useC = TRUE)
-                  }
-                  object
-              }
-          })
-
-*/
-
 void
 drawCombined_CombinedAccountMovements(SEXP object_R, int nUpdate)
 {
-    
+  drawSystemModels(object_R);
+  updateExpectedExposure(object_R);
+  drawDataModelsAccount(object_R);
 }
 
 /* generic draw combined object method */
@@ -86,77 +49,16 @@ drawCombined(SEXP object_R, int nUpdate)
         case 10: /* combined account movements, has age */
             drawCombined_CombinedAccountMovements(object_R, nUpdate);
             break;
-            
         default:
             error("unknown iMethodCombined for drawCombined: %d", i_method_combined);
             break;
     }
 }
-/*
-## drawDataModels ##################################################################
 
-## Elements of 'datasets' must contain only NAs, when
-## 'drawDataModels' is called. Normally this is done by
-## calling function 'setDatasetsToMissing'.
-
-## READY_TO_TRANSLATE
-## HAS_TESTS
-## Function is almost identical to 'updateDataModelsAccount' 
-setMethod("drawDataModels",
-          signature(combined = "CombinedAccountMovements"),
-          function(combined, useC = FALSE, useSpecific = FALSE) {
-              methods::validObject(combined)
-              if (useC) {
-                  if (useSpecific)
-                      .Call(drawDataModels_CombinedAccountMovements_R, combined)
-                  else
-                      .Call(drawDataModels_R, combined)
-              }
-              else {
-                  data.models <- combined@dataModels
-                  datasets <- combined@datasets
-                  population <- combined@account@population
-                  components <- combined@account@components
-                  series.indices <- combined@seriesIndices
-                  transforms <- combined@transforms
-                  for (i in seq_along(data.models)) {
-                      model <- data.models[[i]]
-                      dataset <- datasets[[i]]
-                      transform <- transforms[[i]]
-                      series.index <- series.indices[i]
-                      if (any(!is.na(dataset)))
-                          stop(gettextf("'%s' have not been set to missing",
-                                        "datasets"))
-                      if (series.index == 0L)
-                          series <- population
-                      else
-                          series <- components[[series.index]]
-                      series.collapsed <- collapse(series, transform = transform)
-                      if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
-                          series.collapsed <- toDouble(series.collapsed)
-                      model <- drawModelUseExp(model, ## this line different from 'updateDataModelsAccount'
-                                               y = dataset,
-                                               exposure = series.collapsed)
-                      data.models[[i]] <- model
-                  }
-                  combined@dataModels <- data.models
-                  combined
-              }
-          })
-
-*/
 
 void
 drawDataModels_CombinedAccountMovements(SEXP combined_R)
 {
-    /*
-     *                   data.models <- combined@dataModels
-                  datasets <- combined@datasets
-                  population <- combined@account@population
-                  components <- combined@account@components
-                  series.indices <- combined@seriesIndices
-                  transforms <- combined@transforms
-   */
     SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
     SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
     SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
@@ -168,47 +70,21 @@ drawDataModels_CombinedAccountMovements(SEXP combined_R)
     int* seriesIndices = INTEGER(seriesIndices_R);
 
     int nObs = LENGTH(dataModels_R);
-/*                      model <- data.models[[i]]
-                      dataset <- datasets[[i]]
-                      transform <- transforms[[i]]
-                      series.index <- series.indices[i]
-                      if (any(!is.na(dataset)))
-                          stop(gettextf("'%s' have not been set to missing",
-                                        "datasets"))
-*/
+    int nProtect = 0;
     for (int i = 0; i < nObs; ++i) {
 
         SEXP model_R = VECTOR_ELT(dataModels_R, i);
         SEXP dataset_R = VECTOR_ELT(datasets_R, i);
         SEXP transform_R = VECTOR_ELT(transforms_R, i);
-
-/*      NO CHECK FOR THIS
- *      if (any(!is.na(dataset)))
-            stop(gettextf("'%s' have not been set to missing",
-                    "datasets"))
-*/
         int seriesIndex_r = seriesIndices[i];
-        
-        /*if (series.index == 0L)
-                          series <- population
-                      else
-                          series <- components[[series.index]]
-                      */
+
         SEXP series_R = population_R;
         if (seriesIndex_r > 0) {
             series_R = VECTOR_ELT(components_R, seriesIndex_r-1);
         }
 
-/*series.collapsed <- collapse(series, transform = transform)
-                      if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
-                          series.collapsed <- toDouble(series.collapsed)
-                      model <- drawModelUseExp(model, ## this line different from 'updateDataModelsAccount'
-                                               y = dataset,
-                                               exposure = series.collapsed)
-                      data.models[[i]] <- model*/
         SEXP seriesCollapsed_R;
 
-        int nProtect  = 0;
         int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
 
         const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
@@ -219,14 +95,13 @@ drawDataModels_CombinedAccountMovements(SEXP combined_R)
             /* collapse_R in demographic is okay with series_R being integer
             * but type of contents of seriesCollapsed_R will be integer*/
             PROTECT(seriesCollapsed_tmp_R = dembase_Collapse_R(series_R, transform_R));
-
             PROTECT(seriesCollapsed_R = coerceVector(seriesCollapsed_tmp_R, REALSXP));
-            nProtect  = 2;
+            nProtect = 2;
         }
         else {
             
             PROTECT(seriesCollapsed_R = dembase_Collapse_R(series_R, transform_R));
-            nProtect  = 1;
+            nProtect = 1;
         }
 
         /* seriesCollapsed_R should now be in appropriate state for model */
@@ -332,17 +207,7 @@ setMethod("drawSystemModels",
 void
 drawSystemModels_CombinedAccountMovements(SEXP combined_R)
 {   
-/*                  system.models <- combined@systemModels
-                  population <- combined@account@population
-                  components <- combined@account@components
-                  model.uses.exposure <- combined@modelUsesExposure
-                  transforms.exp.to.comp <- combined@transformsExpToComp
-                  transform.exp.to.births <- combined@transformExpToBirths
-                  i.births <- combined@iBirths
- */
     SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
-    //int *updateSystemModel = LOGICAL(GET_SLOT(combined_R, updateSystemModel_sym));
-
     SEXP account_R = GET_SLOT(combined_R, account_sym);
     SEXP population_R = GET_SLOT(account_R, population_sym);
     SEXP components_R = GET_SLOT(account_R, components_sym);
@@ -355,36 +220,25 @@ drawSystemModels_CombinedAccountMovements(SEXP combined_R)
 
     int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
 
-    /* update model for population */
-
-/*                  ## population
-                  population[] <- NA
-                  model <- system.models[[1L]]
-                  model <- drawModelNotUseExp(model,
-                                              y = population)
-                  system.models[[1L]] <- model
- */
+    /* update models for population */
+    
     int nPops = LENGTH(population_R);
+    SEXP copy_population_R; /* added by JB, 5 Aug 2019 */
+    PROTECT(copy_population_R = duplicate(population_R)); /* added by JB, 5 Aug 2019 */
+    int * copy_population = INTEGER(copy_population_R); /* added by JB, 5 Aug 2019 */
     for (int i = 0; i < nPops; ++i){
-        SET_VECTOR_ELT(population_R, i, ScalarLogical(NA_LOGICAL));
+        /* SET_VECTOR_ELT(population_R, i, ScalarLogical(NA_LOGICAL)); */
+      copy_population[i] = NA_INTEGER; /* added by JB, 5 Aug 2019 */
     }
     
     SEXP model_R = VECTOR_ELT(systemModels_R, 0);
     int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
-    drawModelNotUseExp_Internal(model_R, population_R, i_method_model);
-    
+    /* drawModelNotUseExp_Internal(model_R, population_R, i_method_model); */
+    drawModelNotUseExp_Internal(model_R, copy_population_R, i_method_model); /* added by JB, 5 Aug 2019 */    
+    UNPROTECT(1);  /* copy_population_R - added by JB, 5 Aug 2019 */
 
     /* update models for components */
 
-    /*## components
-                  for (i in seq_along(components)) {
-                      model <- system.models[[i + 1L]]
-                      component <- components[[i]]
-                      component[] <- NA
-                      uses.exposure <- model.uses.exposure[i + 1L]
-                      
-                      }*/
-    
     for(int i = 0; i < nComponents; ++i) {
 
         SEXP this_model_R = VECTOR_ELT(systemModels_R, i+1);
@@ -393,26 +247,17 @@ drawSystemModels_CombinedAccountMovements(SEXP combined_R)
         SEXP this_component_R = VECTOR_ELT(components_R, i);
         
         int nC = LENGTH(this_component_R);
+	SEXP copy_this_component_R; /* added by JB, 5 Aug 2019 */
+	PROTECT(copy_this_component_R = duplicate(this_component_R)); /* added by JB, 5 Aug 2019 */
+	int * copy_this_component = INTEGER(copy_this_component_R); /* added by JB, 5 Aug 2019 */
+	
         for (int i = 0; i < nC; ++i){
-            SET_VECTOR_ELT(this_component_R, i, ScalarLogical(NA_LOGICAL));
+            /* SET_VECTOR_ELT(this_component_R, i, ScalarLogical(NA_LOGICAL)); */
+	    copy_this_component[i] = NA_INTEGER; /* added by JB, 5 Aug 2019 */
         }
 
         int usesExposure = modelUsesExposureVec[i+1];
         
-        /*if (uses.exposure) {
-                      exposure <- combined@exposure@.Data
-                      is.births <- i == i.births
-                      if (is.births)
-                          exposure <- collapse(exposure,
-                                               transform = transform.exp.to.births)
-                      transform <- transforms.exp.to.comp[[i]]
-                      if (!is.null(transform))
-                          exposure <- extend(exposure,
-                                             transform = transforms.exp.to.comp[[i]])
-                      model <- drawModelUseExp(object = model,
-                                               y = component,
-                                               exposure = exposure)*/
-
         if (usesExposure) {
 
             SEXP transform_R = VECTOR_ELT(transformsExpToComp_R, i);
@@ -429,8 +274,12 @@ drawSystemModels_CombinedAccountMovements(SEXP combined_R)
                     SEXP anotherNewExposure_R = NULL;
                     PROTECT(anotherNewExposure_R = dembase_Extend_R(newExposure_R, 
                                 transform_R));
-                    drawModelUseExp_Internal(this_model_R, 
-                                            this_component_R,
+                    /* drawModelUseExp_Internal(this_model_R,  */
+                    /*                         this_component_R, */
+                    /*                         anotherNewExposure_R, */
+                    /*                         this_i_method_model); */
+                    drawModelUseExp_Internal(this_model_R, /* added by JB, 5 Aug 2019 */
+                                            copy_this_component_R,
                                             anotherNewExposure_R,
                                             this_i_method_model);
                     UNPROTECT(1); /* anotherNewExposure */
@@ -440,11 +289,14 @@ drawSystemModels_CombinedAccountMovements(SEXP combined_R)
                     #endif
                 }
                 else {
-                    drawModelUseExp_Internal(this_model_R,
-                                                this_component_R,
+                    /* drawModelUseExp_Internal(this_model_R, */
+                    /*                             this_component_R, */
+                    /*                             newExposure_R, */
+                    /*                             this_i_method_model); */
+                    drawModelUseExp_Internal(this_model_R, /* added by JB, 5 Aug 2019 */
+                                                copy_this_component_R,
                                                 newExposure_R,
                                                 this_i_method_model);
-
                     #ifdef DEBUGGING
                     PrintValue(mkString("isBirths, no transform"));
                     #endif
@@ -456,10 +308,14 @@ drawSystemModels_CombinedAccountMovements(SEXP combined_R)
                 SEXP newExposure_R = NULL;
                 PROTECT(newExposure_R = dembase_Extend_R(exposure_R, 
                        transform_R));
-                drawModelUseExp_Internal(this_model_R,
-                                        this_component_R,
-                                        newExposure_R,
-                                        this_i_method_model);
+                /* drawModelUseExp_Internal(this_model_R, */
+                /*                         this_component_R, */
+                /*                         newExposure_R, */
+                /*                         this_i_method_model); */
+                drawModelUseExp_Internal(this_model_R, /* added by JB, 5 Aug 2019 */
+					 copy_this_component_R,
+					 newExposure_R,
+					 this_i_method_model);
                 UNPROTECT(1); /* newExposure */
 
                 #ifdef DEBUGGING
@@ -467,47 +323,44 @@ drawSystemModels_CombinedAccountMovements(SEXP combined_R)
                 #endif
                 }
             else {
-                updateModelUseExp_Internal(this_model_R,
-                                            this_component_R,
-                                            exposure_R,
-                                            this_i_method_model);
-
+                /* updateModelUseExp_Internal(this_model_R, */
+                /*                             this_component_R, */
+                /*                             exposure_R, */
+                /*                             this_i_method_model); */
+                drawModelUseExp_Internal(this_model_R,
+					 copy_this_component_R, /* added by JB, 5 Aug 2019 */
+					 exposure_R,
+					 this_i_method_model);
                 #ifdef DEBUGGING
                 PrintValue(mkString("not isBirths, no transform"));
                 #endif
             }
         } /* end if usesExposure */
         
-        /*else {
-                      if (methods::is(model, "Normal"))
-                          component <- toDouble(component)
-                      model <- drawModelNotUseExp(object = model,
-                                                  y = component)
-                  }*/
-
         else {
-            const char *class_name = CHAR(STRING_ELT(GET_SLOT((model_R), R_ClassSymbol), 0));
+            const char *class_name = CHAR(STRING_ELT(GET_SLOT(this_model_R, R_ClassSymbol), 0));
             char *found = NULL;
             found = strstr(class_name, "Normal");
-            
             if (found) {
                 SEXP this_component_double_R;
-                PROTECT(this_component_double_R = coerceVector(this_component_R, REALSXP));
+                /* PROTECT(this_component_double_R = coerceVector(this_component_R, REALSXP)); */
+		PROTECT(this_component_double_R = coerceVector(copy_this_component_R, REALSXP)); /* added by JB, 5 Aug 2019 */
                 drawModelNotUseExp_Internal(this_model_R,
                                             this_component_double_R,
                                             this_i_method_model);
-                UNPROTECT(1);
+                UNPROTECT(1); 	/* this_component_double_R */
                 #ifdef DEBUGGING
                 PrintValue(mkString("not use exp, normal"));
                 #endif
             }
             else {
-                drawModelNotUseExp(this_model_R, this_component_R);
+		drawModelNotUseExp(this_model_R, copy_this_component_R);
                 #ifdef DEBUGGING
                 PrintValue(mkString("not use exp, not normal"));
                 #endif
             }
         }
+	UNPROTECT(1); 		/* copy_this_component_R - added by JB, 5 Aug 2019 */
     }
 }
 
@@ -959,9 +812,14 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
     int isPopn = (iComp_r == 0);
     int isOrigDest = (iComp_r == iOrigDest_r);
     int isPool = (iComp_r == iPool_r);
-    int isIntNet = (iComp_r == iIntNet_r);     
-    
-    double ans = diffLogDensPopn(object_R);
+    int isIntNet = (iComp_r == iIntNet_r);
+
+    int usePriorPopn = *INTEGER(GET_SLOT(object_R, usePriorPopn_sym));    
+
+    double ans = 0;
+
+    if (usePriorPopn)
+      ans += diffLogDensPopn(object_R);
     
     if(isPopn) {
         ans += diffLogDensExpPopn(object_R);
@@ -1166,9 +1024,6 @@ updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
 {
     double * expectedExposure = REAL(GET_SLOT(combined_R, expectedExposure_sym));
 
-    int *updateSystemModel = LOGICAL(GET_SLOT(combined_R, updateSystemModel_sym));
-    int updatePopn = updateSystemModel[0];
-    
     SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
     SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, 0);
     double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
@@ -1190,28 +1045,25 @@ updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
     int lengthSliceExp = nTimeExp * stepTime;
     
     double halfAgeTimeStep = 0.5 * ageTimeStep;
-
-    if (updatePopn) {
       
-      for (int i = 0; i < lengthExpNoTri; ++i) {
+    for (int i = 0; i < lengthExpNoTri; ++i) {
 
-        int iPopnStart = (i / lengthSliceExp) * lengthSlicePopn
-      + i % lengthSliceExp; /* C style */
-        int iPopnEnd = iPopnStart + stepTime;
-        double expStart = halfAgeTimeStep * theta[iPopnStart];
-        double expEnd = halfAgeTimeStep * theta[iPopnEnd];
+      int iPopnStart = (i / lengthSliceExp) * lengthSlicePopn
+	+ i % lengthSliceExp; /* C style */
+      int iPopnEnd = iPopnStart + stepTime;
+      double expStart = halfAgeTimeStep * theta[iPopnStart];
+      double expEnd = halfAgeTimeStep * theta[iPopnEnd];
         
-        if (hasAge) {
-      expectedExposure[i + lengthExpNoTri] = expStart;
-      expectedExposure[i] = expEnd;
-        }
-        else {
-      expectedExposure[i] = expStart + expEnd;
-        }
-            
+      if (hasAge) {
+	expectedExposure[i + lengthExpNoTri] = expStart;
+	expectedExposure[i] = expEnd;
       }
-
+      else {
+	expectedExposure[i] = expStart + expEnd;
+      }
+            
     }
+
 }
 
 /* generic update SystemModels object method */

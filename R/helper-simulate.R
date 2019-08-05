@@ -323,7 +323,10 @@ drawDataModelsAccount <- function(combined, useC = FALSE) {
             else
                 series <- components[[series.index]]
             series.collapsed <- collapse(series, transform = transform)
-            if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
+            if (methods::is(model, "Poisson")
+                || methods::is(model, "CMP")
+                || methods::is(model, "Normal")
+                || methods::is(model, "NormalFixed"))
                 series.collapsed <- toDouble(series.collapsed)
             model <- drawModelUseExp(model,
                                      y = dataset,

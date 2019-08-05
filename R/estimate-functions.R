@@ -702,6 +702,13 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' @param dominant Either \code{"Female"} (the default) or \code{"Male"}.
 #' Determines which sex is used to generate exposures in the system
 #' model for births.
+#' @param updateInitialPopn If \code{TRUE} (the default) population counts
+#' in the first year of the account are inferred as part of
+#' the overall estimation process. If \code{FALSE}, the values supplied
+#' for the first year are treated as error-free and never updated.
+#' @param usePriorPopn Whether to take account of the prior model
+#' for population when inferring values for the account.
+#' Defaults to \code{TRUE}.
 #' @param scaleNoise Governs noise added to Metropolis-Hastings
 #' ratio. Should be non-zero only when trying to generate
 #' initial values. Currently experimental, and may change.
@@ -714,7 +721,9 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' @export
 estimateAccount <- function(account, systemModels, datasets, dataModels, 
                             concordances = list(), weights = list(),
-                            dominant = c("Female", "Male"), scaleNoise = 0,
+                            dominant = c("Female", "Male"),
+                            updateInitialPopn = TRUE,
+                            usePriorPopn = TRUE, scaleNoise = 0,
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
                             parallel = TRUE, nCore = NULL,
@@ -723,6 +732,10 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     call <- match.call()
     methods::validObject(account)
     dominant <- match.arg(dominant)
+    updateInitialPopn <- checkAndTidyLogicalFlag(x = updateInitialPopn,
+                                                 name = "updateInitialPopn")
+    usePriorPopn <- checkAndTidyLogicalFlag(x = usePriorPopn,
+                                            name = "usePriorPopn")
     checkNonNegativeNumeric(x = scaleNoise,
                             name = "scaleNoise")
     ## make account consistent, if necessary
@@ -780,6 +793,8 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
                                                   namesDatasets = namesDatasets,
                                                   transforms = transforms,
                                                   dominant = dominant,
+                                                  updateInitialPopn = updateInitialPopn,
+                                                  usePriorPopn = usePriorPopn,
                                                   scaleNoise = scaleNoise))
     parallel <- control.args$parallel
     tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")

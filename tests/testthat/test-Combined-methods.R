@@ -243,6 +243,8 @@ test_that("drawCombined works with CombinedAccountMovements - no benchmarks", {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                         updateInitialPopn = new("LogicalFlag", TRUE),
+                                         usePriorPopn = new("LogicalFlag", TRUE),
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms,
@@ -256,13 +258,6 @@ test_that("drawCombined works with CombinedAccountMovements - no benchmarks", {
         ans.expected <- drawSystemModels(ans.expected)
         ans.expected <- updateExpectedExposure(ans.expected, useC = TRUE)
         ans.expected <- drawDataModels(ans.expected)
-        for (i in 1:5) {
-            ans.expected@systemModels[[1]] <- updateModelNotUseExp(ans.expected@systemModels[[1L]],
-                                                                   y = ans.expected@account@population,
-                                                                   useC = TRUE)
-            ans.expected <- updateExpectedExposure(ans.expected, useC = TRUE)
-            ans.expected <- updateAccount(ans.expected, useC = TRUE)
-        }
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -332,6 +327,8 @@ test_that("R, C-specific, and C-generic versions of drawCombined give same answe
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                         updateInitialPopn = new("LogicalFlag", TRUE),
+                                         usePriorPopn = new("LogicalFlag", TRUE),
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms,
@@ -413,6 +410,8 @@ test_that("R version of drawDataModels works with CombinedAccountMovements", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -491,6 +490,8 @@ test_that("R and C versions of drawDataModels give same answer with CombinedAcco
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -573,6 +574,8 @@ test_that("R version of drawSystemModels works with CombinedAccountMovements", {
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 datasets = datasets,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
     expect_true(validObject(x))
@@ -649,6 +652,8 @@ test_that("R and C versions of drawSystemModels give same answer with CombinedAc
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -1884,6 +1889,8 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1978,6 +1985,8 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2082,6 +2091,8 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2176,6 +2187,8 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2279,6 +2292,8 @@ test_that("updateProposalAccount works with CombinedAccountMovementsHasAge", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2372,6 +2387,8 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2441,6 +2458,8 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2501,6 +2520,8 @@ test_that("R and C versions of updateValuesAccount give same answer with Combine
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2565,6 +2586,8 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2619,6 +2642,8 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2662,6 +2687,8 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2705,6 +2732,8 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2718,11 +2747,6 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
         expect_identical(ans.obtained, ans.expected)
     else
         expect_equal(ans.obtained, ans.expected)        
-    ## updateSystemModel is FALSE for population
-    x@updateSystemModel <- c(FALSE, FALSE)
-    ans.obtained <- updateExpectedExposure(x)
-    ans.expected <- x
-    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("R and C versions of updatedExpectedExposure give same answer with CombinedAccountMovements - no age", {
@@ -2758,6 +2782,8 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2797,6 +2823,8 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2836,6 +2864,8 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2888,6 +2918,8 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2931,6 +2963,8 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2974,6 +3008,8 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3022,6 +3058,8 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3061,6 +3099,8 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3100,6 +3140,8 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3181,6 +3223,8 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3246,6 +3290,8 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3346,6 +3392,8 @@ test_that("R and C versions of updateSystemModels give same answer with Combined
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3405,6 +3453,8 @@ test_that("R and C versions of updateSystemModels give same answer with Combined
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3480,6 +3530,8 @@ test_that("updateCombined works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3549,6 +3601,8 @@ test_that("R and C versions of updateCombined give same answer with CombinedAcco
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                updateInitialPopn = new("LogicalFlag", TRUE),
+                                usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)

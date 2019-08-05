@@ -378,6 +378,7 @@ SEXP
   isIncrement_sym,
   isNet_sym,
   scaleNoise_sym,
+  usePriorPopn_sym,
   systemModels_sym,
   modelUsesExposure_sym,
   mappingsFromExp_sym,
@@ -916,6 +917,7 @@ void updateModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 void updatePriorsBetas(SEXP object_R);
 
 /* update models not using exposure*/
+void drawModelNotUseExp_NormalVaryingVarsigmaKnown(SEXP object, SEXP y_R);
 void drawModelNotUseExp_NormalVaryingVarsigmaUnknown(SEXP object, SEXP y_R);
 void drawModelNotUseExp_PoissonVarying(SEXP object, SEXP y_R);
 void drawModelNotUseExp(SEXP object, SEXP y_R);

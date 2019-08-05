@@ -559,7 +559,8 @@ setMethod("initialCombinedAccount",
                    dataModels, seriesIndices, 
                    datasets, namesDatasets, transforms,
                    dominant = c("Female", "Male"),
-                   scaleNoise = 0) {
+                   updateInitialPopn,
+                   usePriorPopn, scaleNoise = 0) {
               population <- account@population
               components <- account@components
               names.components <- account@namesComponents
@@ -568,7 +569,10 @@ setMethod("initialCombinedAccount",
               n.popn <- length(population)
               n.components <- sapply(components, length)
               n.cell.account <- n.popn + sum(n.components)
-              prob.popn <- n.popn / (n.popn + sum(n.components))
+              if (updateInitialPopn)
+                  prob.popn <- n.popn / (n.popn + sum(n.components))
+              else
+                  prob.popn <- -1
               cum.prob.comp <- cumsum(n.components) / sum(n.components)
               is.births <- sapply(components, methods::is, "Births")
               is.orig.dest <- sapply(components, methods::is, "HasOrigDest")
@@ -788,7 +792,8 @@ setMethod("initialCombinedAccount",
                                transformsExpToComp = transforms.exp.to.comp,
                                updateComponent = update.component,
                                updateDataModel = update.data.model,
-                               updateSystemModel = update.system.model)
+                               updateSystemModel = update.system.model,
+                               usePriorPopn = usePriorPopn)
               }
               else {
                   methods::new("CombinedAccountMovementsNoAge",
@@ -837,7 +842,8 @@ setMethod("initialCombinedAccount",
                                transformsExpToComp = transforms.exp.to.comp,
                                updateComponent = update.component,
                                updateDataModel = update.data.model,
-                               updateSystemModel = update.system.model)
+                               updateSystemModel = update.system.model,
+                               usePriorPopn = usePriorPopn)
               }
           })
 
@@ -859,7 +865,8 @@ setMethod("initialCombinedAccountSimulate",
                    datasets, namesDatasets, transforms,
                    dominant = c("Female", "Male"),
                    updateSystemModel, updateDataModel,
-                   scaleNoise = 0) {
+                   updateInitialPopn,
+                   usePriorPopn, scaleNoise = 0) {
               combined <- initialCombinedAccount(account = account,
                                                  systemModels = systemModels,
                                                  systemWeights = systemWeights,
@@ -869,12 +876,11 @@ setMethod("initialCombinedAccountSimulate",
                                                  namesDatasets = namesDatasets,
                                                  transforms = transforms,
                                                  dominant = dominant,
+                                                 updateInitialPopn = updateInitialPopn,
+                                                 usePriorPopn = usePriorPopn,
                                                  scaleNoise = scaleNoise)
               combined <- setDatasetsToMissing(combined)
-              combined <- drawDataModels(combined)
-              combined <- drawSystemModels(combined)
-              combined <- updateExpectedExposure(combined,
-                                                 useC = TRUE)
+              combined <- drawCombined(combined, useC = TRUE)
               combined@updateDataModel <- updateDataModel
               combined@updateSystemModel <- updateSystemModel
               combined

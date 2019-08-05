@@ -1306,6 +1306,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_TFixedUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
 
 /* wrap draw model functions */
+UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnown);
 UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaUnknown);
 UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_PoissonVarying);
 UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp);
@@ -2407,6 +2408,7 @@ R_CallMethodDef callMethods[] = {
   
   CALLDEF(updatePriorsBetas_R, 1),
 
+  CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnown_R, 2),
   CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknown_R, 2),
   CALLDEF(drawModelNotUseExp_PoissonVarying_R, 2),
   CALLDEF(drawModelNotUseExp_R, 2),
@@ -3025,6 +3027,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(diffProp);
   ADD_SYM(isIncrement);
   ADD_SYM(isNet);
+  ADD_SYM(usePriorPopn);
   ADD_SYM(systemModels);
   ADD_SYM(modelUsesExposure);
   ADD_SYM(mappingsFromExp);

@@ -11152,6 +11152,8 @@ test_that("updateDataModelsAccount works with CombinedAccountMovements", {
     data.models <- list(Model(tax ~ CMP(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
                      subarray(population, time < 2090, drop = FALSE) - 1L)
     namesDatasets <- c("tax", "census")
@@ -11163,6 +11165,8 @@ test_that("updateDataModelsAccount works with CombinedAccountMovements", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -11212,6 +11216,8 @@ test_that("R and C versions of updateDataModelsAccount give same answer", {
     data.models <- list(Model(tax ~ CMP(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(subarray(deaths, time > 2010, drop = FALSE) + 1L,
                      subarray(population, time < 2090, drop = FALSE) - 1L)
     namesDatasets <- c("tax", "census")
@@ -11223,6 +11229,8 @@ test_that("R and C versions of updateDataModelsAccount give same answer", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)

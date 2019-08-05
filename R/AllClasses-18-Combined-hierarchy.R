@@ -305,7 +305,8 @@ setClass("CombinedAccountMovementsNoAge",
                                slotsToExtract = c("account",
                                                   "systemModels",
                                                   "dataModels"),
-                               scaleNoise = methods::new("Scale", 0)),
+                               scaleNoise = methods::new("Scale", 0),
+                               usePriorPopn = methods::new("LogicalFlag", TRUE)),
          contains = "CombinedAccountMovements")
 
 setClass("CombinedAccountMovementsHasAge",
@@ -313,7 +314,8 @@ setClass("CombinedAccountMovementsHasAge",
                                slotsToExtract = c("account",
                                                   "systemModels",
                                                   "dataModels"),
-                               scaleNoise = methods::new("Scale", 0)),
+                               scaleNoise = methods::new("Scale", 0),
+                               usePriorPopn = methods::new("LogicalFlag", TRUE)),
          contains = c("CombinedAccountMovements",
                       "MovementsAgeMixin"))
 

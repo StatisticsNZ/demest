@@ -37,6 +37,8 @@ test_that("updateAccount works with CombinedAccountMovements", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                         Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -52,6 +54,8 @@ test_that("updateAccount works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -108,6 +112,8 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                         Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -123,6 +129,8 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -183,6 +191,8 @@ if (test.extended) {
             data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                                       Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
             seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
             datasets <- list(Counts(array(7L,
                                           dim = 10,
                                           dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -198,6 +208,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -252,6 +264,8 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovements - n
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -267,6 +281,8 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovements - n
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -308,6 +324,8 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -323,6 +341,8 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -373,6 +393,8 @@ if (test.extended) {
             data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                                       Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
             seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
             datasets <- list(Counts(array(7L,
                                           dim = 10,
                                           dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -388,6 +410,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -476,6 +500,8 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovementsHasA
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -487,6 +513,8 @@ test_that("updateProposalAccountMovePopn works with CombinedAccountMovementsHasA
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -568,6 +596,8 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -579,6 +609,8 @@ test_that("R and C versions of updateProposalAccountMovePopn give same answer Co
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -680,6 +712,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -732,6 +766,8 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -747,6 +783,8 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -789,6 +827,8 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -804,6 +844,8 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -860,6 +902,8 @@ if (test.extended) {
             data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                                       Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
             seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
             datasets <- list(Counts(array(7L,
                                           dim = 10,
                                           dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -875,6 +919,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -965,6 +1011,8 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovementsHa
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -976,6 +1024,8 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovementsHa
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1058,6 +1108,8 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -1069,6 +1121,8 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1176,6 +1230,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -1234,6 +1290,8 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
                               Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(births + 1L,
                      deaths - 5L,
                      population + 10L)
@@ -1247,6 +1305,8 @@ test_that("updateProposalAccountMoveBirths works with CombinedAccountMovements -
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1297,6 +1357,8 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                               Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(births + 1L,
                      deaths - 5L,
                      population + 10L)
@@ -1310,6 +1372,8 @@ test_that("R and C versions of updateProposalAccountMoveBirths give same answer 
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1387,6 +1451,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -1438,6 +1504,8 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -1449,6 +1517,8 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1489,6 +1559,8 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -1500,6 +1572,8 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1567,6 +1641,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -1656,6 +1732,8 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -1667,6 +1745,8 @@ test_that("updateProposalAccountMoveOrigDest works with CombinedAccountMovements
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1749,6 +1829,8 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -1760,6 +1842,8 @@ test_that("R and C versions of updateProposalAccountMoveOrigDest give same answe
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1867,6 +1951,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -1921,6 +2007,8 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovements - n
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -1932,6 +2020,8 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovements - n
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -1973,6 +2063,8 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -1984,6 +2076,8 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2052,6 +2146,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -2141,6 +2237,8 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovementsHasA
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -2152,6 +2250,8 @@ test_that("updateProposalAccountMovePool works with CombinedAccountMovementsHasA
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2235,6 +2335,8 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -2246,6 +2348,8 @@ test_that("R and C versions of updateProposalAccountMovePool give same answer wi
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2354,6 +2458,8 @@ if(test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -2412,6 +2518,8 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovements - no
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -2423,6 +2531,8 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovements - no
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2468,6 +2578,8 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -2479,6 +2591,8 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2550,6 +2664,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -2647,6 +2763,8 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovementsHasAg
                               Model(address.change ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -2658,6 +2776,8 @@ test_that("updateProposalAccountMoveNet works with CombinedAccountMovementsHasAg
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2750,6 +2870,8 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
                               Model(address.change ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -2761,6 +2883,8 @@ test_that("R and C versions of updateProposalAccountMoveNet give same answer wit
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2878,6 +3002,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -2931,6 +3057,8 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovements - n
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -2946,6 +3074,8 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovements - n
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -2988,6 +3118,8 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer - 
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -3003,6 +3135,8 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer - 
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3054,6 +3188,8 @@ if (test.extended) {
             data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                                       Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
             seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
             datasets <- list(Counts(array(7L,
                                           dim = 10,
                                           dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -3069,6 +3205,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -3157,6 +3295,8 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovementsHasA
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -3168,6 +3308,8 @@ test_that("updateProposalAccountMoveComp works with CombinedAccountMovementsHasA
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3250,6 +3392,8 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer wi
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -3261,6 +3405,8 @@ test_that("R and C versions of updateProposalAccountMoveComp give same answer wi
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -3364,6 +3510,8 @@ if (test.extended) {
                                          systemWeights = systemWeights,
                                          dataModels = data.models,
                                          seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                          datasets = datasets,
                                          namesDatasets = namesDatasets,
                                          transforms = transforms)
@@ -4349,6 +4497,8 @@ test_that("diffLogLikAccountMovePopn works", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -4364,6 +4514,8 @@ test_that("diffLogLikAccountMovePopn works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,                                
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -4398,6 +4550,8 @@ test_that("R and C versions of diffLogLikAccountMovePopn give same answer", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -4413,6 +4567,8 @@ test_that("R and C versions of diffLogLikAccountMovePopn give same answer", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,                                
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -4454,7 +4610,11 @@ test_that("diffLogLikAccountMovePool works with CombinedAccountMovements", {
     systemWeights <- list(NULL, NULL)
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -4466,6 +4626,8 @@ test_that("diffLogLikAccountMovePool works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -4526,6 +4688,8 @@ test_that("R and C versions of diffLogLikAccountMovePool give same answer with C
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -4537,6 +4701,8 @@ test_that("R and C versions of diffLogLikAccountMovePool give same answer with C
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -4580,6 +4746,8 @@ test_that("diffLogLikCellsPool works with CombinedAccountMovements", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -4591,6 +4759,8 @@ test_that("diffLogLikCellsPool works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -4653,6 +4823,10 @@ test_that("R and C versions of diffLogLikCellsPool give same answer with Combine
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -4664,6 +4838,8 @@ test_that("R and C versions of diffLogLikCellsPool give same answer with Combine
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -4731,6 +4907,8 @@ test_that("diffLogLikAccountMoveNet works with CombinedAccountMovements", {
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -4742,6 +4920,8 @@ test_that("diffLogLikAccountMoveNet works with CombinedAccountMovements", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -4807,6 +4987,8 @@ test_that("R and C versions of diffLogLikAccountMoveNet give same answer with Co
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -4818,6 +5000,8 @@ test_that("R and C versions of diffLogLikAccountMoveNet give same answer with Co
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -4866,6 +5050,8 @@ test_that("diffLogLikCellsNet works with CombinedAccountMovements", {
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -4877,6 +5063,8 @@ test_that("diffLogLikCellsNet works with CombinedAccountMovements", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -4944,6 +5132,8 @@ test_that("R and C versions of diffLogLikCellsNet give same answer with Combined
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -4955,6 +5145,8 @@ test_that("R and C versions of diffLogLikCellsNet give same answer with Combined
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -5016,6 +5208,8 @@ test_that("diffLogLikAccountMoveComp works", {
         data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                             Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
         seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
         datasets <- list(Counts(array(7L,
                                       dim = 10,
                                       dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -5031,6 +5225,8 @@ test_that("diffLogLikAccountMoveComp works", {
                                     systemWeights = systemWeights,
                                     dataModels = data.models,
                                     seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                     datasets = datasets,
                                     namesDatasets = namesDatasets,
                                     transforms = transforms)
@@ -5074,6 +5270,8 @@ test_that("R and C versions of diffLogLikAccountMoveComp give same answer", {
         data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                                   Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
         seriesIndices <- c(2L, 0L)
+        updateInitialPopn <- new("LogicalFlag", TRUE)
+        usePriorPopn <- new("LogicalFlag", TRUE)
         datasets <- list(Counts(array(7L,
                                       dim = 10,
                                       dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -5089,6 +5287,8 @@ test_that("R and C versions of diffLogLikAccountMoveComp give same answer", {
                                     systemWeights = systemWeights,
                                     dataModels = data.models,
                                     seriesIndices = seriesIndices,
+                                    updateInitialPopn = updateInitialPopn,
+                                    usePriorPopn = usePriorPopn,
                                     datasets = datasets,
                                     namesDatasets = namesDatasets,
                                     transforms = transforms)
@@ -5132,6 +5332,8 @@ test_that("diffLogLikAccountMoveOrigDest works", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -5143,6 +5345,8 @@ test_that("diffLogLikAccountMoveOrigDest works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -5188,6 +5392,8 @@ test_that("R and C versions of diffLogLikAccountMoveOrigDest give same answer", 
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -5199,6 +5405,8 @@ test_that("R and C versions of diffLogLikAccountMoveOrigDest give same answer", 
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -5255,6 +5463,8 @@ test_that("diffLogDensPopn works", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -5270,6 +5480,8 @@ test_that("diffLogDensPopn works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -5337,8 +5549,10 @@ test_that("R and C versions of diffLogDensPopn give same answer", {
                              Model(deaths ~ Poisson(mean ~ 1)))
         systemWeights <- rep(list(NULL), 3)
         data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
-                                  Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+                            Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
         seriesIndices <- c(2L, 0L)
+        updateInitialPopn <- new("LogicalFlag", TRUE)
+        usePriorPopn <- new("LogicalFlag", TRUE)
         datasets <- list(Counts(array(7L,
                                       dim = 10,
                                       dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -5354,6 +5568,8 @@ test_that("R and C versions of diffLogDensPopn give same answer", {
                                     systemWeights = systemWeights,
                                     dataModels = data.models,
                                     seriesIndices = seriesIndices,
+                                    updateInitialPopn = updateInitialPopn,
+                                    usePriorPopn = usePriorPopn,
                                     datasets = datasets,
                                     namesDatasets = namesDatasets,
                                     transforms = transforms)
@@ -5553,6 +5769,8 @@ test_that("diffLogDensExpPopn works", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -5564,6 +5782,8 @@ test_that("diffLogDensExpPopn works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -5694,6 +5914,8 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
                                   Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                                   Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
         seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+        updateInitialPopn <- new("LogicalFlag", TRUE)
+        usePriorPopn <- new("LogicalFlag", TRUE)
         transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                            makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                            makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -5705,6 +5927,8 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
                                     systemWeights = systemWeights,
                                     dataModels = data.models,
                                     seriesIndices = seriesIndices,
+                                    updateInitialPopn = updateInitialPopn,
+                                    usePriorPopn = usePriorPopn,
                                     datasets = datasets,
                                     namesDatasets = namesDatasets,
                                     transforms = transforms)
@@ -5754,6 +5978,8 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -5765,6 +5991,8 @@ test_that("diffLogDensJumpOrigDest works with CombinedAccountMovements - no age"
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -5823,6 +6051,8 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -5834,6 +6064,8 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -5921,6 +6153,8 @@ test_that("diffLogDensJumpOrigDest works - with age", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -5932,6 +6166,8 @@ test_that("diffLogDensJumpOrigDest works - with age", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -6046,6 +6282,8 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with a
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -6057,6 +6295,8 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with a
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -6117,6 +6357,8 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                         Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -6128,6 +6370,8 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -6215,6 +6459,8 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -6226,6 +6472,8 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -6319,6 +6567,8 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -6330,6 +6580,8 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -6504,6 +6756,8 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -6515,6 +6769,8 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -6565,6 +6821,8 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -6576,6 +6834,8 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -6644,6 +6904,8 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                         Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -6655,6 +6917,8 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -6837,6 +7101,8 @@ test_that("diffLogDensJumpPoolWithExpose works with CombinedAccountMovements", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -6848,6 +7114,8 @@ test_that("diffLogDensJumpPoolWithExpose works with CombinedAccountMovements", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -6906,6 +7174,8 @@ test_that("R and C versions of diffLogDensJumpPoolWithExpose give same answer wi
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -6917,6 +7187,8 @@ test_that("R and C versions of diffLogDensJumpPoolWithExpose give same answer wi
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -6958,6 +7230,8 @@ test_that("diffLogDensJumpPoolNoExpose works with CombinedAccountMovements", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -6969,6 +7243,8 @@ test_that("diffLogDensJumpPoolNoExpose works with CombinedAccountMovements", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -7015,6 +7291,8 @@ test_that("R and C versions of diffLogDensJumpPoolNoExpose give same answer with
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -7026,6 +7304,8 @@ test_that("R and C versions of diffLogDensJumpPoolNoExpose give same answer with
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -7074,6 +7354,8 @@ test_that("diffLogDensJumpNet works with CombinedAccountMovements", {
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -7085,6 +7367,8 @@ test_that("diffLogDensJumpNet works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -7140,6 +7424,8 @@ test_that("R and C versions of diffLogDensJumpNet give same answer with Combined
     data.models <- list(Model(tax ~ NormalFixed(mean = mean, sd = 0.1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
                      population - 5L)
     namesDatasets <- c("tax", "census")
@@ -7151,6 +7437,8 @@ test_that("R and C versions of diffLogDensJumpNet give same answer with Combined
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
@@ -7194,6 +7482,8 @@ test_that("diffLogDensJumpComp works - no age", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -7209,6 +7499,8 @@ test_that("diffLogDensJumpComp works - no age", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -7268,6 +7560,8 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - no age", {
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(Counts(array(7L,
                                   dim = 10,
                                   dimnames = list(time = paste(seq(2001, 2091, 10), seq(2010, 2100, 10), sep = "-")))),
@@ -7283,6 +7577,8 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - no age", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -7368,6 +7664,8 @@ test_that("diffLogDensJumpComp works - with age", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -7379,6 +7677,8 @@ test_that("diffLogDensJumpComp works - with age", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -7494,6 +7794,8 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -7505,6 +7807,8 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - with age",
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -7598,6 +7902,8 @@ test_that("diffLogDensExpComp works", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -7609,6 +7915,8 @@ test_that("diffLogDensExpComp works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -7736,6 +8044,8 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -7747,6 +8057,8 @@ test_that("R and C versions of diffLogDensExpComp give same value", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -7807,6 +8119,8 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
                               Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(births + 1L,
                      deaths - 5L,
                      population + 10L)
@@ -7820,6 +8134,8 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -7904,6 +8220,8 @@ test_that("R and C versions of diffLogDensExpComp give same answer with Combined
                               Model(tax ~ Poisson(mean ~ 1), series = "deaths"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
     seriesIndices <- c(1L, 2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(births + 1L,
                      deaths - 5L,
                      population + 10L)
@@ -7917,6 +8235,8 @@ test_that("R and C versions of diffLogDensExpComp give same answer with Combined
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -8014,6 +8334,8 @@ test_that("updateCellMove works", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -8025,6 +8347,8 @@ test_that("updateCellMove works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -8141,6 +8465,8 @@ test_that("R and C versions of updateCellMove give same answer", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -8152,6 +8478,8 @@ test_that("R and C versions of updateCellMove give same answer", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -8269,6 +8597,8 @@ test_that("updateSubsequentPopnMove works", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -8280,6 +8610,8 @@ test_that("updateSubsequentPopnMove works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -8398,6 +8730,8 @@ test_that("R and C versions of updateSubsequentPopnMove give same answer", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -8409,6 +8743,8 @@ test_that("R and C versions of updateSubsequentPopnMove give same answer", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -8531,6 +8867,8 @@ test_that("updateSubsequentAccMove works", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -8542,6 +8880,8 @@ test_that("updateSubsequentAccMove works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -8694,6 +9034,8 @@ test_that("R and C versions of updateSubsequentAccMove give same answer", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -8705,6 +9047,8 @@ test_that("R and C versions of updateSubsequentAccMove give same answer", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -8818,6 +9162,8 @@ test_that("updateSubsequentExpMove works", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -8829,6 +9175,8 @@ test_that("updateSubsequentExpMove works", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -8982,6 +9330,8 @@ test_that("R and C versions of updateSubsequentExpMove give same answer", {
                               Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
                               Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
                        makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
@@ -8993,6 +9343,8 @@ test_that("R and C versions of updateSubsequentExpMove give same answer", {
                                 systemWeights = systemWeights,
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
