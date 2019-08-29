@@ -211,7 +211,7 @@ simulateAccount <- function(account, systemModels,
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
-                                                fun = simulateOneChain,
+                                                fun = estimateOneChain,
                                                 tempfile = tempfiles,
                                                 combined = combineds,
                                                 MoreArgs = MoreArgs,
@@ -221,7 +221,7 @@ simulateAccount <- function(account, systemModels,
         parallel::stopCluster(cl)
     }
     else {
-        final.combineds <- mapply(simulateOneChain,
+        final.combineds <- mapply(estimateOneChain,
                                   tempfile = tempfiles,
                                   combined = combineds,
                                   MoreArgs = MoreArgs,
@@ -300,7 +300,7 @@ continueSimulation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NU
                                         outfile = outfile)
         parallel::clusterSetRNGStream(cl)
         final.combineds <- parallel::clusterMap(cl = cl,
-                                                fun = simulateOneChain,
+                                                fun = estimateOneChain,
                                                 seed = seed.old,
                                                 tempfile = tempfiles.new,
                                                 combined = combineds,
@@ -312,7 +312,7 @@ continueSimulation <- function(filename, nBurnin = NULL, nSim = 1000, nThin = NU
     }
     else {
         set.seed(seed.old[[1L]])
-        final.combineds <- mapply(simulateOneChain,
+        final.combineds <- mapply(estimateOneChain,
                                   seed = seed.old,
                                   tempfile = tempfiles.new,
                                   combined = combineds,
