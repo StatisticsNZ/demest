@@ -401,10 +401,16 @@ setMethod("initialCombinedCounts",
               y[struc.zero.array@.Data == 0L] <- 0L
               y <- imputeCountsInternal(y)
               for (i in seq_along(dataModels)) {
-                  y.collapsed <- dembase::collapse(y, transform = transforms[[i]])
+                  ## can't use standard collapse, which doesn't allow for concordances
+                  .Data.y.collapsed <- dembase::collapse(y@.Data, transform = transforms[[i]])
+                  metadata.y.collapsed <- datasets[[i]]@metadata
+                  dimnames(.Data.y.collapsed) <- dimnames(metadata.y.collapsed)
+                  y.collapsed <- new("Counts",
+                                     .Data = .Data.y.collapsed,
+                                     metadata = metadata.y.collapsed)
                   dataModels[[i]] <- initialModel(dataModels[[i]],
-                                                         y = datasets[[i]],
-                                                         exposure = y.collapsed)
+                                                  y = datasets[[i]],
+                                                  exposure = y.collapsed)
               }
               has.exposure <- !is.null(exposure)
               if (has.exposure) {
@@ -449,7 +455,13 @@ setMethod("initialCombinedCounts",
                   stop(gettextf("'%s' greater than '%s'",
                                 "y", "exposure"))
               for (i in seq_along(dataModels)) {
-                  y.collapsed <- dembase::collapse(y, transform = transforms[[i]])
+                  ## can't use standard collapse, which doesn't allow for concordances
+                  .Data.y.collapsed <- dembase::collapse(y@.Data, transform = transforms[[i]])
+                  metadata.y.collapsed <- datasets[[i]]@metadata
+                  dimnames(.Data.y.collapsed) <- dimnames(metadata.y.collapsed)
+                  y.collapsed <- new("Counts",
+                                     .Data = .Data.y.collapsed,
+                                     metadata = metadata.y.collapsed)
                   dataModels[[i]] <- initialModel(dataModels[[i]],
                                                    y = datasets[[i]],
                                                    exposure = y.collapsed)
