@@ -954,6 +954,8 @@ void predictCombined_CombinedModelBinomial(SEXP object_R,
                     const char *filename, int lengthIter, int iteration);
 void predictCombined_CombinedModelPoissonHasExp(SEXP object_R, 
                     const char *filename, int lengthIter, int iteration);
+void predictCombined_CombinedCountsPoissonNotHasExp(SEXP object_R, 
+                    const char *filename, int lengthIter, int iteration);
 void predictCombined_CombinedCountsPoissonHasExp(SEXP object_R, 
                     const char *filename, int lengthIter, int iteration);
 void predictCombined(SEXP object_R, 

@@ -504,11 +504,76 @@ predictCombined_CombinedCountsPoissonHasExp(SEXP object_R,
             UNPROTECT(2);
         }
         else {
-            predictModelUseExp(dataModel_R, dataset_R, exposure_R);
+            predictModelUseExp(dataModel_R, dataset_R, dataset_R);
         }
     }
 }
-              
+
+
+void
+predictCombined_CombinedCountsPoissonNotHasExp(SEXP object_R, 
+        const char *filename, int lengthIter, int iteration)
+{
+    SEXP model_R = GET_SLOT(object_R, model_sym);
+    SEXP y_R = GET_SLOT(object_R, y_sym);
+    SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
+    int *strucZeroArray = INTEGER(GET_SLOT(model_R, strucZeroArray_sym));
+    SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
+    
+    transferParamModel(model_R, filename, lengthIter, iteration);
+    
+    /* reset y to have 0 if corresponding element of structZeroArray is 0, 
+     * and NA_INTEGER otherwise */
+    int n_y = LENGTH(y_R);
+    int * y = INTEGER(y_R);
+    memset(y, 0, n_y * sizeof(int)); 
+    
+    for (int i = 0; i < n_y; ++i) {
+        if (strucZeroArray[i] != 0) {
+            y[i] = NA_INTEGER;
+        }
+    }
+    predictModelNotUseExp(model_R, y_R);
+    
+    double * theta = REAL(GET_SLOT(model_R, theta_sym));
+    
+    for (int i = 0; i < n_y; ++i) {
+        y[i] = rpois(theta[i]);
+    }  
+    
+    int n_models = LENGTH(dataModels_R);
+    
+    for (int i = 0; i < n_models; ++i) {
+        
+        SEXP dataModel_R = VECTOR_ELT(dataModels_R, i);
+        SEXP dataset_R = VECTOR_ELT(datasets_R, i); 
+        
+        /* if it is not a poisson datamodel we can use dataset as is 
+         * as the exposure for predictModel, 
+         * but if it is a poisson model need to use a double version
+         * of dataset as the exposure for predictModel */
+        const char *class_name = CHAR(STRING_ELT(GET_SLOT((dataModel_R), 
+                                                    R_ClassSymbol), 0));
+        char *found = NULL;
+        found = strstr(class_name, "Poisson");
+
+        if (found) {
+            
+            SEXP expose_R;
+            SEXP expose_tmp_R;
+            PROTECT( expose_tmp_R = duplicate(dataset_R) );
+            PROTECT(expose_R = coerceVector(expose_tmp_R, REALSXP));
+
+            predictModelUseExp(dataModel_R, dataset_R, expose_R);
+            UNPROTECT(2);
+        }
+        else {
+            predictModelUseExp(dataModel_R, dataset_R, dataset_R);
+        }
+    }
+}
+
+
 /* generic predict combined object method */
 void
 predictCombined(SEXP object_R, 
@@ -533,6 +598,10 @@ predictCombined(SEXP object_R,
             break;
         case 4: /* poisson model, has exposure */
             predictCombined_CombinedModelPoissonHasExp(object_R, 
+                                        filename, lengthIter, iteration);
+            break;
+        case 6: /* poisson counts, not has exposure */
+            predictCombined_CombinedCountsPoissonNotHasExp(object_R, 
                                         filename, lengthIter, iteration);
             break;
         case 7: /* poisson counts, has exposure */

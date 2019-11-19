@@ -402,10 +402,66 @@ setMethod("predictCombined",
                   }
                   object@model <- model
                   object@y <- y
-                  object@dataModels = data.models
+                  object@dataModels <- data.models
                   object
               }
           })
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("predictCombined",
+          signature(object = "CombinedCountsPoissonNotHasExp"),
+          function(object, nUpdate = 1L, filename, lengthIter, iteration, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictCombined_CombinedCountsPoissonNotHasExp_R,
+                            object, filename, lengthIter, iteration)
+                  else
+                      .Call(predictCombined_R,
+                            object, filename, lengthIter, iteration)
+              }
+              else {
+                  model <- object@model
+                  y <- object@y
+                  datasets <- object@datasets
+                  struc.zero.array <- model@strucZeroArray
+                  data.models <- object@dataModels
+                  model <- transferParamModel(model = model,
+                                              filename = filename,
+                                              lengthIter = lengthIter,
+                                              iteration = iteration)
+                  ## Clear previous results. Need to clear for updateTheta to work properly.
+                  y[] <- ifelse(struc.zero.array == 0L, 0L, NA_integer_) 
+                  model <- predictModelNotUseExp(model,
+                                                 y = y)
+                  theta <- model@theta
+                  y[] <- stats::rpois(n = length(theta),
+                                      lambda = theta) ## need to revisit this if we allow for subtotals
+                  for (i in seq_along(data.models)) {
+                      data.model <- data.models[[i]]
+                      dataset <- datasets[[i]] ## all NA
+                      expose <- dataset
+                      if (methods::is(data.model, "Poisson"))
+                          expose <- toDouble(expose)
+                      data.model <- predictModelUseExp(object = data.model,
+                                                       y = dataset,
+                                                       exposure = expose)
+                      data.models[[i]] <- data.model
+                  }
+                  object@model <- model
+                  object@y <- y
+                  object@dataModels  <- data.models
+                  object
+              }
+          })
+
 
 
 

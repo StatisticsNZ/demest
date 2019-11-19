@@ -1285,6 +1285,172 @@ test_that("R, C generic and C specific versions of predictCombined give same ans
 
 
 
+test_that("predictCombined works with object of class CombinedCountsPoissonNotHasExp", {
+    predictCombined <- demest:::predictCombined
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    initialCombinedCountsPredict <- demest:::initialCombinedCountsPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    predictModelNotUseExp <- demest:::predictModelNotUseExp
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    extractValues <- demest:::extractValues
+    transferParamModel <- demest:::transferParamModel
+    object <- Model(y ~ Poisson(mean ~ sex * region,
+                                useExpose = FALSE))
+    y <- Counts(array(1:24,
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), region = 1:3, time = 0:3)),
+                dimscales = c(time = "Intervals"))
+    y[24] <- NA
+    datasets <- list(Counts(array(c(1:11, NA),
+                                  dim = c(2, 3, 2),
+                                  dimnames = list(sex = c("f", "m"), region = 1:3, time = 2:3)),
+                            dimscales = c(time = "Intervals")),
+                     Counts(array(1:12,
+                                  dim = 3:4,
+                                  dimnames = list(region = 1:3, time = 0:3)),
+                            dimscales = c(time = "Intervals")))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = y, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    data.models <- list(Model(tax ~ Poisson(mean ~ time + sex)),
+                        Model(census ~ PoissonBinomial(prob = 0.9)))
+    x.est <- initialCombinedCounts(object = object,
+                                   y = y,
+                                   exposure = NULL,
+                                   dataModels = data.models,
+                                   datasets = datasets,
+                                   namesDatasets = namesDatasets,
+                                   transforms = transforms)
+    x.pred <- initialCombinedCountsPredict(x.est,
+                                           along = 3L,
+                                           labels = NULL,
+                                           n = 2L,
+                                           exposure = NULL,
+                                           covariates = list(),
+                                           aggregate = list(),
+                                           lower = list(),
+                                           upper = list())
+    expect_is(x.pred, "CombinedCountsPoissonNotHasExp")
+    expect_true(validObject(x.pred))
+    values <- extractValues(x.est)
+    lengthIter <- length(values)
+    filename <- tempfile()
+    con <- file(filename, "wb")
+    writeBin(values, con = con)
+    close(con)
+    set.seed(1)
+    ans.obtained <- predictCombined(x.pred,
+                                    filename = filename,
+                                    lengthIter = lengthIter,
+                                    iteration = 1L,
+                                    nUpdate = 1L)
+    set.seed(1)
+    ans.expected <- x.pred
+    model <- ans.expected@model
+    model <- transferParamModel(model = model,
+                                filename = filename,
+                                lengthIter = lengthIter,
+                                iteration = 1L)
+    model <- predictModelNotUseExp(object = model, y = x.pred@y)
+    ans.expected@model <- model
+    ans.expected@y[] <- rpois(n = length(model@theta), lambda = model@theta)
+    ans.expected@dataModels[[1]] <- predictModelUseExp(object = ans.expected@dataModels[[1]],
+                                                       y = ans.expected@datasets[[1]],
+                                                       exposure = toDouble(ans.expected@datasets[[1]]))
+    ans.expected@dataModels[[2]] <- predictModelUseExp(object = ans.expected@dataModels[[2]],
+                                                       y = ans.expected@datasets[[2]],
+                                                       exposure = ans.expected@datasets[[2]])
+    expect_identical(ans.obtained, ans.expected)    
+})
+
+
+test_that("R, C generic and C specific versions of predictCombined give same answer with object of class CombinedCountsPoissonNotHasExp", {
+    predictCombined <- demest:::predictCombined
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    initialCombinedCountsPredict <- demest:::initialCombinedCountsPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    extractValues <- demest:::extractValues
+    object <- Model(y ~ Poisson(mean ~ sex * region,
+                                useExpose = FALSE))
+    y <- Counts(array(1:24,
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), region = 1:3, time = 0:3)),
+                dimscales = c(time = "Intervals"))
+    y[24] <- NA
+    datasets <- list(Counts(array(c(1:11, NA),
+                                  dim = c(2, 3, 2),
+                                  dimnames = list(sex = c("f", "m"), region = 1:3, time = 2:3)),
+                            dimscales = c(time = "Intervals")),
+                     Counts(array(1:12,
+                                  dim = 3:4,
+                                  dimnames = list(region = 1:3, time = 0:3)),
+                            dimscales = c(time = "Intervals")))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = y, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    data.models <- list(Model(tax ~ Poisson(mean ~ time + sex)),
+                        Model(census ~ PoissonBinomial(prob = 0.9)))
+    x.est <- initialCombinedCounts(object = object,
+                                   y = y,
+                                   exposure = NULL,
+                                   dataModels = data.models,
+                                   datasets = datasets,
+                                   namesDatasets = namesDatasets,
+                                   transforms = transforms)
+    x.pred <- initialCombinedCountsPredict(x.est,
+                                           along = 3L,
+                                           labels = NULL,
+                                           n = 2L,
+                                           exposure = NULL,
+                                           covariates = list(),
+                                           aggregate = list(),
+                                           lower = list(),
+                                           upper = list())
+    expect_is(x.pred, "CombinedCountsPoissonNotHasExp")
+    expect_true(validObject(x.pred))
+    values <- extractValues(x.est)
+    lengthIter <- length(values)
+    filename <- tempfile()
+    con <- file(filename, "wb")
+    writeBin(values, con = con)
+    close(con)
+    set.seed(1)
+    ans.R <- predictCombined(x.pred,
+                             filename = filename,
+                             lengthIter = lengthIter,
+                             iteration = 1L,
+                             nUpdate = 1L,
+                             useC = FALSE)
+    set.seed(1)
+    ans.C.specific <- predictCombined(x.pred,
+                                      filename = filename,
+                                      lengthIter = lengthIter,
+                                      iteration = 1L,
+                                      nUpdate = 1L,
+                                      useC = TRUE,
+                                      useSpecific = TRUE)
+    set.seed(1)
+    ans.C.generic <- predictCombined(x.pred,
+                                     filename = filename,
+                                     lengthIter = lengthIter,
+                                     iteration = 1L,
+                                     nUpdate = 1L,
+                                     useC = TRUE,
+                                     useSpecific = TRUE)
+    if (test.identity)
+        expect_identical(ans.R, ans.C.specific)
+    else
+        expect_equal(ans.R, ans.C.specific)
+    expect_identical(ans.C.specific, ans.C.generic)
+})
+
+
+
+
+
 ## updateCombined - CombinedModel #####################################################
 
 ## Assume that underlying updating functions work correctly.  Only check that

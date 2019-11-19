@@ -690,6 +690,54 @@ test_that("initialCombinedCountsPredict creates object of class CombinedCountsPo
     expect_true(validObject(x.pred))
 })
 
+test_that("initialCombinedCountsPredict creates object of class CombinedCountsPoissonNotHasExp from valid inputs", {
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    initialCombinedCountsPredict <- demest:::initialCombinedCountsPredict
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    object <- Model(y ~ Poisson(mean ~ sex * region,
+                                useExpose = FALSE))
+    y <- Counts(array(1:24,
+                      dim = 2:4,
+                      dimnames = list(sex = c("f", "m"), region = 1:3, time = 0:3)),
+                dimscales = c(time = "Intervals"))
+    y[24] <- NA
+    datasets <- list(Counts(array(c(1:11, NA),
+                                  dim = c(2, 3, 2),
+                                  dimnames = list(sex = c("f", "m"), region = 1:3, time = 2:3)),
+                            dimscales = c(time = "Intervals")),
+                     Counts(array(1:12,
+                                  dim = 3:4,
+                                  dimnames = list(region = 1:3, time = 0:3)),
+                            dimscales = c(time = "Intervals")))
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = y, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    data.models <- list(Model(tax ~ Poisson(mean ~ time + sex)),
+                        Model(census ~ PoissonBinomial(prob = 0.9)))
+    x.est <- initialCombinedCounts(object = object,
+                                   y = y,
+                                   exposure = NULL,
+                                   dataModels = data.models,
+                                   datasets = datasets,
+                                   namesDatasets = namesDatasets,
+                                   transforms = transforms)
+    expect_true(validObject(x.est))
+    expect_is(x.est, "CombinedCountsPoissonNotHasExp")
+    x.pred <- initialCombinedCountsPredict(x.est,
+                                           along = 3L,
+                                           labels = NULL,
+                                           n = 2L,
+                                           exposure = NULL,
+                                           covariates = list(),
+                                           aggregate = list(),
+                                           lower = list(),
+                                           upper = list())
+    expect_is(x.est, "CombinedCountsPoissonNotHasExp")
+    expect_true(validObject(x.pred))
+})
+
+
 ## CombinedAccount ##########################################################################
 
 test_that("initialCombinedAccount creates object of class CombinedAccountMovements from valid inputs", {
