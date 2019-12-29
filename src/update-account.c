@@ -54,10 +54,23 @@ updateProposalAccountMovePopn(SEXP combined_R)
     SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, 0);
     double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
     int * strucZeroArray = INTEGER(GET_SLOT(thisSystemModel_R, strucZeroArray_sym));
+
+    int iCell_r;
+    int iCell;
+    int isStrucZero;
+    int generatedNewProposal = 0;
+
+    for (int i = 0; i < maxAttempt; i++) {
+        iCell_r = chooseICellPopn(description_R);
+        iCell = iCell_r - 1;
+        isStrucZero = strucZeroArray[iCell] == 0;
+        if (!isStrucZero) {
+            generatedNewProposal = 1;
+            break;
+        }
+    }
     
-    int iCell_r = chooseICellPopn(description_R);
     int iExposure_r = 0;
-    
     int iExpFirst_r = getIExpFirstFromPopn(iCell_r, description_R);
     int iPopnNext_r = getIPopnNextFromPopn(iCell_r, description_R);
     int minVal = getMinValCohortPopulation(iPopnNext_r, population_R,
@@ -84,17 +97,10 @@ updateProposalAccountMovePopn(SEXP combined_R)
     } /* end hasAge */
     
     int * population = INTEGER(population_R);
-    int iCell = iCell_r - 1;
     int diffProp = 0;
     
-    int isStrucZero = strucZeroArray[iCell] == 0;
-
-    int generatedNewProposal = 0;
-    
-    if (isStrucZero) {
-        generatedNewProposal = 0;
-    }
-    else {
+    if (generatedNewProposal) {
+      
         int valCurr = population[iCell];
         int lower = valCurr - minVal;
         int upper = NA_INTEGER;
@@ -181,7 +187,7 @@ updateProposalAccountMoveBirths(SEXP combined_R)
     int isStrucZero;
     int generatedNewProposal = 0;
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < maxAttempt; i++) {
         iCell_r = chooseICellComp(description_R);
         iCell = iCell_r - 1;
         isStrucZero = strucZeroArray[iCell] == 0;
@@ -325,9 +331,25 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
     double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
     int * strucZeroArray = INTEGER(GET_SLOT(thisSystemModel_R, strucZeroArray_sym));
     
-    int iCell_r = chooseICellComp(description_R);
+    int iCell_r;
+    int iCell;
+    int isStrucZero;
+    int generatedNewProposal = 0;
+
+    for (int i = 0; i < maxAttempt; i++) {
+        iCell_r = chooseICellComp(description_R);
+        iCell = iCell_r - 1;
+        isStrucZero = strucZeroArray[iCell] == 0;
+        if (!isStrucZero) {
+            generatedNewProposal = 1;
+            break;
+        }
+    }
     
     int pairArray[2]; /* use for all the pairs */
+
+    int diffProp = 0;
+    int iExposure_r = 0;
     
     getIExpFirstPairFromOrigDestInternal(pairArray, iCell_r, mappingToExp_R);
     
@@ -382,19 +404,9 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
     
     int * component = INTEGER(component_R);
 
-    int iCell = iCell_r - 1;
-    int diffProp = 0;
-    int iExposure_r = 0;
-
-    int isStrucZero = strucZeroArray[iCell] == 0;
-
-    int generatedNewProposal = 0; 
     
-    if (isStrucZero) {
-        generatedNewProposal = 0;
-    }
-    else {
-
+    if (generatedNewProposal) {
+      
         int valCurr = component[iCell];
         int lower = valCurr - minValDest;
         int upper = valCurr + minValOrig;
@@ -498,12 +510,28 @@ updateProposalAccountMovePool(SEXP combined_R)
     double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
     int * strucZeroArray = INTEGER(GET_SLOT(thisSystemModel_R, strucZeroArray_sym));
     
-    int pairArray[2]; 
-    
-    chooseICellOutInPoolInternal(pairArray, description_R);
-    
-    int iCellOut_r = pairArray[0];
-    int iCellIn_r = pairArray[1];
+    int pairArray[2];
+
+    int iCellOut_r;
+    int iCellIn_r;
+    int iCellOut;
+    int iCellIn;
+    int isStrucZero;
+    int generatedNewProposal = 0;
+
+    for (int i = 0; i < maxAttempt; i++) {
+        chooseICellOutInPoolInternal(pairArray, description_R);
+        iCellOut_r = pairArray[0];
+        iCellIn_r = pairArray[1];
+        iCellOut = iCellOut_r - 1;
+        iCellIn = iCellIn_r - 1;
+	isStrucZero = ((strucZeroArray[iCellOut] == 0)
+		       || (strucZeroArray[iCellIn] == 0));
+        if (!isStrucZero) {
+            generatedNewProposal = 1;
+            break;
+        }
+    }
     
     int iExpFirstOut_r = getIExpFirstFromComp(iCellOut_r, mappingToExp_R);
     int iExpFirstIn_r = getIExpFirstFromComp(iCellIn_r, mappingToExp_R);
@@ -552,20 +580,11 @@ updateProposalAccountMovePool(SEXP combined_R)
     } /* end hasAge */
     
     int * component = INTEGER(component_R);
-    int iCellOut = iCellOut_r - 1;
-    int iCellIn = iCellIn_r - 1;
     int diffProp = 0;
     int iExposureOut_r = 0;
     int iExposureIn_r = 0;
 
-    int isStrucZero = ((strucZeroArray[iCellOut] == 0) || (strucZeroArray[iCellIn] == 0));
-
-    int generatedNewProposal = 0; 
-    
-    if (isStrucZero) {
-        generatedNewProposal = 0;
-    }
-    else {
+    if (generatedNewProposal) {
     
         int valCurrOut = component[iCellOut];
         int valCurrIn = component[iCellIn];
@@ -836,7 +855,31 @@ updateProposalAccountMoveComp(SEXP combined_R)
     int * isNetVec = LOGICAL(GET_SLOT(combined_R, isNet_sym)); 
     int isNet = isNetVec[iComp];
     
-    int iCell_r = chooseICellComp(description_R);
+    int * component = INTEGER(component_R);
+    
+    int iCell_r;
+    int iCell;
+    int iExposure_r = 0;
+    int isStrucZero = 0;
+    int generatedNewProposal; 
+    int diffProp = 0;
+
+    if (isNet) {
+      generatedNewProposal = 1;
+    }
+    else {
+      generatedNewProposal = 0;
+      int * strucZeroArray = INTEGER(GET_SLOT(thisSystemModel_R, strucZeroArray_sym));
+      for (int i = 0; i < maxAttempt; i++) {
+        iCell_r = chooseICellComp(description_R);
+        iCell = iCell_r - 1;
+        isStrucZero = strucZeroArray[iCell] == 0;
+        if (!isStrucZero) {
+	  generatedNewProposal = 1;
+	  break;
+        }
+      }
+    }
     
     int iExpFirst_r = getIExpFirstFromComp(iCell_r, mappingToExp_R);
     
@@ -873,22 +916,7 @@ updateProposalAccountMoveComp(SEXP combined_R)
         }
     } /* end hasAge */
     
-    int * component = INTEGER(component_R);
-    int iCell = iCell_r - 1;
-    int iExposure_r = 0;
-    int isStrucZero = 0;
-    int generatedNewProposal = 0; 
-    int diffProp = 0;
-
-    if (!isNet) {
-        int * strucZeroArray = INTEGER(GET_SLOT(thisSystemModel_R, strucZeroArray_sym));
-        isStrucZero = strucZeroArray[iCell] == 0;
-    }
-
-    if (isStrucZero) {
-        generatedNewProposal = 0;
-    }
-    else {
+    if (generatedNewProposal) {
     
         int valCurr = component[iCell];
         

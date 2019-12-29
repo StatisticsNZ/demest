@@ -121,11 +121,16 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         iterator.popn <- combined@iteratorPopn
         theta <- combined@systemModels[[1L]]@theta
         struc.zero.array <- combined@systemModels[[1L]]@strucZeroArray
-        i.cell <- chooseICellPopn(description)
-        is.struc.zero <- struc.zero.array[i.cell] == 0L
-        if (is.struc.zero)
-            generated.new.proposal <- FALSE
-        else {
+        generated.new.proposal  <- FALSE
+        for (i in seq_len(max.attempt)) {
+            i.cell <- chooseICellPopn(description)
+            is.struc.zero <- struc.zero.array[i.cell] == 0L
+            if (!is.struc.zero) {
+                generated.new.proposal <- TRUE
+                break
+            }
+        }
+        if (generated.new.proposal) {
             i.exposure <- 0L
             i.exp.first <- getIExpFirstFromPopn(i = i.cell,
                                                 description = description)
@@ -226,7 +231,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
         theta <- combined@systemModels[[i.comp + 1L]]@theta
         struc.zero.array <- combined@systemModels[[i.comp + 1L]]@strucZeroArray
         generated.new.proposal <- FALSE
-        for (i in seq_len(100)) {
+        for (i in seq_len(max.attempt)) {
             i.cell <- chooseICellComp(description)
             is.struc.zero <- struc.zero.array[i.cell] == 0L
             if (!is.struc.zero) {
@@ -353,12 +358,16 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         description <- combined@descriptions[[i.comp + 1L]]
         theta <- combined@systemModels[[i.comp + 1L]]@theta
         struc.zero.array <- combined@systemModels[[i.comp + 1L]]@strucZeroArray
-        i.cell <- chooseICellComp(description)
-        is.struc.zero <- struc.zero.array[i.cell] == 0L
-        if (is.struc.zero) {
-            generated.new.proposal <- FALSE
+        generated.new.proposal  <- FALSE
+        for (i in seq_len(max.attempt)) {
+            i.cell <- chooseICellComp(description)
+            is.struc.zero <- struc.zero.array[i.cell] == 0L
+            if (!is.struc.zero) {
+                generated.new.proposal <- TRUE
+                break
+            }
         }
-        else {
+        if (generated.new.proposal) {
             if (has.age)
                 is.lower.triangle <- isLowerTriangle(i = i.cell,
                                                      description = description)
@@ -494,14 +503,19 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
         description <- combined@descriptions[[i.comp + 1L]]        
         theta <- combined@systemModels[[i.comp + 1L]]@theta
         struc.zero.array <- combined@systemModels[[i.comp + 1L]]@strucZeroArray
-        pair.cell <- chooseICellOutInPool(description)
-        i.cell.out <- pair.cell[1L] # 'diffProp' added to this cell
-        i.cell.in <- pair.cell[2L]  # 'diffProp' also added to this cell
-        is.struc.zero <- (struc.zero.array[i.cell.out] == 0L || struc.zero.array[i.cell.in] == 0L)
-        if (is.struc.zero) {
-            generated.new.proposal <- FALSE
+        gnerated.new.proposal <- FALSE
+        for (i in seq_len(max.attempt)) {
+            pair.cell <- chooseICellOutInPool(description)
+            i.cell.out <- pair.cell[1L] # 'diffProp' added to this cell
+            i.cell.in <- pair.cell[2L]  # 'diffProp' also added to this cell
+            is.struc.zero <- ((struc.zero.array[i.cell.out] == 0L)
+                || (struc.zero.array[i.cell.in] == 0L))
+            if (!is.struc.zero) {
+                generated.new.proposal <- TRUE
+                break
+            }
         }
-        else {
+        if (generated.new.proposal) {
             if (has.age)
                 is.lower.triangle <- isLowerTriangle(i = i.cell.out,
                                                      description = description)
@@ -767,20 +781,24 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta <- sys.mod.comp@theta
         is.net <- combined@isNet[i.comp]
-        i.cell <- chooseICellComp(description)
         if (is.net) {
             varsigma.comp <- sys.mod.comp@varsigma
             w.comp <- sys.mod.comp@w
-            is.struc.zero <- FALSE
+            generated.new.proposal <- TRUE
         }
         else {
             struc.zero.array <- sys.mod.comp@strucZeroArray
-            is.struc.zero <- struc.zero.array[i.cell] == 0L
-        }
-        if (is.struc.zero) {
             generated.new.proposal <- FALSE
+            for (i in seq_len(max.attempt)) {
+                i.cell <- chooseICellComp(description)
+                is.struc.zero <- struc.zero.array[i.cell] == 0L
+                if (!is.struc.zero) {
+                    generated.new.proposal <- TRUE
+                    break
+                }
+            }
         }
-        else {
+        if (generated.new.proposal) {
             if (has.age)
                 is.lower.triangle <- isLowerTriangle(i = i.cell,
                                                      description = description)
