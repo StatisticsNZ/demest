@@ -865,6 +865,7 @@ updateProposalAccountMoveComp(SEXP combined_R)
     int diffProp = 0;
 
     if (isNet) {
+      iCell_r = chooseICellComp(description_R);
       generatedNewProposal = 1;
     }
     else {

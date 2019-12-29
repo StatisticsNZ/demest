@@ -784,6 +784,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         if (is.net) {
             varsigma.comp <- sys.mod.comp@varsigma
             w.comp <- sys.mod.comp@w
+            i.cell <- chooseICellComp(description)
             generated.new.proposal <- TRUE
         }
         else {

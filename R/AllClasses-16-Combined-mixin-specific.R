@@ -114,7 +114,6 @@ setClass("ProbAccountMixin",
              ## (allow for less than 0, since we sometimes
              ## want to guarantee that a random number
              ## is less than probPopn
-             
              if (probPopn > 1)
                  return(gettextf("'%s' is greater than %d",
                                  "probPopn", 1L))
@@ -244,9 +243,36 @@ setClass("ExposureMixin",
              TRUE
          })
 
+## NO_TESTS
 setClass("GeneratedNewProposalMixin",
-         slots = c(generatedNewProposal = "LogicalFlag"),
-         contains = "VIRTUAL")
+         slots = c(generatedNewProposal = "LogicalFlag",
+                   isSmallUpdate = "LogicalFlag",
+                   probSmallUpdate = "numeric"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             probSmallUpdate <- object@probSmallUpdate
+             ## 'probSmallUpdate' has length 1
+             if (!identical(length(probSmallUpdate), 1L))
+                 return(gettextf("'%s' does not have length %d",
+                                 "probSmallUpdate", 1L))
+             ## 'probSmallUpdate' is not missing
+             if (is.na(probSmallUpdate))
+                 return(gettextf("'%s' is missing",
+                                 "probSmallUpdate"))
+             ## 'probSmallUpdate' is double
+             if (!is.double(probSmallUpdate))
+                 return(gettextf("'%s' does not have type \"%s\"",
+                                 "probSmallUpdate", "double"))
+             ## 'probSmallUpdate' is less than or equal to 1
+             if (probSmallUpdate > 1)
+                 return(gettextf("'%s' is greater than %d",
+                                 "probSmallUpdate", 1L))
+             ## 'probSmallUpdate' is greater than or equal to 0
+             if (probSmallUpdate < 0)
+                 return(gettextf("'%s' is less than %d",
+                                 "probSmallUpdate", 0L))
+             TRUE
+         })
 
 ## NO_TESTS
 setClass("HasAgeMixin",

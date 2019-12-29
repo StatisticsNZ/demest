@@ -914,8 +914,11 @@ test_that("initialCombinedAccount creates object of class CombinedAccountMovemen
                                 namesDatasets = namesDatasets,
                                 transforms = transforms,
                                 updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", FALSE))
+                                usePriorPopn = new("LogicalFlag", FALSE),
+                                probSmallUpdate = 0.2)
     expect_false(x@usePriorPopn@.Data)
+    expect_identical(x@probSmallUpdate, 0.2)
+    expect_identical(x@isSmallUpdate, new("LogicalFlag", FALSE))
 })
 
 test_that("initialCombinedAccountSimulate creates object of class CombinedAccountMovements from valid inputs", {
@@ -993,9 +996,12 @@ test_that("initialCombinedAccountSimulate creates object of class CombinedAccoun
                                         updateSystemModel = updateSystemModel,
                                         updateDataModel = updateDataModel,
                                         updateInitialPopn = new("LogicalFlag", TRUE),
-                                        usePriorPopn = new("LogicalFlag", TRUE))
+                                        usePriorPopn = new("LogicalFlag", TRUE),
+                                        probSmallUpdate = 0.2)
     expect_true(validObject(x))
     expect_is(x, "CombinedAccountMovements")
+    expect_identical(x@probSmallUpdate, 0.2)
+    expect_identical(x@isSmallUpdate, new("LogicalFlag", FALSE))
 })
 
 
