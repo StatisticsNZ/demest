@@ -381,7 +381,8 @@ setGeneric("initialCombinedAccount",
                     datasets, namesDatasets, transforms,
                     dominant = c("Female", "Male"),
                     updateInitialPopn,
-                    usePriorPopn, scaleNoise = 0)
+                    usePriorPopn, probSmallUpdate = 0,
+                    scaleNoise = 0)
                standardGeneric("initialCombinedAccount"))
 
 setGeneric("initialCombinedAccountSimulate",
@@ -391,7 +392,8 @@ setGeneric("initialCombinedAccountSimulate",
                    dominant = c("Female", "Male"),
                    updateSystemModel, updateDataModel,
                    updateInitialPopn,
-                   usePriorPopn, scaleNoise = 0)
+                   usePriorPopn, probSmallUpdate = 0,
+                   scaleNoise = 0)
               standardGeneric("initialCombinedAccountSimulate"))
 
 setGeneric("initialCombinedCounts",
