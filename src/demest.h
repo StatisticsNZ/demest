@@ -394,6 +394,8 @@ SEXP
   iExposureOther_sym,
   isLowerTriangle_sym,
   generatedNewProposal_sym,
+  probSmallUpdate_sym,
+  isSmallUpdate_sym,
   probPopn_sym,
   cumProbComp_sym,
   nCellAccount_sym;

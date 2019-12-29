@@ -121,6 +121,7 @@ updateProposalAccountMovePopn(SEXP combined_R)
     } /* end isStrucZero */
     
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
     
     if (!generatedNewProposal) {
          iCell_r = NA_INTEGER;
@@ -268,6 +269,7 @@ updateProposalAccountMoveBirths(SEXP combined_R)
     } /* end generatedNewProposal */
     
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
     
     if (!generatedNewProposal) {
          iCell_r = NA_INTEGER;
@@ -444,6 +446,7 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
     } /* end isStrucZero */
     
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
     
     if (!generatedNewProposal) {
          iCell_r = NA_INTEGER;
@@ -626,6 +629,7 @@ updateProposalAccountMovePool(SEXP combined_R)
     } /* end isStrucZero */
     
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
     
     if (!generatedNewProposal) {
          iCellOut_r = NA_INTEGER;
@@ -783,6 +787,7 @@ updateProposalAccountMoveNet(SEXP combined_R)
     }
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, 
                                     generatedNewProposal);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
     
     if (!generatedNewProposal) {
          iCellAdd_r = NA_INTEGER;
@@ -973,6 +978,7 @@ updateProposalAccountMoveComp(SEXP combined_R)
     } /* end isStrucZero */
     
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
     
     if (!generatedNewProposal) {
          iCell_r = NA_INTEGER;

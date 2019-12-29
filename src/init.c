@@ -3045,6 +3045,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iExposureOther);
   ADD_SYM(isLowerTriangle);
   ADD_SYM(generatedNewProposal);
+  ADD_SYM(probSmallUpdate);
+  ADD_SYM(isSmallUpdate);
   ADD_SYM(probPopn);
   ADD_SYM(cumProbComp);
   ADD_SYM(scaleNoise);

@@ -168,6 +168,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         }
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -185,6 +186,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         }
         else {
             combined@generatedNewProposal@.Data <- FALSE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -290,6 +292,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
         }
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -313,6 +316,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
         }
         else {
             combined@generatedNewProposal@.Data <- FALSE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -435,6 +439,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         }
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next.orig
@@ -458,6 +463,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         }
         else {
             combined@generatedNewProposal@.Data <- FALSE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -586,6 +592,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
         }
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- i.cell.out
             combined@iCellOther <- i.cell.in
             combined@iPopnNext <- i.popn.next.out
@@ -609,6 +616,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
         }
         else {
             combined@generatedNewProposal@.Data <- FALSE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -717,6 +725,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
             generated.new.proposal <- FALSE
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- i.cell.add
             combined@iCellOther <- i.cell.sub
             combined@iPopnNext <- i.popn.next.add
@@ -734,6 +743,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
         }
         else {
             combined@generatedNewProposal@.Data <- FALSE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -867,6 +877,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         }
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -890,6 +901,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         }
         else {
             combined@generatedNewProposal@.Data <- FALSE
+            combined@isSmallUpdate@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
