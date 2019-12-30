@@ -4,8 +4,16 @@
 \alias{simulateModel}
 \title{Draw parameters and data from a statistical model}
 \usage{
-simulateModel(model, y = NULL, exposure = NULL, weights = NULL,
-  filename = NULL, nDraw = 10, verbose = TRUE, useC = TRUE)
+simulateModel(
+  model,
+  y = NULL,
+  exposure = NULL,
+  weights = NULL,
+  filename = NULL,
+  nDraw = 10,
+  verbose = TRUE,
+  useC = TRUE
+)
 }
 \arguments{
 \item{model}{An object of class \code{\linkS4class{SpecModel}},

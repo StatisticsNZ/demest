@@ -28,7 +28,7 @@ terms can be specified using  function \code{Error}.
 If \code{robust = FALSE} (the default), then the error term has a normal
 distribution,
 
-\code{error[j] ~ N(0, scale^2)}.
+  \code{error[j] ~ N(0, scale^2)}.
 
 The \code{scale} parameter has a half-\emph{t} prior, which is described in the
 documentation for function \code{\link{HalfT}}.
@@ -36,7 +36,7 @@ documentation for function \code{\link{HalfT}}.
 If \code{robust = TRUE}, then, by default, the error term has a \emph{t}
 distribution with 4 degrees of freedom,
 
-\code{error[j] ~ t(4, 0, scale^2)}.
+  \code{error[j] ~ t(4, 0, scale^2)}.
 
 Users can supply alternative values for the degrees of freedom.
 The \code{scale} parameter has a half-\emph{t} prior, described

@@ -38,7 +38,7 @@ The error term has the form
 
 \code{errorSeason[j] ~ N(0, scaleSeason^2)}
 
-or
+or 
 
 \code{errorSeason[k,l] ~ N(0, scaleSeason^2)}.
 

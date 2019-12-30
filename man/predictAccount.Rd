@@ -4,10 +4,22 @@
 \alias{predictAccount}
 \title{Use results from function estimateAccount to make predictions.}
 \usage{
-predictAccount(filenameEst, filenamePred, along = NULL, labels = NULL,
-  n = NULL, data = NULL, aggregate = NULL, lower = NULL,
-  upper = NULL, nBurnin = 0L, parallel = TRUE, outfile = NULL,
-  verbose = FALSE, useC = TRUE)
+predictAccount(
+  filenameEst,
+  filenamePred,
+  along = NULL,
+  labels = NULL,
+  n = NULL,
+  data = NULL,
+  aggregate = NULL,
+  lower = NULL,
+  upper = NULL,
+  nBurnin = 0L,
+  parallel = TRUE,
+  outfile = NULL,
+  verbose = FALSE,
+  useC = TRUE
+)
 }
 \arguments{
 \item{filenameEst}{Filename used to \code{\link{estimateModel}}.}

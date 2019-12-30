@@ -4,8 +4,7 @@
 \alias{fetchMCMC}
 \title{Create a list of objects for analysis with package "coda".}
 \usage{
-fetchMCMC(filename, where = NULL, nSample = 25, sample = NULL,
-  thinned = TRUE)
+fetchMCMC(filename, where = NULL, nSample = 25, sample = NULL, thinned = TRUE)
 }
 \arguments{
 \item{filename}{The name of the file where the output from the

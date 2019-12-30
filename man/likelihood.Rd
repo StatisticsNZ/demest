@@ -8,11 +8,15 @@
 \alias{CMP}
 \title{Specify first two levels of hierarchical model.}
 \usage{
-Poisson(formula, useExpose = TRUE, structuralZeros = NULL,
-  boxcox = 0)
+Poisson(formula, useExpose = TRUE, structuralZeros = NULL, boxcox = 0)
 
-CMP(formula, dispersion = Dispersion(), useExpose = TRUE,
-  structuralZeros = NULL, boxcox = 0)
+CMP(
+  formula,
+  dispersion = Dispersion(),
+  useExpose = TRUE,
+  structuralZeros = NULL,
+  boxcox = 0
+)
 
 Binomial(formula)
 
@@ -94,7 +98,7 @@ and age-region interactions. Vector \eqn{x_i} is the
 The main effects and interactions are specified
 via the \code{formula} argument. For instance,
 
-\code{mean ~ age * sex + time}
+  \code{mean ~ age * sex + time}
 
 specifies a model with age, sex, and time main effects,
 and an age-sex interaction.

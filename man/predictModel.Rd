@@ -4,10 +4,24 @@
 \alias{predictModel}
 \title{Use results from function estimateModel to make predictions.}
 \usage{
-predictModel(filenameEst, filenamePred, along = NULL, labels = NULL,
-  n = NULL, exposure = NULL, weights = NULL, data = NULL,
-  aggregate = NULL, lower = NULL, upper = NULL, nBurnin = 0L,
-  parallel = TRUE, outfile = NULL, verbose = FALSE, useC = TRUE)
+predictModel(
+  filenameEst,
+  filenamePred,
+  along = NULL,
+  labels = NULL,
+  n = NULL,
+  exposure = NULL,
+  weights = NULL,
+  data = NULL,
+  aggregate = NULL,
+  lower = NULL,
+  upper = NULL,
+  nBurnin = 0L,
+  parallel = TRUE,
+  outfile = NULL,
+  verbose = FALSE,
+  useC = TRUE
+)
 }
 \arguments{
 \item{filenameEst}{Filename used to \code{\link{estimateModel}}.}

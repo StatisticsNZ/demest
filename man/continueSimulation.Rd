@@ -4,9 +4,17 @@
 \alias{continueSimulation}
 \title{Add extra iterations to simulation}
 \usage{
-continueSimulation(filename, nBurnin = NULL, nSim = 1000,
-  nThin = NULL, parallel = NULL, scaleNoise = 0, outfile = NULL,
-  verbose = FALSE, useC = TRUE)
+continueSimulation(
+  filename,
+  nBurnin = NULL,
+  nSim = 1000,
+  nThin = NULL,
+  parallel = NULL,
+  scaleNoise = 0,
+  outfile = NULL,
+  verbose = FALSE,
+  useC = TRUE
+)
 }
 \arguments{
 \item{filename}{The name of a file where output is collected.}

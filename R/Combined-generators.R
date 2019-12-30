@@ -405,9 +405,9 @@ setMethod("initialCombinedCounts",
                   .Data.y.collapsed <- dembase::collapse(y@.Data, transform = transforms[[i]])
                   metadata.y.collapsed <- datasets[[i]]@metadata
                   dimnames(.Data.y.collapsed) <- dimnames(metadata.y.collapsed)
-                  y.collapsed <- new("Counts",
-                                     .Data = .Data.y.collapsed,
-                                     metadata = metadata.y.collapsed)
+                  y.collapsed <- methods::new("Counts",
+                                              .Data = .Data.y.collapsed,
+                                              metadata = metadata.y.collapsed)
                   dataModels[[i]] <- initialModel(dataModels[[i]],
                                                   y = datasets[[i]],
                                                   exposure = y.collapsed)
@@ -459,12 +459,12 @@ setMethod("initialCombinedCounts",
                   .Data.y.collapsed <- dembase::collapse(y@.Data, transform = transforms[[i]])
                   metadata.y.collapsed <- datasets[[i]]@metadata
                   dimnames(.Data.y.collapsed) <- dimnames(metadata.y.collapsed)
-                  y.collapsed <- new("Counts",
-                                     .Data = .Data.y.collapsed,
-                                     metadata = metadata.y.collapsed)
+                  y.collapsed <- methods::new("Counts",
+                                              .Data = .Data.y.collapsed,
+                                              metadata = metadata.y.collapsed)
                   dataModels[[i]] <- initialModel(dataModels[[i]],
-                                                   y = datasets[[i]],
-                                                   exposure = y.collapsed)
+                                                  y = datasets[[i]],
+                                                  exposure = y.collapsed)
               }
               model <- initialModel(object, y = y, exposure = exposure)
               methods::new("CombinedCountsBinomial",

@@ -4,14 +4,31 @@
 \alias{simulateAccount}
 \title{Create a synthetic demographic account}
 \usage{
-simulateAccount(account, systemModels, datasets = list(),
-  dataModels = list(), concordances = list(), weights = list(),
-  dominant = c("Female", "Male"), usePriorPopn = TRUE,
-  updateSystemModel = NULL, updateDataModel = NULL,
-  updateInitialPopn = TRUE, scaleNoise = 0, filename = NULL,
-  nBurnin = 1000, nSim = 1000, nChain = 4, nThin = 1,
-  parallel = TRUE, nCore = NULL, outfile = NULL, nUpdateMax = 50,
-  verbose = TRUE, useC = TRUE)
+simulateAccount(
+  account,
+  systemModels,
+  datasets = list(),
+  dataModels = list(),
+  concordances = list(),
+  weights = list(),
+  dominant = c("Female", "Male"),
+  usePriorPopn = TRUE,
+  updateSystemModel = NULL,
+  updateDataModel = NULL,
+  updateInitialPopn = TRUE,
+  scaleNoise = 0,
+  filename = NULL,
+  nBurnin = 1000,
+  nSim = 1000,
+  nChain = 4,
+  nThin = 1,
+  parallel = TRUE,
+  nCore = NULL,
+  outfile = NULL,
+  nUpdateMax = 50,
+  verbose = TRUE,
+  useC = TRUE
+)
 }
 \arguments{
 \item{account}{An object of class

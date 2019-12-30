@@ -4,12 +4,29 @@
 \alias{estimateAccount}
 \title{Estimate demographic account and models from multiple noisy datasets.}
 \usage{
-estimateAccount(account, systemModels, datasets, dataModels,
-  concordances = list(), weights = list(), dominant = c("Female",
-  "Male"), updateInitialPopn = TRUE, usePriorPopn = TRUE,
-  scaleNoise = 0, filename = NULL, nBurnin = 1000, nSim = 1000,
-  nChain = 4, nThin = 1, parallel = TRUE, nCore = NULL,
-  outfile = NULL, nUpdateMax = 50, verbose = FALSE, useC = TRUE)
+estimateAccount(
+  account,
+  systemModels,
+  datasets,
+  dataModels,
+  concordances = list(),
+  weights = list(),
+  dominant = c("Female", "Male"),
+  updateInitialPopn = TRUE,
+  usePriorPopn = TRUE,
+  scaleNoise = 0,
+  filename = NULL,
+  nBurnin = 1000,
+  nSim = 1000,
+  nChain = 4,
+  nThin = 1,
+  parallel = TRUE,
+  nCore = NULL,
+  outfile = NULL,
+  nUpdateMax = 50,
+  verbose = FALSE,
+  useC = TRUE
+)
 }
 \arguments{
 \item{account}{An object of class
