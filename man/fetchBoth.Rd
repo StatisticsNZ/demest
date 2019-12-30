@@ -4,8 +4,7 @@
 \alias{fetchBoth}
 \title{Extract combined results from estimation and prediction.}
 \usage{
-fetchBoth(filenameEst, filenamePred, where, iterations = NULL,
-  impute = TRUE)
+fetchBoth(filenameEst, filenamePred, where, iterations = NULL, impute = TRUE)
 }
 \arguments{
 \item{filenameEst}{The filename used for estimation.}

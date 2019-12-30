@@ -11,8 +11,7 @@
 \usage{
 AgCertain(value, weights = NULL, concordances = list())
 
-AgNormal(value, sd, weights = NULL, concordances = list(),
-  jump = NULL)
+AgNormal(value, sd, weights = NULL, concordances = list(), jump = NULL)
 
 AgPoisson(value, concordances = list(), jump = NULL)
 
@@ -72,7 +71,7 @@ observed directly.
 Typically, \eqn{\psi_j} is a weighted sum of the associated \eqn{\gamma_i},
 that is,
 
-\deqn{\psi_j = \sum b_{ij} \gamma_i,}
+  \deqn{\psi_j = \sum b_{ij} \gamma_i,}
 
 where \eqn{b_{ij} > 0} if \eqn{\gamma_i} is associated with \eqn{\psi_j},
 and 0 otherwise.  For instance, if \eqn{\gamma_i} describes obesity
@@ -83,7 +82,7 @@ and if it describes obesity prevanece in another region, then
 However, more complicated relationships between the \eqn{\psi_j} and
 \eqn{\gamma_j} are also permitted.  In the most general case,
 
-\deqn{\psi_j = f(B, \gamma),}
+  \deqn{\psi_j = f(B, \gamma),}
 
 where \eqn{B} is a matrix of \eqn{b_{ij}}, and \eqn{f} is an arbitrary
 function.  For instance, \eqn{f} could be a (non-linear) function that takes
@@ -100,7 +99,7 @@ Aggregate values are treated as data, and placed in the likelihood.  To do
 so, a sub-model specifying the relationship between the \eqn{m_j} and
 \eqn{\psi_j} is required.  A sub-model
 
-\deqn{p(m_j | \psi_j),}
+  \deqn{p(m_j | \psi_j),}
 
 is, in effect, a model for the accuracy of the \eqn{m_j}.
 

@@ -2145,7 +2145,6 @@ Trend <- function(initial = Initial(), scale = HalfT()) {
 #' \code{error1} and \code{error2} both have half-t priors. These
 #' priors have the defaults described in \code{\link{HalfT}}.
 #'
-#' @inheritParams DLM
 #' @param mean The mean of the prior for \code{mean}. Defaults to 0.
 #' @param sd The standard deviation of the prior for \code{mean}.
 #' Defaults to 1.

@@ -4,8 +4,7 @@
 \alias{Weights}
 \title{Specify priors for the weights in a Mix prior.}
 \usage{
-Weights(mean = 0, sd = 1, damp = Damp(), scale1 = HalfT(),
-  scale2 = HalfT())
+Weights(mean = 0, sd = 1, damp = Damp(), scale1 = HalfT(), scale2 = HalfT())
 }
 \arguments{
 \item{mean}{The mean of the prior for \code{mean}. Defaults to 0.}
@@ -37,9 +36,9 @@ each component is governed by an auto-regressive time series model.
 Specifically, transformed values of the weights are modelled
 using
 
-\code{level1[k,h] = level2[k,h] + error1[k,h]}
+  \code{level1[k,h] = level2[k,h] + error1[k,h]}
 
-\code{level2[k,h] = mean + damp * level2[k-1,h] + error2[k,h]}
+  \code{level2[k,h] = mean + damp * level2[k-1,h] + error2[k,h]}
 
 \code{mean} has a normal prior.
 

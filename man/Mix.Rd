@@ -4,8 +4,14 @@
 \alias{Mix}
 \title{Specify a Mix prior.}
 \usage{
-Mix(along = NULL, components = Components(), weights = Weights(),
-  covariates = NULL, error = Error(), maxComponents = 10)
+Mix(
+  along = NULL,
+  components = Components(),
+  weights = Weights(),
+  covariates = NULL,
+  error = Error(),
+  maxComponents = 10
+)
 }
 \arguments{
 \item{along}{Name of a dimension.}

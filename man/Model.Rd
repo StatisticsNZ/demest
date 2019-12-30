@@ -5,8 +5,16 @@
 \title{Specify a model for a single demographic series or
 dataset.}
 \usage{
-Model(formula, ..., lower = NULL, upper = NULL, priorSD = NULL,
-  jump = NULL, series = NULL, aggregate = NULL)
+Model(
+  formula,
+  ...,
+  lower = NULL,
+  upper = NULL,
+  priorSD = NULL,
+  jump = NULL,
+  series = NULL,
+  aggregate = NULL
+)
 }
 \arguments{
 \item{formula}{A \code{\link[stats]{formula}} describing

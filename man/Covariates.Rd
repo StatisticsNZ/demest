@@ -4,8 +4,13 @@
 \alias{Covariates}
 \title{Specify covariates in a prior for a main effect or interaction.}
 \usage{
-Covariates(formula = NULL, data = NULL, infant = FALSE,
-  contrastsArg = list(), coef = TDist())
+Covariates(
+  formula = NULL,
+  data = NULL,
+  infant = FALSE,
+  contrastsArg = list(),
+  coef = TDist()
+)
 }
 \arguments{
 \item{formula}{A \code{\link[stats]{formula}} with response \code{mean}.}
