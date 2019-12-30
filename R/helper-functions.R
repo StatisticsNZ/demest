@@ -3737,7 +3737,6 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
 ## TRANSLATED
 ## HAS_TESTS
 ## Assumes that the Lexis triangle dimension is the
-
 ## last dimension in 'exposure'.
 ## We only ever update population values for the beginning
 ## of the first period.
