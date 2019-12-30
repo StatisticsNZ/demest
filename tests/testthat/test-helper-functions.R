@@ -1504,6 +1504,106 @@ test_that("R and C versions of invlogit1 give same answer", {
     }
 })
 
+
+test_that("rbinomTrunc1 gives valid answer", {
+    rbinomTrunc1 <- demest:::rbinomTrunc1
+    for (seed in seq_len(n.test)) {
+        ## no limits
+        set.seed(seed)
+        size <- rpois(n = 1L, lambda = 10)
+        prob <- runif(1)
+        set.seed(seed + 1)
+        ans.obtained <- rbinomTrunc1(size = size,
+                                     prob = prob,
+                                     lower = 0L,
+                                     upper = NA_integer_,
+                                     maxAttempt = 1L)
+        set.seed(seed + 1)
+        ans.expected <- rbinom(n = 1L,
+                               size = size,
+                               prob = prob)
+        expect_identical(ans.obtained, ans.expected)
+        ## within range
+        ans <- rbinomTrunc1(size = size,
+                            prob = prob,
+                            lower = 2L,
+                            upper = 10L,
+                            maxAttempt = 100L)
+        expect_true((is.na(ans)) || ((ans >= 2L) && ans <= 10L))
+        ## returns 0 if upper = 0
+        ans <- rbinomTrunc1(size = size,
+                            prob = prob,
+                            lower = -1L,
+                            upper = 0L,
+                            maxAttempt = 1L)
+        expect_identical(ans, 0L)
+        ## returns NA_integer_ if failed
+        ans <- rbinomTrunc1(size = 100000L,
+                            prob = 0.5,
+                            lower = -1L,
+                            upper = 1L,
+                            maxAttempt = 1L)
+        expect_identical(ans, NA_integer_)
+        ## lower is NA gives same answer as lower is 0
+        set.seed(seed + 1)
+        ans.obtained <- rbinomTrunc1(size = size,
+                                     prob = prob,
+                                     lower = NA_integer_,
+                                     upper = 100L, maxAttempt = 100L)
+        set.seed(seed + 1)
+        ans.expected <- rbinomTrunc1(size = size,
+                                     prob = prob,
+                                     lower = 0L,
+                                     upper = 100L, maxAttempt = 100L)
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of rbinomTrunc1 give same answer", {
+    rbinomTrunc1 <- demest:::rbinomTrunc1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        size <- rpois(1, 10)
+        prob <- runif(1)
+        lower <- as.integer(rpois(n = 1, lambda = 5))
+        if (runif(1) < 0.8)
+            upper <- lower + as.integer(rpois(1, lambda = 10))
+        else
+            upper <- NA_integer_
+        set.seed(seed + 1)
+        ans.R <- rbinomTrunc1(size = size,
+                              prob = prob,
+                              lower = lower,
+                              upper = upper,
+                              maxAttempt = 10L,
+                              useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- rbinomTrunc1(size = size,
+                              prob = prob,
+                              lower = lower,
+                              upper = upper,
+                              maxAttempt = 10L,
+                              useC = TRUE)
+        expect_identical(ans.R, ans.C)
+        set.seed(seed + 1)
+        ans.R <- rbinomTrunc1(size = size,
+                              prob = prob,
+                              lower = lower,
+                              upper = upper,
+                              maxAttempt = 10L,
+                              useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- rbinomTrunc1(size = size,
+                              prob = prob,
+                              lower = lower,
+                              upper = upper,
+                              maxAttempt = 10L,
+                              useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
+
+
 test_that("rhalftTrunc1 gives valid answer", {
     rhalftTrunc1 <- demest:::rhalftTrunc1
     for (seed in seq_len(100 * n.test)) {
@@ -9063,6 +9163,91 @@ test_that("R and C versions of chooseICellComp give same answer", {
     }
 })
 
+
+test_that("chooseICellCompUpperTri works", {
+    chooseICellCompUpperTri <- demest:::chooseICellCompUpperTri
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"),
+                                           triangle = c("Lower", "Upper"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    x <- replicate(n = 10, chooseICellCompUpperTri(description))
+    expect_true(all(x %in% 7:12))
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    x <- replicate(n = 10, chooseICellCompUpperTri(description))
+    expect_true(all(x %in% c(4:6, 10:12)))
+    object <- Counts(array(1:12,
+                           dim = c(2, 3, 2),
+                           dimnames = list(triangle = c("Lower", "Upper"),
+                                           time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    x <- replicate(n = 10, chooseICellCompUpperTri(description))
+    expect_true(all(x %in% seq(2, 12, 2)))
+})
+
+
+test_that("R and C versions of chooseICellCompUpperTri give same answer", {
+    chooseICellCompUpperTri <- demest:::chooseICellCompUpperTri
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"),
+                                           triangle = c("Lower", "Upper"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    x <- replicate(n = 10, chooseICellCompUpperTri(description))
+    ans.R <- replicate(n = 10, chooseICellCompUpperTri(description, useC = FALSE))
+    ans.C <- replicate(n = 10, chooseICellCompUpperTri(description, useC = TRUE))
+    expect_identical(ans.R, ans.C)
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    ans.R <- replicate(n = 10, chooseICellCompUpperTri(description, useC = FALSE))
+    ans.C <- replicate(n = 10, chooseICellCompUpperTri(description, useC = TRUE))
+    expect_identical(ans.R, ans.C)
+    object <- Counts(array(1:12,
+                           dim = c(2, 3, 2),
+                           dimnames = list(triangle = c("Lower", "Upper"),
+                                           time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    ans.R <- replicate(n = 10, chooseICellCompUpperTri(description, useC = FALSE))
+    ans.C <- replicate(n = 10, chooseICellCompUpperTri(description, useC = TRUE))
+    expect_identical(ans.R, ans.C)
+})
+
+
+
+
 test_that("chooseICellOutInPool works", {
     chooseICellOutInPool <- demest:::chooseICellOutInPool
     Description <- demest:::Description
@@ -9329,6 +9514,233 @@ test_that("R and C versions of chooseICellSubAddNet give same answer", {
     }
 })
 
+
+test_that("getICellLowerTriFromComp works", {
+    getICellLowerTriFromComp <- demest:::getICellLowerTriFromComp
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"),
+                                           triangle = c("Lower", "Upper"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- 7:12
+    lower <- 1:6
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriFromComp(iCellUp = upper[i],
+                                                  description),
+                         lower[i])
+    }
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- c(4:6, 10:12)
+    lower <- c(1:3, 7:9)
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriFromComp(iCellUp = upper[i],
+                                                  description),
+                         lower[i])
+    }
+    object <- Counts(array(1:12,
+                           dim = c(2, 3, 2),
+                           dimnames = list(triangle = c("Lower", "Upper"),
+                                           time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- seq.int(2L, 12L, 2L)
+    lower <- seq.int(1L, 11L, 2L)
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriFromComp(iCellUp = upper[i],
+                                                  description),
+                         lower[i])
+    }
+})
+
+
+test_that("R and C versions of getICellLowerTriFromComp give same answer", {
+    getICellLowerTriFromComp <- demest:::getICellLowerTriFromComp
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"),
+                                           triangle = c("Lower", "Upper"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- 7:12
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriFromComp(iCellUp = upper[i],
+                                                  description,
+                                                  useC = FALSE),
+                         getICellLowerTriFromComp(iCellUp = upper[i],
+                                                  description,
+                                                  useC = TRUE))
+    }
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- c(4:6, 10:12)
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriFromComp(iCellUp = upper[i],
+                                                  description,
+                                                  useC = FALSE),
+                         getICellLowerTriFromComp(iCellUp = upper[i],
+                                                  description,
+                                                  useC = TRUE))
+    }
+    object <- Counts(array(1:12,
+                           dim = c(2, 3, 2),
+                           dimnames = list(triangle = c("Lower", "Upper"),
+                                           time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- seq.int(2L, 12L, 2L)
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriFromComp(iCellUp = upper[i],
+                                                  description,
+                                                  useC = FALSE),
+                         getICellLowerTriFromComp(iCellUp = upper[i],
+                                                  description,
+                                                  useC = TRUE))
+    }
+})
+
+
+test_that("getICellLowerTriNextFromComp works", {
+    getICellLowerTriNextFromComp <- demest:::getICellLowerTriNextFromComp
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"),
+                                           triangle = c("Lower", "Upper"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- 7:12
+    lower <- rep(4:6, times = 2)
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriNextFromComp(iCellUp = upper[i],
+                                                  description),
+                         lower[i])
+    }
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- c(4:6, 10:12)
+    lower <- rep(7:9, times = 2)
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriNextFromComp(iCellUp = upper[i],
+                                                  description),
+                         lower[i])
+    }
+    object <- Counts(array(1:12,
+                           dim = c(2, 3, 2),
+                           dimnames = list(triangle = c("Lower", "Upper"),
+                                           time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- seq.int(2L, 12L, 2L)
+    lower <- rep(c(7L, 9L, 11L), times = 2)
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriNextFromComp(iCellUp = upper[i],
+                                                  description),
+                         lower[i])
+    }
+})
+
+
+test_that("R and C versions of getICellLowerTriNextFromComp give same answer", {
+    getICellLowerTriNextFromComp <- demest:::getICellLowerTriNextFromComp
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"),
+                                           triangle = c("Lower", "Upper"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- 7:12
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriNextFromComp(iCellUp = upper[i],
+                                                      description,
+                                                      useC = FALSE),
+                         getICellLowerTriNextFromComp(iCellUp = upper[i],
+                                                      description,
+                                                      useC = TRUE))
+    }
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- c(4:6, 10:12)
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriNextFromComp(iCellUp = upper[i],
+                                                      description,
+                                                      useC = FALSE),
+                         getICellLowerTriNextFromComp(iCellUp = upper[i],
+                                                      description,
+                                                      useC = TRUE))
+    }
+    object <- Counts(array(1:12,
+                           dim = c(2, 3, 2),
+                           dimnames = list(triangle = c("Lower", "Upper"),
+                                           time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    upper <- seq.int(2L, 12L, 2L)
+    for (i in seq_along(upper)) {
+        expect_identical(getICellLowerTriNextFromComp(iCellUp = upper[i],
+                                                      description,
+                                                      useC = FALSE),
+                         getICellLowerTriNextFromComp(iCellUp = upper[i],
+                                                      description,
+                                                      useC = TRUE))
+    }
+})
 
 
 test_that("isLowerTriangle works", {

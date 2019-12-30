@@ -408,6 +408,66 @@ plotHalfT <- function(df = 7, scale = 1, max = 0.999,
     }
 }
 
+
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## If no lower, upper limit, 'lower', 'upper' NA_integer_
+rbinomTrunc1 <- function(size, prob, lower, upper, maxAttempt, useC = FALSE) {
+    ## size
+    stopifnot(is.integer(size))
+    stopifnot(identical(length(size), 1L))
+    stopifnot(!is.na(size))
+    stopifnot(size >= 0L)
+    ## prob
+    stopifnot(is.double(prob))
+    stopifnot(identical(length(prob), 1L))
+    stopifnot(!is.na(prob))
+    stopifnot(prob >= 0)
+    stopifnot(prob <= 1)
+    ## lower
+    stopifnot(is.integer(lower))
+    stopifnot(identical(length(lower), 1L))
+    ## upper
+    stopifnot(is.integer(upper))
+    stopifnot(identical(length(upper), 1L))
+    ## maxAttempt
+    stopifnot(is.integer(maxAttempt))
+    stopifnot(identical(length(maxAttempt), 1L))
+    stopifnot(!is.na(maxAttempt))
+    stopifnot(maxAttempt > 0L)
+    ## lower, upper
+    stopifnot(is.na(lower) || is.na(upper) || (lower <= upper))
+    if (useC) {
+        .Call(rbinomTrunc1_R, size, prob, lower, upper, maxAttempt)
+    }
+    else {
+        if (is.na(lower) || (lower < 0L))
+            lower <- 0L
+        if (is.na(upper) || (upper > size))
+            upper <- size
+        if (lower == upper)
+            return(lower)
+        found <- FALSE
+        for (i in seq_len(maxAttempt)) {
+            prop.value <- stats::rbinom(n = 1L,
+                                        size = size,
+                                        prob = prob)
+            found <- (lower <= prop.value) && (prop.value <= upper)
+            if (found)
+                break
+        }
+        if (found)
+            as.integer(prop.value)
+        else
+            NA_integer_
+    }
+}
+
+
+
+
 ## TRANSLATED
 ## HAS_TESTS
 rhalftTrunc1 <- function(df, scale, max, useC = FALSE) {
@@ -3556,6 +3616,28 @@ chooseICellComp <- function(description, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## like chooseICellComp, but restricted to upper Lexis triangles
+chooseICellCompUpperTri <- function(description, useC = FALSE) {
+    stopifnot(methods::is(description, "DescriptionComp"))
+    stopifnot(description@hasAge) # implies has triangles
+    if (useC) {
+        .Call(chooseICellCompUpperTri_R, description)
+    }
+    else {
+        length <- description@length
+        step <- description@stepTriangle
+        half_length <- description@length / 2L
+        i <- as.integer(stats::runif(n = 1L) * half_length) # C-style
+        if (i == half_length) # just in case
+            i <- half_length - 1L
+        i <- (i %/% step) * (2L * step) + (i %% step) + step
+        i <- i + 1L # R-style
+        i
+    }
+}
+
 ## TRANSLATED
 ## HAS_TESTS
 chooseICellOutInPool <- function(description, useC = FALSE) { 
@@ -3667,6 +3749,46 @@ chooseICellSubAddNet <- function(description, useC = FALSE) {
     }
 }
 
+
+## READY_TO_TRANSLATE    
+## HAS_TESTS
+## get lower Lexis triangle cell from within same age-period square
+## as triangle indexed by iCellUp
+getICellLowerTriFromComp <- function(iCellUp, description, useC = FALSE) {
+    stopifnot(methods::is(description, "DescriptionComp"))
+    stopifnot(description@hasAge) # implies has triangles
+    if (useC) {
+        .Call(getICellLowerTriFromComp_R, description)
+    }
+    else {
+        step <- description@stepTriangle
+        iCellUp - step
+    }
+}
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## get lower Lexis triangle cell from next oldest age-period square,
+## or same square if iCellUp refers to oldest age group
+getICellLowerTriNextFromComp <- function(iCellUp, description, useC = FALSE) {
+    stopifnot(methods::is(description, "DescriptionComp"))
+    stopifnot(description@hasAge) # implies has triangles
+    if (useC) {
+        .Call(getICellLowerTriNextFromComp_R, description)
+    }
+    else {
+        step.age <- description@stepAge
+        n.age <- description@nAge
+        step.triangle <- description@stepTriangle
+        i.age <- ((iCellUp - 1L) %/% step.age) %% n.age ## C-style
+        is.final.age.group <- i.age == (n.age - 1L)
+        if (is.final.age.group)
+            iCellUp - step.triangle
+        else
+            iCellUp - step.triangle + step.age
+    }
+}
 
 
 ## TRANSLATED
