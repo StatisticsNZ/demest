@@ -852,8 +852,7 @@ setMethod("diffLogDensAccount",
               }
           })
 
-
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 setMethod("diffLogLikAccount",
           signature(object = "CombinedAccountMovements"),
@@ -869,19 +868,27 @@ setMethod("diffLogLikAccount",
                   i.orig.dest <- object@iOrigDest
                   i.pool <- object@iPool
                   i.int.net <- object@iIntNet
+                  is.small.update <- object@isSmallUpdate ## NEW
                   if (i.comp == 0L)
                       diffLogLikAccountMovePopn(object)
-                  else if (i.comp == i.orig.dest)
-                      diffLogLikAccountMoveOrigDest(object)
+                  else if (i.comp == i.orig.dest) { ## NEW
+                      if (is.small.update) ## NEW
+                          diffLogLikAccountMoveCompSmall(object) ## NEW
+                      else ## NEW
+                          diffLogLikAccountMoveOrigDest(object)
+                  } ## NEW
                   else if (i.comp == i.pool) 
                       diffLogLikAccountMovePool(object)
                   else if (i.comp == i.int.net) 
                       diffLogLikAccountMoveNet(object)
-                  else
-                      diffLogLikAccountMoveComp(object)
+                  else { ## NEW
+                      if (is.small.update) ## NEW
+                          diffLogLikAccountMoveCompSmall(object) ## NEW
+                      else ## NEW
+                          diffLogLikAccountMoveComp(object)
+                  } ## NEW
               }
           })
-
 
 ## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
@@ -945,9 +952,7 @@ setMethod("updateProposalAccount",
               }
           })
 
-
-
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 setMethod("updateValuesAccount",
           signature(combined = "CombinedAccountMovements"),
@@ -961,11 +966,16 @@ setMethod("updateValuesAccount",
               }
               else {
                   has.age <- combined@hasAge
+                  is.small.update <- combined@isSmallUpdate ## NEW
                   combined <- updateCellMove(combined)
-                  combined <- updateSubsequentPopnMove(combined)
-                  combined <- updateSubsequentExpMove(combined)
-                  if (has.age)
-                      combined <- updateSubsequentAccMove(combined)
+                  if (is.small.update) ## NEW
+                      combined <- updateAccSmall(combined) ## NEW
+                  else { ## NEW
+                      combined <- updateSubsequentPopnMove(combined)
+                      combined <- updateSubsequentExpMove(combined)
+                      if (has.age)
+                          combined <- updateSubsequentAccMove(combined)
+                  } ## NEW
                   combined
               }
           })

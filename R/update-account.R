@@ -3213,8 +3213,31 @@ diffLogDensCompSmall <- function(combined, useC = FALSE) {
 
 ## UPDATE VALUES ################################################################
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+updateAccSmall <- function(combined, useC = FALSE) {
+    stopifnot(methods::is(combined, "CombinedAccountMovementsHasAge"))
+    if (useC) {
+        .Call(updateAccSmall_R, combined)
+    }
+    else {
+        i.comp <- combined@iComp
+        diff <- combined@diffProp
+        is.increment <- combined@isIncrement[[i.comp]]
+        i.acc <- combined@iAccNext
+        has.accession <- i.acc > 0L
+        if (has.accession) {
+            if (is.increment)
+                combined@accession[i.acc] <- combined@accession[i.acc] + diff
+            else
+                combined@accession[i.acc] <- combined@accession[i.acc] - diff
+        }
+    }
+    combined
+}
 
-## TRANSLATED
+
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 updateCellMove <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -3227,6 +3250,7 @@ updateCellMove <- function(combined, useC = FALSE) {
         i.cell.other <- combined@iCellOther
         i.pool <- combined@iPool
         i.int.net <- combined@iIntNet
+        is.small.update <- combined@isSmallUpdate@.Data ## NEW
         diff <- combined@diffProp
         is.popn <- i.comp == 0L
         is.pool <- i.comp == i.pool
@@ -3240,7 +3264,7 @@ updateCellMove <- function(combined, useC = FALSE) {
             combined@account@components[[i.comp]][i.cell.other] <-
                 combined@account@components[[i.comp]][i.cell.other] + diff
         }
-        else if (is.int.net) {
+        else if (is.int.net || is.small.update) { ## NEW ###################
             combined@account@components[[i.comp]][i.cell] <-
                 combined@account@components[[i.comp]][i.cell] + diff
         combined@account@components[[i.comp]][i.cell.other] <-
@@ -3253,6 +3277,7 @@ updateCellMove <- function(combined, useC = FALSE) {
         combined
     }
 }            
+
 
 
 
