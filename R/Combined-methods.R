@@ -791,7 +791,7 @@ setMethod("updateCombined",
 
 ## Accounts
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 setMethod("diffLogDensAccount",
           signature(combined = "CombinedAccountMovements"),
@@ -807,6 +807,7 @@ setMethod("diffLogDensAccount",
                   i.orig.dest <- combined@iOrigDest
                   i.pool <- combined@iPool
                   i.int.net <- combined@iIntNet
+                  is.small.update <- combined@isSmallUpdate@.Data ## NEW
                   model.uses.exposure <- combined@modelUsesExposure
                   is.popn <- i.comp == 0L
                   is.orig.dest <- i.comp == i.orig.dest
@@ -814,14 +815,18 @@ setMethod("diffLogDensAccount",
                   is.int.net <- i.comp == i.int.net
                   use.prior.popn <- combined@usePriorPopn@.Data
                   ans <- 0
-                  if (use.prior.popn)
+                  if (use.prior.popn && !is.small.update)
                       ans <- ans + diffLogDensPopn(combined)
                   if (is.popn)
                       ans <- ans + diffLogDensExpPopn(combined)
                   else if (is.orig.dest) {
-                      if (model.uses.exposure[i.comp])
-                          ans <- ans + diffLogDensJumpOrigDest(combined)
-                      ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
+                      if (is.small.update) ## NEW
+                          ans <- ans + diffLogDensCompSmall(combined) ## NEW
+                      else { ## NEW
+                          if (model.uses.exposure[i.comp])
+                              ans <- ans + diffLogDensJumpOrigDest(combined)
+                          ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
+                      }
                   }
                   else if (is.pool) {
                       if (model.uses.exposure[i.comp])
@@ -835,13 +840,18 @@ setMethod("diffLogDensAccount",
                       ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
                   }
                   else {
-                      if (model.uses.exposure[i.comp])
-                          ans <- ans + diffLogDensJumpComp(combined)
-                      ans <- ans + diffLogDensExpComp(combined)
+                      if (is.small.update) ## NEW
+                          ans <- ans + diffLogDensCompSmall(combined) ## NEW
+                      else { ## NEW
+                          if (model.uses.exposure[i.comp])
+                              ans <- ans + diffLogDensJumpComp(combined)
+                          ans <- ans + diffLogDensExpComp(combined)
+                      } ## NEW
                   }
                   ans
               }
           })
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -873,7 +883,7 @@ setMethod("diffLogLikAccount",
           })
 
 
-## TRANSLATED
+## READY_TO_TRANSLATE (AGAIN)
 ## HAS_TESTS
 setMethod("updateProposalAccount",
           signature(object = "CombinedAccountMovements"),
@@ -888,6 +898,8 @@ setMethod("updateProposalAccount",
               else {
                   account <- object@account
                   prob.popn <- object@probPopn
+                  prob.small.update <- object@probSmallUpdate@.Data ## NEW
+                  has.age <- object@hasAge@.Data ## NEW
                   update.popn <- stats::runif(n = 1L) < prob.popn
                   if (update.popn) {
                       object@iComp <- 0L
@@ -899,21 +911,41 @@ setMethod("updateProposalAccount",
                       i.orig.dest <- object@iOrigDest
                       i.pool <- object@iPool
                       i.int.net <- object@iIntNet
+                      is.net.vec <- object@isNet ## NEW
+                      prob.small.update <- object@probSmallUpdate ## NEW
                       i.comp <- rcateg1(cum.prob)
                       object@iComp <- i.comp
-                      if (i.comp == i.births)
-                          updateProposalAccountMoveBirths(object)
-                      else if (i.comp == i.orig.dest)
-                          updateProposalAccountMoveOrigDest(object)
+                      if (i.comp == i.births) {
+                          is.small.update <- has.age && (stats::runif(n = 1L) < prob.small.update) ## NEW
+                          if (is.small.update) ## NEW
+                              updateProposalAccountMoveBirthsSmall(object) ## NEW
+                          else ## NEW
+                              updateProposalAccountMoveBirths(object)
+                      } ## NEW
+                      else if (i.comp == i.orig.dest) {
+                          is.small.update <- has.age && (stats::runif(n = 1L) < prob.small.update) ## NEW
+                          if (is.small.update) ## NEW
+                              updateProposalAccountMoveOrigDestSmall(object) ## NEW
+                          else ## NEW
+                              updateProposalAccountMoveOrigDest(object) ## NEW
+                      }
                       else if (i.comp == i.pool)
                           updateProposalAccountMovePool(object)
                       else if (i.comp == i.int.net)
                           updateProposalAccountMoveNet(object)
-                      else
-                          updateProposalAccountMoveComp(object)
+                      else { # comp
+                          is.net <- is.net.vec[i.comp] ## NEW
+                          is.small.update <- !is.net && has.age && (stats::runif(n = 1L) < prob.small.update) ## NEW
+                          if (is.small.update) ## NEW
+                              updateProposalAccountMoveCompSmall(object) ## NEW
+                          else ## NEW
+                              updateProposalAccountMoveComp(object)
+                      }
                   }
               }
           })
+
+
 
 ## TRANSLATED
 ## HAS_TESTS

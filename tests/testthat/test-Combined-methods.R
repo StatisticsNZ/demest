@@ -2039,10 +2039,10 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
     data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
@@ -2050,16 +2050,18 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
                        makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
+    ## no small updates
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                 transforms = transforms,
+                                 probSmallUpdate = 0)
     updated <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2073,6 +2075,36 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
     }
     if (!updated)
         warning("not updated")
+    ## with small updates
+    x0 <- initialCombinedAccount(account = account,
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 dataModels = data.models,
+                                 seriesIndices = seriesIndices,
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms,
+                                 probSmallUpdate = 1)
+    updated <- FALSE
+    is.small <- FALSE
+    for (seed in seq_len(2 * n.test)) {
+        set.seed(seed)
+        x1 <- updateProposalAccount(x0)
+        if (x1@generatedNewProposal@.Data) {
+            updated <- TRUE
+            if (x1@isSmallUpdate@.Data)
+                is.small <- TRUE
+            ans.obtained <- diffLogDensAccount(x1)
+            expect_true(is.numeric(ans.obtained))
+            expect_true(!is.na(ans.obtained))
+        }
+    }
+    if (!updated)
+        warning("not updated")
+    if (!is.small)
+        warning("no small updates")
 })
 
 test_that("R and C versions of diffLogDensAccount give same answer with CombinedAccountMovementsHasAge", {
@@ -2135,10 +2167,10 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
     data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
@@ -2146,22 +2178,59 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
                        makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
+    ## no small updates
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                 transforms = transforms,
+                                 probSmallUpdate = 0)
     updated <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         x1 <- updateProposalAccount(x0)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
+            ans.R <- diffLogDensAccount(x1, useC = FALSE)
+            set.seed(seed)
+            ans.C.generic <- diffLogDensAccount(x1, useC = TRUE, useSpecific = FALSE)
+            set.seed(seed)
+            ans.C.specific <- diffLogDensAccount(x1, useC = TRUE, useSpecific = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C.generic)
+            else
+                expect_equal(ans.R, ans.C.generic)
+            expect_identical(ans.C.specific, ans.C.generic)
+        }
+    }
+    if (!updated)
+        warning("not updated")
+    ## with small updates
+    x0 <- initialCombinedAccount(account = account,
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 dataModels = data.models,
+                                 seriesIndices = seriesIndices,
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms,
+                                 probSmallUpdate = 1)
+    updated <- FALSE
+    is.small <- FALSE
+    for (seed in seq_len(2 * n.test)) {
+        set.seed(seed)
+        x1 <- updateProposalAccount(x0)
+        if (x1@generatedNewProposal@.Data) {
+            updated <- TRUE
+            if (x1@isSmallUpdate@.Data)
+                is.small <- TRUE
             ans.R <- diffLogDensAccount(x1, useC = FALSE)
             set.seed(seed)
             ans.C.generic <- diffLogDensAccount(x1, useC = TRUE, useSpecific = FALSE)
@@ -2442,10 +2511,10 @@ test_that("updateProposalAccount works with CombinedAccountMovementsHasAge", {
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
     data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
@@ -2453,16 +2522,18 @@ test_that("updateProposalAccount works with CombinedAccountMovementsHasAge", {
                        makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
+    ## no small updates
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                 transforms = transforms,
+                                 probSmallUpdate = 0)
     expect_true(validObject(x0))
     expect_is(x0, "CombinedAccountMovementsHasAge")
     updated <- FALSE
@@ -2473,9 +2544,39 @@ test_that("updateProposalAccount works with CombinedAccountMovementsHasAge", {
             updated <- TRUE
         expect_is(x1, "CombinedAccountMovementsHasAge")
         expect_true(validObject(x1))
+        expect_false(x1@isSmallUpdate@.Data)
     }
     if (!updated)
         warning("not updated")
+        ## all small updates
+        x0 <- initialCombinedAccount(account = account,
+                                     systemModels = systemModels,
+                                     systemWeights = systemWeights,
+                                     dataModels = data.models,
+                                     seriesIndices = seriesIndices,
+                                     updateInitialPopn = new("LogicalFlag", TRUE),
+                                     usePriorPopn = new("LogicalFlag", TRUE),
+                                     datasets = datasets,
+                                     namesDatasets = namesDatasets,
+                                     transforms = transforms,
+                                     probSmallUpdate = 1)
+        expect_true(validObject(x0))
+        expect_is(x0, "CombinedAccountMovementsHasAge")
+        updated <- FALSE
+        for (seed in seq_len(2 * n.test)) {
+            set.seed(seed)
+            x1 <- updateProposalAccount(x0)
+            if (x1@generatedNewProposal@.Data)
+                updated <- TRUE
+            expect_is(x1, "CombinedAccountMovementsHasAge")
+            expect_true(validObject(x1))
+            if (x1@iComp %in% c(1, 3))
+                expect_true(x1@isSmallUpdate@.Data)
+            else
+                expect_false(x1@isSmallUpdate@.Data)
+        }
+        if (!updated)
+            warning("not updated")
 })
 
 test_that("R and C versions of updateProposalAccount give same answer with CombinedAccountMovementsHasAge", {
@@ -2537,10 +2638,10 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
     data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
@@ -2548,20 +2649,54 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
                        makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
                        makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
+    ## no small updates
     x0 <- initialCombinedAccount(account = account,
                                  systemModels = systemModels,
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                 transforms = transforms,
+                                 probSmallUpdate = 0)
     expect_true(validObject(x0))
     expect_is(x0, "CombinedAccountMovementsHasAge")
     updated <- FALSE
     for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- updateProposalAccount(x0, useC = FALSE)
+        if (ans.R@generatedNewProposal@.Data)
+            updated <- TRUE
+        set.seed(seed)
+        ans.C.generic <- updateProposalAccount(x0, useC = TRUE, useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- updateProposalAccount(x0, useC = TRUE, useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
+    if (!updated)
+        warning("not updated")
+    ## with small updates
+    x0 <- initialCombinedAccount(account = account,
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 dataModels = data.models,
+                                 seriesIndices = seriesIndices,
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms,
+                                 probSmallUpdate = 1)
+    expect_true(validObject(x0))
+    expect_is(x0, "CombinedAccountMovementsHasAge")
+    updated <- FALSE
+    for (seed in seq_len(2 * n.test)) {
         set.seed(seed)
         ans.R <- updateProposalAccount(x0, useC = FALSE)
         if (ans.R@generatedNewProposal@.Data)

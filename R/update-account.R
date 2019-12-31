@@ -358,6 +358,7 @@ updateProposalAccountMoveBirthsSmall <- function(combined, useC = FALSE) {
         description <- combined@descriptions[[i.comp + 1L]]
         sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta <- sys.mod.comp@theta
+        tol <- sys.mod.comp@tolerance
         struc.zero.array <- sys.mod.comp@strucZeroArray
         generated.new.proposal <- FALSE
         for (i in seq_len(max.attempt)) {
@@ -388,7 +389,11 @@ updateProposalAccountMoveBirthsSmall <- function(combined, useC = FALSE) {
                 val.up.expected <- val.up.expected * expose.up
                 val.low.expected <- val.low.expected * expose.low
             }
-            prob <- val.up.expected / (val.up.expected + val.low.expected)
+            denom <- val.up.expected + val.low.expected
+            if (denom > tol)
+                prob <- val.up.expected / denom
+            else
+                prob <- 0.5
             size <- val.up.curr + val.low.curr
             val.up.prop <- rbinom(n = 1L,
                                   size = size,
@@ -609,6 +614,7 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
         description <- combined@descriptions[[i.comp + 1L]]
         sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta <- sys.mod.comp@theta
+        tol <- sys.mod.comp@tolerance
         struc.zero.array <- sys.mod.comp@strucZeroArray
         for (i in seq_len(max.attempt)) {
             i.cell.up <- chooseICellCompUpperTri(description)
@@ -652,7 +658,11 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
                 val.up.expected <- val.up.expected * expose.up
                 val.low.expected <- val.low.expected * expose.low
             }
-            prob <- val.up.expected / (val.up.expected + val.low.expected)
+            denom <- val.up.expected + val.low.expected
+            if (denom > tol)
+                prob <- val.up.expected / denom
+            else
+                prob <- 0.5
             size <- val.up.curr + val.low.curr
             if (is.final.age.group) { ## no accession constraint
                 val.up.prop <- rbinom(n = 1L,
@@ -1181,6 +1191,7 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
         description <- combined@descriptions[[i.comp + 1L]]
         sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta <- sys.mod.comp@theta
+        tol <- sys.mod.comp@tolerance
         struc.zero.array <- sys.mod.comp@strucZeroArray
         for (i in seq_len(max.attempt)) {
             i.cell.up <- chooseICellCompUpperTri(description)
@@ -1220,7 +1231,11 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
                 val.up.expected <- val.up.expected * expose.up
                 val.low.expected <- val.low.expected * expose.low
             }
-            prob <- val.up.expected / (val.up.expected + val.low.expected)
+            denom <- val.up.expected + val.low.expected
+            if (denom > tol)
+                prob <- val.up.expected / denom
+            else
+                prob <- 0.5
             size <- val.up.curr + val.low.curr
             if (is.final.age.group) { ## no accession constraint
                 val.up.prop <- rbinom(n = 1L,
@@ -2041,9 +2056,6 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
 }        
 
 
-
-
-
 ## TRANSLATED
 ## HAS_TESTS
 diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
@@ -2087,6 +2099,51 @@ diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
         if (is.infinite(diff.log.lik.popn))
             return(diff.log.lik.popn)
         diff.log.lik.cell + diff.log.lik.popn
+    }
+}
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+diffLogLikAccountMoveCompSmall <- function(combined, useC = FALSE) {
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
+    stopifnot(combined@hasAge@.Data)
+    if (useC) {
+        .Call(diffLogLikAccountMoveCompSmall_R, combined)
+    }
+    else {
+        account <- combined@account
+        i.comp <- combined@iComp
+        component <- combined@account@components[[i.comp]]
+        data.models <- combined@dataModels
+        datasets <- combined@datasets
+        series.indices <- combined@seriesIndices
+        transforms <- combined@transforms
+        i.cell.up <- combined@iCell
+        i.cell.low <- combined@iCellOther
+        diff <- combined@diffProp
+        is.increment <- combined@isIncrement[i.comp]
+        diff.log.lik.up <- diffLogLikCellComp(diff = diff,
+                                              iComp = i.comp,
+                                              iCell = i.cell.up,
+                                              component = component,
+                                              dataModels = data.models,
+                                              datasets = datasets,
+                                              seriesIndices = series.indices,
+                                              transforms = transforms)
+        if (is.infinite(diff.log.lik.up))
+            return(diff.log.lik.up)
+        diff.log.lik.low <- diffLogLikCellComp(diff = -diff,
+                                               iComp = i.comp,
+                                               iCell = i.cell.low,
+                                               component = component,
+                                               dataModels = data.models,
+                                               datasets = datasets,
+                                               seriesIndices = series.indices,
+                                               transforms = transforms)
+        if (is.infinite(diff.log.lik.low))
+            return(diff.log.lik.low)
+        diff.log.lik.up + diff.log.lik.low
     }
 }
 
@@ -3112,7 +3169,44 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
     }
 }
 
-
+## READY_TO_TRANSLATE
+## HAS_TESTS
+diffLogDensCompSmall <- function(combined, useC = FALSE) {
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(diffLogDensCompSmall_R, combined)
+    }
+    else {
+        i.comp <- combined@iComp
+        component <- combined@account@components[[i.comp]]
+        theta <- combined@systemModels[[i.comp + 1L]]@theta
+        uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
+        i.cell.up <- combined@iCell
+        i.cell.low <- combined@iCellOther
+        uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
+        diff <- combined@diffProp
+        val.up.curr <- component[i.cell.up]
+        val.low.curr <- component[i.cell.low]
+        val.up.prop <- val.up.curr + diff
+        val.low.prop <- val.low.curr - diff
+        val.up.expected <- theta[i.cell.up]
+        val.low.expected <- theta[i.cell.low]
+        if (uses.exposure) {
+            exposure <- combined@exposure
+            i.expose.up <- combined@iExposure
+            i.expose.low <- combined@iExposureOther
+            expose.up <- exposure[i.expose.up]
+            expose.low <- exposure[i.expose.low]
+            val.up.expected <- val.up.expected * expose.up
+            val.low.expected <- val.low.expected * expose.low
+        }
+        ans <- (stats::dpois(x = val.up.prop, lambda = val.up.expected, log = TRUE) +
+                stats::dpois(x = val.low.prop, lambda = val.low.expected, log = TRUE) -
+                stats::dpois(x = val.up.curr, lambda = val.up.expected, log = TRUE) -
+                stats::dpois(x = val.low.curr, lambda = val.low.expected, log = TRUE))
+        ans
+    }
+}
 
 
 
