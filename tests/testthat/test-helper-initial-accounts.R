@@ -55,6 +55,27 @@ test_that("alignSystemModelsToAccount works", {
                  "system model for 'population' uses exposure")
 })
 
+test_that("checkAndTidyProbSmallUpdate works", {
+    checkAndTidyProbSmallUpdate <- demest:::checkAndTidyProbSmallUpdate
+    expect_identical(checkAndTidyProbSmallUpdate(0.5),
+                     0.5)
+    expect_identical(checkAndTidyProbSmallUpdate(0L),
+                     0.0)
+    expect_identical(checkAndTidyProbSmallUpdate(1L),
+                     1.0)
+    expect_error(checkAndTidyProbSmallUpdate(c(0.5, 0.5)),
+                 "'probSmallUpdate' does not have length 1")
+    expect_error(checkAndTidyProbSmallUpdate(NA),
+                 "'probSmallUpdate' is missing")
+    expect_error(checkAndTidyProbSmallUpdate("0.5"),
+                 "'probSmallUpdate' is not numeric")
+    expect_error(checkAndTidyProbSmallUpdate(1.01),
+                 "'probSmallUpdate' is greater than 1")
+    expect_error(checkAndTidyProbSmallUpdate(-0.01),
+                 "'probSmallUpdate' is less than 0")
+})
+
+
 test_that("checkAndTidySystemWeights works", {
     checkAndTidySystemWeights <- demest:::checkAndTidySystemWeights
     weights <- list(migration = Counts(array(1,

@@ -709,6 +709,9 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' @param usePriorPopn Whether to take account of the prior model
 #' for population when inferring values for the account.
 #' Defaults to \code{TRUE}.
+#' @param probSmallUpdate Proportion of updates of components
+#' that are 'small', ie that only consist of exchanging values
+#' between two neighbouring Lexis triangles.
 #' @param scaleNoise Governs noise added to Metropolis-Hastings
 #' ratio. Should be non-zero only when trying to generate
 #' initial values. Currently experimental, and may change.
@@ -723,7 +726,8 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
                             concordances = list(), weights = list(),
                             dominant = c("Female", "Male"),
                             updateInitialPopn = TRUE,
-                            usePriorPopn = TRUE, scaleNoise = 0,
+                            usePriorPopn = TRUE, probSmallUpdate = 0,
+                            scaleNoise = 0,
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
                             parallel = TRUE, nCore = NULL,
@@ -738,6 +742,7 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
                                             name = "usePriorPopn")
     checkNonNegativeNumeric(x = scaleNoise,
                             name = "scaleNoise")
+    probSmallUpdate <- checkAndTidyProbSmallUpdate(probSmallUpdate)
     ## make account consistent, if necessary
     if (!all(dembase::isConsistent(account)))
         account <- dembase::makeConsistent(account)
@@ -795,6 +800,7 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
                                                   dominant = dominant,
                                                   updateInitialPopn = updateInitialPopn,
                                                   usePriorPopn = usePriorPopn,
+                                                  probSmallUpdate = probSmallUpdate,
                                                   scaleNoise = scaleNoise))
     parallel <- control.args$parallel
     tempfiles <- paste(filename, seq_len(mcmc.args$nChain), sep = "_")

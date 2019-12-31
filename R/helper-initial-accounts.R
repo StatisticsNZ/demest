@@ -50,6 +50,31 @@ alignSystemModelsToAccount <- function(systemModels, account) {
     ans
 }
 
+## HAS_TESTS
+checkAndTidyProbSmallUpdate <- function(probSmallUpdate) {
+    ## 'probSmallUpdate' has length 1
+    if (!identical(length(probSmallUpdate), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      "probSmallUpdate", 1L))
+    ## 'probSmallUpdate' is not missing
+    if (is.na(probSmallUpdate))
+        stop(gettextf("'%s' is missing",
+                      "probSmallUpdate"))
+    ## 'probSmallUpdate' is numeric
+    if (!is.numeric(probSmallUpdate))
+        stop(gettextf("'%s' is not numeric",
+                      "probSmallUpdate"))
+    ## 'probSmallUpdate' is less than or equal to 1
+    if (probSmallUpdate > 1)
+        stop(gettextf("'%s' is greater than %d",
+                      "probSmallUpdate", 1L))
+    ## 'probSmallUpdate' is greater than or equal to 0
+    if (probSmallUpdate < 0)
+        stop(gettextf("'%s' is less than %d",
+                      "probSmallUpdate", 0L))
+    ## return
+    as.double(probSmallUpdate)
+}
 
 ## HAS_TESTS
 checkAndTidySystemWeights <- function(weights, systemModels) {

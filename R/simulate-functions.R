@@ -91,6 +91,7 @@ simulateAccount <- function(account, systemModels,
                             updateSystemModel = NULL,
                             updateDataModel = NULL,
                             updateInitialPopn = TRUE,
+                            probSmallUpdate = 0,
                             scaleNoise = 0,
                             filename = NULL, nBurnin = 1000, nSim = 1000,
                             nChain = 4, nThin = 1,
@@ -102,6 +103,7 @@ simulateAccount <- function(account, systemModels,
     dominant <- match.arg(dominant)
     updateInitialPopn <- checkAndTidyLogicalFlag(x = updateInitialPopn,
                                                  name = "updateInitialPopn")
+    probSmallUpdate <- checkAndTidyProbSmallUpdate(probSmallUpdate)
     checkNonNegativeNumeric(x = scaleNoise,
                             name = "scaleNoise")
     ## make account consistent, if necessary
@@ -189,6 +191,7 @@ simulateAccount <- function(account, systemModels,
                                                dominant = dominant,
                                                updateInitialPopn = updateInitialPopn,
                                                usePriorPopn = usePriorPopn,
+                                               probSmallUpdate = probSmallUpdate,
                                                scaleNoise = scaleNoise,
                                                updateSystemModel = updateSystemModel,
                                                updateDataModel = updateDataModel)
