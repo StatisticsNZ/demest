@@ -3,7 +3,7 @@
 #include <R_ext/Rdynload.h>
 
 
-/* File "init.c" consists of routines that are run when package 
+/* File "init.c" consists of routines that are run when package
    "demest" is loaded in R */
 
 
@@ -15,7 +15,7 @@
  * The wrapper puts a _R suffix on end of function name,
  * and deals with RNGstate (relevant for prior update functions that
  * use prngs),
- * gets the beta as a vector of doubles, 
+ * gets the beta as a vector of doubles,
  * and ensures that the R version returns the beta as an SEXP */
 #define PREDICTBETA_WRAPPER_R(name)         \
     SEXP name##_R(SEXP prior_R, SEXP J_R) {    \
@@ -32,11 +32,11 @@
 
 /* Wrapper macro to use for the functions that return betaHats.
  * The wrapper puts a _R suffix on end of function name,
- * gets the beta as a vector of doubles, 
+ * gets the beta as a vector of doubles,
  * and ensures that the R version returns the beta as an SEXP */
 /* Wrapper macro to use for the functions that return betaHats.
  * The wrapper puts a _R suffix on end of function name,
- * gets the beta as a vector of doubles, 
+ * gets the beta as a vector of doubles,
  * and ensures that the R version returns the beta as an SEXP */
 #define BETAHAT_NOPRNG_WRAPPER_R(name)         \
     SEXP name##_R(SEXP prior_R) {         \
@@ -131,7 +131,7 @@
     return ans_R;             \
     }
 
-    
+
 /* Wrapper macro to use for the functions that update priors in place.
  * The wrapper puts a _R suffix on end of function name,
  * and deals with RNGstate (relevant for prior update functions that
@@ -166,7 +166,7 @@
     }
 
 
-/* Wrapper macro to use for the transferParamPrior 
+/* Wrapper macro to use for the transferParamPrior
  * and transferParamPriorVarDLM functions.
  * The wrapper puts a _R suffix on end of function name,
  * and ensures that the R version returns the updated prior as the SEXP
@@ -272,7 +272,7 @@
 /* Wrapper macro to use for the functions that returns an
  * updated Counts object when not using exposure.
  * No arguments to functions should be modified,
- * other than the duplicate of the Counts object y, 
+ * other than the duplicate of the Counts object y,
  * which is changed in place.
  * The wrapper puts a _R suffix on end of function name,
  * and deals with RNGstate (relevant for update functions that
@@ -293,7 +293,7 @@
 /* Wrapper macro to use for the functions that returns an
  * updated Counts object when using exposure.
  * No arguments to functions should be modified,
- * other than the duplicate of the Counts object y, 
+ * other than the duplicate of the Counts object y,
  * which is changed in place.
  * The wrapper puts a _R suffix on end of function name,
  * and deals with RNGstate (relevant for update functions that
@@ -312,7 +312,7 @@
     return ans_R;       \
     }
 
-/* Wrapper macro to use for the functions that return combined object 
+/* Wrapper macro to use for the functions that return combined object
  * updated for predictions.
  * No arguments to functions should be modified,
  * other than the duplicate of object, which is changed in place.
@@ -373,7 +373,7 @@
  * No arguments to functions should be modified,
  * other than the duplicate of object, which is changed in place.
  * The wrapper puts a _R suffix on end of function name,
- * and ensures that the R version returns the updated object. 
+ * and ensures that the R version returns the updated object.
  * No prng state dealt with*/
 #define FILTER_NOPRNG_WRAPPER_R(name)      \
     SEXP name##_R(SEXP object_R, SEXP y_R, SEXP v_R, SEXP forward_R) {       \
@@ -431,7 +431,7 @@
     return ScalarReal(ans);      \
 }
 
-/* wrapper for rcmp functions with parameters mu, nu, maxAttempts */ 
+/* wrapper for rcmp functions with parameters mu, nu, maxAttempts */
 #define RCMP_WRAPPER_R(name)         \
     SEXP name##_R(SEXP mu_R, SEXP nu_R, SEXP maxAttempts_R) {    \
     double mu = *REAL(mu_R);         \
@@ -443,7 +443,7 @@
     return ScalarReal(ans);         \
     }
 
-/* wrapper for update-accounts update proposal functions that 
+/* wrapper for update-accounts update proposal functions that
  * need to have the Popn and Acc iterators duplicated and originals replaced */
 #define UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(name)         \
     SEXP name##_R(SEXP combined_R) {    \
@@ -471,7 +471,7 @@
     return ans_R;             \
     }
 
-/* wrapper for diffLogLik functions with parameter combined */ 
+/* wrapper for diffLogLik functions with parameter combined */
 #define DIFFLOGLIKCOMBINED_WRAPPER_R(name)         \
     SEXP name##_R(SEXP combined_R) {    \
     SEXP combinednew_R;    \
@@ -496,51 +496,51 @@ SEXP makeMu_R(SEXP n_R, SEXP betas_R, SEXP iterator_R)
 /* one-off wrapper for updateTauRobust */
 SEXP updateTauRobust_R(SEXP prior_R)
 {
-    SEXP ans_R;               
-    PROTECT(ans_R = duplicate(prior_R));    
-    int J = *INTEGER(GET_SLOT(prior_R, J_sym));   
-    GetRNGstate();              
-    updateTauRobust(ans_R, J);          
-    PutRNGstate();              
-    UNPROTECT(1);               
-    return ans_R;             
+    SEXP ans_R;
+    PROTECT(ans_R = duplicate(prior_R));
+    int J = *INTEGER(GET_SLOT(prior_R, J_sym));
+    GetRNGstate();
+    updateTauRobust(ans_R, J);
+    PutRNGstate();
+    UNPROTECT(1);
+    return ans_R;
 }
 
 
 /* one off wrapper for makeLifeExpBirth */
-SEXP makeLifeExpBirth_R(SEXP mx_R, SEXP nx_R, SEXP ax_R, 
+SEXP makeLifeExpBirth_R(SEXP mx_R, SEXP nx_R, SEXP ax_R,
                         SEXP iAge0_R, SEXP nAge_R)
-                
+
 {
     double *mx = REAL(mx_R);
     double *nx = REAL(nx_R);
     double *ax = REAL(ax_R);
     int iAge0_r = *INTEGER(iAge0_R);
     int nAge = *INTEGER(nAge_R);
-    
+
     double ans = makeLifeExpBirth(mx, nx, ax, iAge0_r, nAge);
-    
+
     return ScalarReal(ans);
 }
 
 
 /* one-off wrapper for rnormTruncated */
-SEXP rnormTruncated_R(SEXP n_R, SEXP mean_R, SEXP sd_R, 
+SEXP rnormTruncated_R(SEXP n_R, SEXP mean_R, SEXP sd_R,
                 SEXP lower_R, SEXP upper_R, SEXP tolerance_R,
                 SEXP maxAttempt_R,
                 SEXP uniform_R)
 {
-    SEXP ans_R;         
+    SEXP ans_R;
     GetRNGstate();
-    PROTECT(ans_R = rnormTruncated(*INTEGER(n_R), 
-                        mean_R, sd_R, 
+    PROTECT(ans_R = rnormTruncated(*INTEGER(n_R),
+                        mean_R, sd_R,
                 *REAL(lower_R), *REAL(upper_R), *REAL(tolerance_R),
                 *INTEGER(maxAttempt_R),
                 *LOGICAL(uniform_R) ) );
     PutRNGstate();
     UNPROTECT(1);
     return ans_R;
-    
+
 }
 
 /* one-off wrapper for rnormIntTrunc1 */
@@ -550,12 +550,12 @@ SEXP rnormIntTrunc1_R(SEXP mean_R, SEXP sd_R, SEXP lower_R, SEXP upper_R)
     double sd = *REAL(sd_R);
     int lower = *INTEGER(lower_R);
     int upper = *INTEGER(upper_R);
-    
+
     GetRNGstate();
     int ans = rnormIntTrunc1(mean, sd, lower, upper);
     PutRNGstate();
     return ScalarInteger(ans);
-    
+
 }
 
 
@@ -566,12 +566,12 @@ SEXP rtnorm1_R(SEXP mean_R, SEXP sd_R, SEXP lower_R, SEXP upper_R)
     double sd = *REAL(sd_R);
     double lower = *REAL(lower_R);
     double upper = *REAL(upper_R);
-    
+
     GetRNGstate();
     double ans = rtnorm1(mean, sd, lower, upper);
     PutRNGstate();
     return ScalarReal(ans);
-    
+
 }
 
 
@@ -582,11 +582,11 @@ rpoisTrunc1_R(SEXP lambda_R, SEXP lower_R, SEXP upper_R, SEXP maxAttempt_R)
     int lower = *INTEGER(lower_R);
     int upper = *INTEGER(upper_R);
     int maxAttempt = *INTEGER(maxAttempt_R);
-    
+
     GetRNGstate();
     int ans = rpoisTrunc1(lambda, lower, upper, maxAttempt);
     PutRNGstate();
-    
+
     return ScalarInteger(ans);
 }
 
@@ -594,7 +594,7 @@ SEXP
 findOneRootLogPostSigmaNorm_R(SEXP sigma0_R, SEXP z_R, SEXP A_R, SEXP nu_R,
                             SEXP V_R, SEXP n_R, SEXP min_R, SEXP max_R)
 {
-    
+
     double sigma0 = *REAL(sigma0_R);
     double z = *REAL(z_R);
     double A = *REAL(A_R);
@@ -603,18 +603,18 @@ findOneRootLogPostSigmaNorm_R(SEXP sigma0_R, SEXP z_R, SEXP A_R, SEXP nu_R,
     int n = *INTEGER(n_R);
     double min = *REAL(min_R);
     double max = *REAL(max_R);
-    
+
     double ans = findOneRootLogPostSigmaNorm(sigma0, z, A, nu,
                             V, n, min, max);
     return ScalarReal(ans);
 }
 
 SEXP
-findOneRootLogPostSigmaRobust_R(SEXP sigma0_R, SEXP z_R, SEXP A_R, 
+findOneRootLogPostSigmaRobust_R(SEXP sigma0_R, SEXP z_R, SEXP A_R,
                             SEXP nuBeta_R, SEXP nuTau_R,
                             SEXP V_R, SEXP n_R, SEXP min_R, SEXP max_R)
 {
-    
+
     double sigma0 = *REAL(sigma0_R);
     double z = *REAL(z_R);
     double A = *REAL(A_R);
@@ -624,7 +624,7 @@ findOneRootLogPostSigmaRobust_R(SEXP sigma0_R, SEXP z_R, SEXP A_R,
     int n = *INTEGER(n_R);
     double min = *REAL(min_R);
     double max = *REAL(max_R);
-    
+
     double ans = findOneRootLogPostSigmaRobust(sigma0, z, A,
                             nuBeta, nuTau,
                             V, n, min, max);
@@ -634,7 +634,7 @@ findOneRootLogPostSigmaRobust_R(SEXP sigma0_R, SEXP z_R, SEXP A_R,
 /* one off wrapper for modePhiMix */
 SEXP modePhiMix_R(SEXP level_R, SEXP meanLevel_R, SEXP nAlong_R,
               SEXP indexClassMax_R, SEXP omega_R, SEXP tolerance_R)
-{    
+{
     double *level = REAL(level_R);
     double meanLevel = *REAL(meanLevel_R);
     int nAlong = *INTEGER(nAlong_R);
@@ -659,11 +659,11 @@ SEXP safeLogProp_Binomial_R(SEXP logit_th_new_R, SEXP logit_th_other_new_R,
     double scale = *REAL(scale_R);
     double weight = *REAL(weight_R);
     double weight_other = *REAL(weight_other_R);
-    
-    double ans = safeLogProp_Binomial(logit_th_new, 
+
+    double ans = safeLogProp_Binomial(logit_th_new,
                             logit_th_other_new,
-                            logit_th_old, 
-                            logit_th_other_old, 
+                            logit_th_old,
+                            logit_th_other_old,
                             scale,
                             weight,
                             weight_other);
@@ -682,11 +682,11 @@ SEXP safeLogProp_Poisson_R(SEXP log_th_new_R, SEXP log_th_other_new_R,
     double scale = *REAL(scale_R);
     double weight = *REAL(weight_R);
     double weight_other = *REAL(weight_other_R);
-    
-    double ans = safeLogProp_Poisson(log_th_new, 
+
+    double ans = safeLogProp_Poisson(log_th_new,
                             log_th_other_new,
-                            log_th_old, 
-                            log_th_other_old, 
+                            log_th_old,
+                            log_th_other_old,
                             scale,
                             weight,
                             weight_other);
@@ -800,7 +800,7 @@ transferLevelComponentWeightOldMix_R(SEXP values_R, SEXP offset_R,
     double *ans = REAL(ans_R);
     transferLevelComponentWeightOldMix(ans, values, offset,
                                 nAlongOld, indexClassMax);
-    
+
     UNPROTECT(1);
     return ans_R;
 }
@@ -808,16 +808,16 @@ transferLevelComponentWeightOldMix_R(SEXP values_R, SEXP offset_R,
 /* wrapper for rmvnorm functions */
 RMV_WRAPPER_R(rmvnorm1);
 RMV_WRAPPER_R(rmvnorm2);
-    
+
 /* one-off wrapper for estimateOneChain */
-SEXP estimateOneChain_R(SEXP object_R, SEXP filename_R, 
+SEXP estimateOneChain_R(SEXP object_R, SEXP filename_R,
                     SEXP nBurnin_R, SEXP nSim_R, SEXP nThin_R,
                     SEXP continuing_R)
 {
-    SEXP ans_R;         
+    SEXP ans_R;
     PROTECT(ans_R = duplicate(object_R));
     GetRNGstate();
-    estimateOneChain(ans_R, filename_R, nBurnin_R, nSim_R, 
+    estimateOneChain(ans_R, filename_R, nBurnin_R, nSim_R,
                         nThin_R, continuing_R);
     PutRNGstate();
     UNPROTECT(1);
@@ -893,12 +893,12 @@ MAPPING_GET_I_WRAPPER(getICellBirthsFromExp);
 SEXP getMinValCohortAccession_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
 {
     int i = *INTEGER(i_R);
-    
+
     SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortAccession */
     PROTECT(dup_R = duplicate(iterator_R));
-    
+
     int ans = getMinValCohortAccession(i, series_R, dup_R);
-    UNPROTECT(1);     
+    UNPROTECT(1);
     return ScalarInteger(ans);
 }
 
@@ -906,12 +906,12 @@ SEXP getMinValCohortAccession_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
 SEXP getMinValCohortPopulation_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
 {
     int i = *INTEGER(i_R);
-    
+
     SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortPopulation */
     PROTECT(dup_R = duplicate(iterator_R));
-    
+
     int ans = getMinValCohortPopulation(i, series_R, dup_R);
-    UNPROTECT(1);     
+    UNPROTECT(1);
     return ScalarInteger(ans);
 }
 
@@ -919,8 +919,8 @@ SEXP getMinValCohortPopulation_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
 SEXP resetCA_R(SEXP iterator_R, SEXP i_R)
 {
     int i = *INTEGER(i_R);
-    
-    SEXP ans_R; 
+
+    SEXP ans_R;
     PROTECT(ans_R = duplicate(iterator_R));
     resetCA(ans_R, i);
     UNPROTECT(1);
@@ -931,8 +931,8 @@ SEXP resetCA_R(SEXP iterator_R, SEXP i_R)
 SEXP resetCP_R(SEXP iterator_R, SEXP i_R)
 {
     int i = *INTEGER(i_R);
-    
-    SEXP ans_R; 
+
+    SEXP ans_R;
     PROTECT(ans_R = duplicate(iterator_R));
     resetCP(ans_R, i);
     UNPROTECT(1);
@@ -943,8 +943,8 @@ SEXP resetCP_R(SEXP iterator_R, SEXP i_R)
 SEXP resetCC_R(SEXP iterator_R, SEXP i_R)
 {
     int i = *INTEGER(i_R);
-    
-    SEXP ans_R; 
+
+    SEXP ans_R;
     PROTECT(ans_R = duplicate(iterator_R));
     resetCC(ans_R, i);
     UNPROTECT(1);
@@ -955,8 +955,8 @@ SEXP resetCC_R(SEXP iterator_R, SEXP i_R)
 SEXP resetCODPCP_R(SEXP iterator_R, SEXP i_R)
 {
     int i = *INTEGER(i_R);
-    
-    SEXP ans_R; 
+
+    SEXP ans_R;
     PROTECT(ans_R = duplicate(iterator_R));
     resetCODPCP(ans_R, i);
     UNPROTECT(1);
@@ -974,48 +974,48 @@ SEXP
 predictBeta_R(SEXP prior_R)
 {
     int J = *INTEGER(GET_SLOT(prior_R, J_sym));
-    
+
     SEXP beta_R;
     PROTECT(beta_R = allocVector(REALSXP, J));
     double *beta = REAL(beta_R);
-    
+
     GetRNGstate();
-    
+
     predictBeta(beta, prior_R, J);
-    
+
     PutRNGstate();
-    
+
     UNPROTECT(1);
     return beta_R;
 }
 
 SEXP
-transferAlphaDelta0_R(SEXP state_R, SEXP values_R, SEXP offset_R, 
+transferAlphaDelta0_R(SEXP state_R, SEXP values_R, SEXP offset_R,
                     SEXP iteratorNew_R, SEXP iteratorOld_R)
 {
     double *values = REAL(values_R);
     SEXP ans_R;
     PROTECT(ans_R = duplicate(state_R));
     double *ans = REAL(ans_R);
-    
+
     int offset = *INTEGER(offset_R);
-    
+
     transferAlphaDelta0(ans, values, offset, iteratorNew_R, iteratorOld_R);
     UNPROTECT(1);
     return ans_R;
 }
 
 SEXP
-transferSeason0_R(SEXP s_R, SEXP nSeason_R, SEXP values_R, SEXP offset_R, 
+transferSeason0_R(SEXP s_R, SEXP nSeason_R, SEXP values_R, SEXP offset_R,
                     SEXP iteratorNew_R, SEXP iteratorOld_R)
 {
     int nSeason = *INTEGER(nSeason_R);
     double *values = REAL(values_R);
     int offset = *INTEGER(offset_R);
-    
+
     SEXP ans_R;
     PROTECT(ans_R = duplicate(s_R));
-    
+
     transferSeason0(ans_R, nSeason, values, offset, iteratorNew_R, iteratorOld_R);
     UNPROTECT(1);
     return ans_R;
@@ -1032,19 +1032,19 @@ PREDICTOBJECT_WRAPPER_R(predictUBeta);
 
 /* miscellaneous-functions */
 
-/* create one-off R version wrapper for dpoibin1_R 
- * size could be an integer or a double - arrghh*/ 
+/* create one-off R version wrapper for dpoibin1_R
+ * size could be an integer or a double - arrghh*/
 SEXP
 dpoibin1_R(SEXP x_R, SEXP size_R, SEXP prob_R, SEXP use_log_R)
 {
     GetRNGstate();
-    double ans = dpoibin1(*INTEGER(x_R), *INTEGER(size_R), 
+    double ans = dpoibin1(*INTEGER(x_R), *INTEGER(size_R),
                 *REAL(prob_R), *INTEGER(use_log_R));
     PutRNGstate();
     return ScalarReal(ans);
 }
 
-/* create one-off R version wrapper for invlogit1_R */ 
+/* create one-off R version wrapper for invlogit1_R */
 SEXP
 invlogit1_R(SEXP x_R)
 {
@@ -1052,17 +1052,17 @@ invlogit1_R(SEXP x_R)
     return ScalarReal(ans);
 }
 
-/* create one-off R version wrapper for rcateg1_R */ 
+/* create one-off R version wrapper for rcateg1_R */
 SEXP
 rcateg1_R(SEXP cumProb_R)
 {
     GetRNGstate();
     int ans = rcateg1( REAL(cumProb_R) );
     PutRNGstate();
-    return ScalarInteger(ans); 
+    return ScalarInteger(ans);
 }
 
-/* create one-off R version wrapper for rhalftTrunc1_R */ 
+/* create one-off R version wrapper for rhalftTrunc1_R */
 SEXP
 rhalftTrunc1_R(SEXP df_R, SEXP scale_R, SEXP max_R)
 {
@@ -1072,7 +1072,7 @@ rhalftTrunc1_R(SEXP df_R, SEXP scale_R, SEXP max_R)
     return ScalarReal(ans);
 }
 
-/* create one-off R version wrapper for rinvchisq1_R */ 
+/* create one-off R version wrapper for rinvchisq1_R */
 SEXP
 rinvchisq1_R(SEXP df_R, SEXP scaleSq_R)
 {
@@ -1100,12 +1100,12 @@ UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCP);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCC);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(advanceCODPCP);
 
-/* one-off wrapper for centre RandomWalk 
+/* one-off wrapper for centre RandomWalk
  * duplicates the iterator, which should be unchanged */
 SEXP
 centerA_R(SEXP vec_R, SEXP iterator_R)
 {
-    SEXP iteratorArg_R;             
+    SEXP iteratorArg_R;
     PROTECT(iteratorArg_R = duplicate(iterator_R));
     SEXP ans;
     PROTECT(ans = centerA(vec_R, iteratorArg_R) );
@@ -1113,7 +1113,7 @@ centerA_R(SEXP vec_R, SEXP iterator_R)
     return ans;
 }
 
-/* create one-off R version wrapper for makeIOther_R */ 
+/* create one-off R version wrapper for makeIOther_R */
 SEXP
 makeIOther_R(SEXP i_R, SEXP transform_R)
 {
@@ -1122,45 +1122,45 @@ makeIOther_R(SEXP i_R, SEXP transform_R)
     int ans = makeIOther(i, transform_R);
     PutRNGstate();
     return ScalarInteger(ans);
-    
+
 }
 
 /* one off wrapper for updateDataModelsCounts_R */
-SEXP updateDataModelsCounts_R(SEXP y_R, SEXP dataModels_R, 
-                        SEXP datasets_R, SEXP transforms_R) 
+SEXP updateDataModelsCounts_R(SEXP y_R, SEXP dataModels_R,
+                        SEXP datasets_R, SEXP transforms_R)
 {
     SEXP ans_R;
     PROTECT(ans_R = duplicate(dataModels_R));
     GetRNGstate();
-    updateDataModelsCounts(y_R, ans_R, 
+    updateDataModelsCounts(y_R, ans_R,
                         datasets_R, transforms_R);
     PutRNGstate();
-    
+
     UNPROTECT(1); /* ans_R */
-    
+
     return ans_R;
 }
 
 /* one off wrapper for updateDataModelsAccount_R */
-SEXP updateDataModelsAccount_R(SEXP combined_R) 
+SEXP updateDataModelsAccount_R(SEXP combined_R)
 {
     SEXP ans_R;
     PROTECT(ans_R = duplicate(combined_R));
     GetRNGstate();
     updateDataModelsAccount(ans_R);
     PutRNGstate();
-    
+
     UNPROTECT(1); /* ans_R */
-    
+
     return ans_R;
 }
 
 /* wrap generic update functions for priors */
 
-SEXP updateSDNorm_R(SEXP sigma_R, 
+SEXP updateSDNorm_R(SEXP sigma_R,
                     SEXP A_R, SEXP nu_R, SEXP V_R, SEXP n_R, SEXP max_R)
 {
-       
+
     double sigma = *REAL(sigma_R);
     double A = *REAL(A_R);
     double nu = *REAL(nu_R);
@@ -1174,10 +1174,10 @@ SEXP updateSDNorm_R(SEXP sigma_R,
 
 }
 
-SEXP updateSDRobust_R(SEXP sigma_R, 
+SEXP updateSDRobust_R(SEXP sigma_R,
               SEXP A_R, SEXP nuBeta_R, SEXP nuTau_R, SEXP V_R, SEXP n_R, SEXP max_R)
 {
-       
+
     double sigma = *REAL(sigma_R);
     double A = *REAL(A_R);
     double nuBeta = *REAL(nuBeta_R);
@@ -1351,47 +1351,47 @@ SEXP
 updateCombined_CombinedAccount_R(SEXP object_R, SEXP nUpdate_R)
 {
     int nUpdate = *INTEGER(nUpdate_R);
-    
+
     SEXP ans_R;
     PROTECT(ans_R = duplicate(object_R));
     int nProtected = 1;
-    
-    
+
+
     SEXP iteratorPopnDup_R = NULL;
     int hasIteratorPopn = 0;
     if(R_has_slot(object_R, iteratorPopn_sym)) {
         SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
-    
+
         PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
         hasIteratorPopn = 1;
         ++nProtected;
     }
-    
+
     SEXP iteratorExposureDup_R = NULL;
     int hasIteratorExposure = 0;
     if(R_has_slot(object_R, iteratorExposure_sym)) {
         SEXP iteratorExposure_R = GET_SLOT(object_R, iteratorExposure_sym);
-    
+
         PROTECT(iteratorExposureDup_R = duplicate(iteratorExposure_R));
         hasIteratorExposure = 1;
         ++nProtected;
     }
-    
+
     SEXP iteratorsCompDup_R = NULL;
     int hasIteratorsComp = 0;
     if(R_has_slot(object_R, iteratorsComp_sym)) {
         SEXP iteratorsComp_R = GET_SLOT(object_R, iteratorsComp_sym);
-    
+
         PROTECT(iteratorsCompDup_R = duplicate(iteratorsComp_R));
         hasIteratorsComp = 1;
         ++nProtected;
     }
-        
+
     SEXP iteratorAccDup_R = NULL;
     int hasIteratorAcc = 0;
     if(R_has_slot(object_R, iteratorAcc_sym)) {
         SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
-    
+
         PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
         hasIteratorAcc = 1;
         ++nProtected;
@@ -1400,7 +1400,7 @@ updateCombined_CombinedAccount_R(SEXP object_R, SEXP nUpdate_R)
     GetRNGstate();
     updateCombined_CombinedAccount(ans_R, nUpdate);
     PutRNGstate();
-    
+
     if (hasIteratorPopn) {
         SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);
     }
@@ -1424,59 +1424,59 @@ SEXP
 updateCombined_R(SEXP object_R, SEXP nUpdate_R)
 {
     int nUpdate = *INTEGER(nUpdate_R);
-    
+
     SEXP ans_R;
     PROTECT(ans_R = duplicate(object_R));
     int nProtected = 1;
-    
+
     int i_method_combined = *(INTEGER(GET_SLOT(
                                     object_R, iMethodCombined_sym)));
-    
+
     if ( (i_method_combined == 9) || (i_method_combined == 10) ) {
         SEXP iteratorPopnDup_R = NULL;
         int hasIteratorPopn = 0;
         if(R_has_slot(object_R, iteratorPopn_sym)) {
             SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
-        
+
             PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
             hasIteratorPopn = 1;
             ++nProtected;
         }
-        
+
         SEXP iteratorExposureDup_R = NULL;
         int hasIteratorExposure = 0;
         if(R_has_slot(object_R, iteratorExposure_sym)) {
             SEXP iteratorExposure_R = GET_SLOT(object_R, iteratorExposure_sym);
-        
+
             PROTECT(iteratorExposureDup_R = duplicate(iteratorExposure_R));
             hasIteratorExposure = 1;
             ++nProtected;
         }
-        
+
         SEXP iteratorsCompDup_R = NULL;
         int hasIteratorsComp = 0;
         if(R_has_slot(object_R, iteratorsComp_sym)) {
             SEXP iteratorsComp_R = GET_SLOT(object_R, iteratorsComp_sym);
-        
+
             PROTECT(iteratorsCompDup_R = duplicate(iteratorsComp_R));
             hasIteratorsComp = 1;
             ++nProtected;
         }
-            
+
         SEXP iteratorAccDup_R = NULL;
         int hasIteratorAcc = 0;
         if(R_has_slot(object_R, iteratorAcc_sym)) {
             SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
-        
+
             PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
             hasIteratorAcc = 1;
             ++nProtected;
         }
-    
+
         GetRNGstate();
         updateCombined(ans_R, nUpdate);
         PutRNGstate();
-        
+
         if (hasIteratorPopn) {
             SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);
         }
@@ -1495,7 +1495,7 @@ updateCombined_R(SEXP object_R, SEXP nUpdate_R)
         updateCombined(ans_R, nUpdate);
         PutRNGstate();
     }
-    
+
     UNPROTECT(nProtected);
     return ans_R;
 }
@@ -1516,39 +1516,39 @@ updateValuesAccount_R(SEXP object_R)
     SEXP ans_R;
     PROTECT(ans_R = duplicate(object_R));
     int nProtected = 1;
-    
+
     SEXP iteratorPopnDup_R = NULL;
     int hasIteratorPopn = 0;
     if(R_has_slot(object_R, iteratorPopn_sym)) {
         SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
-    
+
         PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
         hasIteratorPopn = 1;
         ++nProtected;
     }
-    
+
     SEXP iteratorExposureDup_R = NULL;
     int hasIteratorExposure = 0;
     if(R_has_slot(object_R, iteratorExposure_sym)) {
         SEXP iteratorExposure_R = GET_SLOT(object_R, iteratorExposure_sym);
-    
+
         PROTECT(iteratorExposureDup_R = duplicate(iteratorExposure_R));
         hasIteratorExposure = 1;
         ++nProtected;
     }
-        
+
     SEXP iteratorAccDup_R = NULL;
     int hasIteratorAcc = 0;
     if(R_has_slot(object_R, iteratorAcc_sym)) {
         SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
-    
+
         PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
         hasIteratorAcc = 1;
         ++nProtected;
     }
 
     updateValuesAccount(ans_R);
-    
+
     if (hasIteratorPopn) {
         SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);
     }
@@ -1558,7 +1558,7 @@ updateValuesAccount_R(SEXP object_R)
     if (hasIteratorAcc) {
         SET_SLOT(ans_R, iteratorAcc_sym, iteratorAccDup_R);
     }
-    
+
     UNPROTECT(nProtected);
     return ans_R;
 }
@@ -1578,7 +1578,7 @@ updateValuesAccount_CombinedAccountMovements_R(SEXP object_R)
 
     int hasAge = *LOGICAL(GET_SLOT(object_R, hasAge_sym));
     int nProtected = 3;
-    
+
     SEXP iteratorAccDup_R = NULL;
     if (hasAge) {
         SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
@@ -1587,14 +1587,14 @@ updateValuesAccount_CombinedAccountMovements_R(SEXP object_R)
     }
 
     updateValuesAccount_CombinedAccountMovements(ans_R);
-    
+
     SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);
     SET_SLOT(ans_R, iteratorExposure_sym, iteratorExposureDup_R);
-    
+
     if (hasAge) {
         SET_SLOT(ans_R, iteratorAcc_sym, iteratorAccDup_R);
     }
-    
+
     UNPROTECT(nProtected);
     return ans_R;
 }
@@ -1702,14 +1702,14 @@ TRANSFERPARAMPRIOR_WRAPPER_R(transferParamPrior_MixNormZeroPredict);
 /* CMP functions */
 
 /* one off wrapper for logDensCMPUnnormalised1_R */
-SEXP logDensCMPUnnormalised1_R(SEXP x_R, SEXP gamma_R, SEXP nu_R) 
+SEXP logDensCMPUnnormalised1_R(SEXP x_R, SEXP gamma_R, SEXP nu_R)
 {
     int x = *INTEGER(x_R);
     double gam = *REAL(gamma_R);
     double nu = *REAL(nu_R);
-    
+
     double ans = logDensCMPUnnormalised1(x, gam, nu);
-    
+
     return ScalarReal(ans);
 }
 
@@ -1728,42 +1728,42 @@ updateAccount_R(SEXP object_R)
     SEXP ans_R;
     PROTECT(ans_R = duplicate(object_R));
     int nProtected = 1;
-    
+
     SEXP iteratorPopnDup_R = NULL;
     int hasIteratorPopn = 0;
     if(R_has_slot(object_R, iteratorPopn_sym)) {
         SEXP iteratorPopn_R = GET_SLOT(object_R, iteratorPopn_sym);
-    
+
         PROTECT(iteratorPopnDup_R = duplicate(iteratorPopn_R));
         hasIteratorPopn = 1;
         ++nProtected;
     }
-    
+
     SEXP iteratorExposureDup_R = NULL;
     int hasIteratorExposure = 0;
     if(R_has_slot(object_R, iteratorExposure_sym)) {
         SEXP iteratorExposure_R = GET_SLOT(object_R, iteratorExposure_sym);
-    
+
         PROTECT(iteratorExposureDup_R = duplicate(iteratorExposure_R));
         hasIteratorExposure = 1;
         ++nProtected;
     }
-    
+
     SEXP iteratorsCompDup_R = NULL;
     int hasIteratorsComp = 0;
     if(R_has_slot(object_R, iteratorsComp_sym)) {
         SEXP iteratorsComp_R = GET_SLOT(object_R, iteratorsComp_sym);
-    
+
         PROTECT(iteratorsCompDup_R = duplicate(iteratorsComp_R));
         hasIteratorsComp = 1;
         ++nProtected;
     }
-        
+
     SEXP iteratorAccDup_R = NULL;
     int hasIteratorAcc = 0;
     if(R_has_slot(object_R, iteratorAcc_sym)) {
         SEXP iteratorAcc_R = GET_SLOT(object_R, iteratorAcc_sym);
-    
+
         PROTECT(iteratorAccDup_R = duplicate(iteratorAcc_R));
         hasIteratorAcc = 1;
         ++nProtected;
@@ -1772,7 +1772,7 @@ updateAccount_R(SEXP object_R)
     GetRNGstate();
     updateAccount(ans_R);
     PutRNGstate();
-    
+
     if (hasIteratorPopn) {
         SET_SLOT(ans_R, iteratorPopn_sym, iteratorPopnDup_R);
     }
@@ -1785,7 +1785,7 @@ updateAccount_R(SEXP object_R)
     if (hasIteratorAcc) {
         SET_SLOT(ans_R, iteratorAcc_sym, iteratorAccDup_R);
     }
-    
+
     UNPROTECT(nProtected);
     return ans_R;
 }
@@ -1803,9 +1803,9 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMovePopn);
 
 /* one-off wrapper for diffLogLikPopn */
 SEXP
-diffLogLikPopn_R(SEXP diff_R, SEXP iFirst_R, SEXP iterator_R, 
-                            SEXP population_R, SEXP dataModels_R, 
-                            SEXP datasets_R, SEXP seriesIndices_R, 
+diffLogLikPopn_R(SEXP diff_R, SEXP iFirst_R, SEXP iterator_R,
+                            SEXP population_R, SEXP dataModels_R,
+                            SEXP datasets_R, SEXP seriesIndices_R,
                             SEXP transforms_R)
 {
     int diff = *INTEGER(diff_R);
@@ -1822,7 +1822,7 @@ diffLogLikPopn_R(SEXP diff_R, SEXP iFirst_R, SEXP iterator_R,
 
 /* one-off wrapper for diffLogLikPopnOneDataset */
 SEXP
-diffLogLikPopnOneDataset_R(SEXP diff_R, SEXP iFirst_R, SEXP iterator_R, 
+diffLogLikPopnOneDataset_R(SEXP diff_R, SEXP iFirst_R, SEXP iterator_R,
                             SEXP population_R, SEXP model_R,
                             SEXP dataset_R, SEXP transform_R)
 {
@@ -1839,12 +1839,12 @@ diffLogLikPopnOneDataset_R(SEXP diff_R, SEXP iFirst_R, SEXP iterator_R,
 
 /* one-off wrapper for diffLogLikPopnOneCell */
 SEXP
-diffLogLikPopnOneCell_R(SEXP iAfter_R, SEXP diff_R, SEXP population_R, 
+diffLogLikPopnOneCell_R(SEXP iAfter_R, SEXP diff_R, SEXP population_R,
                 SEXP model_R, SEXP dataset_R, SEXP transform_R)
 {
     int iAfter_r = *INTEGER(iAfter_R);
     int diff = *INTEGER(diff_R);
-    double ans = diffLogLikPopnOneCell(iAfter_r, diff, population_R, 
+    double ans = diffLogLikPopnOneCell(iAfter_r, diff, population_R,
                                     model_R, dataset_R, transform_R);
     return ScalarReal(ans);
 }
@@ -1856,8 +1856,8 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveOrigDest);
 /* one-off wrapper for diffLogLikCellComp */
 SEXP
 diffLogLikCellComp_R(SEXP diff_R, SEXP iComp_R, SEXP iCell_R,
-                            SEXP component_R, SEXP dataModels_R, 
-                            SEXP datasets_R, SEXP seriesIndices_R, 
+                            SEXP component_R, SEXP dataModels_R,
+                            SEXP datasets_R, SEXP seriesIndices_R,
                             SEXP transforms_R)
 {
     int diff = *INTEGER(diff_R);
@@ -1872,12 +1872,12 @@ diffLogLikCellComp_R(SEXP diff_R, SEXP iComp_R, SEXP iCell_R,
 
 /* one-off wrapper for diffLogLikCellOneDataset */
 SEXP
-diffLogLikCellOneDataset_R(SEXP diff_R, SEXP iCell_R, SEXP component_R, 
+diffLogLikCellOneDataset_R(SEXP diff_R, SEXP iCell_R, SEXP component_R,
                 SEXP model_R, SEXP dataset_R, SEXP transform_R)
 {
     int iCell_r = *INTEGER(iCell_R);
     int diff = *INTEGER(diff_R);
-    double ans = diffLogLikCellOneDataset(diff, iCell_r, component_R, 
+    double ans = diffLogLikCellOneDataset(diff, iCell_r, component_R,
                                     model_R, dataset_R, transform_R);
     return ScalarReal(ans);
 }
@@ -1885,9 +1885,9 @@ diffLogLikCellOneDataset_R(SEXP diff_R, SEXP iCell_R, SEXP component_R,
 /* one-off wrapper for diffLogLikPopnPair */
 SEXP
 diffLogLikPopnPair_R(SEXP diff_R, SEXP iPopnOrig_R, SEXP iPopnDest_R,
-                            SEXP iterator_R, 
-                            SEXP population_R, SEXP dataModels_R, 
-                            SEXP datasets_R, SEXP seriesIndices_R, 
+                            SEXP iterator_R,
+                            SEXP population_R, SEXP dataModels_R,
+                            SEXP datasets_R, SEXP seriesIndices_R,
                             SEXP transforms_R)
 {
     int diff = *INTEGER(diff_R);
@@ -1910,10 +1910,10 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMovePool);
 
 /* one-off wrapper for diffLogLikCellsPool */
 SEXP
-diffLogLikCellsPool_R(SEXP diff_R, SEXP iComp_R, 
+diffLogLikCellsPool_R(SEXP diff_R, SEXP iComp_R,
                             SEXP iCellOut_R, SEXP iCellIn_R,
-                            SEXP component_R, SEXP dataModels_R, 
-                            SEXP datasets_R, SEXP seriesIndices_R, 
+                            SEXP component_R, SEXP dataModels_R,
+                            SEXP datasets_R, SEXP seriesIndices_R,
                             SEXP transforms_R)
 {
     int diff = *INTEGER(diff_R);
@@ -1933,10 +1933,10 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveNet);
 
 /* one-off wrapper for diffLogLikCellsNet */
 SEXP
-diffLogLikCellsNet_R(SEXP diff_R, SEXP iComp_R, 
+diffLogLikCellsNet_R(SEXP diff_R, SEXP iComp_R,
                             SEXP iCellAdd_R, SEXP iCellSub_R,
-                            SEXP component_R, SEXP dataModels_R, 
-                            SEXP datasets_R, SEXP seriesIndices_R, 
+                            SEXP component_R, SEXP dataModels_R,
+                            SEXP datasets_R, SEXP seriesIndices_R,
                             SEXP transforms_R)
 {
     int diff = *INTEGER(diff_R);
@@ -1959,7 +1959,7 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensPopn);
 
 /* one-off wrapper for diffLogDensPopnOneCohort */
 SEXP
-diffLogDensPopnOneCohort_R(SEXP diff_R, SEXP population_R, SEXP i_R, 
+diffLogDensPopnOneCohort_R(SEXP diff_R, SEXP population_R, SEXP i_R,
                SEXP iterator_R, SEXP theta_R, SEXP strucZeroArray_R)
 {
     int diff = *INTEGER(diff_R);
@@ -1968,7 +1968,7 @@ diffLogDensPopnOneCohort_R(SEXP diff_R, SEXP population_R, SEXP i_R,
     int * strucZeroArray = INTEGER(strucZeroArray_R);
     SEXP iteratornew_R;
     PROTECT(iteratornew_R = duplicate(iterator_R));
-    double ans = diffLogDensPopnOneCohort (diff, population_R, i_r, 
+    double ans = diffLogDensPopnOneCohort (diff, population_R, i_r,
                        iteratornew_R, theta, strucZeroArray);
     UNPROTECT(1);
     return ScalarReal(ans);
@@ -1978,11 +1978,11 @@ diffLogDensPopnOneCohort_R(SEXP diff_R, SEXP population_R, SEXP i_R,
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpPopn);
 
 /* diffLogDensExpOneOrigDestParChPool */
-SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R, 
+SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
                         SEXP ageTimeStep_R, SEXP updatedPopn_R,
                         SEXP component_R, SEXP theta_R,
                         SEXP strucZeroArray_R,
-                        SEXP iteratorComp_R, 
+                        SEXP iteratorComp_R,
                         SEXP iExpFirst_R, SEXP exposure_R,
                         SEXP iteratorExposure_R,
                         SEXP diff_R)
@@ -2000,10 +2000,10 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
     PROTECT(iteratorCompNew_R = duplicate(iteratorComp_R));
     SEXP iteratorExpNew_R;
     PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
-    double ans = diffLogDensExpOneOrigDestParChPool(iCell_r, hasAge, 
+    double ans = diffLogDensExpOneOrigDestParChPool(iCell_r, hasAge,
                         ageTimeStep, updatedPopn,
                         component_R, theta, strucZeroArray,
-                        iteratorCompNew_R, 
+                        iteratorCompNew_R,
                         iExpFirst_r, exposure,
                         iteratorExpNew_R,
                         diff);
@@ -2016,11 +2016,11 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
               iExpFirst, exposure, iteratorExposure, diff)*/
 
 /* diffLogDensExpOneComp */
-SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R, 
+SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
                         SEXP ageTimeStep_R, SEXP updatedPopn_R,
-                        SEXP component_R, SEXP theta_R, 
-                        SEXP strucZeroArray_R,  
-                        SEXP iteratorComp_R, 
+                        SEXP component_R, SEXP theta_R,
+                        SEXP strucZeroArray_R,
+                        SEXP iteratorComp_R,
                         SEXP iExpFirst_R, SEXP exposure_R,
                         SEXP iteratorExposure_R,
                         SEXP diff_R)
@@ -2038,10 +2038,10 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
     PROTECT(iteratorCompNew_R = duplicate(iteratorComp_R));
     SEXP iteratorExpNew_R;
     PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
-    double ans = diffLogDensExpOneComp(iCell_r, hasAge, 
+    double ans = diffLogDensExpOneComp(iCell_r, hasAge,
                         ageTimeStep, updatedPopn,
                         component_R, theta, strucZeroArray,
-                        iteratorCompNew_R, 
+                        iteratorCompNew_R,
                         iExpFirst_r, exposure,
                         iteratorExpNew_R,
                         diff);
@@ -2056,6 +2056,7 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpPoolNoExpose);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpNet);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpComp);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpComp);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensCompSmall);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateCellMove);
 
@@ -2071,9 +2072,9 @@ updateSubsequentPopnMove_R(SEXP combined_R)
     PROTECT(iteratorDup_R = duplicate(iterator_R));
 
     updateSubsequentPopnMove(ans_R);
-    
+
     SET_SLOT(ans_R, iteratorPopn_sym, iteratorDup_R);
-    
+
     UNPROTECT(2);
     return ans_R;
 }
@@ -2091,9 +2092,9 @@ updateSubsequentAccMove_R(SEXP combined_R)
     PROTECT(iteratorDup_R = duplicate(iterator_R));
 
     updateSubsequentAccMove(ans_R);
-    
+
     SET_SLOT(ans_R, iteratorAcc_sym, iteratorDup_R);
-    
+
     UNPROTECT(2);
     return ans_R;
 }
@@ -2110,9 +2111,9 @@ updateSubsequentExpMove_R(SEXP combined_R)
     PROTECT(iteratorDup_R = duplicate(iterator_R));
 
     updateSubsequentExpMove(ans_R);
-    
+
     SET_SLOT(ans_R, iteratorExposure_sym, iteratorDup_R);
-    
+
     UNPROTECT(2);
     return ans_R;
 }
@@ -2147,7 +2148,7 @@ static const
 R_CallMethodDef callMethods[] = {
 
   /* update betas */
-  
+
   CALLDEF(updateGWithTrend_R, 1),
   CALLDEF(updateLatentComponentWeightMix_R, 1),
   CALLDEF(updateLatentWeightMix_R, 1),
@@ -2171,9 +2172,9 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateWeightMix_R, 1),
   CALLDEF(updateTauNorm_R, 2),
   CALLDEF(updateTauRobust_R, 1),
-  
+
   CALLDEF(updateUBeta_R, 2),
-  
+
   CALLDEF(updatePriorBeta_R, 4),
   CALLDEF(updatePriorBeta_ExchFixed_R, 4),
   CALLDEF(updatePriorBeta_ExchNormZero_R, 4),
@@ -2200,7 +2201,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updatePriorBeta_KnownUncertain_R, 4),
   CALLDEF(updatePriorBeta_MixNormZero_R, 4),
   CALLDEF(updatePriorBeta_Zero_R, 4),
-  
+
   /* helper-functions */
   CALLDEF(makeMu_R, 3),
   CALLDEF(dpoibin1_R, 4),
@@ -2214,7 +2215,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(rnormIntTrunc1_R, 4),
   CALLDEF(rtnorm1_R, 4),
   CALLDEF(rpoisTrunc1_R, 4),
-  
+
   CALLDEF(betaHat_R, 1),
   CALLDEF(betaHatAlphaDLM_R, 1),
   CALLDEF(betaHatCovariates_R, 1),
@@ -2222,7 +2223,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(findOneRootLogPostSigmaNorm_R, 8),
   CALLDEF(findOneRootLogPostSigmaRobust_R, 9),
   CALLDEF(getV_R, 1),
-  
+
   CALLDEF(makeVBarAndN_R, 2),
   CALLDEF(logPostPhiMix_R, 6),
   CALLDEF(logPostPhiFirstOrderMix_R, 6),
@@ -2231,13 +2232,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(modePhiMix_R, 6),
   CALLDEF(safeLogProp_Binomial_R, 7),
   CALLDEF(safeLogProp_Poisson_R, 7),
-  
+
   CALLDEF(predictAlphaDLMNoTrend_R, 1),
   CALLDEF(predictAlphaDeltaDLMWithTrend_R, 1),
   CALLDEF(predictBeta_R, 1),
   CALLDEF(transferAlphaDelta0_R, 5),
   CALLDEF(transferSeason0_R, 6),
-  
+
   CALLDEF(predictBetas_R, 1),
   CALLDEF(predictComponentWeightMix_R, 1),
   CALLDEF(predictIndexClassMix_R, 1),
@@ -2245,15 +2246,15 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictPriorsBetas_R, 1),
   CALLDEF(predictSeason_R, 1),
   CALLDEF(predictUBeta_R, 1),
-  
+
   CALLDEF(transferParamBetas_R, 4),
-  
+
   CALLDEF(transferParamPriorsBetas_R,4),
   CALLDEF(transferParamSigma_R,4),
   CALLDEF(transferParamVarsigma_R,4),
   CALLDEF(transferLevelComponentWeightOldMix_R, 4),
-  
-  
+
+
   CALLDEF(centerA_R, 2),
   CALLDEF(diff_R, 2),
   CALLDEF(logLikelihood_Binomial_R,4),
@@ -2265,7 +2266,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(logLikelihood_TFixedUseExp_R, 4),
   CALLDEF(diffLogLik_R,6),
   CALLDEF(makeIOther_R,2),
-  
+
   /* iterators */
   CALLDEF(advanceA_R, 1),
   CALLDEF(resetA_R, 1),
@@ -2289,14 +2290,14 @@ R_CallMethodDef callMethods[] = {
   /* update-nongeneric) */
   CALLDEF(updateSDNorm_R, 6),
   CALLDEF(updateSDRobust_R, 7),
-  
+
   CALLDEF(updateAlphaMix_R, 1),
-  
+
   CALLDEF(updateEta_R, 2),
   CALLDEF(updateComponentWeightMix_R, 1),
-  
-  CALLDEF(updateAlphaDLMNoTrend_R, 2), 
-  CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2), 
+
+  CALLDEF(updateAlphaDLMNoTrend_R, 2),
+  CALLDEF(updateAlphaDeltaDLMWithTrend_R, 2),
   CALLDEF(updateSeason_R, 2),
 
   CALLDEF(updateBetas_R, 1),
@@ -2306,7 +2307,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateMu_R, 1),
 
   CALLDEF(updateSigma_Varying_R, 1),
-  
+
   CALLDEF(updateTheta_BinomialVarying_R, 3),
   CALLDEF(updateTheta_BinomialVaryingAgCertain_R, 3),
   CALLDEF(updateThetaAndValueAgFun_Binomial_R, 3),
@@ -2328,22 +2329,22 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateThetaAndValueAgLife_PoissonUseExp_R, 3),
   CALLDEF(updateThetaAndNu_CMPVaryingNotUseExp_R, 2),
   CALLDEF(updateThetaAndNu_CMPVaryingUseExp_R, 3),
-  
-  
+
+
   CALLDEF(updateVarsigma_R, 2),
-  
+
   /* update counts */
   CALLDEF(updateCountsPoissonNotUseExp_R, 5),
   CALLDEF(updateCountsPoissonUseExp_R, 6),
   CALLDEF(updateCountsBinomial_R, 6),
-  
+
   /* update dataModels and datasets */
   CALLDEF(updateDataModelsCounts_R, 4),
   CALLDEF(updateDataModelsAccount_R, 1),
-  
+
   /* models */
   CALLDEF(logLikelihood_R, 4),
-  
+
   CALLDEF(transferParamModel_R, 4),
   CALLDEF(transferParamModel_NormalVaryingVarsigmaKnownPredict_R, 4),
   CALLDEF(transferParamModel_NormalVaryingVarsigmaUnknownPredict_R, 4),
@@ -2363,7 +2364,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictModelNotUseExp_NormalFixedNotUseExpPredict_R, 2),
   CALLDEF(predictModelNotUseExp_TFixedNotUseExpPredict_R, 2),
   CALLDEF(predictModelNotUseExp_R, 2),
-  
+
   CALLDEF(predictModelUseExp_BinomialVaryingPredict_R, 3),
   CALLDEF(predictModelUseExp_PoissonVaryingUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_PoissonBinomialMixturePredict_R, 3),
@@ -2371,7 +2372,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictModelUseExp_NormalFixedUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_TFixedUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_R, 3),
-  
+
   CALLDEF(updateModelNotUseExp_CMPVaryingNotUseExp_R, 2),
   CALLDEF(updateModelNotUseExp_NormalVaryingVarsigmaKnown_R, 2),
   CALLDEF(updateModelNotUseExp_NormalVaryingVarsigmaUnknown_R, 2),
@@ -2389,7 +2390,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelNotUseExp_NormalFixedNotUseExp_R, 2),
   CALLDEF(updateModelNotUseExp_TFixedNotUseExp_R, 2),
   CALLDEF(updateModelNotUseExp_R, 2),
-  
+
   CALLDEF(updateModelUseExp_CMPVaryingUseExp_R, 3),
   CALLDEF(updateModelUseExp_BinomialVarying_R, 3),
   CALLDEF(updateModelUseExp_PoissonVarying_R, 3),
@@ -2406,33 +2407,33 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_NormalFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_TFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
-  
+
   CALLDEF(updatePriorsBetas_R, 1),
 
   CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaKnown_R, 2),
   CALLDEF(drawModelNotUseExp_NormalVaryingVarsigmaUnknown_R, 2),
   CALLDEF(drawModelNotUseExp_PoissonVarying_R, 2),
   CALLDEF(drawModelNotUseExp_R, 2),
-  
+
   CALLDEF(drawModelUseExp_BinomialVarying_R, 3),
   CALLDEF(drawModelUseExp_PoissonVarying_R, 3),
   CALLDEF(drawModelUseExp_PoissonBinomialMixture_R, 3),
   CALLDEF(drawModelUseExp_NormalFixedUseExp_R, 3),
   CALLDEF(drawModelUseExp_R, 3),
-  
+
   /* draw combined */
   CALLDEF(drawCombined_CombinedModelBinomial_R, 2),
   CALLDEF(drawCombined_CombinedAccountMovements_R, 2),
   CALLDEF(drawCombined_R, 2),
-  
+
   /* draw data models*/
   CALLDEF(drawDataModels_CombinedAccountMovements_R, 1),
   CALLDEF(drawDataModels_R, 1),
-  
+
   /* draw system models*/
   CALLDEF(drawSystemModels_CombinedAccountMovements_R, 1),
   CALLDEF(drawSystemModels_R, 1),
-  
+
   /* predict combined */
   CALLDEF(predictCombined_CombinedModelNormal_R, 4),
   CALLDEF(predictCombined_CombinedModelPoissonHasExp_R, 4),
@@ -2451,11 +2452,11 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateCombined_CombinedModelCMPHasExp_R, 2),
   CALLDEF(updateCombined_CombinedAccount_R, 2),
   CALLDEF(updateCombined_R, 2),
-  
+
   CALLDEF(updateCombined_CombinedCountsPoissonNotHasExp_R, 2),
   CALLDEF(updateCombined_CombinedCountsPoissonHasExp_R, 2),
   CALLDEF(updateCombined_CombinedCountsBinomial_R, 2),
-  
+
   CALLDEF(diffLogDensAccount_CombinedAccountMovements_R, 1),
   CALLDEF(diffLogDensAccount_R, 1),
   CALLDEF(diffLogLikAccount_CombinedAccountMovements_R, 1),
@@ -2468,13 +2469,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateExpectedExposure_R, 1),
   CALLDEF(updateSystemModels_CombinedAccountMovements_R, 1),
   CALLDEF(updateSystemModels_R, 1),
-  
+
   CALLDEF(estimateOneChain_R, 6),
-  
+
   CALLDEF(getOneIterFromFile_R, 5),
   CALLDEF(getDataFromFile_R, 5),
   CALLDEF(overwriteValuesOnFile_R, 5),
-  
+
   /* description helpers */
   CALLDEF(chooseICellComp_R, 1),
   CALLDEF(chooseICellOutInPool_R, 1),
@@ -2501,7 +2502,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getIExpFirstPairFromOrigDest_R, 2),
   CALLDEF(getICellCompFromExp_R, 2),
   CALLDEF(getICellBirthsFromExp_R, 2),
-  
+
   /*predict priors*/
   CALLDEF(predictPrior_R, 1),
   CALLDEF(predictPrior_ExchFixed_R, 1),
@@ -2529,7 +2530,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictPrior_KnownUncertain_R, 1),
   CALLDEF(predictPrior_MixNormZero_R, 1),
   CALLDEF(predictPrior_Zero_R, 1),
-  
+
   /*draw priors*/
   CALLDEF(drawPrior_R, 1),
   CALLDEF(drawPrior_ExchFixed_R, 1),
@@ -2557,7 +2558,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(drawPrior_KnownUncertain_R, 1),
   CALLDEF(drawPrior_MixNormZero_R, 1),
   CALLDEF(drawPrior_Zero_R, 1),
-  
+
   CALLDEF(transferParamPrior_R, 2),
   CALLDEF(transferParamPrior_ExchNormZero_R, 2),
   CALLDEF(transferParamPrior_ExchNormCov_R, 2),
@@ -2595,7 +2596,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateProposalAccountMovePool_R, 1),
   CALLDEF(updateProposalAccountMoveNet_R, 1),
   CALLDEF(updateProposalAccountMoveComp_R, 1),
-  
+
   CALLDEF(diffLogLikAccountMovePopn_R, 1),
   CALLDEF(diffLogLikPopn_R, 8),
   CALLDEF(diffLogLikPopnOneDataset_R, 7),
@@ -2609,7 +2610,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikAccountMoveNet_R, 1),
   CALLDEF(diffLogLikCellsNet_R, 9),
   CALLDEF(diffLogLikAccountMoveComp_R, 1),
-  
+
   CALLDEF(diffLogDensPopn_R, 1),
   CALLDEF(diffLogDensPopnOneCohort_R, 6),
   CALLDEF(diffLogDensExpPopn_R, 1),
@@ -2622,12 +2623,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensJumpNet_R, 1),
   CALLDEF(diffLogDensJumpComp_R, 1),
   CALLDEF(diffLogDensExpComp_R, 1),
-  
+  CALLDEF(diffLogDensCompSmall_R, 1),
+
   CALLDEF(updateCellMove_R, 1),
   CALLDEF(updateSubsequentPopnMove_R, 1),
   CALLDEF(updateSubsequentAccMove_R, 1),
   CALLDEF(updateSubsequentExpMove_R, 1),
-  
+
   /* helper-simulate */
   CALLDEF(drawBetas_R, 1),
   CALLDEF(drawDataModelsAccount_R, 1),
@@ -2646,7 +2648,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(drawTau_R, 1),
   CALLDEF(drawUEtaCoef_R, 1),
   CALLDEF(drawVarsigma_R, 1),
-  
+
   {NULL}
 };
 
@@ -2661,24 +2663,24 @@ R_init_demest(DllInfo *info)
 
   R_registerRoutines(info, NULL, callMethods, NULL, NULL);
   R_useDynamicSymbols(info, FALSE); /* can't find any documentation on this */
-    /* see R Programming for Bioinformatics, 2009, pg 189 - 
-     * "The call to R_useDynamicSymbols indicates that if the correct C entry point 
-     * is not found in the shared library, then an error should be signaled. 
-     * Currently, the default behavior in R is to search all other loaded shared 
+    /* see R Programming for Bioinformatics, 2009, pg 189 -
+     * "The call to R_useDynamicSymbols indicates that if the correct C entry point
+     * is not found in the shared library, then an error should be signaled.
+     * Currently, the default behavior in R is to search all other loaded shared
      * libraries for the symbol, which is fairly dangerous behavior. If you have
-     *  registered all routines in your library, then you should set this to FALSE 
+     *  registered all routines in your library, then you should set this to FALSE
      * as is done in the stats package." */
 
   /* populate pointers declared in header file demest.h
    * see http://tolstoy.newcastle.edu.au/R/e5/devel/08/11/0646.html */
-  dembase_Collapse_R = (SEXP(*)(SEXP,SEXP)) R_GetCCallable("dembase", "collapse_R"); 
-  dembase_Extend_R = (SEXP(*)(SEXP,SEXP)) R_GetCCallable("dembase", "extend_R"); 
-  
-  dembase_getIAfter = (int(*)(int, SEXP)) R_GetCCallable("dembase", "getIAfter"); 
-  dembase_getIBefore = (SEXP(*)(int, SEXP)) R_GetCCallable("dembase", "getIBefore"); 
-  dembase_getIShared = (SEXP(*)(int, SEXP)) R_GetCCallable("dembase", "getIShared"); 
- 
-  
+  dembase_Collapse_R = (SEXP(*)(SEXP,SEXP)) R_GetCCallable("dembase", "collapse_R");
+  dembase_Extend_R = (SEXP(*)(SEXP,SEXP)) R_GetCCallable("dembase", "extend_R");
+
+  dembase_getIAfter = (int(*)(int, SEXP)) R_GetCCallable("dembase", "getIAfter");
+  dembase_getIBefore = (SEXP(*)(int, SEXP)) R_GetCCallable("dembase", "getIBefore");
+  dembase_getIShared = (SEXP(*)(int, SEXP)) R_GetCCallable("dembase", "getIShared");
+
+
   Data_sym = install(".Data");
 
 /* everything here must be declared in "x_sym" form in demest.h */
@@ -2735,7 +2737,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nuVarsigma);
   ADD_SYM(w);
   ADD_SYM(scaleTheta);
-  ADD_SYM(scaleThetaMultiplier); 
+  ADD_SYM(scaleThetaMultiplier);
   ADD_SYM(nAcceptTheta);
   ADD_SYM(betas);
   ADD_SYM(iteratorBetas);
@@ -2749,7 +2751,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(betaIsPredicted);
   ADD_SYM(mean);
   ADD_SYM(sd);
-  
+
   /* ag */
   ADD_SYM(maxAttempt);
   ADD_SYM(nFailedPropTheta);
@@ -2770,7 +2772,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nxAg);
   ADD_SYM(nAgeAg);
   ADD_SYM(transformThetaToMxAg);
-  
+
   /* y */
   ADD_SYM(subtotals);
   ADD_SYM(transformSubtotals);
@@ -2788,9 +2790,9 @@ R_init_demest(DllInfo *info)
   ADD_SYM(updateComponent);
   ADD_SYM(updateDataModel);
   ADD_SYM(updateSystemModel);
-  
+
   ADD_SYM(J);
-  
+
   ADD_SYM(UC);
   ADD_SYM(DC);
   ADD_SYM(UR);
@@ -2819,7 +2821,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(nTime);
   ADD_SYM(stepTime);
   ADD_SYM(hasAge);
-  ADD_SYM(hasSex);  
+  ADD_SYM(hasSex);
   ADD_SYM(nAge);
   ADD_SYM(stepAge);
   ADD_SYM(length);
@@ -2862,7 +2864,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(lengthVec);
   ADD_SYM(increment);
   ADD_SYM(iMinAge);
-  
+
   /*new priors */
   ADD_SYM(ATau);
   ADD_SYM(nuTau);
@@ -2979,9 +2981,9 @@ R_init_demest(DllInfo *info)
   ADD_SYM(omegaVectorsMix);
   ADD_SYM(omegaVectorsMaxMix);
   ADD_SYM(AVectorsMix);
-  ADD_SYM(nuVectorsMix); 
+  ADD_SYM(nuVectorsMix);
   ADD_SYM(minLevelComponentWeight);
-  ADD_SYM(maxLevelComponentWeight);   
+  ADD_SYM(maxLevelComponentWeight);
   ADD_SYM(updateSeriesDLM);
   ADD_SYM(alphaKnown);
   ADD_SYM(AKnownVec);
@@ -3037,7 +3039,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(mappingsToPopn);
   ADD_SYM(mappingsToAcc);
   ADD_SYM(iExpFirst);
-  ADD_SYM(iExpFirstOther); 
+  ADD_SYM(iExpFirstOther);
   ADD_SYM(ageTimeStep);
   ADD_SYM(iteratorsComp);
   ADD_SYM(expectedExposure);
@@ -3051,8 +3053,8 @@ R_init_demest(DllInfo *info)
   ADD_SYM(cumProbComp);
   ADD_SYM(scaleNoise);
   ADD_SYM(nCellAccount);
-  
-  
+
+
 #undef ADD_SYM
 
 }

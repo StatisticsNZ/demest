@@ -229,7 +229,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -431,7 +431,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -734,7 +734,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -942,7 +942,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -1253,7 +1253,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -1473,7 +1473,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -1868,7 +1868,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -2179,7 +2179,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -2579,7 +2579,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -2893,7 +2893,7 @@ if(test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -3097,7 +3097,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -3437,7 +3437,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -3639,7 +3639,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -3945,7 +3945,7 @@ if (test.extended) {
         }
         if (n.updated == 0L)
             warning("not updated")
-        if (n.not.updated == 0L) 
+        if (n.not.updated == 0L)
             warning ("could not test not updated - try increasing n.test")
     })
 }
@@ -4838,7 +4838,7 @@ test_that("diffLogLikPopn works", {
                                              population = popn,
                                              model = data.models[[1L]],
                                              dataset = datasets[[1L]],
-                                             transform = transforms[[1L]]) + 
+                                             transform = transforms[[1L]]) +
         diffLogLikPopnOneDataset(diff = 5L,
                                  iFirst = 11L,
                                  iterator = iterator,
@@ -5128,7 +5128,7 @@ test_that("diffLogLikAccountMovePopn works", {
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 updateInitialPopn = updateInitialPopn,
-                                usePriorPopn = usePriorPopn,                                
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -5181,7 +5181,7 @@ test_that("R and C versions of diffLogLikAccountMovePopn give same answer", {
                                 dataModels = data.models,
                                 seriesIndices = seriesIndices,
                                 updateInitialPopn = updateInitialPopn,
-                                usePriorPopn = usePriorPopn,                                
+                                usePriorPopn = usePriorPopn,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
                                 transforms = transforms)
@@ -6344,7 +6344,7 @@ test_that("R and C versions of diffLogDensPopn give same answer", {
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     initialCombinedAccount <- demest:::initialCombinedAccount
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra    
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         population <- CountsOne(values = seq(100, 200, 10),
@@ -9181,7 +9181,7 @@ test_that("diffLogDensCompSmall works", {
 test_that("R and C versions of diffLogDensCompSmall give same answer", {
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        ## diffLogDensCompSmall <- demest:::diffLogDensCompSmall
+        diffLogDensCompSmall <- demest:::diffLogDensCompSmall
         updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
         initialCombinedAccount <- demest:::initialCombinedAccount
         makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra

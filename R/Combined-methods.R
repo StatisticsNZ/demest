@@ -96,7 +96,7 @@ setMethod("drawCombined",
 
 ## TRANSLATED
 ## HAS_TESTS
-## Function is almost identical to 'updateDataModelsAccount' 
+## Function is almost identical to 'updateDataModelsAccount'
 setMethod("drawDataModels",
           signature(combined = "CombinedAccountMovements"),
           function(combined, useC = FALSE, useSpecific = FALSE) {
@@ -381,7 +381,7 @@ setMethod("predictCombined",
                                               lengthIter = lengthIter,
                                               iteration = iteration)
                   ## Clear previous results. Need to clear for updateTheta to work properly.
-                  y[] <- ifelse(struc.zero.array == 0L, 0L, NA_integer_) 
+                  y[] <- ifelse(struc.zero.array == 0L, 0L, NA_integer_)
                   model <- predictModelUseExp(model,
                                               y = y,
                                               exposure = exposure)
@@ -438,7 +438,7 @@ setMethod("predictCombined",
                                               lengthIter = lengthIter,
                                               iteration = iteration)
                   ## Clear previous results. Need to clear for updateTheta to work properly.
-                  y[] <- ifelse(struc.zero.array == 0L, 0L, NA_integer_) 
+                  y[] <- ifelse(struc.zero.array == 0L, 0L, NA_integer_)
                   model <- predictModelNotUseExp(model,
                                                  y = y)
                   theta <- model@theta
@@ -792,6 +792,7 @@ setMethod("updateCombined",
 ## Accounts
 
 ## READY_TO_TRANSLATE (AGAIN)
+## JAH 4 Jan 2020: not all changes for small updates picked up in tests
 ## HAS_TESTS
 setMethod("diffLogDensAccount",
           signature(combined = "CombinedAccountMovements"),
@@ -877,9 +878,9 @@ setMethod("diffLogLikAccount",
                       else ## NEW
                           diffLogLikAccountMoveOrigDest(object)
                   } ## NEW
-                  else if (i.comp == i.pool) 
+                  else if (i.comp == i.pool)
                       diffLogLikAccountMovePool(object)
-                  else if (i.comp == i.int.net) 
+                  else if (i.comp == i.int.net)
                       diffLogLikAccountMoveNet(object)
                   else { ## NEW
                       if (is.small.update) ## NEW

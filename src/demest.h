@@ -20,7 +20,7 @@
 #define SET_DOUBLESCALE_SLOT(object, slotname, value) { \
     double *ptr = REAL(GET_SLOT(object, slotname));     \
     *ptr = (value);}
-    
+
 #define SET_INTSCALE_SLOT(object, slotname, value) {    \
     int *ptr = INTEGER(GET_SLOT(object, slotname));     \
     *ptr = (value);}
@@ -33,7 +33,7 @@
 /* everything in "x_sym" form here must be macro defined in init.c */
 SEXP
   Data_sym,  /* used for .Data slot */
-  iMethodPrior_sym, 
+  iMethodPrior_sym,
   Z_sym,
   beta_sym,
   eta_sym,
@@ -63,7 +63,7 @@ SEXP
   variancesBetas_sym,
   betaEqualsMean_sym,
   acceptBeta_sym,
-  priorsBetas_sym, 
+  priorsBetas_sym,
   logPostPriorsBetas_sym,
   logPostBetas_sym,
   logPostSigma_sym,
@@ -93,10 +93,10 @@ SEXP
   prob_sym,
   ADelta0_sym,
   meanDelta0_sym,
-  
+
   mean_sym,
   sd_sym,
-  
+
   tolerance_sym,
   betaIsPredicted_sym,
   nFailedPropTheta_sym,
@@ -133,9 +133,9 @@ SEXP
   updateComponent_sym,
   updateDataModel_sym,
   updateSystemModel_sym,
-  
+
   J_sym,
-  
+
   UC_sym,
   DC_sym,
   UR_sym,
@@ -206,8 +206,8 @@ SEXP
   stepOrigCurrentVec_sym,
   stepDestCurrentVec_sym,
   stepOrigDestTargetVec_sym,
-  iMinAge_sym, 
-  
+  iMinAge_sym,
+
   /*new priors*/
   ATau_sym,
   nuTau_sym,
@@ -330,7 +330,7 @@ SEXP
   updateSeriesDLM_sym,
   ALevelComponentWeightMix_sym,
   nuLevelComponentWeightMix_sym,
-  
+
   nuCMP_sym,
   sdLogNuCMP_sym,
   sdLogNuMaxCMP_sym,
@@ -340,17 +340,17 @@ SEXP
   ASDLogNuCMP_sym,
   nuSDLogNuCMP_sym,
   nu_sym,
-  
+
   alphaKnown_sym,
-  AKnownVec_sym,  
-  
+  AKnownVec_sym,
+
   /* skeleton */
   first_sym,
   last_sym,
-  
+
   /* Box-Cox */
   boxCoxParam_sym,
-  
+
   /* accounts  and combined accounts*/
   account_sym,
   population_sym,
@@ -386,7 +386,7 @@ SEXP
   mappingsToPopn_sym,
   mappingsToAcc_sym,
   iExpFirst_sym,
-  iExpFirstOther_sym, 
+  iExpFirstOther_sym,
   ageTimeStep_sym,
   iteratorsComp_sym,
   expectedExposure_sym,
@@ -399,8 +399,8 @@ SEXP
   probPopn_sym,
   cumProbComp_sym,
   nCellAccount_sym;
-  
-  
+
+
 /* Priors-methods */
 
 void updateGWithTrend(SEXP prior_R);
@@ -430,83 +430,83 @@ void updateTauRobust(SEXP prior_R, int J);
 void updateUBeta(SEXP prior_R, double *beta, int J);
 
 void
-updatePriorBeta(double *beta, int J, SEXP prior_R, 
+updatePriorBeta(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_ExchFixed(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_ExchFixed(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_ExchNormZero(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_ExchNormZero(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_ExchNormCov(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_ExchNormCov(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_ExchRobustZero(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_ExchRobustZero(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_ExchRobustCov(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_ExchRobustCov(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMNoTrendNormZeroNoSeason(double *beta, int J, 
+updatePriorBeta_DLMNoTrendNormZeroNoSeason(double *beta, int J,
                     SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMWithTrendNormZeroNoSeason(double *beta, int J, 
+updatePriorBeta_DLMWithTrendNormZeroNoSeason(double *beta, int J,
                     SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMNoTrendNormZeroWithSeason(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_DLMNoTrendNormZeroWithSeason(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMWithTrendNormZeroWithSeason(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_DLMWithTrendNormZeroWithSeason(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMNoTrendNormCovNoSeason(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_DLMNoTrendNormCovNoSeason(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMWithTrendNormCovNoSeason(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_DLMWithTrendNormCovNoSeason(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMNoTrendNormCovWithSeason(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_DLMNoTrendNormCovWithSeason(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMWithTrendNormCovWithSeason(double *beta, int J, SEXP prior_R, 
+updatePriorBeta_DLMWithTrendNormCovWithSeason(double *beta, int J, SEXP prior_R,
                         double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMNoTrendRobustZeroNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *thetaTransformed, double sigma);                   
+updatePriorBeta_DLMNoTrendRobustZeroNoSeason(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMWithTrendRobustZeroNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *thetaTransformed, double sigma);       
+updatePriorBeta_DLMWithTrendRobustZeroNoSeason(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMNoTrendRobustZeroWithSeason(double *beta, int J, 
-                    SEXP prior_R, double *thetaTransformed, double sigma);                   
+updatePriorBeta_DLMNoTrendRobustZeroWithSeason(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
 updatePriorBeta_DLMWithTrendRobustZeroWithSeason(double *beta, int J,
                     SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMNoTrendRobustCovNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *thetaTransformed, double sigma);                   
+updatePriorBeta_DLMNoTrendRobustCovNoSeason(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMWithTrendRobustCovNoSeason(double *beta, int J, 
-                    SEXP prior_R, double *thetaTransformed, double sigma);       
+updatePriorBeta_DLMWithTrendRobustCovNoSeason(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
-updatePriorBeta_DLMNoTrendRobustCovWithSeason(double *beta, int J, 
-                    SEXP prior_R, double *thetaTransformed, double sigma);                   
+updatePriorBeta_DLMNoTrendRobustCovWithSeason(double *beta, int J,
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
 updatePriorBeta_DLMWithTrendRobustCovWithSeason(double *beta, int J,
                     SEXP prior_R, double *thetaTransformed, double sigma);
 void
 updatePriorBeta_KnownCertain(double *beta, int J,
-                    SEXP prior_R, double *thetaTransformed, double sigma);                    
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
 updatePriorBeta_KnownUncertain(double *beta, int J,
-                    SEXP prior_R, double *thetaTransformed, double sigma);                    
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
 updatePriorBeta_MixNormZero(double *beta, int J,
-                    SEXP prior_R, double *thetaTransformed, double sigma);                    
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 void
 updatePriorBeta_Zero(double *beta, int J,
-                    SEXP prior_R, double *thetaTransformed, double sigma);                    
+                    SEXP prior_R, double *thetaTransformed, double sigma);
 /* helper-functions */
 SEXP makeMu(int n, SEXP betas_R, SEXP iterator_R);
 double dpoibin1(int x, int size, double prob, int use_log);
@@ -517,15 +517,15 @@ double rinvchisq1(double df, double scaleSq);
 
 SEXP rmvnorm1(SEXP mean_R, SEXP var_R);
 SEXP rmvnorm2(SEXP mean_R, SEXP var_R);
-SEXP rnormTruncated(int n, SEXP mean_R, SEXP sd_R, 
+SEXP rnormTruncated(int n, SEXP mean_R, SEXP sd_R,
                 double lower, double upper, double tolerance,
                 int maxAttempt,
                 int uniform);
-int rnormIntTrunc1(double mean, double sd, 
+int rnormIntTrunc1(double mean, double sd,
                 int lower, int upper);
 double rtnorm1(double mean, double sd, double lower, double upper);
 int rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt);
-                
+
 void betaHat(double *beta_hat, SEXP prior_R, int J);
 void betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J);
 void betaHatCovariates(double *beta_hat, SEXP prior_R, int J);
@@ -533,35 +533,35 @@ void betaHatSeason(double *beta_hat, SEXP prior_R, int J);
 
 double findOneRootLogPostSigmaNorm(double sigma0, double z, double A, double nu,
                             double V, int n, double min, double max);
-double findOneRootLogPostSigmaRobust(double sigma0, double z, double A, 
+double findOneRootLogPostSigmaRobust(double sigma0, double z, double A,
                             double nuBeta, double nuTau,
                             double V, int n, double min, double max);
 
 SEXP getV_R(SEXP prior_R);
 
 SEXP makeVBarAndN_R(SEXP object, SEXP iBeta_R);
-double logPostPhiMix(double phi, double *level, double meanLevel, 
+double logPostPhiMix(double phi, double *level, double meanLevel,
                 int nAlong, int indexClassMax_r, double omega);
-double logPostPhiFirstOrderMix(double phi, double *level, double meanLevel, 
+double logPostPhiFirstOrderMix(double phi, double *level, double meanLevel,
                 int nAlong, int indexClassMax_r, double omega);
-double logPostPhiSecondOrderMix(double phi, double *level, double meanLevel, 
+double logPostPhiSecondOrderMix(double phi, double *level, double meanLevel,
                 int nAlong, int indexClassMax_r, double omega);
-double makeLifeExpBirth(double *mx, double *nx, double *ax, 
+double makeLifeExpBirth(double *mx, double *nx, double *ax,
                         int iAge0_r, int nAge);
 double modePhiMix (double * level, double meanLevel, int nAlong,
               int indexClassMax, double omega, double tolerance);
 
-double safeLogProp_Binomial(double logit_th_new, 
+double safeLogProp_Binomial(double logit_th_new,
                             double logit_th_other_new,
-                            double logit_th_old, 
-                            double logit_th_other_old, 
+                            double logit_th_old,
+                            double logit_th_other_old,
                             double scale,
                             double weight,
                             double weight_other);
-double safeLogProp_Poisson(double log_th_new, 
+double safeLogProp_Poisson(double log_th_new,
                             double log_th_other_new,
-                            double log_th_old, 
-                            double log_th_other_old, 
+                            double log_th_old,
+                            double log_th_other_old,
                             double scale,
                             double weight,
                             double weight_other);
@@ -583,19 +583,19 @@ void transferAlphaDelta0(double *state, double *values, int offset,
 void transferSeason0(SEXP s_R, int nSeason, double *values, int offset,
                     SEXP iteratorState_R, SEXP iteratorValues_R);
 void transferLevelComponentWeightOldMix(double * ans, double * values, int offset,
-                                int nAlongOld, int indexClassMax);                   
-void transferParamBetas(SEXP model_R, const char *filename, 
+                                int nAlongOld, int indexClassMax);
+void transferParamBetas(SEXP model_R, const char *filename,
                                         int lengthIter, int iteration);
 
 
 void transferParamPriorsBetas(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration);
 
-void transferParamSigma(SEXP model_R, const char *filename, 
+void transferParamSigma(SEXP model_R, const char *filename,
                                         int lengthIter, int iteration);
-void transferParamVarsigma(SEXP model_R, const char *filename, 
+void transferParamVarsigma(SEXP model_R, const char *filename,
                                         int lengthIter, int iteration);
-                                                        
+
 SEXP centerA(SEXP vec_R, SEXP iterator_R);
 SEXP diff_R(SEXP vec_R, SEXP order_R);
 int makeIOther(int i, SEXP transform_R);
@@ -621,23 +621,23 @@ void drawVarsigma(SEXP object_R);
 
 
 /* loglikelihood */
-double logLikelihood_Binomial(SEXP model_R, int count, 
+double logLikelihood_Binomial(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
-double logLikelihood_CMP(SEXP model_R, int count, 
+double logLikelihood_CMP(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
-double logLikelihood_Poisson(SEXP model_R, int count, 
+double logLikelihood_Poisson(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
-double logLikelihood_PoissonBinomialMixture(SEXP model_R, int count, 
+double logLikelihood_PoissonBinomialMixture(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
-double logLikelihood_Round3(SEXP model_R, int count, 
+double logLikelihood_Round3(SEXP model_R, int count,
                 SEXP dataset_R, int i);
-double logLikelihood_NormalFixedUseExp(SEXP model_R, int count, 
+double logLikelihood_NormalFixedUseExp(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
-double logLikelihood_TFixedUseExp(SEXP model_R, int count, 
+double logLikelihood_TFixedUseExp(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
-double logLikelihood(SEXP model_R, int count, 
+double logLikelihood(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
-SEXP diffLogLik_R(SEXP yProp_R, SEXP y_R, SEXP indicesY_R, 
+SEXP diffLogLik_R(SEXP yProp_R, SEXP y_R, SEXP indicesY_R,
         SEXP dataModels_R, SEXP datasets_R, SEXP transforms_R);
 
 /* iterators */
@@ -716,13 +716,13 @@ void drawPrior_MixNormZero(SEXP prior_R);
 void drawPrior_Zero(SEXP prior_R);
 
 void transferParamPrior(SEXP prior_R, double *values, int nValues);
-void transferParamPrior_ExchNormZero(SEXP prior_R, double *values, 
+void transferParamPrior_ExchNormZero(SEXP prior_R, double *values,
                       int nValues);
-void transferParamPrior_ExchNormCov(SEXP prior_R, double *values, 
+void transferParamPrior_ExchNormCov(SEXP prior_R, double *values,
                                             int nValues);
-void transferParamPrior_ExchRobustZero(SEXP prior_R, double *values, 
+void transferParamPrior_ExchRobustZero(SEXP prior_R, double *values,
                                             int nValues);
-void transferParamPrior_ExchRobustCov(SEXP prior_R, double *values, 
+void transferParamPrior_ExchRobustCov(SEXP prior_R, double *values,
                                             int nValues);
 void transferParamPrior_DLMNoTrendNormZeroNoSeasonPredict(SEXP prior_R,
                                 double *values, int nValues);
@@ -737,7 +737,7 @@ void transferParamPrior_DLMNoTrendNormCovNoSeasonPredict(SEXP prior_R,
 void transferParamPrior_DLMWithTrendNormCovNoSeasonPredict(SEXP prior_R,
                                 double *values, int nValues);
 void transferParamPrior_DLMNoTrendNormCovWithSeasonPredict(SEXP prior_R,
-                        double *values, int nValues); 
+                        double *values, int nValues);
 void transferParamPrior_DLMWithTrendNormCovWithSeasonPredict(SEXP prior_R,
                         double *values, int nValues);
 void transferParamPrior_DLMNoTrendRobustZeroNoSeasonPredict(SEXP prior_R,
@@ -758,7 +758,7 @@ void transferParamPrior_DLMWithTrendRobustCovWithSeasonPredict(SEXP prior_R,
                     double *values, int nValues);
 void transferParamPrior_MixNormZeroPredict(SEXP prior_R,
                     double *values, int nValues);
-                    
+
 /* update-nongeneric */
 
 void updateBetas(SEXP object);
@@ -768,7 +768,7 @@ void updateVariancesBetas(SEXP object);
 void updateMu(SEXP object);
 
 double updateSDNorm(double sigma, double A, double nu, double V, int n, double max);
-double updateSDRobust(double sigma, double A, double nuBeta, 
+double updateSDRobust(double sigma, double A, double nuBeta,
               double nuTau, double V, int n, double max);
 
 void updateAlphaMix(SEXP prior_R);
@@ -810,44 +810,44 @@ void updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R)
 void updateVarsigma(SEXP object, SEXP y_R);
 
 /* update counts */
-void updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, 
+void updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R,
             SEXP dataModels_R, SEXP datasets_R, SEXP transforms_R);
-void updateCountsPoissonUseExp(SEXP y_R, SEXP model_R, 
-                        SEXP exposure_R, SEXP dataModels_R, 
+void updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
+                        SEXP exposure_R, SEXP dataModels_R,
                         SEXP datasets_R, SEXP transforms_R);
-void updateCountsBinomial(SEXP y_R, SEXP model_R, 
-                        SEXP exposure_R, SEXP dataModels_R, 
+void updateCountsBinomial(SEXP y_R, SEXP model_R,
+                        SEXP exposure_R, SEXP dataModels_R,
                         SEXP datasets_R, SEXP transforms_R);
-void 
-updateDataModelsCounts(SEXP y_R, SEXP dataModels_R, 
+void
+updateDataModelsCounts(SEXP y_R, SEXP dataModels_R,
                SEXP datasets_R, SEXP transforms_R);
-void 
+void
 updateDataModelsAccount(SEXP combined_R);
 
 /* transfer param model */
 void transferParamModel(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration);
-void transferParamModel_NormalVaryingVarsigmaKnownPredict(SEXP model_R, 
+void transferParamModel_NormalVaryingVarsigmaKnownPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_NormalVaryingVarsigmaUnknownPredict(SEXP model_R, 
+void transferParamModel_NormalVaryingVarsigmaUnknownPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_PoissonVaryingNotUseExpPredict(SEXP model_R, 
+void transferParamModel_PoissonVaryingNotUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_BinomialVaryingPredict(SEXP model_R, 
+void transferParamModel_BinomialVaryingPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_PoissonVaryingUseExpPredict(SEXP model_R, 
+void transferParamModel_PoissonVaryingUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_PoissonBinomialMixture(SEXP model_R, 
+void transferParamModel_PoissonBinomialMixture(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_NormalFixedNotUseExpPredict(SEXP model_R, 
+void transferParamModel_NormalFixedNotUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_NormalFixedUseExpPredict(SEXP model_R, 
+void transferParamModel_NormalFixedUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_Round3(SEXP model_R, 
+void transferParamModel_Round3(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_TFixedNotUseExpPredict(SEXP model_R, 
+void transferParamModel_TFixedNotUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
-void transferParamModel_TFixedUseExpPredict(SEXP model_R, 
+void transferParamModel_TFixedUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
 
 
@@ -948,19 +948,19 @@ void drawSystemModels_CombinedAccountMovements(SEXP combined_R);
 void drawSystemModels(SEXP combined_R);
 
 /* predict combined models*/
-void predictCombined_CombinedModelNormal(SEXP object_R, 
+void predictCombined_CombinedModelNormal(SEXP object_R,
                     const char *filename, int lengthIter, int iteration);
-void predictCombined_CombinedModelPoissonNotHasExp(SEXP object_R, 
+void predictCombined_CombinedModelPoissonNotHasExp(SEXP object_R,
                     const char *filename, int lengthIter, int iteration);
-void predictCombined_CombinedModelBinomial(SEXP object_R, 
+void predictCombined_CombinedModelBinomial(SEXP object_R,
                     const char *filename, int lengthIter, int iteration);
-void predictCombined_CombinedModelPoissonHasExp(SEXP object_R, 
+void predictCombined_CombinedModelPoissonHasExp(SEXP object_R,
                     const char *filename, int lengthIter, int iteration);
-void predictCombined_CombinedCountsPoissonNotHasExp(SEXP object_R, 
+void predictCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
                     const char *filename, int lengthIter, int iteration);
-void predictCombined_CombinedCountsPoissonHasExp(SEXP object_R, 
+void predictCombined_CombinedCountsPoissonHasExp(SEXP object_R,
                     const char *filename, int lengthIter, int iteration);
-void predictCombined(SEXP object_R, 
+void predictCombined(SEXP object_R,
                     const char *filename, int lengthIter, int iteration);
 
 /* update combined models*/
@@ -995,17 +995,17 @@ void updateCombined_CombinedCountsBinomial(SEXP object_R,
                                                         int nUpdate);
 
 /* estimate one chain */
-void estimateOneChain(SEXP object_R, SEXP filename_R, 
+void estimateOneChain(SEXP object_R, SEXP filename_R,
                 SEXP nBurnin_R, SEXP nSim_R, SEXP nThin_R,
                 SEXP continuing);
 
 /* get data from file */
-SEXP getOneIterFromFile_R(SEXP filename_R, 
-                        SEXP first_R, SEXP last_R, 
+SEXP getOneIterFromFile_R(SEXP filename_R,
+                        SEXP first_R, SEXP last_R,
                         SEXP lengthIter_R, SEXP iteration_R);
 
-SEXP getDataFromFile_R(SEXP filename_R, 
-                        SEXP first_R, SEXP last_R, 
+SEXP getDataFromFile_R(SEXP filename_R,
+                        SEXP first_R, SEXP last_R,
                         SEXP lengthIter_R, SEXP iterations_R);
 
 SEXP overwriteValuesOnFile_R(SEXP object_R, SEXP skeleton_R,
@@ -1054,59 +1054,59 @@ void updateProposalAccountMoveNet(SEXP combined_R);
 void updateProposalAccountMoveComp(SEXP combined_R);
 
 double diffLogLikAccountMovePopn(SEXP combined_R);
-double diffLogLikPopn(int diff, int iFirst_r, SEXP iterator_R, 
-                        SEXP population_R, SEXP dataModels_R, 
-                        SEXP datasets_R, SEXP seriesIndices_R, 
+double diffLogLikPopn(int diff, int iFirst_r, SEXP iterator_R,
+                        SEXP population_R, SEXP dataModels_R,
+                        SEXP datasets_R, SEXP seriesIndices_R,
                         SEXP transforms_R);
-double diffLogLikPopnOneDataset(int diff, int iFirst_r, SEXP iterator_R, 
-                        SEXP population_R, SEXP model_R, 
+double diffLogLikPopnOneDataset(int diff, int iFirst_r, SEXP iterator_R,
+                        SEXP population_R, SEXP model_R,
                         SEXP dataset_R, SEXP transform_R);
-double diffLogLikPopnOneCell(int iAfter_r, int diff, SEXP population_R, 
+double diffLogLikPopnOneCell(int iAfter_r, int diff, SEXP population_R,
                         SEXP model_R, SEXP dataset_R, SEXP transform_R);
 double diffLogLikAccountMoveOrigDest(SEXP combined_R);
-double diffLogLikCellComp(int diff, int iComp_r, int iCell_r,  
-                        SEXP component_R, SEXP dataModels_R, 
-                        SEXP datasets_R, SEXP seriesIndices_R, 
+double diffLogLikCellComp(int diff, int iComp_r, int iCell_r,
+                        SEXP component_R, SEXP dataModels_R,
+                        SEXP datasets_R, SEXP seriesIndices_R,
                         SEXP transforms_R);
-double diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R, 
+double diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R,
                         SEXP model_R, SEXP dataset_R, SEXP transform_R);
 double diffLogLikPopnPair(int diff, int iPopnOrig_r, int iPopnDest_r,
-                        SEXP iterator_R, 
-                        SEXP population_R, SEXP dataModels_R, 
-                        SEXP datasets_R, SEXP seriesIndices_R, 
+                        SEXP iterator_R,
+                        SEXP population_R, SEXP dataModels_R,
+                        SEXP datasets_R, SEXP seriesIndices_R,
                         SEXP transforms_R);
 double diffLogLikAccountMovePool(SEXP combined_R);
 double diffLogLikCellsPool(int diff, int iComp_r, int iCellOut_r, int iCellIn_r,
-                        SEXP component_R, SEXP dataModels_R, 
-                        SEXP datasets_R, SEXP seriesIndices_R, 
+                        SEXP component_R, SEXP dataModels_R,
+                        SEXP datasets_R, SEXP seriesIndices_R,
                         SEXP transforms_R);
 double diffLogLikAccountMoveNet(SEXP combined_R);
-double diffLogLikCellsNet(int diff, int iComp_r, 
-                        int iCellAdd_r, int iCellSub_r,  
-                        SEXP component_R, SEXP dataModels_R, 
-                        SEXP datasets_R, SEXP seriesIndices_R, 
+double diffLogLikCellsNet(int diff, int iComp_r,
+                        int iCellAdd_r, int iCellSub_r,
+                        SEXP component_R, SEXP dataModels_R,
+                        SEXP datasets_R, SEXP seriesIndices_R,
                         SEXP transforms_R);
-double diffLogLikAccountMoveComp(SEXP combined_R);     
+double diffLogLikAccountMoveComp(SEXP combined_R);
 
 double diffLogDensPopn(SEXP combined_R);
-double diffLogDensPopnOneCohort (int diff, SEXP population_R, int i_r, 
-                 SEXP iterator_R, double * theta, int * strucZeroArray);                   
+double diffLogDensPopnOneCohort (int diff, SEXP population_R, int i_r,
+                 SEXP iterator_R, double * theta, int * strucZeroArray);
 double diffLogDensExpPopn(SEXP combined_R);
-double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge, 
+double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
                         double ageTimeStep, int updatedPopn,
                         SEXP component_R, double * theta,
                         int * strucZeroArray,
-                        SEXP iteratorComp_R, 
+                        SEXP iteratorComp_R,
                         int iExpFirst_r, double * exposure,
                         SEXP iteratorExposure_R,
                         int diff);
-double diffLogDensExpOneComp(int iCell_r, int hasAge, 
+double diffLogDensExpOneComp(int iCell_r, int hasAge,
                         double ageTimeStep, int updatedPopn,
                         SEXP component_R, double * theta, int * strucZeroArray,
-                        SEXP iteratorComp_R, 
+                        SEXP iteratorComp_R,
                         int iExpFirst_r, double * exposure,
                         SEXP iteratorExposure_R,
-                        int diff);                        
+                        int diff);
 double diffLogDensJumpOrigDest(SEXP combined_R);
 double diffLogDensExpOrigDestPoolNet(SEXP combined_R);
 double diffLogDensJumpPoolWithExpose(SEXP combined_R);
@@ -1114,18 +1114,19 @@ double diffLogDensJumpPoolNoExpose(SEXP combined_R);
 double diffLogDensJumpNet(SEXP combined_R);
 double diffLogDensJumpComp(SEXP combined_R);
 double diffLogDensExpComp(SEXP combined_R);
+double diffLogDensCompSmall(SEXP combined_R);
 
 void updateCellMove(SEXP combined_R);
 void updateSubsequentPopnMove(SEXP combined_R);
 void updateSubsequentAccMove(SEXP combined_R);
 void updateSubsequentExpMove(SEXP combined_R);
 
-                        
-/* pointers for routines from dembase package 
- * 
+
+/* pointers for routines from dembase package
+ *
  * these have to be populated with R_GetCCallable in the initialisation function */
 SEXP (*dembase_Collapse_R)(SEXP ,SEXP);
-SEXP (*dembase_Extend_R)(SEXP ,SEXP); 
+SEXP (*dembase_Extend_R)(SEXP ,SEXP);
 int (*dembase_getIAfter)(int, SEXP);
 SEXP (*dembase_getIBefore)(int, SEXP);
 SEXP (*dembase_getIShared)(int, SEXP);

@@ -56,7 +56,7 @@
 ##         diffLogDensExpComp DONE
 ##             diffLogDensExpOneOrigDestParChPool [reused] DONE
 ##             diffLogDensExpOneComp [reused] DONE
-##     updateValuesAccount [method] 
+##     updateValuesAccount [method]
 ##         updateCellMove DONE
 ##         updateSubsequentPopnMove DONE
 ##         updateSubsequentAccMove DONE
@@ -224,7 +224,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
             accession <- combined@accession
             iterator.acc <- combined@iteratorAcc
             mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
-        }        
+        }
         mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
         iterator.popn <- combined@iteratorPopn
         uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
@@ -256,7 +256,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
                                                 mapping = mapping.to.popn)
             min.val <- getMinValCohortPopulation(i = i.popn.next,
                                                  series = population,
-                                                 iterator = iterator.popn)        
+                                                 iterator = iterator.popn)
             if (has.age) {
                 i.acc.next <- getIAccNextFromComp(i = i.cell,
                                                   mapping = mapping.to.acc)
@@ -752,7 +752,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
         iterator.popn <- combined@iteratorPopn
         mapping.to.exp <- combined@mappingsToExp[[i.comp]]
         uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
-        description <- combined@descriptions[[i.comp + 1L]]        
+        description <- combined@descriptions[[i.comp + 1L]]
         theta <- combined@systemModels[[i.comp + 1L]]@theta
         struc.zero.array <- combined@systemModels[[i.comp + 1L]]@strucZeroArray
         gnerated.new.proposal <- FALSE
@@ -900,7 +900,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
             accession <- combined@accession
             iterator.acc <- combined@iteratorAcc
             mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
-        }        
+        }
         mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
         iterator.popn <- combined@iteratorPopn
         mapping.to.exp <- combined@mappingsToExp[[i.comp]]
@@ -1028,7 +1028,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
             accession <- combined@accession
             iterator.acc <- combined@iteratorAcc
             mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
-        }        
+        }
         mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
         iterator.popn <- combined@iteratorPopn
         uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
@@ -1383,7 +1383,7 @@ diffLogLikPopn <- function(diff, iFirst, iterator, population,
               diff, iFirst, iterator, population, dataModels,
               datasets, seriesIndices, transforms)
     }
-    else {        
+    else {
         ans <- 0
         for (i.dataset in seq_along(datasets)) {
             assoc.with.popn <- seriesIndices[i.dataset] == 0L
@@ -1525,7 +1525,7 @@ diffLogLikPopnOneCell <- function(iAfter, diff, population, model,
             if (diff.prop > diff.curr)
                 -1000
             else
-                1000           
+                1000
         }
     }
 }
@@ -1959,7 +1959,7 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
         ## 'diffLogLikPopnPair assumes 'diff' is subtracted from first cohort
         ## and added to second, which is what happens with orig-dest and pool.
         ## To instead add and subtract, we use -diff.
-        diff.log.lik.popn <- diffLogLikPopnPair(diff = -diff, 
+        diff.log.lik.popn <- diffLogLikPopnPair(diff = -diff,
                                                 iPopnOrig = i.popn.add,
                                                 iPopnDest = i.popn.sub,
                                                 iterator = iterator,
@@ -2053,7 +2053,7 @@ diffLogLikCellsNet <- function(diff, iComp, iCellAdd, iCellSub,
         }
         ans
     }
-}        
+}
 
 
 ## TRANSLATED
@@ -2465,7 +2465,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
               iExpFirst, exposure, iteratorExposure,
               diff)
     }
-    else {    
+    else {
         iteratorComp <- resetCODPCP(iteratorComp, i = iCell)
         iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
         ans <- 0
@@ -2514,7 +2514,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
 ## TRANSLATED
 ## HAS_TESTS
 diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
-                                  component, theta, strucZeroArray, iteratorComp, 
+                                  component, theta, strucZeroArray, iteratorComp,
                                   iExpFirst, exposure, iteratorExposure,
                                   diff, useC = FALSE) {
     ## iCell
@@ -3169,7 +3169,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogDensCompSmall <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -3276,7 +3276,7 @@ updateCellMove <- function(combined, useC = FALSE) {
         }
         combined
     }
-}            
+}
 
 
 

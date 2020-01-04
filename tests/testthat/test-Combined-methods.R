@@ -1196,7 +1196,7 @@ test_that("predictCombined works with object of class CombinedCountsPoissonHasEx
     ans.expected@dataModels[[2]] <- predictModelUseExp(object = ans.expected@dataModels[[2]],
                                                        y = ans.expected@datasets[[2]],
                                                        exposure = ans.expected@datasets[[2]])
-    expect_identical(ans.obtained, ans.expected)    
+    expect_identical(ans.obtained, ans.expected)
 })
 
 
@@ -1361,7 +1361,7 @@ test_that("predictCombined works with object of class CombinedCountsPoissonNotHa
     ans.expected@dataModels[[2]] <- predictModelUseExp(object = ans.expected@dataModels[[2]],
                                                        y = ans.expected@datasets[[2]],
                                                        exposure = ans.expected@datasets[[2]])
-    expect_identical(ans.obtained, ans.expected)    
+    expect_identical(ans.obtained, ans.expected)
 })
 
 
@@ -2245,6 +2245,8 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
     }
     if (!updated)
         warning("not updated")
+    if (!is.small)
+        warning("not small update")
 })
 
 
@@ -2875,7 +2877,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
         set.seed(seed)
         x1 <- updateProposalAccount(x0)
         while (!x1@generatedNewProposal@.Data)
-            x1 <- updateProposalAccount(x1)        
+            x1 <- updateProposalAccount(x1)
         ans.obtained <- updateValuesAccount(x1)
         ans.expected <- x1
         ans.expected <- updateCellMove(ans.expected)
@@ -3110,7 +3112,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
-        expect_equal(ans.obtained, ans.expected)        
+        expect_equal(ans.obtained, ans.expected)
     ## time third of 3 dimensions
     population <- Counts(array(101:112,
                                dim = c(3, 2, 2),
@@ -3155,7 +3157,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
-        expect_equal(ans.obtained, ans.expected)        
+        expect_equal(ans.obtained, ans.expected)
 })
 
 test_that("R and C versions of updatedExpectedExposure give same answer with CombinedAccountMovements - no age", {
@@ -3386,7 +3388,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
-        expect_equal(ans.obtained, ans.expected)        
+        expect_equal(ans.obtained, ans.expected)
     ## time third of 3 dimensions
     population <- Counts(array(101:112,
                                dim = c(3, 2, 2),
@@ -3431,7 +3433,7 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
-        expect_equal(ans.obtained, ans.expected)        
+        expect_equal(ans.obtained, ans.expected)
 })
 
 test_that("R and C give same answer for updatedExpectedExposure with CombinedAccountMovementsHasAge", {
@@ -3565,16 +3567,16 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
 })
 
 test_that("updateSystemModels works with CombinedAccountMovements", {
-    updateSystemModels <- demest:::updateSystemModels    
+    updateSystemModels <- demest:::updateSystemModels
     updateAccount <- demest:::updateAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     updateModelUseExp <- demest:::updateModelUseExp
     collapse <- dembase::collapse
-    ## Possibilities for models: 
+    ## Possibilities for models:
     ## uses exposure, is births, does not have transform from the transforms.exp.to.comp list DONE
-    ## uses exposure, is births, has transform from the transforms.exp.to.comp list 
+    ## uses exposure, is births, has transform from the transforms.exp.to.comp list
     ## uses exposure, not is births, does not have transform from the transforms.exp.to.comp list DONE
     ## uses exposure, not is births, has transform from the transforms.exp.to.comp list
     ## does not use exposure, is Normal DONE
@@ -3735,15 +3737,15 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
 
 
 test_that("R and C versions of updateSystemModels give same answer with CombinedAccountMovements", {
-    updateSystemModels <- demest:::updateSystemModels    
+    updateSystemModels <- demest:::updateSystemModels
     updateAccount <- demest:::updateAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     updateModelUseExp <- demest:::updateModelUseExp
-    ## Possibilities for models: 
+    ## Possibilities for models:
     ## uses exposure, is births, does not have transform from the transforms.exp.to.comp list DONE
-    ## uses exposure, is births, has transform from the transforms.exp.to.comp list 
+    ## uses exposure, is births, has transform from the transforms.exp.to.comp list
     ## uses exposure, not is births, does not have transform from the transforms.exp.to.comp list DONE
     ## uses exposure, not is births, has transform from the transforms.exp.to.comp list
     ## does not use exposure, is Normal DONE
