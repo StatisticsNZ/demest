@@ -2953,15 +2953,6 @@ updateCellMove(SEXP combined_R)
 
     int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
 
-    /*
-    PrintValue(mkString("isSmallUpdate"));
-    PrintValue(ScalarInteger(isSmallUpdate));
-
-    PrintValue(mkString("diff"));
-    PrintValue(ScalarInteger(diff));
-    */
-
-
     int isPopn = (iComp_r == 0);
     int isPool = (iComp_r == iPool_r);
     int isIntNet = (iComp_r == iIntNet_r);

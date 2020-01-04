@@ -9805,13 +9805,9 @@ test_that("R and C versions of updateCellMove give same answer", {
         ## updating component
         x0 <- x
         x0@iComp <- 3L
-        x1 <- updateProposalAccountMoveComp(x0)
+        x1 <- updateProposalAccountMoveCompSmall(x0)
         if (x1@generatedNewProposal@.Data) {
             tested.comp <- TRUE
-            ## debugging printing to see if isSmallUpdate is actually set here
-            print("x1@isSmallUpdate@.Data")
-            print(x1@isSmallUpdate@.Data)
-            ## end of debugging printing
             ans.R <- updateCellMove(x1, useC = FALSE)
             ans.C <- updateCellMove(x1, useC = TRUE)
             expect_identical(ans.R, ans.C)
