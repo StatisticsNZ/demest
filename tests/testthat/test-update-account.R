@@ -9493,7 +9493,6 @@ test_that("R and C versions of updateAccSmall give same answer", {
         warning("deaths not updated")
 })
 
-
 test_that("updateCellMove works", {
     updateCellMove <- demest:::updateCellMove
     updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
@@ -9653,10 +9652,6 @@ test_that("updateCellMove works", {
                          x1@account@components[[3]][x1@iCellOther] - x1@diffProp)
         }
     }
-    if (!tested.popn)
-        warning("updateCellMove not tested with popn")
-    if (!tested.orig.dest)
-        warning("updateCellMove not tested with orig-dest")
     if (!tested.comp)
         warning("updateCellMove not tested with comp")
 })
