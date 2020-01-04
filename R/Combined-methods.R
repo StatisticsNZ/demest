@@ -792,7 +792,7 @@ setMethod("updateCombined",
 ## Accounts
 
 ## READY_TO_TRANSLATE (AGAIN)
-## JAH 4 Jan 2020: not all changes for small updates picked up in tests
+## JAH 4 Jan 2020: re-translated but not all changes for small updates picked up in tests
 ## HAS_TESTS
 setMethod("diffLogDensAccount",
           signature(combined = "CombinedAccountMovements"),

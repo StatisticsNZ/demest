@@ -833,6 +833,14 @@ SEXP chooseICellComp_R(SEXP description_R)
     return ScalarInteger(ans);
 }
 
+/* one off wrapper for chooseICellCompUpperTri */
+SEXP chooseICellCompUpperTri_R(SEXP description_R)
+{
+    GetRNGstate();
+    int ans = chooseICellCompUpperTri(description_R);
+    PutRNGstate();
+    return ScalarInteger(ans);
+}
 /* one off wrapper for chooseICellOutInPool */
 SEXP chooseICellOutInPool_R(SEXP description_R)
 {
@@ -1793,6 +1801,7 @@ updateAccount_R(SEXP object_R)
 
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePopn);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveBirths);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveBirthsSmall);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveOrigDest);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePool);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveNet);
@@ -2478,6 +2487,7 @@ R_CallMethodDef callMethods[] = {
 
   /* description helpers */
   CALLDEF(chooseICellComp_R, 1),
+  CALLDEF(chooseICellCompUpperTri_R, 1),
   CALLDEF(chooseICellOutInPool_R, 1),
   CALLDEF(chooseICellPopn_R, 1),
   CALLDEF(chooseICellSubAddNet_R, 1),
@@ -2592,6 +2602,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateAccount_R, 1),
   CALLDEF(updateProposalAccountMovePopn_R, 1),
   CALLDEF(updateProposalAccountMoveBirths_R, 1),
+  CALLDEF(updateProposalAccountMoveBirthsSmall_R, 1),
   CALLDEF(updateProposalAccountMoveOrigDest_R, 1),
   CALLDEF(updateProposalAccountMovePool_R, 1),
   CALLDEF(updateProposalAccountMoveNet_R, 1),

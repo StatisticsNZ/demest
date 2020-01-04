@@ -3238,6 +3238,7 @@ updateAccSmall <- function(combined, useC = FALSE) {
 
 
 ## READY_TO_TRANSLATE (AGAIN)
+## JAH 4 Jan 2020: re-translated but not all changes for small updates picked up in tests
 ## HAS_TESTS
 updateCellMove <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
