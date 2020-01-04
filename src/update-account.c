@@ -301,6 +301,157 @@ updateProposalAccountMoveBirths(SEXP combined_R)
 
 
 void
+updateProposalAccountMoveBirthsSmall(SEXP combined_R)
+{
+#if(0)
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    int iComp = iComp_r - 1;
+
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    SEXP component_R = VECTOR_ELT(components_R, iComp);
+
+    int maxAttempt = *INTEGER(GET_SLOT(combined_R, maxAttempt_sym));
+    //int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
+
+    //SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToExp_sym);
+    //SEXP mappingToExp_R = VECTOR_ELT(mappingsToExp_R, iComp);
+
+    //SEXP iteratorPopn_R = GET_SLOT(combined_R, iteratorPopn_sym);
+
+    int * usesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
+    int usesExposure = usesExposureVec[iComp + 1];
+
+    SEXP mappingsToExp_R = GET_SLOT(combined_R, mappingsToExp_sym);
+    SEXP mappingToExp_R = VECTOR_ELT(mappingsToExp_R, iComp);
+
+    SEXP descriptions_R = GET_SLOT(combined_R, descriptions_sym);
+    SEXP description_R = VECTOR_ELT(descriptions_R, iComp + 1);
+
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, iComp + 1);
+    //double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
+    int * strucZeroArray = INTEGER(GET_SLOT(thisSystemModel_R, strucZeroArray_sym));
+
+    int i_cell_up_r = 0;
+    int isStrucZero;
+    int generatedNewProposal = 0;
+
+    for (int i = 0; i < maxAttempt; i++) {
+        i_cell_up_r = chooseICellCompUpperTri(description_R);
+        int iCell = iCell_r - 1;
+        isStrucZero = strucZeroArray[iCell] == 0;
+        if (!isStrucZero) {
+            generatedNewProposal = 1;
+            break;
+        }
+    }
+
+    int iExpFirst_r = getIExpFirstFromBirths(iCell_r, mappingToExp_R);
+    int iPopnNext_r = getIPopnNextFromComp(iCell_r, mappingToPopn_R);
+    int minVal = getMinValCohortPopulation(iPopnNext_r, population_R,
+                                                        iteratorPopn_R);
+    int iAccNext_r = 0;
+    int isLowerTriangleValueValue = 0;
+
+    if (hasAge) {
+
+        isLowerTriangleValueValue = isLowerTriangle(iCell_r, description_R);
+
+        SEXP accession_R = GET_SLOT(combined_R, accession_sym);
+        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
+
+        SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
+        SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, iComp);
+
+        iAccNext_r = getIAccNextFromComp(iCell_r, mappingToAcc_R);
+
+        int hasLaterAccession = (iAccNext_r > 0);
+
+        if (hasLaterAccession) {
+
+            int minAcc = getMinValCohortAccession(iAccNext_r, accession_R,
+                                                        iteratorAcc_R);
+            if (minAcc < minVal) {
+                minVal = minAcc;
+            }
+        }
+    } /* end hasAge */
+
+    int * component = INTEGER(component_R);
+    int diffProp = 0;
+    int iExposure_r = 0;
+
+    if (generatedNewProposal) {
+
+        int valCurr = component[iCell];
+        int lower = valCurr - minVal;
+        int upper = NA_INTEGER;
+
+        double thetaCell = theta[iCell];
+
+        double lambda = thetaCell;
+
+        if(usesExposure) {
+            double * expectedExposure = REAL(GET_SLOT(combined_R, expectedExposure_sym));
+            iExposure_r = getIExposureFromBirths(iCell_r, mappingToExp_R);
+            int iExposure = iExposure_r - 1;
+            double expectedExposureCell = expectedExposure[iExposure];
+            lambda *= expectedExposureCell;
+        }
+
+        int valProp = rpoisTrunc1(lambda, lower, upper, maxAttempt);
+
+        int foundValue = !(valProp == NA_INTEGER);
+
+        /* printf("valCurr %d, valProp %d, thetaCell %f, lambda %f\n", */
+        /*        valCurr, valProp, thetaCell, lambda); */
+
+        if(foundValue) {
+            diffProp = valProp - valCurr;
+            generatedNewProposal = (diffProp != 0);
+        }
+        else {
+            generatedNewProposal = 0;
+        }
+
+    } /* end generatedNewProposal */
+
+    SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
+
+    if (!generatedNewProposal) {
+         iCell_r = NA_INTEGER;
+         iPopnNext_r = NA_INTEGER;
+         iAccNext_r = NA_INTEGER;
+         isLowerTriangleValueValue = NA_LOGICAL;
+         iExposure_r = NA_INTEGER;
+         iExpFirst_r = NA_INTEGER;
+         diffProp = NA_INTEGER;
+    }
+
+    SET_INTSCALE_SLOT(combined_R, iCell_sym, iCell_r);
+    SET_INTSCALE_SLOT(combined_R, iCellOther_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iPopnNext_sym, iPopnNext_r);
+    SET_INTSCALE_SLOT(combined_R, iPopnNextOther_sym, NA_INTEGER);
+
+    if (hasAge) {
+        SET_INTSCALE_SLOT(combined_R, iAccNext_sym, iAccNext_r);
+        SET_INTSCALE_SLOT(combined_R, iAccNextOther_sym, NA_INTEGER);
+        SET_LOGICALSCALE_SLOT(combined_R, isLowerTriangle_sym, isLowerTriangleValueValue);
+    }
+
+    SET_INTSCALE_SLOT(combined_R, iExposure_sym, iExposure_r);
+    SET_INTSCALE_SLOT(combined_R, iExposureOther_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iExpFirst_sym, iExpFirst_r);
+    SET_INTSCALE_SLOT(combined_R, iExpFirstOther_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, diffProp_sym, diffProp);
+#endif
+}
+
+
+void
 updateProposalAccountMoveOrigDest(SEXP combined_R)
 {
     SEXP account_R = GET_SLOT(combined_R, account_sym);
@@ -2797,8 +2948,19 @@ updateCellMove(SEXP combined_R)
     int iCellOther_r = *INTEGER(GET_SLOT(combined_R, iCellOther_sym));
     int iPool_r = *INTEGER(GET_SLOT(combined_R, iPool_sym));
     int iIntNet_r = *INTEGER(GET_SLOT(combined_R, iIntNet_sym));
+    int isSmallUpdate = *LOGICAL(GET_SLOT(combined_R, isSmallUpdate_sym));
+
 
     int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+
+    /*
+    PrintValue(mkString("isSmallUpdate"));
+    PrintValue(ScalarInteger(isSmallUpdate));
+
+    PrintValue(mkString("diff"));
+    PrintValue(ScalarInteger(diff));
+    */
+
 
     int isPopn = (iComp_r == 0);
     int isPool = (iComp_r == iPool_r);
@@ -2824,7 +2986,7 @@ updateCellMove(SEXP combined_R)
             component[iCell] += diff;
             component[iCellOther] += diff;
         }
-        else if(isIntNet) {
+        else if(isIntNet || isSmallUpdate) {
             component[iCell] += diff;
             component[iCellOther] -= diff;
         }

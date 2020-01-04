@@ -278,7 +278,7 @@ rcateg1 <- function(cumProb, useC = FALSE) {
 #'
 #' Internally, the functions all call the corresponding functions
 #' for the \code{\link[=TDist]{t distribution}}.
-#' 
+#'
 #' @param x Vector of quantiles.
 #' @param p Vector of quantiles.
 #' @param q Vector of probabilities.
@@ -323,7 +323,7 @@ rhalft <- function(n, df, scale = 1) {
     scale * abs(ans)
 }
 
-## HAS_TESTS        
+## HAS_TESTS
 #' @rdname halft-distn
 #' @export
 qhalft <- function(p, df, scale = 1) {
@@ -710,8 +710,8 @@ rtnorm1 <- function(mean = 0, sd = 1, lower = -Inf, upper = Inf,
                 x <- stats::rnorm(n = 1L) # sample from standard normal
                 while (x < l | x > u) { # while there are rejections
                     x <- stats::rnorm(n = 1L)
-                } 
-                ans <- x         
+                }
+                ans <- x
             }
             else { # abs(u-l)<tol, uses inverse-transform
                 pl <- stats::pnorm(q = l)
@@ -719,7 +719,7 @@ rtnorm1 <- function(mean = 0, sd = 1, lower = -Inf, upper = Inf,
                 u <- stats::runif(n = 1L)
                 trans <- pl + (pu - pl) * u
                 ans <- stats::qnorm(p = trans)
-            }      
+            }
         }
         ans * sd + mean
     }
@@ -892,10 +892,10 @@ betaHat <- function(prior, useC = FALSE) {
             alpha.icar <- prior@alphaICAR@.Data
             ans <- ans + alpha.icar
         }
-        if (has.alpha.mix) { 
-            alpha.mix <- prior@alphaMix@.Data 
-            ans <- ans + alpha.mix 
-        } 
+        if (has.alpha.mix) {
+            alpha.mix <- prior@alphaMix@.Data
+            ans <- ans + alpha.mix
+        }
         if (has.covariates) {
             Z <- unname(prior@Z)
             eta <- prior@eta@.Data
@@ -1136,7 +1136,7 @@ findOneRootLogPostSigmaNorm <- function(sigma0, z, A, nu, V, n, min, max,
                 g1 <- (f1 - z)^2
                 if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
                     break
-                rho <- rho / 2 
+                rho <- rho / 2
                 sigma1 <- sigma0 - rho * (f0 - z) / f0prime
             }
             if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
@@ -1261,7 +1261,7 @@ findOneRootLogPostSigmaRobust <- function(sigma0, z, A, nuBeta, nuTau, V, n, min
                 g1 <- (f1 - z)^2
                 if (g1 <= g0 || abs(g1 - g0) < kTolerance || (rho < kTolerance))
                     break
-                rho <- rho / 2 
+                rho <- rho / 2
                 sigma1 <- sigma0 - rho * (f0 - z) / f0prime
             }
             if ((abs(g1 - g0) < kTolerance) || (rho < kTolerance))
@@ -1297,7 +1297,7 @@ getV <- function(prior, useC = FALSE) {
         if (is.norm) {
             tau <- prior@tau@.Data
             ans <- rep(tau^2, times = J)
-        }            
+        }
         else if (is.robust)
             ans <- prior@UBeta@.Data
         else if (is.known.uncertain) {
@@ -1530,7 +1530,7 @@ makeLifeExpBirth <- function(mx, nx, ax, iAge0, nAge,
     ## mx and iAge0
     stopifnot(iAge0 <= length(mx))
     ## mx and nAge
-    stopifnot(nAge <= length(mx))    
+    stopifnot(nAge <= length(mx))
     if (useC) {
         .Call(makeLifeExpBirth_R, mx, nx, ax, iAge0, nAge)
     }
@@ -1674,7 +1674,7 @@ modePhiMix <- function(level, meanLevel, nAlong,
                 if (phi.new > 1 - tolerance)
                     phi.new <- 1 - tolerance
                 if (phi.new < -1 + tolerance)
-                    phi.new <- -1 + tolerance                    
+                    phi.new <- -1 + tolerance
                 log.post.new <- logPostPhiMix(phi = phi.new,
                                               level = level,
                                               meanLevel = meanLevel,
@@ -2735,7 +2735,7 @@ fetchResultsObject <- function(filename) {
 ## HAS_TESTS
 fetchInner <- function(object, nameObject, where, iterations,
                        filename, lengthIter, nIteration,
-                       listsAsSingleItems, 
+                       listsAsSingleItems,
                        impute = FALSE) {
     n.where <- length(where)
     if (n.where == 0L) {
@@ -2881,16 +2881,16 @@ foldMCMCList <- function(l) {
         ans[[i.new.second]] <- second
     }
     coda::mcmc.list(ans)
-}    
+}
 
 #' Obtain potential scale reduction factors (Rhats).
 #'
 #' Extract potential scale reduction factors (Rhats) from an object of
 #' class \code{\linkS4class{SummaryResults}}. See the documentation for
 #' \code{\link{fetchSummary}} for details.
-#' 
+#'
 #' @param object An object of class \code{\linkS4class{SummaryResults}}.
-#' 
+#'
 #' @return A named numeric vector.
 #'
 #' @seealso  \code{\link{fetchSummary}}
@@ -3249,7 +3249,7 @@ makeMCMCPriorsBetas <- function(priors, names) {
                SIMPLIFY = FALSE,
                USE.NAMES = FALSE)
     else
-        NULL        
+        NULL
 }
 
 ## HAS_TESTS
@@ -3330,19 +3330,19 @@ makeParameters <- function(object, filename) {
 }
 
 #' Extract information on Metropolis-Hastings updates.
-#' 
+#'
 #' Given an object of class \code{\linkS4class{SummaryResults}}, extract
 #' the standard deviation of the proposal density, the proportion of
 #' proposals accepted, and autocorrelation, for Metropolis-Hastings updates.
 #' See the documentation for \code{\link{fetchSummary}} for details.
 #'
 #' @param object An object of class \code{\linkS4class{SummaryResults}}.
-#' 
+#'
 #' @return If Metropolis-Hastings updates where carried out, a matrix;
 #' otherwise \code{NULL}.
 #'
 #' @seealso \code{\link{fetchSummary}}
-#' 
+#'
 #' @examples
 #' library(demdata)
 #' deaths <- Counts(round(VADeaths2))
@@ -3367,14 +3367,14 @@ metropolis <- function(object) {
 
 
 #' Extract summaries of parameter estimates from a SummaryResults object.
-#' 
+#'
 #' Given an object of class \code{\linkS4class{SummaryResults}}, extract
 #' a data.frame containing summaries of parameter estimates.
 #' See the documentation for \code{\link{fetchSummary}} for details
 #' of the summaries.
-#' 
+#'
 #' @param object An object of class \code{\linkS4class{SummaryResults}}.
-#' 
+#'
 #' @return A data.frame.
 #'
 #' @seealso \code{\link{fetchSummary}}
@@ -3616,7 +3616,7 @@ chooseICellComp <- function(description, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## like chooseICellComp, but restricted to upper Lexis triangles
 chooseICellCompUpperTri <- function(description, useC = FALSE) {
@@ -3640,10 +3640,10 @@ chooseICellCompUpperTri <- function(description, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-chooseICellOutInPool <- function(description, useC = FALSE) { 
+chooseICellOutInPool <- function(description, useC = FALSE) {
     stopifnot(methods::is(description, "DescriptionPool"))
     if (useC) {
-        .Call(chooseICellOutInPool_R, description) 
+        .Call(chooseICellOutInPool_R, description)
     }
     else {
         step.direction <- description@stepDirection
@@ -3653,12 +3653,12 @@ chooseICellOutInPool <- function(description, useC = FALSE) {
         step.within.vec <- description@stepWithinVec
         n.dim.between <- length(n.between.vec)
         n.dim.within <- length(n.within.vec)
-        i.out <- 1L  # assume 'outs' come before 'ins' 
+        i.out <- 1L  # assume 'outs' come before 'ins'
         i.in <- 1L + step.direction
         for (d in seq_len(n.dim.between)) {
             n.between <- n.between.vec[d]  # guaranteed > 1
             step.between <- step.between.vec[d]
-            i.between.out <- as.integer(stats::runif(n = 1L) * n.between) # C-style  
+            i.between.out <- as.integer(stats::runif(n = 1L) * n.between) # C-style
             if (i.between.out == n.between) # just in case
                 i.between.out <- n.between - 1L
             i.between.in <- as.integer(stats::runif(n = 1L) * (n.between - 1L)) # C-style
@@ -3708,10 +3708,10 @@ chooseICellPopn <- function(description, useC = FALSE) {
 ## This function is almost identical to 'chooseICellOutInPool', but
 ## it seems clearest to keep them separate, even at the cost
 ## of some cut-and-paste.
-chooseICellSubAddNet <- function(description, useC = FALSE) { 
+chooseICellSubAddNet <- function(description, useC = FALSE) {
     stopifnot(methods::is(description, "DescriptionNet"))
     if (useC) {
-        .Call(chooseICellSubAddNet_R, description) 
+        .Call(chooseICellSubAddNet_R, description)
     }
     else { # different from 'chooseICellOutInPool', because do not extract 'step.direction'
         n.between.vec <- description@nBetweenVec
@@ -3725,7 +3725,7 @@ chooseICellSubAddNet <- function(description, useC = FALSE) {
         for (d in seq_len(n.dim.between)) {
             n.between <- n.between.vec[d]  # guaranteed > 1
             step.between <- step.between.vec[d]
-            i.between.sub <- as.integer(stats::runif(n = 1L) * n.between) # C-style  
+            i.between.sub <- as.integer(stats::runif(n = 1L) * n.between) # C-style
             if (i.between.sub == n.between) # just in case
                 i.between.sub <- n.between - 1L
             i.between.add <- as.integer(stats::runif(n = 1L) * (n.between - 1L)) # C-style
@@ -3750,7 +3750,7 @@ chooseICellSubAddNet <- function(description, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE    
+## READY_TO_TRANSLATE
 ## HAS_TESTS
 ## get lower Lexis triangle cell from within same age-period square
 ## as triangle indexed by iCellUp
@@ -3825,7 +3825,7 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
     if (useC) {
         .Call(getIAccNextFromPopn_R, i, description)
     }
-    else {            
+    else {
         n.time.popn <- description@nTime
         n.age.popn <- description@nAge
         step.time.popn <- description@stepTime
@@ -3876,7 +3876,7 @@ getIExpFirstFromPopn <- function(i, description, useC = FALSE) {
     if (useC) {
         .Call(getIExpFirstFromPopn_R, i, description)
     }
-    else {            
+    else {
         n.time.popn <- description@nTime
         step.time <- description@stepTime
         length.popn <- description@length
@@ -3932,7 +3932,7 @@ getIPopnNextFromPopn <- function(i, description, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {  
+getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
@@ -3948,9 +3948,9 @@ getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {
     if (useC) {
         .Call(getMinValCohortAccession_R, i, series, iterator)
     }
-    else {              
+    else {
         ans <- series[i]
-        iterator <- resetCA(iterator, i = i)  
+        iterator <- resetCA(iterator, i = i)
         while (!iterator@finished) {
             iterator <- advanceCA(iterator)
             i <- iterator@i
@@ -3963,7 +3963,7 @@ getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {  
+getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
@@ -3979,9 +3979,9 @@ getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
     if (useC) {
         .Call(getMinValCohortPopulation_R, i, series, iterator)
     }
-    else {              
+    else {
         ans <- series[i]
-        iterator <- resetCP(iterator, i = i)  
+        iterator <- resetCP(iterator, i = i)
         while (!iterator@finished) {
             iterator <- advanceCP(iterator)
             i <- iterator@i
@@ -4009,7 +4009,7 @@ makeTransformExpToBirths <- function(exposure, births,
     indices <- lapply(dimBefore, seq_len)
     if (has.sex.exp) {
         DimScale <- DimScales.exp[[i.sex.exp]]
-        if (dominant == "Female") 
+        if (dominant == "Female")
             i.dominant <- dembase::iFemale(DimScale)
         else
             i.dominant <- dembase::iMale(DimScale)
@@ -4213,7 +4213,7 @@ makeOutputAccount <- function(account, systemModels, pos) {
 
 ## TRANSLATED
 ## HAS_TESTS
-# The CMP desity function is f(y|theta,nu)= (theta^y/y!)^nu*1/Z(theta,nu), 
+# The CMP desity function is f(y|theta,nu)= (theta^y/y!)^nu*1/Z(theta,nu),
 # Z(theta,nu) is the intractable normalising constant
 # So f is split in two parts: Z and q(y|theta,nu)=(theta^y/y!)^nu
 logDensCMPUnnormalised1 <- function(x, gamma, nu, useC = FALSE) {
@@ -4269,7 +4269,7 @@ rcmpUnder <- function(mu, nu, maxAttempt, useC = FALSE) {
             logy <- lgamma(ynew + 1)
             log_a <- (nu - 1) * (log(mu) * (ynew - fl) - logy + logm)
             u <- log(stats::runif(n = 1L))
-            if(u < log_a) 
+            if(u < log_a)
                 return(ynew)
         }
         return(-Inf)
@@ -4306,7 +4306,7 @@ rcmpOver <- function(mu, nu, maxAttempt, useC = FALSE) {
             logy <- lgamma(ynew + 1)
             log_a <- (ynew - fl) * (nu * log(mu) - log1p(-p)) + nu * (logfl - logy)
             u <- log(stats::runif(n = 1L))
-            if(u < log_a) 
+            if(u < log_a)
                 return(ynew)
         }
         return(-Inf)

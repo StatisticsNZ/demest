@@ -1013,6 +1013,7 @@ SEXP overwriteValuesOnFile_R(SEXP object_R, SEXP skeleton_R,
 
 /* description helpers */
 int chooseICellComp(SEXP description_R);
+int chooseICellCompUpperTri(SEXP description_R);
 SEXP chooseICellOutInPool(SEXP description_R);
 int chooseICellPopn(SEXP description_R);
 SEXP chooseICellSubAddNet(SEXP description_R);
@@ -1048,6 +1049,7 @@ double rcmp1(double mu, double nu, int maxAttempt);
 void updateAccount(SEXP combined_R);
 void updateProposalAccountMovePopn(SEXP combined_R);
 void updateProposalAccountMoveBirths(SEXP combined_R);
+void updateProposalAccountMoveBirthsSmall(SEXP combined_R);
 void updateProposalAccountMoveOrigDest(SEXP combined_R);
 void updateProposalAccountMovePool(SEXP combined_R);
 void updateProposalAccountMoveNet(SEXP combined_R);
