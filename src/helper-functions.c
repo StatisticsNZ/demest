@@ -140,41 +140,70 @@ rcateg1(double *cumProb)
     return i+1; /* return R-style index form */
 }
 
+int
+rbinomTrunc1(int size, double prob, int lower, int upper, int maxAttempt)
+{
+    if( (lower == NA_INTEGER) || (lower < 0) ) {
+        lower= 0;
+    }
+    if( (upper == NA_INTEGER) || (upper > size) ) {
+        upper = size;
+    }
+
+    int ans = NA_INTEGER;
+    if (lower == upper) {
+        ans = lower;
+    }
+    else {
+        int found = 0;
+        int i = 0;
+        int prop_value = NA_INTEGER;
+        while (!found && i < maxAttempt) {
+            prop_value = rbinom(size, prob);
+            /* R's rbinom takes double args and returns double */
+
+            found = ( !(lower > prop_value) && !(prop_value > upper) );
+            ++i;
+        }
+        if (found) {
+            ans = (int)prop_value;
+        } /* else ans stays as NA_INTEGER */
+    }
+    return ans;
+}
 
 double
 rhalftTrunc1(double df, double scale, double max)
 {
-  if (scale > 0) {
-    int kMaxAttempt = 1000;
-    int i = 0;
-    double ans = 0;
-    int found = 0;
-    while(!found && (i < kMaxAttempt)) {
-      double t = rt(df);
-      ans = scale * fabs(t);
-      if (ans < max) {
-    found = 1;
-      }
-      ++i;
-    }
-    if (!found) {
-      error("unable to generate value for truncated half-t (consider using higher maximum value)");
+    double ans = 0.0;
+    if (scale > 0) {
+        int kMaxAttempt = 1000;
+        int i = 0;
+        int found = 0;
+        while(!found && (i < kMaxAttempt)) {
+            double t = rt(df);
+            ans = scale * fabs(t);
+            if (ans < max) {
+                found = 1;
+            }
+            ++i;
+        }
+        if (!found) {
+            error("unable to generate value for truncated half-t (consider using higher maximum value)");
+        }
     }
     return ans;
-  }
-  else
-    return 0;
 }
 
 double
 rinvchisq1(double df, double scaleSq)
 {
-  if (scaleSq > 0) {
-    double x = rgamma(df / 2.0, 2.0);
-    return df * scaleSq / x;
-  }
-  else
-    return 0;
+    double ans = 0.0;
+    if (scaleSq > 0) {
+        double x = rgamma(df / 2.0, 2.0);
+        ans = df * scaleSq / x;
+    }
+    return ans;
 }
 
 SEXP
@@ -3334,27 +3363,6 @@ chooseICellComp(SEXP description_R)
     return i_R;
 }
 
-/*## READY_TO_TRANSLATE
-## HAS_TESTS
-## like chooseICellComp, but restricted to upper Lexis triangles
-chooseICellCompUpperTri <- function(description, useC = FALSE) {
-    stopifnot(methods::is(description, "DescriptionComp"))
-    stopifnot(description@hasAge) # implies has triangles
-    if (useC) {
-        .Call(chooseICellCompUpperTri_R, description)
-    }
-    else {
-        length <- description@length
-        step <- description@stepTriangle
-        half_length <- description@length / 2L
-        i <- as.integer(stats::runif(n = 1L) * half_length) # C-style
-        if (i == half_length) # just in case
-            i <- half_length - 1L
-        i <- (i %/% step) * (2L * step) + (i %% step) + step
-        i <- i + 1L # R-style
-        i
-    }
-}*/
 
 int
 chooseICellCompUpperTri(SEXP description_R)
@@ -3467,6 +3475,7 @@ chooseICellSubAddNet(SEXP description_R)
     return ans_R;
 }
 
+
 /* ans must have 2 elements */
 void
 chooseICellSubAddNetInternal(int *ans, SEXP description_R)
@@ -3518,6 +3527,32 @@ chooseICellSubAddNetInternal(int *ans, SEXP description_R)
 
 
 int
+getICellLowerTriFromComp(int i_cell_up_r, SEXP description_R)
+{
+    int step = *INTEGER(GET_SLOT(description_R, stepTriangle_sym));
+    int ans = i_cell_up_r - step;
+    return ans;
+}
+
+
+int
+getICellLowerTriNextFromComp(int i_cell_up_r, SEXP description_R)
+{
+    int step_age = *INTEGER(GET_SLOT(description_R, stepAge_sym));
+    int n_age = *INTEGER(GET_SLOT(description_R, nAge_sym));
+    int step_triangle = *INTEGER(GET_SLOT(description_R, stepTriangle_sym));
+    int i_age = ((i_cell_up_r - 1) / step_age) % n_age;
+    int is_final_age_group = (i_age == (n_age - 1));
+    int ans = i_cell_up_r - step_triangle + step_age;
+    if (is_final_age_group) {
+        ans = i_cell_up_r - step_triangle;
+    }
+
+    return ans;
+}
+
+
+int
 isLowerTriangle(int i, SEXP description_R)
 {
     int stepTriangle = *INTEGER(GET_SLOT(description_R, stepTriangle_sym));
@@ -3565,7 +3600,6 @@ getIExpFirstFromPopn(int i, SEXP description_R)
     int lengthPopn = *INTEGER(GET_SLOT(description_R, length_sym));
 
     int nTimePopnTimesStepTime = nTimePopn * stepTime;
-
     int nTimeExp = nTimePopn - 1;
     int iNonTime = (i - 1) / nTimePopnTimesStepTime; /* integer div */
     int remainder = (i - 1) - iNonTime * nTimePopnTimesStepTime + 1;
@@ -3605,7 +3639,6 @@ getIPopnNextFromPopn(int i, SEXP description_R)
             }
         }
     }
-
     return iPopnNext;
 }
 
@@ -3621,7 +3654,6 @@ getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
     int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
 
     while(!(finished)) {
-
         advanceCA(iterator_R);
         i = *INTEGER(GET_SLOT(iterator_R, i_sym));
         int check = series[i - 1];
@@ -3632,7 +3664,6 @@ getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
         finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
 
     }
-
     return ans;
 }
 
@@ -3648,7 +3679,6 @@ getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R)
     int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
 
     while(!(finished)) {
-
         advanceCP(iterator_R);
         i = *INTEGER(GET_SLOT(iterator_R, i_sym));
 

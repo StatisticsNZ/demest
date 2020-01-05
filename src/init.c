@@ -896,6 +896,8 @@ MAPPING_GET_I_WRAPPER(getIExpFirstFromBirths);
 MAPPING_GET_IVEC_WRAPPER(getIExpFirstPairFromOrigDest);
 MAPPING_GET_I_WRAPPER(getICellCompFromExp);
 MAPPING_GET_I_WRAPPER(getICellBirthsFromExp);
+MAPPING_GET_I_WRAPPER(getICellLowerTriFromComp);
+MAPPING_GET_I_WRAPPER(getICellLowerTriNextFromComp);
 
 /* one off wrapper for getMinValCohortAccession */
 SEXP getMinValCohortAccession_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
@@ -1066,6 +1068,20 @@ rcateg1_R(SEXP cumProb_R)
 {
     GetRNGstate();
     int ans = rcateg1( REAL(cumProb_R) );
+    PutRNGstate();
+    return ScalarInteger(ans);
+}
+
+/* create one-off R version wrapper for rhbinomTrunc1_R */
+SEXP
+rbinomTrunc1_R(SEXP size_R, SEXP prob_R, SEXP lower_R, SEXP upper_R, SEXP maxAttempt_R)
+{
+    GetRNGstate();
+    int ans = rbinomTrunc1(*INTEGER(size_R),
+                                *REAL(prob_R),
+                                *INTEGER(lower_R),
+                                *INTEGER(upper_R),
+                                *INTEGER(maxAttempt_R));
     PutRNGstate();
     return ScalarInteger(ans);
 }
@@ -1803,6 +1819,7 @@ UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePopn);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveBirths);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveBirthsSmall);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveOrigDest);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveOrigDestSmall);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePool);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveNet);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveComp);
@@ -2217,6 +2234,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(invlogit1_R, 1),
   CALLDEF(rcateg1_R, 1),
   CALLDEF(rinvchisq1_R, 2),
+  CALLDEF(rbinomTrunc1_R, 5),
   CALLDEF(rhalftTrunc1_R, 3),
   CALLDEF(rmvnorm1_R, 2),
   CALLDEF(rmvnorm2_R, 2),
@@ -2512,6 +2530,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getIExpFirstPairFromOrigDest_R, 2),
   CALLDEF(getICellCompFromExp_R, 2),
   CALLDEF(getICellBirthsFromExp_R, 2),
+  CALLDEF(getICellLowerTriFromComp_R, 2),
+  CALLDEF(getICellLowerTriNextFromComp_R, 2),
 
   /*predict priors*/
   CALLDEF(predictPrior_R, 1),
@@ -2604,6 +2624,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateProposalAccountMoveBirths_R, 1),
   CALLDEF(updateProposalAccountMoveBirthsSmall_R, 1),
   CALLDEF(updateProposalAccountMoveOrigDest_R, 1),
+    CALLDEF(updateProposalAccountMoveOrigDestSmall_R, 1),
   CALLDEF(updateProposalAccountMovePool_R, 1),
   CALLDEF(updateProposalAccountMoveNet_R, 1),
   CALLDEF(updateProposalAccountMoveComp_R, 1),

@@ -337,7 +337,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Assume has age. Note that accession irrelevant,
 ## since accession applies to cohort being born,
@@ -592,7 +592,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## assume has age
 updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
@@ -616,6 +616,7 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
         theta <- sys.mod.comp@theta
         tol <- sys.mod.comp@tolerance
         struc.zero.array <- sys.mod.comp@strucZeroArray
+        generated.new.proposal  <- FALSE
         for (i in seq_len(max.attempt)) {
             i.cell.up <- chooseICellCompUpperTri(description)
             is.struc.zero <- struc.zero.array[i.cell.up] == 0L
@@ -687,46 +688,47 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
             else
                 generated.new.proposal  <- FALSE
         }
-    }
-    if (generated.new.proposal) {
-        combined@generatedNewProposal@.Data <- TRUE
-        combined@isSmallUpdate@.Data <- TRUE
-        combined@iCell <- i.cell.up
-        combined@iCellOther <- i.cell.low
-        combined@iPopnNext <- NA_integer_
-        combined@iPopnNextOther <- NA_integer_
-        combined@iAccNext <- i.acc.orig
-        combined@iAccNextOther <- i.acc.dest
-        combined@isLowerTriangle@.Data <- FALSE
-        if (uses.exposure) {
-            combined@iExposure <- i.expose.up
-            combined@iExposureOther <- i.expose.low
+
+        if (generated.new.proposal) {
+            combined@generatedNewProposal@.Data <- TRUE
+            combined@isSmallUpdate@.Data <- TRUE
+            combined@iCell <- i.cell.up
+            combined@iCellOther <- i.cell.low
+            combined@iPopnNext <- NA_integer_
+            combined@iPopnNextOther <- NA_integer_
+            combined@iAccNext <- i.acc.orig
+            combined@iAccNextOther <- i.acc.dest
+            combined@isLowerTriangle@.Data <- FALSE
+            if (uses.exposure) {
+                combined@iExposure <- i.expose.up
+                combined@iExposureOther <- i.expose.low
+            }
+            else {
+                combined@iExposure <- 0L
+                combined@iExposureOther <- NA_integer_
+            }
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
+            combined@diffProp <- diff.prop
         }
         else {
-            combined@iExposure <- 0L
+            combined@generatedNewProposal@.Data <- FALSE
+            combined@isSmallUpdate@.Data <- TRUE
+            combined@iCell <- NA_integer_
+            combined@iCellOther <- NA_integer_
+            combined@iPopnNext <- NA_integer_
+            combined@iPopnNextOther <- NA_integer_
+            combined@iAccNext <- NA_integer_
+            combined@iAccNextOther <- NA_integer_
+            combined@isLowerTriangle@.Data <- NA
+            combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
+            combined@diffProp <- NA_integer_
         }
-        combined@iExpFirst <- NA_integer_
-        combined@iExpFirstOther <- NA_integer_
-        combined@diffProp <- diff.prop
+        combined
     }
-    else {
-        combined@generatedNewProposal@.Data <- FALSE
-        combined@isSmallUpdate@.Data <- TRUE
-        combined@iCell <- NA_integer_
-        combined@iCellOther <- NA_integer_
-        combined@iPopnNext <- NA_integer_
-        combined@iPopnNextOther <- NA_integer_
-        combined@iAccNext <- NA_integer_
-        combined@iAccNextOther <- NA_integer_
-        combined@isLowerTriangle@.Data <- NA
-        combined@iExposure <- NA_integer_
-        combined@iExposureOther <- NA_integer_
-        combined@iExpFirst <- NA_integer_
-        combined@iExpFirstOther <- NA_integer_
-        combined@diffProp <- NA_integer_
-    }
-    combined
 }
 
 ## TRANSLATED

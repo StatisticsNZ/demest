@@ -889,7 +889,7 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
     double ans = 0;
 
     if (usePriorPopn && !(isSmallUpdate)) {
-        ans += diffLogDensPopn(object_R); /* not tested */
+        ans += diffLogDensPopn(object_R);
     }
 
     if(isPopn) {
@@ -898,7 +898,7 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
     else if (isOrigDest) {
 
         if (isSmallUpdate) {
-            ans += diffLogDensCompSmall(object_R); /* not tested */
+            ans += diffLogDensCompSmall(object_R);
         }
         else {
 

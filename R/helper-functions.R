@@ -411,7 +411,7 @@ plotHalfT <- function(df = 7, scale = 1, max = 0.999,
 
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## If no lower, upper limit, 'lower', 'upper' NA_integer_
 rbinomTrunc1 <- function(size, prob, lower, upper, maxAttempt, useC = FALSE) {
@@ -3750,7 +3750,7 @@ chooseICellSubAddNet <- function(description, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## get lower Lexis triangle cell from within same age-period square
 ## as triangle indexed by iCellUp
@@ -3758,7 +3758,7 @@ getICellLowerTriFromComp <- function(iCellUp, description, useC = FALSE) {
     stopifnot(methods::is(description, "DescriptionComp"))
     stopifnot(description@hasAge) # implies has triangles
     if (useC) {
-        .Call(getICellLowerTriFromComp_R, description)
+        .Call(getICellLowerTriFromComp_R, iCellUp, description)
     }
     else {
         step <- description@stepTriangle
@@ -3767,7 +3767,7 @@ getICellLowerTriFromComp <- function(iCellUp, description, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## get lower Lexis triangle cell from next oldest age-period square,
 ## or same square if iCellUp refers to oldest age group
@@ -3775,7 +3775,7 @@ getICellLowerTriNextFromComp <- function(iCellUp, description, useC = FALSE) {
     stopifnot(methods::is(description, "DescriptionComp"))
     stopifnot(description@hasAge) # implies has triangles
     if (useC) {
-        .Call(getICellLowerTriNextFromComp_R, description)
+        .Call(getICellLowerTriNextFromComp_R, iCellUp, description)
     }
     else {
         step.age <- description@stepAge
