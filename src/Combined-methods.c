@@ -977,12 +977,18 @@ diffLogLikAccount_CombinedAccountMovements(SEXP object_R)
     int iOrigDest_r = *INTEGER(GET_SLOT(object_R, iOrigDest_sym));
     int iPool_r = *INTEGER(GET_SLOT(object_R, iPool_sym));
     int iIntNet_r = *INTEGER(GET_SLOT(object_R, iIntNet_sym));
+    int isSmallUpdate = *LOGICAL(GET_SLOT(object_R, isSmallUpdate_sym));
 
     if(iComp_r == 0) {
         ans = diffLogLikAccountMovePopn(object_R);
     }
     else if(iComp_r == iOrigDest_r) {
-        ans = diffLogLikAccountMoveOrigDest(object_R);
+        if (isSmallUpdate) {
+            ans = diffLogLikAccountMoveCompSmall(object_R);
+        }
+        else {
+            ans = diffLogLikAccountMoveOrigDest(object_R);
+        }
     }
     else if(iComp_r == iPool_r) {
         ans = diffLogLikAccountMovePool(object_R);
@@ -991,7 +997,12 @@ diffLogLikAccount_CombinedAccountMovements(SEXP object_R)
         ans = diffLogLikAccountMoveNet(object_R);
     }
     else {
-        ans = diffLogLikAccountMoveComp(object_R);
+        if (isSmallUpdate) {
+            ans = diffLogLikAccountMoveCompSmall(object_R);
+        }
+        else {
+            ans = diffLogLikAccountMoveComp(object_R);
+        }
     }
     return ans;
 }
@@ -1020,6 +1031,8 @@ updateProposalAccount_CombinedAccountMovements(SEXP object_R)
 {
 
     double probPopn = *REAL(GET_SLOT(object_R, probPopn_sym));
+    double probSmallUpdate = *REAL(GET_SLOT(object_R, probSmallUpdate_sym));
+    int hasAge = *LOGICAL(GET_SLOT(object_R, hasAge_sym));
 
     double u = runif(0, 1);
     int updatePopn = (u < probPopn);
@@ -1035,15 +1048,28 @@ updateProposalAccount_CombinedAccountMovements(SEXP object_R)
         int iOrigDest_r = *INTEGER(GET_SLOT(object_R, iOrigDest_sym));
         int iPool_r = *INTEGER(GET_SLOT(object_R, iPool_sym));
         int iIntNet_r = *INTEGER(GET_SLOT(object_R, iIntNet_sym));
+        int * isNetVec = LOGICAL(GET_SLOT(object_R, isNet_sym));
 
         int iComp_r = rcateg1(cumProb);
         SET_INTSCALE_SLOT(object_R, iComp_sym, iComp_r);
 
         if(iComp_r == iBirths_r) {
-            updateProposalAccountMoveBirths(object_R);
+            int isSmallUpdate = (hasAge && (runif(0, 1) < probSmallUpdate));
+            if (isSmallUpdate) {
+                updateProposalAccountMoveBirthsSmall(object_R);
+            }
+            else {
+                updateProposalAccountMoveBirths(object_R);
+            }
         }
         else if(iComp_r == iOrigDest_r) {
-            updateProposalAccountMoveOrigDest(object_R);
+            int isSmallUpdate = (hasAge && (runif(0, 1) < probSmallUpdate));
+            if (isSmallUpdate) {
+                updateProposalAccountMoveOrigDestSmall(object_R);
+            }
+            else {
+                updateProposalAccountMoveOrigDest(object_R);
+            }
         }
         else if(iComp_r == iPool_r) {
             updateProposalAccountMovePool(object_R);
@@ -1052,7 +1078,14 @@ updateProposalAccount_CombinedAccountMovements(SEXP object_R)
             updateProposalAccountMoveNet(object_R);
         }
         else {
-            updateProposalAccountMoveComp(object_R);
+            int isNet = isNetVec[iComp_r - 1];
+            int isSmallUpdate = (!isNet && hasAge && (runif(0, 1) < probSmallUpdate));
+            if (isSmallUpdate) {
+                updateProposalAccountMoveCompSmall(object_R);
+            }
+            else {
+                updateProposalAccountMoveComp(object_R);
+            }
         }
     }
 }
@@ -1080,12 +1113,20 @@ void
 updateValuesAccount_CombinedAccountMovements(SEXP object_R)
 {
     int hasAge = *LOGICAL(GET_SLOT(object_R, hasAge_sym));
-    updateCellMove(object_R);
-    updateSubsequentPopnMove(object_R);
-    updateSubsequentExpMove(object_R);
+    int isSmallUpdate = *LOGICAL(GET_SLOT(object_R, isSmallUpdate_sym));
 
-    if (hasAge) {
-        updateSubsequentAccMove(object_R);
+    updateCellMove(object_R);
+
+    if (isSmallUpdate) {
+        updateAccSmall(object_R);
+    }
+    else {
+        updateSubsequentPopnMove(object_R);
+        updateSubsequentExpMove(object_R);
+
+        if (hasAge) {
+            updateSubsequentAccMove(object_R);
+        }
     }
 }
 

@@ -1058,6 +1058,7 @@ void updateProposalAccountMoveOrigDestSmall(SEXP combined_R);
 void updateProposalAccountMovePool(SEXP combined_R);
 void updateProposalAccountMoveNet(SEXP combined_R);
 void updateProposalAccountMoveComp(SEXP combined_R);
+void updateProposalAccountMoveCompSmall(SEXP combined_R);
 
 double diffLogLikAccountMovePopn(SEXP combined_R);
 double diffLogLikPopn(int diff, int iFirst_r, SEXP iterator_R,
@@ -1093,6 +1094,7 @@ double diffLogLikCellsNet(int diff, int iComp_r,
                         SEXP datasets_R, SEXP seriesIndices_R,
                         SEXP transforms_R);
 double diffLogLikAccountMoveComp(SEXP combined_R);
+double diffLogLikAccountMoveCompSmall(SEXP combined_R);
 
 double diffLogDensPopn(SEXP combined_R);
 double diffLogDensPopnOneCohort (int diff, SEXP population_R, int i_r,
@@ -1122,6 +1124,7 @@ double diffLogDensJumpComp(SEXP combined_R);
 double diffLogDensExpComp(SEXP combined_R);
 double diffLogDensCompSmall(SEXP combined_R);
 
+void updateAccSmall(SEXP combined_R);
 void updateCellMove(SEXP combined_R);
 void updateSubsequentPopnMove(SEXP combined_R);
 void updateSubsequentAccMove(SEXP combined_R);

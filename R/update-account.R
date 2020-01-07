@@ -349,7 +349,6 @@ updateProposalAccountMoveBirthsSmall <- function(combined, useC = FALSE) {
     }
     else {
         account <- combined@account
-        population <- account@population
         i.comp <- combined@iComp
         component <- account@components[[i.comp]]
         max.attempt <- combined@maxAttempt
@@ -398,7 +397,6 @@ updateProposalAccountMoveBirthsSmall <- function(combined, useC = FALSE) {
             val.up.prop <- rbinom(n = 1L,
                                   size = size,
                                   prob = prob)
-            val.low.prop <- size - val.up.prop
             diff.prop <- unname(val.up.prop - val.up.curr)
             generated.new.proposal  <- diff.prop != 0L
         }
@@ -603,7 +601,6 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
     }
     else {
         account <- combined@account
-        population <- account@population
         i.comp <- combined@iComp
         component <- account@components[[i.comp]]
         max.attempt <- combined@maxAttempt
@@ -681,7 +678,6 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
             }
             found.value <- !is.na(val.up.prop)
             if (found.value) {
-                val.low.prop <- size - val.up.prop
                 diff.prop <- unname(val.up.prop - val.up.curr)
                 generated.new.proposal  <- diff.prop != 0L
             }
@@ -1169,7 +1165,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## assume has age, and is not net
 updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
@@ -1181,7 +1177,6 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
     }
     else {
         account <- combined@account
-        population <- account@population
         i.comp <- combined@iComp
         component <- account@components[[i.comp]]
         is.increment <- combined@isIncrement[[i.comp]]
@@ -1261,53 +1256,53 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
             }
             found.value <- !is.na(val.up.prop)
             if (found.value) {
-                val.low.prop <- size - val.up.prop
                 diff.prop <- unname(val.up.prop - val.up.curr)
                 generated.new.proposal  <- diff.prop != 0L
             }
             else
                 generated.new.proposal  <- FALSE
         }
-    }
-    if (generated.new.proposal) {
-        combined@generatedNewProposal@.Data <- TRUE
-        combined@isSmallUpdate@.Data <- TRUE
-        combined@iCell <- i.cell.up
-        combined@iCellOther <- i.cell.low
-        combined@iPopnNext <- NA_integer_
-        combined@iPopnNextOther <- NA_integer_
-        combined@iAccNext <- i.acc
-        combined@iAccNextOther <- NA_integer_
-        combined@isLowerTriangle@.Data <- FALSE
-        if (uses.exposure) {
-            combined@iExposure <- i.expose.up
-            combined@iExposureOther <- i.expose.low
+
+        if (generated.new.proposal) {
+            combined@generatedNewProposal@.Data <- TRUE
+            combined@isSmallUpdate@.Data <- TRUE
+            combined@iCell <- i.cell.up
+            combined@iCellOther <- i.cell.low
+            combined@iPopnNext <- NA_integer_
+            combined@iPopnNextOther <- NA_integer_
+            combined@iAccNext <- i.acc
+            combined@iAccNextOther <- NA_integer_
+            combined@isLowerTriangle@.Data <- FALSE
+            if (uses.exposure) {
+                combined@iExposure <- i.expose.up
+                combined@iExposureOther <- i.expose.low
+            }
+            else {
+                combined@iExposure <- 0L
+                combined@iExposureOther <- NA_integer_
+            }
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
+            combined@diffProp <- diff.prop
         }
         else {
-            combined@iExposure <- 0L
+            combined@generatedNewProposal@.Data <- FALSE
+            combined@isSmallUpdate@.Data <- TRUE
+            combined@iCell <- NA_integer_
+            combined@iCellOther <- NA_integer_
+            combined@iPopnNext <- NA_integer_
+            combined@iPopnNextOther <- NA_integer_
+            combined@iAccNext <- NA_integer_
+            combined@iAccNextOther <- NA_integer_
+            combined@isLowerTriangle@.Data <- NA
+            combined@iExposure <- NA_integer_
             combined@iExposureOther <- NA_integer_
+            combined@iExpFirst <- NA_integer_
+            combined@iExpFirstOther <- NA_integer_
+            combined@diffProp <- NA_integer_
         }
-        combined@iExpFirst <- NA_integer_
-        combined@iExpFirstOther <- NA_integer_
-        combined@diffProp <- diff.prop
+        combined
     }
-    else {
-        combined@generatedNewProposal@.Data <- FALSE
-        combined@isSmallUpdate@.Data <- TRUE
-        combined@iCell <- NA_integer_
-        combined@iCellOther <- NA_integer_
-        combined@iPopnNext <- NA_integer_
-        combined@iPopnNextOther <- NA_integer_
-        combined@iAccNext <- NA_integer_
-        combined@iAccNextOther <- NA_integer_
-        combined@isLowerTriangle@.Data <- NA
-        combined@iExposure <- NA_integer_
-        combined@iExposureOther <- NA_integer_
-        combined@iExpFirst <- NA_integer_
-        combined@iExpFirstOther <- NA_integer_
-        combined@diffProp <- NA_integer_
-    }
-    combined
 }
 
 
@@ -2105,7 +2100,7 @@ diffLogLikAccountMoveComp <- function(combined, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 diffLogLikAccountMoveCompSmall <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
@@ -2124,7 +2119,6 @@ diffLogLikAccountMoveCompSmall <- function(combined, useC = FALSE) {
         i.cell.up <- combined@iCell
         i.cell.low <- combined@iCellOther
         diff <- combined@diffProp
-        is.increment <- combined@isIncrement[i.comp]
         diff.log.lik.up <- diffLogLikCellComp(diff = diff,
                                               iComp = i.comp,
                                               iCell = i.cell.up,
@@ -3215,8 +3209,9 @@ diffLogDensCompSmall <- function(combined, useC = FALSE) {
 
 ## UPDATE VALUES ################################################################
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
+## JAH note that is.increment conditional code is not tested (test only when not is.increment)
 updateAccSmall <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovementsHasAge"))
     if (useC) {
@@ -3234,8 +3229,8 @@ updateAccSmall <- function(combined, useC = FALSE) {
             else
                 combined@accession[i.acc] <- combined@accession[i.acc] - diff
         }
+        combined
     }
-    combined
 }
 
 

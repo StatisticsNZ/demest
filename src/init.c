@@ -1823,6 +1823,7 @@ UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveOrigDestSmall);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMovePool);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveNet);
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveComp);
+UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveCompSmall);
 
 /* wrapper for diffLogLikAccountMovePopn */
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMovePopn);
@@ -1979,6 +1980,7 @@ diffLogLikCellsNet_R(SEXP diff_R, SEXP iComp_R,
 
 /* wrapper for diffLogLikAccountMoveComp */
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveComp);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveCompSmall);
 
 /* wrapper for diffLogDensPopn */
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensPopn);
@@ -2085,6 +2087,7 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpComp);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensCompSmall);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateCellMove);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateAccSmall);
 
 /* duplicates the iterator and replaces the unused iterator when finished
  * used when calling the code directly from R */
@@ -2624,10 +2627,11 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateProposalAccountMoveBirths_R, 1),
   CALLDEF(updateProposalAccountMoveBirthsSmall_R, 1),
   CALLDEF(updateProposalAccountMoveOrigDest_R, 1),
-    CALLDEF(updateProposalAccountMoveOrigDestSmall_R, 1),
+  CALLDEF(updateProposalAccountMoveOrigDestSmall_R, 1),
   CALLDEF(updateProposalAccountMovePool_R, 1),
   CALLDEF(updateProposalAccountMoveNet_R, 1),
   CALLDEF(updateProposalAccountMoveComp_R, 1),
+  CALLDEF(updateProposalAccountMoveCompSmall_R, 1),
 
   CALLDEF(diffLogLikAccountMovePopn_R, 1),
   CALLDEF(diffLogLikPopn_R, 8),
@@ -2642,6 +2646,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikAccountMoveNet_R, 1),
   CALLDEF(diffLogLikCellsNet_R, 9),
   CALLDEF(diffLogLikAccountMoveComp_R, 1),
+  CALLDEF(diffLogLikAccountMoveCompSmall_R, 1),
 
   CALLDEF(diffLogDensPopn_R, 1),
   CALLDEF(diffLogDensPopnOneCohort_R, 6),
@@ -2657,6 +2662,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensExpComp_R, 1),
   CALLDEF(diffLogDensCompSmall_R, 1),
 
+  CALLDEF(updateAccSmall_R, 1),
   CALLDEF(updateCellMove_R, 1),
   CALLDEF(updateSubsequentPopnMove_R, 1),
   CALLDEF(updateSubsequentAccMove_R, 1),

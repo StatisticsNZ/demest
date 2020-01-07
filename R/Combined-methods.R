@@ -852,7 +852,7 @@ setMethod("diffLogDensAccount",
               }
           })
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 setMethod("diffLogLikAccount",
           signature(object = "CombinedAccountMovements"),
@@ -890,7 +890,7 @@ setMethod("diffLogLikAccount",
               }
           })
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateProposalAccount",
           signature(object = "CombinedAccountMovements"),
@@ -903,7 +903,6 @@ setMethod("updateProposalAccount",
                       .Call(updateProposalAccount_R, object)
               }
               else {
-                  account <- object@account
                   prob.popn <- object@probPopn
                   prob.small.update <- object@probSmallUpdate@.Data ## NEW
                   has.age <- object@hasAge@.Data ## NEW
@@ -952,7 +951,7 @@ setMethod("updateProposalAccount",
               }
           })
 
-## READY_TO_TRANSLATE (AGAIN)
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateValuesAccount",
           signature(combined = "CombinedAccountMovements"),

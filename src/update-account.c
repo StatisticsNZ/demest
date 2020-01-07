@@ -117,7 +117,7 @@ updateProposalAccountMovePopn(SEXP combined_R)
             generatedNewProposal = 0;
         }
 
-    } /* end isStrucZero */
+    }
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
@@ -381,7 +381,6 @@ updateProposalAccountMoveBirthsSmall(SEXP combined_R)
         int size = val_up_curr + val_low_curr;
 
         double val_up_prop = rbinom(size, prob);
-        double val_low_prop = size - val_up_prop;
 
         double diff_prop = val_up_prop - val_up_curr;
         generatedNewProposal = (diff_prop != 0);
@@ -904,7 +903,7 @@ updateProposalAccountMovePool(SEXP combined_R)
             generatedNewProposal = 0;
         }
 
-    } /* end isStrucZero */
+    }
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
@@ -1252,7 +1251,7 @@ updateProposalAccountMoveComp(SEXP combined_R)
             generatedNewProposal = 0;
         }
 
-    } /* end isStrucZero */
+    }
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
@@ -1286,6 +1285,164 @@ updateProposalAccountMoveComp(SEXP combined_R)
 }
 
 
+void
+updateProposalAccountMoveCompSmall(SEXP combined_R)
+{
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    int i_comp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    int i_comp = i_comp_r - 1;
+
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    SEXP component_R = VECTOR_ELT(components_R, i_comp);
+    int * component = INTEGER(component_R);
+
+    int * isIncrementVec = LOGICAL(GET_SLOT(combined_R, isIncrement_sym));
+    int isIncrement = isIncrementVec[i_comp];
+
+    int maxAttempt = *INTEGER(GET_SLOT(combined_R, maxAttempt_sym));
+
+    SEXP accession_R = GET_SLOT(combined_R, accession_sym);
+    int * accession = INTEGER(accession_R);
+
+    SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
+    SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, i_comp);
+
+    int * usesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
+    int usesExposure = usesExposureVec[i_comp + 1];
+
+    SEXP mappingsToExp_R = GET_SLOT(combined_R, mappingsToExp_sym);
+    SEXP mappingToExp_R = VECTOR_ELT(mappingsToExp_R, i_comp);
+
+    SEXP descriptions_R = GET_SLOT(combined_R, descriptions_sym);
+    SEXP description_R = VECTOR_ELT(descriptions_R, i_comp + 1);
+
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    SEXP systemModelComp_R = VECTOR_ELT(systemModels_R, i_comp + 1);
+    double * theta = REAL(GET_SLOT(systemModelComp_R, theta_sym));
+
+    double tol = *REAL(GET_SLOT(systemModelComp_R, tolerance_sym));
+
+    int * strucZeroArray = INTEGER(GET_SLOT(systemModelComp_R, strucZeroArray_sym));
+
+    int i_cell_up_r = 0;
+    int i_cell_up = 0;
+    int generatedNewProposal = 0;
+    int diff_prop = 0;
+
+    for (int i = 0; i < maxAttempt; i++) {
+        i_cell_up_r = chooseICellCompUpperTri(description_R);
+        i_cell_up = i_cell_up_r - 1;
+        int isStrucZero = (strucZeroArray[i_cell_up] == 0);
+        if (!isStrucZero) {
+            generatedNewProposal = 1;
+            break;
+        }
+    }
+
+    int i_cell_low_r = 0;
+    int i_acc_r = 0;
+    int isLowerTriangleValue = 0;
+    int i_expose_up_r = 0;
+    int i_expose_low_r = NA_INTEGER;
+
+    if (generatedNewProposal) {
+
+        i_cell_low_r = getICellLowerTriNextFromComp(i_cell_up_r, description_R);
+        int i_cell_low = i_cell_low_r - 1;
+        i_acc_r = getIAccNextFromComp(i_cell_up_r, mappingToAcc_R);
+        int i_acc = i_acc_r - 1;
+
+        int is_final_age_group = (i_acc_r == 0);
+
+        int val_acc = 0;
+
+        if (!is_final_age_group) {
+            val_acc = accession[i_acc];
+        }
+
+        int val_up_curr = component[i_cell_up];
+        int val_low_curr = component[i_cell_low];
+        double val_up_expected = theta[i_cell_up];
+        double val_low_expected = theta[i_cell_low];
+
+        if(usesExposure) {
+            double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
+            i_expose_up_r = getIExposureFromComp(i_cell_up_r, mappingToExp_R);
+            int i_expose_up = i_expose_up_r - 1;
+            i_expose_low_r = getIExposureFromComp(i_cell_low_r, mappingToExp_R);
+            int i_expose_low = i_expose_low_r - 1;
+
+            double expose_up = exposure[i_expose_up];
+            double expose_low = exposure[i_expose_low];
+
+            val_up_expected *= expose_up;
+            val_low_expected *= expose_low;
+        }
+
+        double denom = val_up_expected + val_low_expected;
+        double prob = 0.5;
+        if (denom > tol) {
+            prob = val_up_expected/denom;
+        }
+
+        int size = val_up_curr + val_low_curr;
+
+        int val_up_prop = 0;
+
+        if (is_final_age_group) {
+            val_up_prop = (int)rbinom(size, prob);
+        }
+        else {
+            int lower = NA_INTEGER;
+            int upper = val_up_curr + val_acc;
+            if (isIncrement) {
+                lower = val_up_curr - val_acc;
+                upper = NA_INTEGER;
+            }
+
+            val_up_prop = rbinomTrunc1(size, prob, lower, upper, maxAttempt);
+        }
+
+        int found_value = !(val_up_prop == NA_INTEGER);
+
+        if (found_value) {
+            diff_prop = val_up_prop - val_up_curr;
+            generatedNewProposal = (diff_prop != 0);
+        }
+        else {
+            generatedNewProposal = 0;
+        }
+
+    } /* end generatedNewProposal */
+
+    SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 1);
+
+    SET_INTSCALE_SLOT(combined_R, iPopnNext_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iPopnNextOther_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iAccNextOther_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iExpFirst_sym, NA_INTEGER);
+    SET_INTSCALE_SLOT(combined_R, iExpFirstOther_sym, NA_INTEGER);
+
+    if (!generatedNewProposal) {
+         i_cell_up_r = NA_INTEGER;
+         i_cell_low_r = NA_INTEGER;
+         i_acc_r = NA_INTEGER;
+         isLowerTriangleValue = NA_LOGICAL;
+         i_expose_up_r = NA_INTEGER;
+         i_expose_low_r = NA_INTEGER;
+         diff_prop = NA_INTEGER;
+    }
+
+    SET_INTSCALE_SLOT(combined_R, iCell_sym, i_cell_up_r);
+    SET_INTSCALE_SLOT(combined_R, iCellOther_sym, i_cell_low_r);
+    SET_INTSCALE_SLOT(combined_R, iAccNext_sym, i_acc_r);
+    SET_LOGICALSCALE_SLOT(combined_R, isLowerTriangle_sym, isLowerTriangleValue);
+
+    SET_INTSCALE_SLOT(combined_R, iExposure_sym, i_expose_up_r);
+    SET_INTSCALE_SLOT(combined_R, iExposureOther_sym, i_expose_low_r);
+    SET_INTSCALE_SLOT(combined_R, diffProp_sym, diff_prop);
+}
 
 
 /* ******************** Log-Likelihood ********************** */
@@ -1910,6 +2067,53 @@ diffLogLikAccountMoveComp(SEXP combined_R)
     return ans;
 }
 
+
+double
+diffLogLikAccountMoveCompSmall(SEXP combined_R)
+{
+
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    int i_comp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    int i_comp = i_comp_r - 1;
+
+    SEXP component_R = VECTOR_ELT(GET_SLOT(account_R, components_sym), i_comp);
+
+    SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
+    SEXP datasets_R = GET_SLOT(combined_R, datasets_sym);
+    SEXP seriesIndices_R = GET_SLOT(combined_R, seriesIndices_sym);
+    SEXP transforms_R = GET_SLOT(combined_R, transforms_sym);
+    int i_cell_up_r = *INTEGER(GET_SLOT(combined_R, iCell_sym));
+    int i_cell_low_r = *INTEGER(GET_SLOT(combined_R, iCellOther_sym));
+
+    int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+
+    double ans = 0;
+
+    double diffLogLikUp = diffLogLikCellComp( diff, i_comp_r,
+                                        i_cell_up_r, component_R,
+                                        dataModels_R, datasets_R,
+                                        seriesIndices_R, transforms_R);
+    if (R_finite(diffLogLikUp) ) {
+
+        double diffLogLikLow = diffLogLikCellComp( -diff,i_comp_r,
+                                        i_cell_low_r, component_R,
+                                        dataModels_R, datasets_R,
+                                        seriesIndices_R, transforms_R);
+
+        if (R_finite(diffLogLikLow) ) {
+            ans = diffLogLikUp + diffLogLikLow;
+        }
+        else { /* infinite */
+            ans = diffLogLikLow;
+        }
+    }
+    else { /* infinite */
+        ans = diffLogLikUp;
+    }
+
+    return ans;
+}
+
 /*------------------ LOG DENSITY ------------------------*/
 
 
@@ -2237,7 +2441,7 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
                     ans += diffLogLik;
 
                 }
-            } /* end isStrucZero */
+            }
             ++j;
         }
         if (keepGoing) {
@@ -2326,7 +2530,7 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
 
             }
 
-        } /* end isStrucZero */
+        }
         if (keepGoing) {
             int finishedComp = *finishedComp_ptr;
             if (finishedComp) {
@@ -3064,7 +3268,31 @@ diffLogDensCompSmall(SEXP combined_R)
     return ans;
 }
 
-/* ******************* UPDATE VALUES ***************** */
+
+void
+updateAccSmall(SEXP combined_R)
+{
+    int i_comp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    int i_comp = i_comp_r - 1;
+
+    int i_acc_r = *INTEGER(GET_SLOT(combined_R, iAccNext_sym));
+    int has_accession = (i_acc_r > 0);
+
+    if (has_accession) {
+        int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+        int * isIncrementVec = LOGICAL(GET_SLOT(combined_R, isIncrement_sym));
+        int is_increment = isIncrementVec[i_comp];
+        int i_acc = i_acc_r - 1;
+        int * accession = INTEGER(GET_SLOT(combined_R, accession_sym));
+        if (is_increment) {
+            accession[i_acc] += diff; /* not tested */
+        }
+        else {
+            accession[i_acc] -= diff;
+        }
+    }
+}
+
 
 void
 updateCellMove(SEXP combined_R)

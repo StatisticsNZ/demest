@@ -295,11 +295,7 @@ drawBetas <- function(object, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
-##                      JAH - translated but cannot test at present
-##                      17  April 2019
-##                      had to comment out Mixin model stuff in combined mixins
-##                      to allow package loading
+## TRANSLATED
 ## HAS_TESTS
 drawDataModelsAccount <- function(combined, useC = FALSE) {
     stopifnot(methods::validObject(combined))
