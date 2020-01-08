@@ -9289,6 +9289,7 @@ test_that("R and C versions of diffLogDensCompSmall give same answer", {
 test_that("updateAccSmall works", {
     updateAccSmall <- demest:::updateAccSmall
     updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     popn <- Counts(array(rpois(n = 90, lambda = 100),
@@ -9312,7 +9313,6 @@ test_that("updateAccSmall works", {
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
                                              triangle = c("Lower", "Upper"))))
-    internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -9327,7 +9327,7 @@ test_that("updateAccSmall works", {
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
                          Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg)),
+                         Model(internal ~ Poisson(mean ~ reg_orig)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL, NULL, NULL)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
@@ -9371,8 +9371,22 @@ test_that("updateAccSmall works", {
                                 transforms = transforms,
                                 probSmallUpdate = 1)
     tested.comp <- FALSE
+    tested.orig.dest <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
+        ## updating 
+        x0 <- x
+        x0@iComp <- 2L
+        x1 <- updateProposalAccountMoveOrigDestSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.orig.dest <- TRUE
+            ans.obtained <- updateAccSmall(x1)
+            expect_equal(sum(ans.obtained@account@components[[2]]),
+                         sum(x1@account@components[[2]]))
+            expect_equal(ans.obtained@accession[ans.obtained@iAccNext],
+                         x1@accession[ans.obtained@iAccNext] +
+                         ans.obtained@diffProp)
+        }
         ## updating component
         x0 <- x
         x0@iComp <- 3L
@@ -9394,6 +9408,7 @@ test_that("updateAccSmall works", {
 test_that("R and C versions of updateAccSmall give same answer", {
     updateAccSmall <- demest:::updateAccSmall
     updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     popn <- Counts(array(rpois(n = 90, lambda = 100),
@@ -9417,7 +9432,6 @@ test_that("R and C versions of updateAccSmall give same answer", {
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
                                              triangle = c("Lower", "Upper"))))
-    internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -9432,7 +9446,7 @@ test_that("R and C versions of updateAccSmall give same answer", {
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
                          Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg)),
+                         Model(internal ~ Poisson(mean ~ reg_orig)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL, NULL, NULL)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
@@ -9478,6 +9492,16 @@ test_that("R and C versions of updateAccSmall give same answer", {
     tested.comp <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
+        ## updating orig-dest
+        x0 <- x
+        x0@iComp <- 2L
+        x1 <- updateProposalAccountMoveOrigDestSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.comp <- TRUE
+            ans.R <- updateAccSmall(x1, useC = FALSE)
+            ans.C <- updateAccSmall(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
+        }
         ## updating component
         x0 <- x
         x0@iComp <- 3L

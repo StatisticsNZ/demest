@@ -9215,8 +9215,9 @@ test_that("R and C versions of chooseICellCompUpperTri give same answer", {
                   .Data = object@.Data,
                   metadata = object@metadata)
     description <- Description(object)
-    x <- replicate(n = 10, chooseICellCompUpperTri(description))
+    set.seed(1)
     ans.R <- replicate(n = 10, chooseICellCompUpperTri(description, useC = FALSE))
+    set.seed(1)
     ans.C <- replicate(n = 10, chooseICellCompUpperTri(description, useC = TRUE))
     expect_identical(ans.R, ans.C)
     object <- Counts(array(1:12,
@@ -9228,7 +9229,9 @@ test_that("R and C versions of chooseICellCompUpperTri give same answer", {
                   .Data = object@.Data,
                   metadata = object@metadata)
     description <- Description(object)
+    set.seed(1)
     ans.R <- replicate(n = 10, chooseICellCompUpperTri(description, useC = FALSE))
+    set.seed(1)
     ans.C <- replicate(n = 10, chooseICellCompUpperTri(description, useC = TRUE))
     expect_identical(ans.R, ans.C)
     object <- Counts(array(1:12,
@@ -9240,7 +9243,9 @@ test_that("R and C versions of chooseICellCompUpperTri give same answer", {
                   .Data = object@.Data,
                   metadata = object@metadata)
     description <- Description(object)
+    set.seed(1)
     ans.R <- replicate(n = 10, chooseICellCompUpperTri(description, useC = FALSE))
+    set.seed(1)
     ans.C <- replicate(n = 10, chooseICellCompUpperTri(description, useC = TRUE))
     expect_identical(ans.R, ans.C)
 })

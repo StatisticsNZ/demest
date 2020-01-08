@@ -3211,7 +3211,6 @@ diffLogDensCompSmall <- function(combined, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-## JAH note that is.increment conditional code is not tested (test only when not is.increment)
 updateAccSmall <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovementsHasAge"))
     if (useC) {

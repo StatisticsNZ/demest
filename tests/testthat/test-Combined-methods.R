@@ -2089,7 +2089,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(2 * n.test)) {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
@@ -2108,7 +2108,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
-                is.small.deaths <- TRUE
+                is.small.internal <- TRUE
             ans.obtained <- diffLogDensAccount(x1)
             expect_true(is.numeric(ans.obtained))
             expect_true(!is.na(ans.obtained))
@@ -2218,7 +2218,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(n.test * 2)) {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
@@ -2399,7 +2399,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(2 * n.test)) {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
@@ -2901,7 +2901,7 @@ test_that("R and C versions of updateProposalAccount give same answer with Combi
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(2 * n.test)) {
         x1 <- x0
         x1@iComp <- 1L # births
         set.seed(seed)
