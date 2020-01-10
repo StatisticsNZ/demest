@@ -639,7 +639,7 @@ test_that("initialDLMNoTrend works", {
     expect_true(all(sapply(l$mNoTrend, length) == 1L))
     expect_true(all(sapply(l$m0NoTrend, length) == 1L))
     expect_true(all(sapply(l$RNoTrend, length) == 1L))
-    expect_identical(l$CNoTrend[[1L]], 100)
+    expect_identical(l$CNoTrend[[1L]], 0)
     ## phi is 1, known
     spec <- DLM(trend = NULL, damp = NULL)
     metadata <- new("MetaData",

@@ -7180,7 +7180,7 @@ test_that("rescalePriorIntercept works with DLM - with covariates", {
     output.level.0 <- output[here.level.0, ]
     means <- apply(data.level.0, 2, mean)
     expect_equal(output.term, data.term - rep(means, each = 10) - rep(data.coef.int, each = 10))
-    expect_equal(output.level, data.level - rep(means, each = 12) - rep(data.coef.int, each = 12))
+    expect_equal(output.level, data.level - rep(means, each = 12))
     expect_equal(output.int, data.int + means + data.coef.int)
     expect_equal(as.numeric(adjustments[["model.prior.(Intercept)"]]), means + data.coef.int)
 })

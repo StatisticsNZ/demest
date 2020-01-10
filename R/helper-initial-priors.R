@@ -1362,9 +1362,15 @@ makeCNoTrend <- function(K, C0 = NULL, sY, phi, phiKnown) {
                      1.0,
                      simplify = FALSE)
     if (is.null(C0)) {
-        A0 <- makeAIntercept(sY)
-        A0 <- as.double(A0)
-        C0 <- A0^2
+        phi.not.1 <- !phiKnown || (phiKnown && phi < 1)
+        if (phi.not.1) {
+            C0 <- 0
+        }
+        else {
+            A0 <- makeAIntercept(sY)
+            A0 <- as.double(A0)
+            C0 <- A0^2
+        }
     }
     ans[[1L]] <- C0
     methods::new("FFBSList", ans)

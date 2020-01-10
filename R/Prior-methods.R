@@ -3121,12 +3121,6 @@ setMethod("rescalePriorIntercept",
                                                  iterations = NULL,
                                                  nIteration = nIteration,
                                                  lengthIter = lengthIter)
-                  level.term <- readStateDLMFromFile(skeleton = skeleton.level.term,
-                                                     filename = filename,
-                                                     iterations = NULL,
-                                                     nIteration = nIteration,
-                                                     lengthIter = lengthIter,
-                                                     only0 = FALSE)
                   skeleton.covariates <- skeletonsPriorTerm$coef
                   coef.intercept <- readCoefInterceptFromFile(skeleton = skeleton.covariates,
                                                               filename = filename,
@@ -3140,12 +3134,6 @@ setMethod("rescalePriorIntercept",
                                        filename = filename,
                                        nIteration = nIteration,
                                        lengthIter = lengthIter)
-                  level.term <- level.term - coef.intercept
-                  overwriteValuesOnFile(object = level.term,
-                                        skeleton = skeleton.level.term,
-                                        filename = filename,
-                                        nIteration = nIteration,
-                                        lengthIter = lengthIter)
                   recordAdjustments(priorHigh = priorTerm,
                                     priorLow = priorIntercept,
                                     namesHigh = names.term,

@@ -14,6 +14,7 @@ estimateAccount(
   dominant = c("Female", "Male"),
   updateInitialPopn = TRUE,
   usePriorPopn = TRUE,
+  probSmallUpdate = 0,
   scaleNoise = 0,
   filename = NULL,
   nBurnin = 1000,
@@ -64,6 +65,10 @@ for the first year are treated as error-free and never updated.}
 \item{usePriorPopn}{Whether to take account of the prior model
 for population when inferring values for the account.
 Defaults to \code{TRUE}.}
+
+\item{probSmallUpdate}{Proportion of updates of components
+that are 'small', ie that only consist of exchanging values
+between two neighbouring Lexis triangles.}
 
 \item{scaleNoise}{Governs noise added to Metropolis-Hastings
 ratio. Should be non-zero only when trying to generate

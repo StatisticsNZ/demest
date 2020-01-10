@@ -394,9 +394,9 @@ updateProposalAccountMoveBirthsSmall <- function(combined, useC = FALSE) {
             else
                 prob <- 0.5
             size <- val.up.curr + val.low.curr
-            val.up.prop <- rbinom(n = 1L,
-                                  size = size,
-                                  prob = prob)
+            val.up.prop <- stats::rbinom(n = 1L,
+                                         size = size,
+                                         prob = prob)
             diff.prop <- unname(val.up.prop - val.up.curr)
             generated.new.proposal  <- diff.prop != 0L
         }
@@ -663,9 +663,9 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
                 prob <- 0.5
             size <- val.up.curr + val.low.curr
             if (is.final.age.group) { ## no accession constraint
-                val.up.prop <- rbinom(n = 1L,
-                                      size = size,
-                                      prob = prob)
+                val.up.prop <- stats::rbinom(n = 1L,
+                                             size = size,
+                                             prob = prob)
             }
             else {
                 lower <- val.up.curr - val.acc.dest
@@ -1235,7 +1235,7 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
                 prob <- 0.5
             size <- val.up.curr + val.low.curr
             if (is.final.age.group) { ## no accession constraint
-                val.up.prop <- rbinom(n = 1L,
+                val.up.prop <- stats::rbinom(n = 1L,
                                       size = size,
                                       prob = prob)
             }

@@ -16,6 +16,7 @@ simulateAccount(
   updateSystemModel = NULL,
   updateDataModel = NULL,
   updateInitialPopn = TRUE,
+  probSmallUpdate = 0,
   scaleNoise = 0,
   filename = NULL,
   nBurnin = 1000,
@@ -74,6 +75,10 @@ from the prior distribution) as part of the simulation.}
 in the first year of the account are inferred as part of
 the overall estimation process. If \code{FALSE}, the values supplied
 for the first year are treated as error-free and never updated.}
+
+\item{probSmallUpdate}{Proportion of updates of components
+that are 'small', ie that only consist of exchanging values
+between two neighbouring Lexis triangles.}
 
 \item{scaleNoise}{Governs noise added to Metropolis-Hastings
 ratio. Should be non-zero only when trying to generate
