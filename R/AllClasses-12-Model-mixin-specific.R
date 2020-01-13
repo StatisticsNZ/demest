@@ -282,11 +282,12 @@ setClass("CellInLikMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              cellInLik <- object@cellInLik
-             theta <- object@theta
-             ## 'cellInLik' same length as 'theta'
-             if (!identical(length(cellInLik), length(theta)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "cellInLik", "theta"))
+             ## if object has 'theta', then 'cellInLik' same length as 'theta'
+             if (methods::.hasSlot(object, "theta")) {
+                 if (!identical(length(cellInLik), length(theta)))
+                     return(gettextf("'%s' and '%s' have different lengths",
+                                     "cellInLik", "theta"))
+             }
              ## 'cellInLik' has no missing values
              if (any(is.na(cellInLik)))
                  return(gettextf("'%s' has missing values",

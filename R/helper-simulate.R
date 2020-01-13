@@ -581,7 +581,7 @@ drawPriors <- function(object, useC = FALSE) {
 ## TRANSLATED
 ## HAS_TESTS
 drawSigma_Varying <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "Varying"))
+    stopifnot(methods::is(object, "SigmaMixin"))
     stopifnot(methods::validObject(object))
     if (useC) {
         .Call(drawSigma_Varying_R, object)
@@ -642,7 +642,7 @@ drawUEtaCoef <- function(prior, useC = FALSE) {
 ## TRANSLATED
 ## HAS_TESTS
 drawVarsigma <- function(object, useC = FALSE) {
-    stopifnot(methods::is(object, "VarsigmaUnknown"))
+    stopifnot(methods::is(object, "VarsigmaMixin"))
     stopifnot(methods::validObject(object))
     if (useC) {
         .Call(drawVarsigma_R, object)
