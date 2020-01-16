@@ -7,6 +7,7 @@ setClass("VarsigmaKnown",
 setClass("VarsigmaUnknown",
          contains = c("VIRTUAL",
                       "AVarsigmaMixin",
+                      "MultVarsigmaMixin",
                       "NuVarsigmaMixin",
                       "VarsigmaMixin",
                       "VarsigmaMaxMixin"))

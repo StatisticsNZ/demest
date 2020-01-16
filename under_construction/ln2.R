@@ -1,46 +1,169 @@
 
+
+validity_LN2 <- function(object) {
+    restrictLN2 <- object@restrictLN2
+    concordances <- object@concordances
+    ## 'restrictLN2' has type "integer"
+    if (!is.integer(restrictLN2))
+        return(gettextf("'%s' does not have type \"%s\"",
+                        "restrictLN2", "integer"))
+    ## all values of 'restrictLN2' valid
+    is.invalid <- !(restrictLN2@.Data %in% c(NA, -1L, 0L, 1L))
+    i.invalid <- match(TRUE, is.invalid, nomatch = 0L)
+    if (i.invalid > 0L)
+        return(gettextf("'%s' has invalid value [%s]",
+                        "restrictLN2", restrictLN2@.Data[[i.invalid]]))
+    ## concordances
+    if (!identical(concordances, list())) {
+        if (!is.list(concordances))
+            stop(gettextf("'%s' has class \"%s\"",
+                          "concordances", class(concordances)))
+        if (!all(sapply(concordances, methods::is,"ManyToOne")))
+            stop(gettextf("'%s' has elements not of class \"%s\"",
+                          "concordances", "ManyToOne"))
+        names.conc <- names(concordances)
+        if (is.null(names.conc))
+            stop(gettextf("'%s' does not have names",
+                          "concordances"))
+        if (any(duplicated(names.conc)))
+            stop(gettextf("'%s' has duplicate names",
+                          "concordances"))
+    }
+    TRUE
+}
+
+## NO_TESTS
+setClass("MultVarsigmaMixin",
+         slots = c(multVarsigma = "Scale"),
+         contains = "VIRTUAL")
+
+
 setClass("SpecLikelihoodLN2",
          contains = c("SpecLikelihood",
+                      "MultVarsigmaMixin",
                       "NuVarsigmaMixin",
                       "SpecAVarsigmaMixin",
-                      "SpecVarsigmaMaxMixin"),
-         slots = c(restrict = "Values",
+                      "SpecVarsigmaMaxMixin",
+                      "StructuralZerosMixin"),
+         slots = c(restrictLN2 = "Values",
                    concordances = "list"),
+         validity = validity_LN2)
+
+
+setClass("SpecLN2",
+         contains = c("SpecModel",
+                      "MultSigmaMixin",
+                      "MultVarsigmaMixin",
+                      "NuSigmaMixin",
+                      "NuVarsigmaMixin",
+                      "SpecASigmaMixin",
+                      "SpecAVarsigmaMixin",
+                      "SpecSigmaMaxMixin",
+                      "SpecVarsigmaMaxMixin",
+                      "StructuralZerosMixin",
+                      "SpecSeriesMixin",
+                      "StructuralZerosMixin"),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
+         slots = c(restrictLN2 = "Values",
+                   concordances = "list"),
+         validity = validity_LN2)
+
+
+setClass("LN2",
+         slots = c(alphaLN2 = "ParameterVector",
+                   restrictLN2 = "Values",
+                   restrictAllLN2 = "Values",
+                   nCellBeforeLN2 = "integer",
+                   transformLN2 = "CollapseTransform"),
+         contains = c("Model",
+                      "ASigmaMixin",
+                      "CellInLikMixin",
+                      "MaxAttemptMixin",
+                      "NuSigmaMixin",
+                      "SigmaMaxMixin",
+                      "SigmaMixin",
+                      "StrucZeroArrayMixin",
+                      "VarsigmaUnknown"),
+         prototype = prototype(slotsToExtract = c("alphaLN2",
+                                                  "varsigma",
+                                                  "sigma"),
+                               iMethodModel = 37L,
+                               nuVarsigma = methods::new("DegreesFreedom", 7),
+                               nuSigma = methods::new("DegreesFreedom", 7),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostVarsigma = methods::new("Parameter", 0)),
          validity = function(object) {
-             restrict <- object@restrict
-             ## 'restrict' has type "integer"
-             if (!is.integer(restrict))
-                 return(gettextf("'%s' does not have type \"%s\"",
-                                 "restrict", "integer"))
-             ## all values of 'restrict' valid
-             is.invalid <- !(restrict@.Data %in% c(NA, -1L, 0L, 1L))
-             i.invalid <- match(TRUE, is.invalid, nomatch = 0L)
-             if (i.invalid > 0L)
-                 return(gettextf("'%s' has invalid value [%s]",
-                                 "restrict", restrict@.Data[[i.invalid]]))
-             ## concordances
-             if (!identical(concordances, list())) {
-                 if (!is.list(concordances))
-                     stop(gettextf("'%s' has class \"%s\"",
-                                   "concordances", class(concordances)))
-                 if (!all(sapply(concordances, methods::is,"ManyToOne")))
-                     stop(gettextf("'%s' has elements not of class \"%s\"",
-                                   "concordances", "ManyToOne"))
-                 names.conc <- names(concordances)
-                 if (is.null(names.conc))
-                     stop(gettextf("'%s' does not have names",
-                                   "concordances"))
-                 if (any(duplicated(names.conc)))
-                     stop(gettextf("'%s' has duplicate names",
-                                   "concordances"))
+             alphaLN2 <- object@alphaLN2@.Data
+             restrictLN2 <- object@restrictLN2
+             restrictAllLN2 <- object@restrictAllLN2
+             nCellBeforeLN2 <- object@nCellBeforeLN2
+             transformLN2 <- object@transformLN2
+             ## 'nCellBeforeLN2' not NA
+             if (any(is.na(nCellBeforeLN2))) {
+                 return(gettextf("'%s' has missing values",
+                                 name))
+             }
+             ## values of 'nCellBeforeLN2' all non-negative
+             if (any(nCellBeforeLN2 < 0L))
+                 return(gettextf("'%s' has negative values",
+                                 "nCellBeforeLN2"))
+             ## 'restrictLN2', 'restrictAllLN2' consist
+             ## entirely of NAs, -1s, 0s, and 1s
+             for (name in c("restrictLN2", "restrictAllLN2")) {
+                 value <- methods::slot(object, name)
+                 if (!all(value %in% c(NA, -1L, 0L, 1L)))
+                     return(gettextf("'%s' has invalid values",
+                                     name))
+             }
+             ## 'alphaLN2' and 'restrictLN2' have same length
+             if (!identical(length(alphaLN2), length(restrictLN2)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "alphaLN2", "restrictLN2"))
+             ## length of 'restrictLN2' less than or equal to length of 'restructAllLN2'
+             if (length(restrictLN2) > length(restrictAllLN2))
+                 return(gettextf("length of '%s' greater than length of '%s'",
+                                 "restrictLN2", "restrictAllLN2"))
+             ## 'nCellBeforeLN2' has same length as 'alphaLN2'
+             if (!identical(length(nCellBeforeLN2), length(alphaLN2)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "nCellBeforeLN2", "alphaLN2"))
+             ## 'alphaLN2' has length implied by 'transformLN2'
+             if (!identical(length(alphaLN2), prod(transformLN2@dimAfter)))
+                 return(gettextf("'%s' and '%s' incompatible",
+                                 "alphaLN2", "transformLN2"))
+             TRUE
+         })
+
+
+
+setClass("OffsetsAlphaLN2",
+         slots = c(offsetsAlphaLN2 = "OffsetsOrNULL"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             offsetsAlphaLN2 <- object@offsetsAlphaLN2
+             alphaLN2 <- object@alphaLN2
+             if (!is.null(offsetsAlphaLN2)) {
+                 first <- offsetsAlphaLN2[1L]
+                 last <- offsetsAlphaLN2[2L]
+                 if (!identical(last - first + 1L, length(alphaLN2)))
+                     return(gettextf("'%s' and '%s' incompatible",
+                                     "offsetsAlphaLN2", "alphaLN2"))
              }
              TRUE
          })
 
-LN2 <- function(restrict, concordances = list(),
-                priorSD = HalfT()) {
+
+setClass("LN2Predict",
+         prototype = prototype(iMethodModel = 137L),
+         contains = c("LN2",
+                      "OffsetsAlphaLN2",
+                      "OffsetsVarsigma",
+                      "OffsetsSigma"))
+
+LN2 <- function(restrict, structuralZeros = NULL,
+                concordances = list(), priorSD = HalfT()) {
     ## restrict
-    if (!methods::is(restict, "Values"))
+    if (!methods::is(restrict, "Values"))
         stop(gettextf("'%s' has class \"%s\"",
                       "restrict", class(restrict)))
     is.invalid <- !(restrict@.Data %in% c(NA, -1L, 0L, 1L))
@@ -52,6 +175,8 @@ LN2 <- function(restrict, concordances = list(),
     if (!methods::is(priorSD, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
                       "priorSD", class(priorSD)))
+    ## structuralZeros
+    structuralZeros <- checkAndTidyStructuralZeros(structuralZeros)
     ## concordances
     if (!identical(concordances, list())) {
         if (!is.list(concordances))
@@ -73,27 +198,52 @@ LN2 <- function(restrict, concordances = list(),
         stop(gettextf("'%s' has class \"%s\"",
                       "priorSD", class(priorSD)))
     AVarsigma <- priorSD@A
-    multVarsigma <- priorSD@multVarsigma
+    multVarsigma <- priorSD@mult
     nuVarsigma <- priorSD@nu
     varsigmaMax <- priorSD@scaleMax
     ## return
     methods::new("SpecLikelihoodLN2",
-                 restrict = restrict,
                  AVarsigma = AVarsigma,
+                 concordances = concordances,
                  multVarsigma = multVarsigma,
+                 restrictLN2 = restrict,
                  nuVarsigma = nuVarsigma,
+                 structuralZeros = structuralZeros,
                  varsigmaMax = varsigmaMax)
 }
+
+test_that("LN2 corrects objects of class SpecLikelihoodLN2 from valid inputs", {
+    restrict <- Values(array(c(NA, -1L, 0L, 1L),
+                             dim = c(2, 2),
+                             dimnames = list(age = c("0-39", "40+"),
+                                             sex = c("Female", "Male"))))
+    obj <- LN2(restrict = restrict)
+    expect_is(obj, "SpecLikelihoodLN2")
+    expect_true(validObject(obj))
+    sz <- Values(array(c(1L, 0L, 0L, 1L),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0-39", "40+"),
+                                       sex = c("Female", "Male"))))
+    concordances <- list(sex = Concordance(data.frame(from = c("F", "M", "Female", "Male"),
+                                                      to = c("Female", "Male", "Female", "Male"))))
+    obj <- LN2(restrict = restrict,
+               structuralZeros = sz,
+               concordances = concordances)
+    expect_is(obj, "SpecLikelihoodLN2")
+    expect_true(validObject(obj))
+})
+
 
 setMethod("SpecModel",
           signature(specInner = "SpecLikelihoodLN2"),
           function(specInner, call, nameY, dots, lower, upper,
                    priorSD, jump,
                    series, aggregate) {
-              restrict <- specInner@restrict
               A.varsigma <- specInner@AVarsigma
-              mult.varsigma <- specInnter@multVarsigma
+              mult.varsigma <- specInner@multVarsigma
               nu.varsigma <- specInner@nuVarsigma
+              restrictLN2 <- specInner@restrictLN2
+              structuralZeros <- specInner@structuralZeros
               varsigma.max <- specInner@varsigmaMax
               if (is.null(priorSD))
                   priorSD <- HalfT()
@@ -123,16 +273,52 @@ setMethod("SpecModel",
                            ASigma = A.sigma,
                            AVarsigma = A.varsigma,
                            call = call,
+                           multSigma = mult.sigma,
+                           multVarsigma = mult.varsigma,
                            nameY = nameY,
                            nuSigma = nu.sigma,
                            nuVarsigma = nu.varsigma,
-                           restrict = restrict,
+                           restrictLN2 = restrictLN2,
                            series = series,
-                           multSigma = mult.sigma,
-                           multVarsigma = mult.varsigma,
+                           structuralZeros = structuralZeros,
                            sigmaMax = sigma.max,
                            varsigmaMax = varsigma.max)
           })
+
+
+test_that("SpecModel works with SpecLikelihoodLN2", {
+    SpecModel <- demest:::SpecModel
+    restrict <- Values(array(c(NA, -1L, 0L, 1L),
+                             dim = c(2, 2),
+                             dimnames = list(age = c("0-39", "40+"),
+                                             sex = c("Female", "Male"))))
+    sz <- Values(array(c(1L, 0L, 0L, 1L),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0-39", "40+"),
+                                       sex = c("Female", "Male"))))
+    concordances <- list(sex = Concordance(data.frame(from = c("F", "M", "Female", "Male"),
+                                                      to = c("Female", "Male", "Female", "Male"))))
+    spec.inner <- LN2(restrict = restrict,
+                structuralZeros = sz,
+                concordances = concordances)
+    call <- call("Model",
+                 quote(y ~ LN2(restrict = restrict,
+                               structuralZeros = sz,
+                               concordances = concordances)))
+    ans.obtained <- SpecModel(specInner = spec.inner,
+                              call = call,
+                              nameY = new("Name", "y"),
+                              dots = list(),
+                              lower = NULL,
+                              upper = NULL,
+                              priorSD = NULL,
+                              jump = NULL,
+                              series = NULL,
+                              aggregate = NULL)
+    expect_true(validObject(ans.obtained))
+    expect_is(ans.obtained, "SpecLN2")
+})
+
 
 
 setMethod("initialModel",
@@ -144,17 +330,21 @@ setMethod("initialModel",
               A.varsigma <- object@AVarsigma@.Data
               A.sigma <- object@ASigma@.Data
               call <- object@call
+              concordances <- object@concordances
               mult.sigma <- object@multSigma
               mult.varsigma <- object@multVarsigma
-              restrictAll <- object@restrict
+              restrict.all <- object@restrictLN2
               sigma.max <- object@sigmaMax@.Data
+              structural.zeros <- object@structuralZeros
               nu.sigma <- object@nuSigma
               nu.varsigma <- object@nuVarsigma
               varsigma.max <- object@varsigmaMax@.Data
               metadataY <- y@metadata
-              dim <- dim(y)
-              n <- length(y)
-              sY <- stats::sd(as.numeric(y), na.rm = TRUE) ## to deal with R <3.0 behaviour
+              struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, 
+                                                     y = y) 
+              y <- checkAndTidyYForStrucZero(y = y, 
+                                             strucZeroArray = struc.zero.array) 
+              sY <- stats::sd(log1p(as.numeric(y), na.rm = TRUE))
               A.varsigma <- makeASigma(A = A.varsigma,
                                        sY = sY,
                                        mult = mult.varsigma)
@@ -175,169 +365,87 @@ setMethod("initialModel",
                                     max = min(A.sigma@.Data, sigma.max@.Data))
               varsigma <- methods::new("Scale", varsigma)
               sigma <- methods::new("Scale", sigma)
+              y.collapsed <- y
+              for (i in seq_along(concordances)) {
+                  name <- names(concordances)[[i]]
+                  if (name %in% names(y)) {
+                      concordance <- concordances[[i]]
+                      y.collapsed <- collapseCategories(y.collapsed,
+                                                        dimension = name,
+                                                        concordance = concordance)
+                  }
+              }
               restrict <- tryCatch(error = function(e) e,
-                                   makeCompatible(x = restictAll,
-                                                  y = y,
-                                                  subst = TRUE))
+                                   dembase::makeCompatible(x = restrict.all,
+                                                           y = y.collapsed,
+                                                           subset = TRUE))
               if (inherits(restrict, "error"))
-                  stop(gettextf("'%s' not compatible with '%s' : %s",
+                  stop(gettextf("'%s' and '%s' not compatible : %s",
                                 "restrict", "y", restrict$message))
-              transformAlphaLN2 <- makeTransform(x = y,
-                                                 y = restrict,
-                                                 subset = FALSE,
-                                                 concordances = concordances)
-              cellInLik <- rep(TRUE, times = length(theta))
-              methods::new("NormalVaryingVarsigmaUnknown",
-                           call = call,
-                           theta = theta,
-                           thetaTransformed = theta,
-                           metadataY = metadataY,
-                           cellInLik = cellInLik,
-                           w = w,
-                           varsigma = methods::new("Scale", varsigma),
-                           varsigmaMax = varsigma.max,
-                           AVarsigma = A.varsigma,
-                           nuVarsigma = nu.varsigma,
-                           lower = lower,
-                           upper = upper,
-                           tolerance = tolerance,
-                           scaleTheta = scale.theta,
-                           nAcceptTheta = methods::new("Counter", 0L),
-                           nFailedPropTheta = methods::new("Counter", 0L),
-                           maxAttempt = max.attempt,
-                           sigma = sigma,
-                           sigmaMax = sigma.max,
-                           ASigma = A.sigma,
-                           nuSigma = nu.sigma,
-                           betas = betas,
-                           meansBetas = val.betas,
-                           variancesBetas = val.betas,
-                           priorsBetas = priors.betas,
-                           betaEqualsMean = beta.equals.mean,
-                           namesBetas = names.betas,
-                           margins = margins,
-                           iteratorBetas = iterator.betas,
-                           dims = dims,
-                           mu = mu)
+              transform <- makeTransform(x = y,
+                                         y = restrict,
+                                         subset = FALSE,
+                                         concordances = concordances)
+              if (inherits(transform, "error"))
+                  stop(gettextf("'%s' not compatible with '%s' : %s",
+                                "transform", "y", transform$message))
+              alpha <- numeric(length = length(restrict))
+              resid <- collapse(as.array(log1p(y) - log1p(exposure)),
+                                transform = transform)
+              for (i in seq_along(alpha)) {
+                  if (is.na(restrict[i]))
+                      alpha[i] <- stats::rnorm(n = 1L,
+                                               mean = resid[i],
+                                               sd = sigma@.Data)
+                  else if (restrict[i] == -1L)
+                      alpha[i] <- rtnorm1(mean = resid[i],
+                                          sd = sigma@.Data,
+                                          upper = 0,
+                                          useC = TRUE)
+                  else if (restrict[i] == 0L)
+                      alpha[i] <- 0
+                  else if (restrict == 1L)
+                      alpha[i] <- rtnorm(mean = resid[i],
+                                         sd = sigma@.Data,
+                                         lower = 0,
+                                         useC = TRUE)
+                  else
+                      stop(gettext("invalid value for '%s' [%s]",
+                                   "restrict", restrict[i]))
+              }
+              n.cell.before <- integer(length = length(restrict))
+              for (i in seq_along(n.cell.before)) {
+                  n.cell.before[i] <- length(dembase:::getIBefore(i = i,
+                                                                  transform = transform,
+                                                                  useC = TRUE))
+              }
+              cellInLik <- rep(TRUE, times = length(theta)) # temporary value
+              model <- methods::new("NormalVaryingVarsigmaUnknown",
+                                    alphaLN2 = methods::new("ParameterVector", alpha),
+                                    ASigma = A.sigma,
+                                    AVarsigma = A.varsigma,
+                                    call = call,
+                                    cellInLik = cellInLik,
+                                    metadataY = metadataY,
+                                    nCellBeforeLN2 = n.cell.before,
+                                    nuSigma = nu.sigma,
+                                    nuVarsigma = nu.varsigma,
+                                    restrictAllLN2 = restrict.all,
+                                    restrictLN2 = restrict,
+                                    sigma = sigma,
+                                    sigmaMax = sigmaMax,
+                                    strucZeroArray = struc.zero.array,
+                                    transformLN2 = transform,
+                                    varsigma = varsigma,
+                                    varsigmaMax = varsigma.max)
+              model <- makeCellInLik(model = model,
+                                     y = y,
+                                     strucZeroArray = struc.zero.array)
+              model
           })
 
 
 
-
-
-setClass("LN2",
-         slots = c(alphaLN2 = "ParameterVector",
-                   alphaIsZeroLN2 = "logical",
-                   alphaIsZeroAllLN2 = "logical",
-                   metadataAlphaLN2 = "MetaData",
-                   metadataAlphaAllLN2 = "MetaData",
-                   nCellBeforeLN2 = "integer",
-                   transformAlphaLN2 = "CollapseTransform",
-                   truncationAlphaLN2 = "integer",
-                   truncationAlphaAllLN2 = "integer"),
-         contains = c("Model",
-                      "ASigmaMixin",
-                      "CellInLikMixin",
-                      "MaxAttemptMixin",
-                      "NuSigmaMixin",
-                      "SigmaMaxMixin",
-                      "SigmaMixin",
-                      "VarsigmaUnknown"),
-         prototype = prototype(slotsToExtract = c("alphaLN2",
-                                                  "varsigma",
-                                                  "sigma"),
-                               iMethodModel = 37L,
-                               nuVarsigma = methods::new("DegreesFreedom", 7),
-                               nuSigma = methods::new("DegreesFreedom", 7),
-                               logPostSigma = methods::new("Parameter", 0),
-                               logPostVarsigma = methods::new("Parameter", 0)),
-         validity = function(object) {
-             alphaLN2 <- object@alphaLN2@.Data
-             alphaIsZeroLN2 <- object@alphaIsZeroLN2
-             alphaIsZeroAllLN2 <- object@alphaIsZeroAllLN2
-             metadataAlphaLN2 <- object@metadataAlphaLN2
-             metadataAlphaAllLN2 <- object@metadataAlphaAllLN2
-             nCellBeforeLN2 <- object@nCellBeforeLN2
-             transformAlphaLN2 <- object@transformAlphaLN2
-             truncationAlphaLN2 <- object@truncationAlphaLN2
-             truncationAlphaAllLN2 <- object@truncationAlphaAllLN2
-             ## 'alphaIsZeroLN2', 'alphaIsZeroAllLN2', 'nCellBeforeLN2',
-             ## 'truncationAlphaLN2', 'truncationAlphaAllLN2' not NA
-             for (name in c("alphaIsZeroLN2", "alphaIsZeroAllLN2", "nCellBeforeLN2",
-                            "truncationAlphaLN2", "truncationAlphaAllLN2")) {
-                 value <- methods::slot(object, name)
-                 if (any(is.na(value)))
-                     return(gettextf("'%s' has missing values",
-                                     name))
-             }
-             ## values of 'nCellBeforeLN2' all non-negative
-             if (any(nCellBeforeLN2 < 0L))
-                 return(gettextf("'%s' has negative values",
-                                 "nCellBeforeLN2"))
-             ## 'truncationAlphaLN2', 'truncationAlphaAllLN2' consist
-             ## entirely of -1s, 0s, and 1s
-             for (name in c("truncationAlphaLN2", "truncationAlphaAllLN2")) {
-                 value <- methods::slot(object, name)
-                 if (!all(value %in% c(-1L, 0L, 1L)))
-                     return(gettextf("'%s' has invalid values",
-                                     name))
-             }
-             ## 'alphaIsZeroLN2' has same length as 'alphaLN2'
-             if (!identical(length(alphaIsZeroLN2), length(alphaLN2)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "alphaIsZeroLN2", "alphaLN2"))
-             ## 'alphaLN2' has length implied by 'metadataAlphaLN2'
-             if (!identical(length(alphaLN2), prod(dim(metadataAlphaLN2))))
-                 return(gettextf("'%s' and '%s' incompatible",
-                                 "alphaLN2", "metadataAlphaLN2"))
-             ## 'alphaIsZeroAllLN2' has length implied by 'metadataAlphaAllLN2'
-             if (!identical(length(alphaIsZeroAllLN2), prod(dim(metadataAlphaAllLN2))))
-                 return(gettextf("'%s' and '%s' incompatible",
-                                 "alphaIsZeroAllLN2", "metadataAlphaAllLN2"))
-             ## 'nCellBeforeLN2' has same length as 'alphaLN2'
-             if (!identical(length(nCellBeforeLN2), length(alphaLN2)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "nCellBeforeLN2", "alphaLN2"))
-             ## 'alphaLN2' has length implied by 'transformAlphaLN2'
-             if (!identical(length(alphaLN2), prod(dim(metadataAlphaLN2))))
-                 return(gettextf("'%s' and '%s' incompatible",
-                                 "alphaLN2", "metadataAlphaLN2"))
-             ## 'truncationAlphaLN2' has same length as 'alphaLN2'
-             if (!identical(length(truncationAlphaLN2), length(alphaLN2)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "truncationAlphaLN2", "alphaLN2"))
-             ## 'truncationAlphaAllLN2' has same length as 'alphaIsZeroAllLN2'
-             if (!identical(length(truncationAlphaAllLN2), length(alphaIsZeroAllLN2)))
-                 return(gettextf("'%s' and '%s' have different lengths",
-                                 "truncationAlphaAllLN2", "alphaIsZeroAllLN2"))
-             TRUE
-         })
-
-
-
-setClass("OffsetsAlphaLN2",
-         slots = c(offsetsAlphaLN2 = "OffsetsOrNULL"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             offsetsAlphaLN2 <- object@offsetsAlphaLN2
-             alphaLN2 <- object@alphaLN2
-             if (!is.null(offsetsAlphaLN2)) {
-                 first <- offsetsAlphaLN2[1L]
-                 last <- offsetsAlphaLN2[2L]
-                 if (!identical(last - first + 1L, length(alphaLN2)))
-                     return(gettextf("'%s' and '%s' incompatible",
-                                     "offsetsAlphaLN2", "alphaLN2"))
-             }
-             TRUE
-         })
-
-
-setClass("LN2Predict",
-         prototype = prototype(iMethodModel = 137L),
-         contains = c("LN2",
-                      "OffsetsAlphaLN2",
-                      "OffsetsVarsigma",
-                      "OffsetsSigma"))
 
 setMethod("drawModelUseExp",
           signature(object = "LN2"),
@@ -530,7 +638,7 @@ updateAlphaLN2 <- function(object, y, exposure, useC = FALSE) {
         alpha.is.zero <- object@alphaIsZeroLN2
         cell.in.lik <- object@cellInLik
         n.cell.vec <- object@nCellBeforeLN2
-        transform <- object@transformAlphaLN2
+        transform <- object@transformLN2
         truncation <- object@truncationAlphaLN2
         varsigma <- object@varsigma@.Data # variance of log(y + 1)
         sigma <- object@sigma@.Data # variance of alpha
@@ -600,7 +708,7 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
         nu <- object@nuVarsigma@.Data
         alpha <- object@alphaLN2@.Data
         cell.in.lik <- object@cellInLik
-        transform <- object@transformAlphaLN2
+        transform <- object@transformLN2
         V <- 0
         n <- 0L
         for (i in seq_along(y)) {
@@ -749,7 +857,13 @@ makeNCellLN2 <- function(object) {
 
 
 printLN2LikEqns <- function(object) {
-    cat("   log(y[i] + 1) ~ Normal(log(exposure[i] + 1) * alpha[j[i]], sd^2)\n")
+    nu <- object@nuVarsigma@.Data
+    A <- object@AVarsigma@.Data
+    max <- object@varsigmaMax@.Data
+    cat("   log(y[i] + 1) ~ N(log(exposure[i] + 1) + alpha[j[i]], sdData^2)\n")
+    cat("        alpha[i] ~ N*(0, sd^2)\n", sep = "")
+    cat("          sdData ~ trunc-half-t(", nu, ", ", sep = "")
+    cat(squaredOrNA(A), ", ", format(max, digits = 4), ")\n", sep = "")
 }
 
 printLN2ModEqns <- function(object) {
@@ -773,7 +887,7 @@ printLN2ModEqns <- function(object) {
     n.spaces <- max(5L - nchar(name.y), 0L)
     spaces <- rep(" ", n.spaces)
     response <- sprintf("%slog(%s + 1)", spaces, name.y)
-    cat(name.y, response, " ~ Normal(log(", exposure, "[i] + 1) + alpha[j[i]], sd^2)\n",
+    cat(name.y, response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], sd^2)\n",
         sep = "")
     cat("      alpha[j] ~ N*(0, sdAlpha^2)")
     cat("      sdAlpha ~ trunc-half-t(", nuSigma, ", ", sep = "")
@@ -807,11 +921,11 @@ printLN2SpecEqns <- function(object) {
         exposure <- series        
     else
         exposure <- "exposure"
-    cat(name.y, "[i] ~ Normal(", exposure, "[i] * mean[i], sd[i]^2)\n", sep = "")
+    cat(name.y, "[i] ~ N(", exposure, "[i] * mean[i], sd[i]^2)\n", sep = "")
     n.spaces <- max(5L - nchar(name.y), 0L)
     spaces <- rep(" ", n.spaces)
     response <- sprintf("%slog(%s + 1)", spaces, name.y)
-    cat(name.y, response, " ~ Normal(log(", exposure, "[i] + 1) + alpha[j[i]], sd^2)\n",
+    cat(name.y, response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], sd^2)\n",
         sep = "")
     cat("      alpha[j] ~ N*(0, sdAlpha^2)")
     cat("      sdAlpha ~ trunc-half-t(", nuSigma, ", ", sep = "")

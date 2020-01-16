@@ -491,6 +491,7 @@ setClass("MultSigmaMixin",
          slots = c(multSigma = "Scale"),
          contains = "VIRTUAL")
 
+
 ## HAS_TESTS
 setClass("NAcceptThetaMixin",
          slots = c(nAcceptTheta = "Counter"),

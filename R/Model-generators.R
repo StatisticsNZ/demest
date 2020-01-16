@@ -1282,7 +1282,7 @@ setMethod("initialModel",
                            iterator = iterator.betas,
                            useC = TRUE)
               class <- if (has.exposure) "PoissonVaryingUseExp" else "PoissonVaryingNotUseExp"
-              cellInLik <- rep(TRUE, times = length(theta))
+              cellInLik <- rep(TRUE, times = length(theta)) # temporary value
               model <- methods::new(class,
                                     call = call,
                                     theta = theta,
