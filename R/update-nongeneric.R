@@ -2085,6 +2085,46 @@ updateSigma_Varying <- function(object, useC = FALSE) {
     }
 }
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+updateSigmaLN2 <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "LN2"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateSigmaLN2_R, object)
+    }
+    else {
+        alpha <- object@alphaLN2@.Data
+        constraint <- object@constraintLN2@.Data
+        sigma <- object@sigma@.Data
+        sigma.max <- object@sigmaMax@.Data
+        A <- object@ASigma@.Data
+        nu <- object@nuSigma@.Data
+        V <- 0
+        n <- 0L
+        for (j in seq_along(alpha)) {
+            if (is.na(constraint[j]) || (constraint[j] != 0L)) {
+                V <- V + alpha[j]^2
+                n <- n + 1L
+            }
+        }
+        if (n > 0L) {
+            sigma <- updateSDNorm(sigma = sigma,
+                                  A = A,
+                                  nu = nu,
+                                  V = V,
+                                  n = n,
+                                  max = sigma.max)
+            successfully.updated <- sigma > 0
+            if (successfully.updated)
+                object@sigma@.Data <- sigma
+        }
+        else
+            object@sigma@.Data <- 0   
+        object
+    }
+}
+
 ## TRANSLATED
 ## HAS_TESTS
 updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
@@ -4890,6 +4930,57 @@ updateVarsigma <- function(object, y, useC = FALSE) {
         object
     }
 }
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "LN2"))
+    stopifnot(methods::validObject(object))
+    ## y
+    stopifnot(identical(length(y), length(object@cellInLik)))
+    stopifnot(is.integer(y))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+    ## exposure
+    stopifnot(is.integer(exposure))
+    stopifnot(!any(is.na(exposure)))
+    stopifnot(all(exposure >= 0L))
+    ## y and exposure
+    stopifnot(identical(length(exposure), length(y)))
+    if (useC) {
+        .Call(updateSigmaLN2_R, object)
+    }
+    else {
+        varsigma <- object@varsigma@.Data
+        varsigma.max <- object@varsigmaMax@.Data
+        A <- object@AVarsigma@.Data
+        nu <- object@nuVarsigma@.Data
+        alpha <- object@alphaLN2@.Data
+        cell.in.lik <- object@cellInLik
+        transform <- object@transformLN2
+        V <- 0
+        n <- 0L
+        for (i in seq_along(y)) {
+            if (cell.in.lik[i]) {
+                j <- dembase::getIAfter(i = i,
+                                        transform = transform)
+                V <- V + (log1p(y[i]) - log1p(exposure[i]) - alpha[j])^2
+                n <- n + 1L
+            }
+        }
+        varsigma <- updateSDNorm(sigma = varsigma,
+                                 A = A,
+                                 nu = nu,
+                                 V = V,
+                                 n = n,
+                                 max = varsigma.max)
+        successfully.updated <- varsigma > 0
+        if (successfully.updated)
+            object@varsigma@.Data <- varsigma
+        object
+    }
+}
+
 
 
 

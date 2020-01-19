@@ -1429,6 +1429,7 @@ setMethod("initialModel",
                            call = call,
                            metadataY = metadataY)
           })
+
 ## HAS_TESTS
 setMethod("initialModel",
           signature(object = "SpecTFixed",
@@ -1490,6 +1491,137 @@ setMethod("initialModel",
                            sdAll = sdAll,
                            metadataAll = metadataAll)
           })
+
+## NO_TESTS
+setMethod("initialModel",
+          signature(object = "SpecLN2",
+                    y = "Counts",
+                    exposure = "Counts",
+                    weights = "missing"),
+          function(object, y, exposure) {
+              A.varsigma <- object@AVarsigma@.Data
+              A.sigma <- object@ASigma@.Data
+              call <- object@call
+              concordances <- object@concordances
+              mult.sigma <- object@multSigma
+              mult.varsigma <- object@multVarsigma
+              nu.sigma <- object@nuSigma
+              nu.varsigma <- object@nuVarsigma
+              constraint.all <- object@constraintLN2
+              sigma.max <- object@sigmaMax@.Data
+              structural.zeros <- object@structuralZeros
+              varsigma.max <- object@varsigmaMax@.Data
+              metadataY <- y@metadata
+              ## make struc.zero.array
+              struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, 
+                                                     y = y) 
+              y <- checkAndTidyYForStrucZero(y = y, 
+                                             strucZeroArray = struc.zero.array)
+              ## draw values for varsigma and sigma
+              varsigma <- stats::runif(n = 1L,
+                                       min = 0,
+                                       max = min(A.varsigma, varsigma.max))
+              sigma <- stats::runif(n = 1L,
+                                    min = 0,
+                                    max = min(A.sigma, sigma.max))
+              A.varsigma <- methods::new("Scale", A.varsigma)
+              A.sigma <- methods::new("Scale", A.sigma)
+              varsigma <- methods::new("Scale", varsigma)
+              sigma <- methods::new("Scale", sigma)
+              varsigma.max <- methods::new("Scale", varsigma.max)
+              sigma.max <- methods::new("Scale", sigma.max)
+              ## subset 'constraint.all' to create 'constraint', allowing for
+              ## the fact that some of the categories in 'constraint.all'
+              ## are collapsed versions of ones in 'y', as described by
+              ## 'concordances'
+              y.collapsed <- y
+              for (i in seq_along(concordances)) {
+                  name <- names(concordances)[[i]]
+                  if (name %in% names(y.collapsed)) {
+                      concordance <- concordances[[i]]
+                      y.collapsed <- collapseCategories(y.collapsed,
+                                                        dimension = name,
+                                                        concordance = concordance)
+                  }
+              }
+              y.collapsed <- tryCatch(error = function(e) e,
+                                      y.collapsed <- dembase:::makePairCompatible(e1 = y.collapsed,
+                                                                                  e2 = methods::as(constraint.all, "Counts")))
+              if (inherits(y.collapsed, "error"))
+                  stop(gettextf("'%s' and '%s' not compatible : %s",
+                                "constraint", "y", constraint$message))
+              y.collapsed <- y.collapsed[[1L]]
+              constraint <- tryCatch(error = function(e) e,
+                                   dembase::makeCompatible(x = constraint.all,
+                                                           y = y.collapsed,
+                                                           subset = TRUE))
+              if (inherits(constraint, "error"))
+                  stop(gettextf("'%s' and '%s' not compatible : %s",
+                                "constraint", "y", constraint$message))
+              ## make transfom between 'y' and 'constraint'
+              transform <- makeTransform(x = y,
+                                         y = constraint,
+                                         subset = FALSE,
+                                         concordances = concordances)
+              if (inherits(transform, "error"))
+                  stop(gettextf("'%s' and '%s' not compatible : %s",
+                                "constraint", "y", transform$message))
+              transform <- makeCollapseTransformExtra(transform)
+              ## randomly draw 'alpha', using residuals and constraint
+              alpha <- numeric(length = length(constraint))
+              resid <- log1p(y) - log1p(exposure)
+              resid[is.na(resid)] <- 0
+              resid <- dembase::collapse(resid,
+                                         transform = transform)
+              for (j in seq_along(alpha)) {
+                  if (is.na(constraint[j]))
+                      alpha[j] <- stats::rnorm(n = 1L,
+                                               mean = resid[j],
+                                               sd = sigma@.Data)
+                  else if (constraint[j] == -1L)
+                      alpha[j] <- rtnorm1(mean = resid[j],
+                                          sd = sigma@.Data,
+                                          upper = 0,
+                                          useC = TRUE)
+                  else if (constraint[j] == 0L)
+                      alpha[j] <- 0
+                  else if (constraint[j] == 1L)
+                      alpha[j] <- rtnorm1(mean = resid[j],
+                                          sd = sigma@.Data,
+                                          lower = 0,
+                                          useC = TRUE)
+                  else
+                      stop(gettext("invalid value for '%s' [%s]",
+                                   "constraint", constraint[i]))
+              }
+              alpha <- methods::new("ParameterVector", alpha)
+              n.cell.before <- rep(0L, times = length(alpha)) # temporary value
+              cellInLik <- rep(TRUE, times = length(y)) # temporary value
+              model <- methods::new("LN2",
+                                    alphaLN2 = alpha,
+                                    ASigma = A.sigma,
+                                    AVarsigma = A.varsigma,
+                                    call = call,
+                                    cellInLik = cellInLik,
+                                    metadataY = metadataY,
+                                    nCellBeforeLN2 = n.cell.before,
+                                    nuSigma = nu.sigma,
+                                    nuVarsigma = nu.varsigma,
+                                    constraintAllLN2 = constraint.all,
+                                    constraintLN2 = constraint,
+                                    sigma = sigma,
+                                    sigmaMax = sigma.max,
+                                    strucZeroArray = struc.zero.array,
+                                    transformLN2 = transform,
+                                    varsigma = varsigma,
+                                    varsigmaMax = varsigma.max)
+              model <- makeCellInLik(model = model,
+                                     y = y,
+                                     strucZeroArray = struc.zero.array)
+              model <- makeNCellBeforeLN2(model)
+              model
+          })
+
 
 
 ## initialModelPredict ################################################################

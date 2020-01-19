@@ -1600,6 +1600,43 @@ test_that("initialModel creates object of class TFixedNotUseExp from valid input
 })
 
 
+## LN2 ###############################################################################
+
+
+test_that("initialModel creates object of class LN2 from valid inputs", {
+    initialModel <- demest:::initialModel
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    ans.obtained <- initialModel(spec,
+                                 y = y,
+                                 exposure = exposure)
+    expect_true(validObject(ans.obtained))
+    y[2,1:2,] <- 0L
+    sz <- Values(array(c(1L, 1L, 0L, 1L),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0-39", "40+"),
+                                       sex = c("Female", "Male"))))
+    concordances <- list(sex = Concordance(data.frame(from = c("F", "M", "Female", "Male"),
+                                                      to = c("Female", "Male", "Female", "Male"))))
+    spec <- Model(y ~ LN2(constraint = constraint,
+                          structuralZeros = sz,
+                          concordances = concordances))
+    ans.obtained <- initialModel(spec,
+                                 y = y,
+                                 exposure = exposure)
+    expect_true(validObject(ans.obtained))
+})
+
+
 ## Aggregate #########################################################################
 
 test_that("initialModel works with BinomialVarying and AgCertain", {

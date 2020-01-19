@@ -1249,6 +1249,27 @@ makeMeanLevelComponentWeightMix <- function(priorMean, priorSD) {
     methods::new("Parameter", ans)
 }
 
+
+makeNCellBeforeLN2 <- function(model) {
+    n.cell.before <- model@nCellBeforeLN2
+    cell.in.lik <- model@cellInLik
+    transform <- model@transformLN2
+    n.cell.before[] <- 0L
+    for (i in seq_along(cell.in.lik)) {
+        if (cell.in.lik[i]) {
+            j <- dembase::getIAfter(i = i,
+                                    transform = transform,
+                                    check = FALSE,
+                                    useC = TRUE)
+            n.cell.before[j] <- n.cell.before[j] + 1L
+        }
+    }
+    model@nCellBeforeLN2 <- n.cell.before
+    model
+}
+
+
+
 ## HAS_TESTS
 makeNamesEta <- function(spec) {
     formula <- spec@innerFormula

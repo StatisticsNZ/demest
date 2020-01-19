@@ -234,6 +234,65 @@ Binomial <- function(formula) {
                  formulaMu = formula)
 }
 
+
+## HAS_TESTS
+#' @rdname likelihood
+#' @export
+LN2 <- function(constraint, structuralZeros = NULL,
+                concordances = list(), priorSD = HalfT()) {
+    ## constraint
+    if (!methods::is(constraint, "Values"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "constraint", class(constraint)))
+    is.invalid <- !(constraint@.Data %in% c(NA, -1L, 0L, 1L))
+    i.invalid <- match(TRUE, is.invalid, nomatch = 0L)
+    if (i.invalid > 0L)
+        stop(gettextf("'%s' has invalid value [%s]",
+                      "constraint", constraint@.Data[[i.invalid]]))
+    constraint <- toInteger(constraint)
+    if (!methods::is(priorSD, "HalfT"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "priorSD", class(priorSD)))
+    ## structuralZeros
+    structuralZeros <- checkAndTidyStructuralZeros(structuralZeros)
+    ## concordances
+    if (!identical(concordances, list())) {
+        if (!is.list(concordances))
+            stop(gettextf("'%s' has class \"%s\"",
+                          "concordances", class(concordances)))
+        if (!all(sapply(concordances, methods::is,"ManyToOne")))
+            stop(gettextf("'%s' has elements not of class \"%s\"",
+                          "concordances", "ManyToOne"))
+        names.conc <- names(concordances)
+        if (is.null(names.conc))
+            stop(gettextf("'%s' does not have names",
+                          "concordances"))
+        if (any(duplicated(names.conc)))
+            stop(gettextf("'%s' has duplicate names",
+                          "concordances"))
+    }
+    ## priorSD
+    if (!methods::is(priorSD, "HalfT"))
+        stop(gettextf("'%s' has class \"%s\"",
+                      "priorSD", class(priorSD)))
+    AVarsigma <- priorSD@A
+    multVarsigma <- priorSD@mult
+    nuVarsigma <- priorSD@nu
+    varsigmaMax <- priorSD@scaleMax
+    ## return
+    methods::new("SpecLikelihoodLN2",
+                 AVarsigma = AVarsigma,
+                 concordances = concordances,
+                 multVarsigma = multVarsigma,
+                 constraintLN2 = constraint,
+                 nuVarsigma = nuVarsigma,
+                 structuralZeros = structuralZeros,
+                 varsigmaMax = varsigmaMax)
+}
+
+
+
+
 ## HAS_TESTS
 #' @rdname likelihood
 #' @export
@@ -387,7 +446,7 @@ NormalFixed <- function(mean, sd, useExpose = TRUE) {
 
 
 
-## NO_TESTS
+## HAS_TESTS
 #' Specify a model based on a Student's t distribution with known
 #' location, scale, and degrees of freedom.
 #'
@@ -635,7 +694,7 @@ Model <- function(formula, ..., lower = NULL, upper = NULL,
                   aggregate = NULL) {
     kValidDistributions <- c("Poisson", "Binomial", "Normal", "CMP",
                              "PoissonBinomial", "NormalFixed", "TFixed",
-                             "Round3")
+                             "Round3", "LN2")
     kValidDistributions <- c(kValidDistributions,
                              paste0("demest::", kValidDistributions))
     call <- match.call()
@@ -1190,6 +1249,82 @@ setMethod("SpecModel",
                            metadata = metadata,
                            useExpose = useExpose)
           })
+
+
+## HAS_TESTS
+setMethod("SpecModel",
+          signature(specInner = "SpecLikelihoodLN2"),
+          function(specInner, call, nameY, dots, lower, upper,
+                   priorSD, jump,
+                   series, aggregate) {
+              A.varsigma <- specInner@AVarsigma
+              concordances <- specInner@concordances
+              mult.varsigma <- specInner@multVarsigma
+              nu.varsigma <- specInner@nuVarsigma
+              constraintLN2 <- specInner@constraintLN2
+              structuralZeros <- specInner@structuralZeros
+              varsigma.max <- specInner@varsigmaMax
+              if (is.null(priorSD))
+                  priorSD <- HalfT()
+              else {
+                  if (!methods::is(priorSD, "HalfT"))
+                      stop(gettextf("'%s' has class \"%s\"",
+                                    "priorSD", class(priorSD)))
+              }
+              A.sigma <- priorSD@A
+              mult.sigma <- priorSD@mult
+              nu.sigma <- priorSD@nu
+              sigma.max <- priorSD@scaleMax
+              ## We can set A.varsigma and A.sigma now. Even if no value for
+              ## 'A' was supplied in the calls to 'sd' and 'priorSD',
+              ## we know there is an exposure term, so we can
+              ## default to 1 * mult
+              A.sigma <- makeASigma(A = A.sigma,
+                                    sY = NULL,
+                                    mult = mult.sigma,
+                                    isSpec = TRUE)
+              A.varsigma <- makeASigma(A = A.varsigma,
+                                       sY = NULL,
+                                       mult = mult.varsigma,
+                                       isSpec = TRUE)
+              sigma.max <- makeScaleMax(scaleMax = sigma.max,
+                                        A = A.sigma,
+                                        nu = nu.sigma,
+                                        isSpec = TRUE)
+              varsigma.max <- makeScaleMax(scaleMax = varsigma.max,
+                                           A = A.varsigma,
+                                           nu = nu.varsigma,
+                                           isSpec = TRUE)
+              if (length(dots) > 0L)
+                  stop(gettextf("priors specified, but distribution is %s",
+                                "LN2"))
+              for (name in c("lower",
+                             "upper",
+                             "jump",
+                             "aggregate")) {
+                  value <- get(name)
+                  if (!is.null(value))
+                      stop(gettextf("'%s' specified, but distribution is %s",
+                                    name, "LN2"))
+              }
+              series <- checkAndTidySeries(series)
+              methods::new("SpecLN2",
+                           ASigma = A.sigma,
+                           AVarsigma = A.varsigma,
+                           call = call,
+                           concordances = concordances,
+                           multSigma = mult.sigma,
+                           multVarsigma = mult.varsigma,
+                           nameY = nameY,
+                           nuSigma = nu.sigma,
+                           nuVarsigma = nu.varsigma,
+                           constraintLN2 = constraintLN2,
+                           series = series,
+                           sigmaMax = sigma.max,
+                           structuralZeros = structuralZeros,
+                           varsigmaMax = varsigma.max)
+          })
+
 
 
 ## SpecAggregate #########################################################

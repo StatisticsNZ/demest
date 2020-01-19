@@ -136,6 +136,54 @@ setClass("SpecLikelihoodTFixed",
 
 
 
+validity_LN2 <- function(object) {
+    constraintLN2 <- object@constraintLN2
+    concordances <- object@concordances
+    ## 'constraintLN2' has type "integer"
+    if (!is.integer(constraintLN2))
+        return(gettextf("'%s' does not have type \"%s\"",
+                        "constraintLN2", "integer"))
+    ## all values of 'constraintLN2' valid
+    is.invalid <- !(constraintLN2@.Data %in% c(NA, -1L, 0L, 1L))
+    i.invalid <- match(TRUE, is.invalid, nomatch = 0L)
+    if (i.invalid > 0L)
+        return(gettextf("'%s' has invalid value [%s]",
+                        "constraintLN2", constraintLN2@.Data[[i.invalid]]))
+    ## concordances
+    if (!identical(concordances, list())) {
+        if (!is.list(concordances))
+            stop(gettextf("'%s' has class \"%s\"",
+                          "concordances", class(concordances)))
+        if (!all(sapply(concordances, methods::is,"ManyToOne")))
+            stop(gettextf("'%s' has elements not of class \"%s\"",
+                          "concordances", "ManyToOne"))
+        names.conc <- names(concordances)
+        if (is.null(names.conc))
+            stop(gettextf("'%s' does not have names",
+                          "concordances"))
+        if (any(duplicated(names.conc)))
+            stop(gettextf("'%s' has duplicate names",
+                          "concordances"))
+    }
+    TRUE
+}
+
+#' @rdname SpecLikelihood-class
+#' @export
+setClass("SpecLikelihoodLN2",
+         contains = c("SpecLikelihood",
+                      "MultVarsigmaMixin",
+                      "NuVarsigmaMixin",
+                      "SpecAVarsigmaMixin",
+                      "SpecVarsigmaMaxMixin",
+                      "StructuralZerosMixin"),
+         slots = c(constraintLN2 = "Values",
+                   concordances = "list"),
+         validity = validity_LN2)
+
+
+
+
 #' S4 classes to specify a model.
 #'
 #' Classes describing all the parts of a model that can
@@ -396,3 +444,24 @@ setClass("SpecTFixed",
                       "MeanSDMetadataMixin",
                       "NuMixin",
                       "SpecSeriesMixin"))
+
+## NO_TESTS
+#' @rdname SpecModel-class
+#' @export
+setClass("SpecLN2",
+         contains = c("SpecModel",
+                      "MultSigmaMixin",
+                      "MultVarsigmaMixin",
+                      "NuSigmaMixin",
+                      "NuVarsigmaMixin",
+                      "SpecASigmaMixin",
+                      "SpecAVarsigmaMixin",
+                      "SpecSigmaMaxMixin",
+                      "SpecVarsigmaMaxMixin",
+                      "StructuralZerosMixin",
+                      "SpecSeriesMixin",
+                      "StructuralZerosMixin"),
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
+         slots = c(constraintLN2 = "Values",
+                   concordances = "list"),
+         validity = validity_LN2)

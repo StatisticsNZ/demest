@@ -284,7 +284,7 @@ setClass("CellInLikMixin",
              cellInLik <- object@cellInLik
              ## if object has 'theta', then 'cellInLik' same length as 'theta'
              if (methods::.hasSlot(object, "theta")) {
-                 if (!identical(length(cellInLik), length(theta)))
+                 if (!identical(length(cellInLik), length(object@theta)))
                      return(gettextf("'%s' and '%s' have different lengths",
                                      "cellInLik", "theta"))
              }
@@ -491,6 +491,10 @@ setClass("MultSigmaMixin",
          slots = c(multSigma = "Scale"),
          contains = "VIRTUAL")
 
+## NO_TESTS
+setClass("MultVarsigmaMixin",
+         slots = c(multVarsigma = "Scale"),
+         contains = "VIRTUAL")
 
 ## HAS_TESTS
 setClass("NAcceptThetaMixin",

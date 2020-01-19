@@ -12,6 +12,7 @@
 \alias{SpecPoissonBinomialMixture-class}
 \alias{SpecRound3-class}
 \alias{SpecTFixed-class}
+\alias{SpecLN2-class}
 \title{S4 classes to specify a model.}
 \description{
 Classes describing all the parts of a model that can

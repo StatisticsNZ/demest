@@ -5159,6 +5159,137 @@ test_that("R and C versions of updateSigma_Varying give same answer - with Box-C
     }
 })
 
+
+test_that("updateSigmaLN2 gives valid answer", {
+    ## updateSigmaLN2 <- demest:::updateSigmaLN2
+    initialModel <- demest:::initialModel
+    updateSDNorm <- demest:::updateSDNorm
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateSigmaLN2(model)
+        set.seed(seed + 1)
+        ans.expected <- model
+        constr <- ans.expected@constraintLN2@.Data
+        include <- is.na(constr) | (constr != 0L)
+        if (sum(include) > 0L) {
+            V <- sum((ans.expected@alphaLN2@.Data[include])^2)
+            proposed <- updateSDNorm(sigma = ans.expected@sigma@.Data,
+                                     A = ans.expected@ASigma@.Data,
+                                     nu = ans.expected@nuSigma@.Data,
+                                     V = V,
+                                     n = sum(include),
+                                     max = ans.expected@sigmaMax@.Data)
+            if (proposed > 0)
+                ans.expected@sigma@.Data <- proposed
+        }
+        else
+            ans.expected@sigma@.Data <- 0
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+
+## updateSigmaLN2
+
+test_that("updateSigmaLN2 gives valid answer", {
+    updateSigmaLN2 <- demest:::updateSigmaLN2
+    initialModel <- demest:::initialModel
+    updateSDNorm <- demest:::updateSDNorm
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateSigmaLN2(model)
+        set.seed(seed + 1)
+        ans.expected <- model
+        constr <- ans.expected@constraintLN2@.Data
+        include <- is.na(constr) | (constr != 0L)
+        if (sum(include) > 0L) {
+            V <- sum((ans.expected@alphaLN2@.Data[include])^2)
+            proposed <- updateSDNorm(sigma = ans.expected@sigma@.Data,
+                                     A = ans.expected@ASigma@.Data,
+                                     nu = ans.expected@nuSigma@.Data,
+                                     V = V,
+                                     n = sum(include),
+                                     max = ans.expected@sigmaMax@.Data)
+            if (proposed > 0)
+                ans.expected@sigma@.Data <- proposed
+        }
+        else
+            ans.expected@sigma@.Data <- 0
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of updateSigmaLN2 give same answer", {
+    updateSigmaLN2 <- demest:::updateSigmaLN2
+    initialModel <- demest:::initialModel
+    updateSDNorm <- demest:::updateSDNorm
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateSigmaLN2(model, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateSigmaLN2(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
+
+## updateTheta_BinomialVarying
+
 test_that("updateTheta_BinomialVarying gives valid answer", {
     updateTheta_BinomialVarying <- demest:::updateTheta_BinomialVarying
     initialModel <- demest:::initialModel
@@ -10242,6 +10373,148 @@ test_that("R and C versions of updateVarsigma give same answer", {
         ans.R <- updateVarsigma(model, y = y, useC = FALSE)
         set.seed(seed + 1)
         ans.C <- updateVarsigma(model, y = y, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+## updateVarsigmaLN2
+
+test_that("updateVarsigmaLN2 gives valid answer", {
+    updateVarsigmaLN2 <- demest:::updateVarsigmaLN2
+    initialModel <- demest:::initialModel
+    updateSDNorm <- demest:::updateSDNorm
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateVarsigmaLN2(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        alpha <- dembase::makeCompatible(x = Values(array(model@alphaLN2@.Data,
+                                                          dim = dim(model@constraintLN2),
+                                                          dimnames = dimnames(model@constraintLN2))),
+                                         y = y)
+        V <- sum((log(y + 1) - log(exposure + 1) -  alpha)^2)
+        proposed <- updateSDNorm(sigma = ans.expected@varsigma@.Data,
+                                 A = ans.expected@AVarsigma@.Data,
+                                 nu = ans.expected@nuVarsigma@.Data,
+                                 V = V,
+                                 n = length(y),
+                                 max = ans.expected@varsigmaMax@.Data)
+        if (proposed > 0)
+            ans.expected@varsigma@.Data <- proposed
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        ## has missing values
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateVarsigmaLN2(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        alpha <- dembase::makeCompatible(x = Values(array(model@alphaLN2@.Data,
+                                                          dim = dim(model@constraintLN2),
+                                                          dimnames = dimnames(model@constraintLN2))),
+                                         y = y)
+        V <- sum(((log(y + 1) - log(exposure + 1) -  alpha)^2)[-(1:5)])
+        proposed <- updateSDNorm(sigma = ans.expected@varsigma@.Data,
+                                 A = ans.expected@AVarsigma@.Data,
+                                 nu = ans.expected@nuVarsigma@.Data,
+                                 V = V,
+                                 n = length(y) - 5L,
+                                 max = ans.expected@varsigmaMax@.Data)
+        if (proposed > 0)
+            ans.expected@varsigma@.Data <- proposed
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)  }
+})
+
+
+test_that("R and C versions of updateVarsigmaLN2 give same answer", {
+    updateVarsigmaLN2 <- demest:::updateVarsigmaLN2
+    initialModel <- demest:::initialModel
+    updateSDNorm <- demest:::updateSDNorm
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## has missing values
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else

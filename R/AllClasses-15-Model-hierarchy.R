@@ -382,6 +382,86 @@ setClass("TFixedUseExp",
                                iMethodModel = 36L))
 
 
+## NO_TESTS
+setClass("LN2",
+         slots = c(alphaLN2 = "ParameterVector",
+                   constraintLN2 = "Values",
+                   constraintAllLN2 = "Values",
+                   nCellBeforeLN2 = "integer",
+                   transformLN2 = "CollapseTransformExtra"),
+         contains = c("Model",
+                      "ASigmaMixin",
+                      "CellInLikMixin",
+                      "MaxAttemptMixin",
+                      "NuSigmaMixin",
+                      "SigmaMaxMixin",
+                      "SigmaMixin",
+                      "StrucZeroArrayMixin",
+                      "VarsigmaUnknown"),
+         prototype = prototype(slotsToExtract = c("alphaLN2",
+                                                  "varsigma",
+                                                  "sigma"),
+                               iMethodModel = 37L,
+                               nuVarsigma = methods::new("DegreesFreedom", 7),
+                               nuSigma = methods::new("DegreesFreedom", 7),
+                               logPostSigma = methods::new("Parameter", 0),
+                               logPostVarsigma = methods::new("Parameter", 0)),
+         validity = function(object) {
+             alphaLN2 <- object@alphaLN2@.Data
+             constraintLN2 <- object@constraintLN2
+             constraintAllLN2 <- object@constraintAllLN2
+             nCellBeforeLN2 <- object@nCellBeforeLN2
+             transformLN2 <- object@transformLN2
+             ## 'nCellBeforeLN2' not NA
+             if (any(is.na(nCellBeforeLN2))) {
+                 return(gettextf("'%s' has missing values",
+                                 "nCellBeforeLN2"))
+             }
+             ## values of 'nCellBeforeLN2' all non-negative
+             if (any(nCellBeforeLN2 < 0L))
+                 return(gettextf("'%s' has negative values",
+                                 "nCellBeforeLN2"))
+             ## 'constraintLN2', 'constraintAllLN2' consist
+             ## entirely of NAs, -1s, 0s, and 1s
+             for (name in c("constraintLN2", "constraintAllLN2")) {
+                 value <- methods::slot(object, name)
+                 if (!all(value %in% c(NA, -1L, 0L, 1L)))
+                     return(gettextf("'%s' has invalid values",
+                                     name))
+             }
+             ## 'alphaLN2' and 'constraintLN2' have same length
+             if (!identical(length(alphaLN2), length(constraintLN2)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "alphaLN2", "constraintLN2"))
+             ## length of 'constraintLN2' less than or equal to length of 'restructAllLN2'
+             if (length(constraintLN2) > length(constraintAllLN2))
+                 return(gettextf("length of '%s' greater than length of '%s'",
+                                 "constraintLN2", "constraintAllLN2"))
+             ## 'nCellBeforeLN2' has same length as 'alphaLN2'
+             if (!identical(length(nCellBeforeLN2), length(alphaLN2)))
+                 return(gettextf("'%s' and '%s' have different lengths",
+                                 "nCellBeforeLN2", "alphaLN2"))
+             ## 'alphaLN2' has length implied by 'transformLN2'
+             if (!identical(length(alphaLN2), as.integer(prod(transformLN2@dimAfter))))
+                 return(gettextf("'%s' and '%s' incompatible",
+                                 "alphaLN2", "transformLN2"))
+             ## 'alphaLN2' respects constraints in 'constraint'
+             for (j in seq_along(constraintLN2)) {
+                 cj <- constraintLN2[j]
+                 aj <- alphaLN2[j]
+                 if (!is.na(cj)) {
+                     if (((cj == -1L) && (aj > 0))
+                         || ((cj == 0L) && (aj != 0))
+                         || ((cj == 1L) && (aj < 0)))
+                         return(gettextf("'%s' outside bounds specified in '%s'",
+                                         "alphaLN2", "constraintLN2"))
+                 }
+             }
+             TRUE
+         })
+
+
+
 ## Models With Aggregate ##################################################################
 
 ## HAS_TESTS
