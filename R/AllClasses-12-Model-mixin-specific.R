@@ -556,6 +556,21 @@ setClass("NuVarsigmaMixin",
          slots = c(nuVarsigma = "DegreesFreedom"),
          contains = "VIRTUAL")
 
+## NO_TESTS
+setClass("OffsetsAlphaLN2",
+         slots = c(offsetsAlphaLN2 = "Offsets"),
+         contains = "VIRTUAL",
+         validity = function(object) {
+             offsetsAlphaLN2 <- object@offsetsAlphaLN2
+             alphaLN2 <- object@alphaLN2@.Data
+             first <- offsetsAlphaLN2[[1L]]
+             last <- offsetsAlphaLN2[[2L]]
+             if (!identical(last - first + 1L, length(alphaLN2)))
+                 return(gettextf("'%s' and '%s' inconsistent",
+                                 "offsetsAlphaLN2", "alphaLN2"))
+             TRUE
+         })
+
 ## HAS_TESTS
 setClass("OffsetsBetas",
          slots = c(offsetsBetas = "list"),

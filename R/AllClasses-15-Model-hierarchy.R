@@ -905,6 +905,14 @@ setClass("TFixedUseExpPredict",
                                iMethodModel = 136L),
          contains = "TFixedUseExp")
 
+## NO_TESTS
+setClass("LN2Predict",
+         prototype = prototype(iMethodModel = 137L),
+         contains = c("LN2",
+                      "OffsetsAlphaLN2",
+                      "OffsetsVarsigma",
+                      "OffsetsSigma"))
+
 ## Predicted Models - Aggregate #############################################################
 
 ## MIGHT NEED TO DELETE THESE CLASSES

@@ -1,126 +1,3 @@
-setClass("OffsetsAlphaLN2",
-         slots = c(offsetsAlphaLN2 = "OffsetsOrNULL"),
-         contains = "VIRTUAL",
-         validity = function(object) {
-             offsetsAlphaLN2 <- object@offsetsAlphaLN2
-             alphaLN2 <- object@alphaLN2
-             if (!is.null(offsetsAlphaLN2)) {
-                 first <- offsetsAlphaLN2[1L]
-                 last <- offsetsAlphaLN2[2L]
-                 if (!identical(last - first + 1L, length(alphaLN2)))
-                     return(gettextf("'%s' and '%s' incompatible",
-                                     "offsetsAlphaLN2", "alphaLN2"))
-             }
-             TRUE
-         })
-
-
-setClass("LN2Predict",
-         prototype = prototype(iMethodModel = 137L),
-         contains = c("LN2",
-                      "OffsetsAlphaLN2",
-                      "OffsetsVarsigma",
-                      "OffsetsSigma"))
-
-
-
-## HAS_TESTS
-setMethod("initialModelPredict",
-          signature(model = "LN2"),
-          function(model, along, labels, n, offsetModel,
-                   covariates, aggregate, lower, upper) {
-              i.method.model.first <- model@iMethodModel
-              metadata.y <- model@metadataY
-              alpha.first <- model@alphaLN2
-              constraint.first <- model@constraintLN2
-              constraint.all <- model@constraintAllLN2
-              meatadata.y.pred <- makeMetadataPredict(metadata = metadata.y,
-                                                     along = along,
-                                                     labels = labels,
-                                                     n = n)
-              DimScale.along <- DimScales(metadata.y.pred)[along][[1L]]
-              extrapolate.struc.zero <- (methods::is(model, "StrucZeroArrayMixin")
-                  && (methods::is(DimScale.along, "Intervals")
-                      || methods::is(DimScale.along, "Points")))
-              if (extrapolate.struc.zero) {
-                  struc.zero.array.first <- model@strucZeroArray
-                  labels <- labels(DimScale.along)
-                  struc.zero.array.pred <- extrapolateStrucZeroArray(struc.zero.array.first,
-                                                                     along = along,
-                                                                     labels = labels)
-              }
-              else {
-                  .Data <- array(1L,
-                                 dim = dim(metadata.pred),
-                                 dimnames = dimnames(metadata.pred))
-                  struc.zero.array.pred <- methods::new("Counts",
-                                                        .Data = .Data,
-                                                        metadata = metadata.pred)
-              }
-              metadata.constraint.first <- constraint.first@metadata
-              name.along <- names(metadata.y)[along]
-              along.constraint <- match(name.along,
-                                      names(constraint.first),
-                                      nomatch = 0L)
-              if (along.constraint > 0L) {
-                  metadata.constraint.second <- makeMetadataPredict(metadata = metadata.constraint.first,
-                                                                  along = along.constraint,
-                                                                  labels = labels,
-                                                                  n = n)
-                  .Data.constraint.second <- array(0L,
-                                                 dim = dim(metadata.constraint.second),
-                                                 dimnames = dimnames(metadata.constraint.second))
-                  template.constraint.second <- methods::new("Values",
-                                                           .Data = .Data.constraint.second,
-                                                           metadata = metadata.constraint.second)
-                  constraint.second <- tryCatch(error = function(e) e,
-                                              dembase::makeCompatible(x = constraint.all,
-                                                                      y = template.constraint.second,
-                                                                      subset = TRUE))
-                  if (inherits(constraint.second, "error"))
-                      stop(gettextf("problems creating '%s' array for prediction : %s",
-                                    "constraint", constraint.second$message))
-                  transform.second <- tryCatch(error = function(e) e,
-                                              dembase::makeTransform(x = struc.zero.array.pred,
-                                                                      y = constraint.second,
-                                                                      subset = FALSE))
-                  if (inherits(transform.second, "error"))
-                      stop(gettextf("problems creating transform for prediction : %s",
-                                    transform.second$message))
-                  alpha.second <- numeric(length = length(constraint.second))
-              }
-              else {
-                  constraint.second <- constraint.first
-                  transform.second <- model@transformLN2
-                  alpha.second <- alpha.first
-              }
-              alpha.second <- methods::new("ParameterVector", alpha.second)
-              cell.in.lik <- rep(FALSE, times = prod(dim(metadata.pred))) # temporary value
-              n.cell.before <- rep(0L, times = length(alpha))
-              offsets.alpha <- c(first = offsetModel,
-                                 last = offsetModel + length(alpha.second) - 1L)
-              offsets.alpha <- methods::new("Offsets", offsets.alpha)
-              offsets.sigma <- makeOffsetsSigma(model, offsetModel = offsetModel)
-              offsets.varsigma <- makeOffsetsVarsigma(model, offsetModel = offsetModel)
-              class <- paste0(class(model), "Predict")
-              i.method.model.second <- i.method.model.first + 100L
-              model <- methods::new(class,
-                                    model,
-                                    alphaLN2 = alpha.second,
-                                    cellInLik = cell.in.lik,
-                                    metadataY = metadata.y.pred,
-                                    nCellBeforeLN2 = n.cell.before,
-                                    constraintLN2 = constraint.second,
-                                    strucZeroArray = struc.zero.array,
-                                    transformLN2 = transform)
-              model <- makeCellInLik(model = model,
-                                     y = y,
-                                     strucZeroArray = struc.zero.array)
-              model <- makeNCellBeforeLN2(object)
-              model
-          })
-
-
 
 setMethod("drawModelUseExp",
           signature(object = "LN2"),
@@ -320,21 +197,24 @@ updateAlphaLN2 <- function(object, y, exposure, useC = FALSE) {
         sigma <- object@sigma@.Data # variance of alpha
         varsigma.sq <- varsigma^2
         sigma.sq <- sigma^2
+        resid.vec <- rep(0, times = length(alpha)) # or could use alpha
+        for (i in seq_along(y)) {
+            if (cell.in.lik[i]) {
+                j <- dembase::getIAfter(i = i,
+                                        transform = transform)
+                resid.vec[j] <- resid.vec[j] + log1p(y[i]) - log1p(exposure[i])
+            }
+        }
         for (j in seq_along(alpha)) {
             constraint.j <- constraint[j]
             update <- is.na(constraint.j) || (constraint.j != 0L)
             if (update) {
-                i.vec <- dembase::getIBefore(i = j,
-                                             transform = transform)
                 n.cell <- n.cell.vec[j]
                 prec.data  <- n.cell / varsigma.sq
                 prec.prior <- 1 / sigma.sq
                 V <- 1 / (prec.data + prec.prior)
-                y.vec <- y[i.vec]
-                expose.vec <- exposure[i.vec]
-                sum.y <- sum(log1p(y.vec))
-                sum.expose  <- sum(log1p(expose.vec))
-                mean.post <- prec.data * V * (sum.y - sum.expose) / n.cell
+                resid <- resid.vec[j]
+                mean.post <- prec.data * V * resid / n.cell
                 sd.post <- sqrt(V)
                 if (is.na(constraint.j)) {
                     alpha[j] <- stats::rnorm(n = 1L,

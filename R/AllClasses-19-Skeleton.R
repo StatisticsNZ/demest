@@ -395,7 +395,7 @@ setClass("SkeletonMu",
          validity = function(object) {
              margins <- object@margins
              offsets <- object@offsets
-             ## all elements of 'offsets' have class "Offsets"
+             ## all elements of 'offsets' have class "Offsets"x
              if (!all(sapply(offsets, is, "Offsets")))
                  return(gettextf("'%s' has elements not of class \"%s\"",
                                  "offsets", "Offsets"))

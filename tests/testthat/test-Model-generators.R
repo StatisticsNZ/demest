@@ -1602,7 +1602,6 @@ test_that("initialModel creates object of class TFixedNotUseExp from valid input
 
 ## LN2 ###############################################################################
 
-
 test_that("initialModel creates object of class LN2 from valid inputs", {
     initialModel <- demest:::initialModel
     constraint <- Values(array(c(NA, -1L, 0L, 1L),
@@ -2389,6 +2388,61 @@ test_that("initialModelPredict works with NormFixedNotUseExp", {
     expect_identical(ans@metadataY, metadata.expected)
     expect_identical(ans@iMethodModel, model@iMethodModel + 100L)
 })
+
+test_that("initialModelPredict creates object of class LN2Predict from valid inputs", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    ## 'constraint' does not have time dimension
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    mod.est <- initialModel(spec, y = y, exposure = exposure)
+    x <- initialModelPredict(mod.est,
+                             along = 3L,
+                             labels = NULL,
+                             n = 4L,
+                             offsetModel = 1L,
+                             covariates = NULL,
+                             aggregate = NULL,
+                             lower = NULL,
+                             upper = NULL)
+    expect_true(validObject(x))
+    expect_is(x, "LN2Predict")
+    ## 'constraint' has time dimension
+    constraint <- Values(array(c(NA, -1L),
+                               dim = c(2, 7),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               time = seq(2000, 2060, 10))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    mod.est <- initialModel(spec, y = y, exposure = exposure)
+    x <- initialModelPredict(mod.est,
+                             along = 3L,
+                             labels = NULL,
+                             n = 4L,
+                             offsetModel = 1L,
+                             covariates = NULL,
+                             aggregate = NULL,
+                             lower = NULL,
+                             upper = NULL)
+    expect_true(validObject(x))
+    expect_is(x, "LN2Predict")
+    expect_identical(as.character(limits(x@constraintLN2)$time), c("2030", "2060"))
+})
+
 
 
 
