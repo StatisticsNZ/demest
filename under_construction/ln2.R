@@ -27,77 +27,6 @@ setMethod("drawModelUseExp",
           })
 
 
-setMethod("logLikelihood",
-          signature(model = "LN2",
-                    count = "integer",
-                    dataset = "Counts",
-                    i = "integer"),
-          function(model, count, dataset, i, useC = FALSE, useSpecific = FALSE) {
-              ## count
-              stopifnot(identical(length(count), 1L))
-              stopifnot(!is.na(count))
-              ## dataset
-              stopifnot(is.integer(dataset))
-              ## i
-              stopifnot(identical(length(i), 1L))
-              stopifnot(!is.na(i))
-              stopifnot(i >= 1L)
-              ## dataset and i
-              stopifnot(i <= length(dataset))
-              stopifnot(!is.na(dataset@.Data[i]))
-              if (useC) {
-                  if (useSpecific)
-                      .Call(logLikelihood_NormalFixedUseExp_R, model, count, dataset, i)
-                  else
-                      .Call(logLikelihood_R, model, count, dataset, i)
-              }
-              else {
-                  logLikelihood_LN2(model = model,
-                                    count = count,
-                                    dataset = dataset,
-                                    i = i)
-              }
-          })
-
-
-
-## Calling function should test that dataset[i] is not missing
-logLikelihood_LN2 <- function(model, count, dataset, i, useC = FALSE) {
-    ## model
-    stopifnot(methods::is(model, "Model"))
-    stopifnot(methods::is(model, "LN2"))
-    ## count
-    stopifnot(identical(length(count), 1L))
-    stopifnot(is.integer(count))
-    stopifnot(!is.na(count))
-    ## dataset
-    stopifnot(is.integer(dataset))
-    stopifnot(all(dataset[!is.na(dataset)] >= 0L))
-    ## i
-    stopifnot(identical(length(i), 1L))
-    stopifnot(is.integer(i))
-    stopifnot(!is.na(i))
-    stopifnot(i >= 1L)
-    ## dataset and i
-    stopifnot(i <= length(dataset))
-    stopifnot(!is.na(dataset@.Data[i]))
-    if (useC) {
-        .Call(logLikelihood_LN2_R, model, count, dataset, i)
-    }
-    else {
-        alpha <- model@alphaLN2@.Data
-        transform <- model@transformLN2
-        sd <- model@varsigma@.Data
-        x <- log1p(dataset[[i]])
-        j <- dembase::getIAfter(i = i,
-                                transform = transform)
-        mean <- log1p(count) + alpha[j]
-        stats::dnorm(x = x,
-                     mean = mean,
-                     sd = sd,
-                     log = TRUE)
-    }
-}
 
 setMethod("makeOutputModel",
           signature(model = "NormalFixed"),
@@ -170,77 +99,10 @@ setMethod("updateModelUseExp",
           })
 
 
-updateAlphaLN2 <- function(object, y, exposure, useC = FALSE) {
-    ## object
-    stopifnot(methods::is(object, "LN2"))
-    stopifnot(methods::validObject(object))
-    ## y
-    stopifnot(identical(length(y), length(object@cellInLik)))
-    stopifnot(is.integer(y))
-    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
-    ## exposure
-    stopifnot(is.integer(exposure))
-    stopifnot(!any(is.na(exposure)))
-    stopifnot(all(exposure > 0L))
-    ## y and exposure
-    stopifnot(identical(length(exposure), length(y)))
-    if (useC) {
-        .Call(updateAlphaLN2_R, object, y, exposure)
-    }
-    else {            
-        alpha <- object@alphaLN2@.Data
-        cell.in.lik <- object@cellInLik
-        n.cell.vec <- object@nCellBeforeLN2
-        constraint <- object@constraintLN2@.Data
-        transform <- object@transformLN2
-        varsigma <- object@varsigma@.Data # variance of log(y + 1)
-        sigma <- object@sigma@.Data # variance of alpha
-        varsigma.sq <- varsigma^2
-        sigma.sq <- sigma^2
-        resid.vec <- rep(0, times = length(alpha)) # or could use alpha
-        for (i in seq_along(y)) {
-            if (cell.in.lik[i]) {
-                j <- dembase::getIAfter(i = i,
-                                        transform = transform)
-                resid.vec[j] <- resid.vec[j] + log1p(y[i]) - log1p(exposure[i])
-            }
-        }
-        for (j in seq_along(alpha)) {
-            constraint.j <- constraint[j]
-            update <- is.na(constraint.j) || (constraint.j != 0L)
-            if (update) {
-                n.cell <- n.cell.vec[j]
-                prec.data  <- n.cell / varsigma.sq
-                prec.prior <- 1 / sigma.sq
-                V <- 1 / (prec.data + prec.prior)
-                resid <- resid.vec[j]
-                mean.post <- prec.data * V * resid / n.cell
-                sd.post <- sqrt(V)
-                if (is.na(constraint.j)) {
-                    alpha[j] <- stats::rnorm(n = 1L,
-                                             mean = mean.post,
-                                             sd = sd.post)
-                }
-                else if (constraint.j == -1L) {
-                    alpha[j] <- rtnorm1(mean = mean.post,
-                                        sd = sd.post,
-                                        lower = -Inf,
-                                        upper = 0)
-                }
-                else if (constraint.j == 1L) {
-                    alpha[j] <- rtnorm1(mean = mean.post,
-                                        sd = sd.post,
-                                        lower = 0,
-                                        upper = Inf)
-                }
-                else
-                    stop("invalid value for 'constraint'")
-            }
-        }
-        object@alphaLN2@.Data <- alpha
-        object
-    }
-}
+
+
+
+
         
 
     

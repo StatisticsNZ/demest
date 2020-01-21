@@ -793,6 +793,78 @@ setMethod("logLikelihood",
           })
 
 
+## TRANSLATED
+## HAS_TESTS
+## Calling function should test that dataset[i] is not missing
+setMethod("logLikelihood",
+          signature(model = "LN2",
+                    count = "integer",
+                    dataset = "Counts",
+                    i = "integer"),
+          function(model, count, dataset, i, useC = FALSE, useSpecific = FALSE) {
+              ## count
+              stopifnot(identical(length(count), 1L))
+              stopifnot(!is.na(count))
+              stopifnot(count >= 0L)
+              ## dataset
+              stopifnot(is.integer(dataset))
+              ## i
+              stopifnot(identical(length(i), 1L))
+              stopifnot(!is.na(i))
+              stopifnot(i >= 1L)
+              ## dataset and i
+              stopifnot(i <= length(dataset))
+              stopifnot(!is.na(dataset@.Data[i]))
+              stopifnot(dataset@.Data[[i]] > 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(logLikelihood_LN2_R, model, count, dataset, i)
+                  else
+                      .Call(logLikelihood_R, model, count, dataset, i)
+              }
+              else {
+                  logLikelihood_LN2(model = model,
+                                    count = count,
+                                    dataset = dataset,
+                                    i = i)
+              }
+          })
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("logLikelihood",
+          signature(model = "LN2",
+                    count = "integer",
+                    dataset = "Counts",
+                    i = "integer"),
+          function(model, count, dataset, i, useC = FALSE, useSpecific = FALSE) {
+              ## count
+              stopifnot(identical(length(count), 1L))
+              stopifnot(!is.na(count))
+              ## dataset
+              stopifnot(is.integer(dataset))
+              ## i
+              stopifnot(identical(length(i), 1L))
+              stopifnot(!is.na(i))
+              stopifnot(i >= 1L)
+              ## dataset and i
+              stopifnot(i <= length(dataset))
+              stopifnot(!is.na(dataset@.Data[i]))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(logLikelihood_NormalFixedUseExp_R, model, count, dataset, i)
+                  else
+                      .Call(logLikelihood_R, model, count, dataset, i)
+              }
+              else {
+                  logLikelihood_LN2(model = model,
+                                    count = count,
+                                    dataset = dataset,
+                                    i = i)
+              }
+          })
+
 
 
 

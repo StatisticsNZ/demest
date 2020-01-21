@@ -1881,6 +1881,86 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 ## UPDATING MODELS ##################################################################
 
+
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+updateAlphaLN2 <- function(object, y, exposure, useC = FALSE) {
+    ## object
+    stopifnot(methods::is(object, "LN2"))
+    stopifnot(methods::validObject(object))
+    ## y
+    stopifnot(identical(length(y), length(object@cellInLik)))
+    stopifnot(is.integer(y))
+    stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0L))
+    ## exposure
+    stopifnot(is.integer(exposure))
+    stopifnot(!any(is.na(exposure)))
+    stopifnot(all(exposure >= 0L))
+    ## y and exposure
+    stopifnot(identical(length(exposure), length(y)))
+    if (useC) {
+        .Call(updateAlphaLN2_R, object, y, exposure)
+    }
+    else {            
+        alpha <- object@alphaLN2@.Data
+        cell.in.lik <- object@cellInLik
+        n.cell.vec <- object@nCellBeforeLN2
+        constraint <- object@constraintLN2@.Data
+        transform <- object@transformLN2
+        varsigma <- object@varsigma@.Data # variance of log(y + 1)
+        sigma <- object@sigma@.Data # variance of alpha
+        varsigma.sq <- varsigma^2
+        sigma.sq <- sigma^2
+        resid.vec <- rep(0, times = length(alpha)) # or could use alpha
+        for (i in seq_along(y)) {
+            if (cell.in.lik[i]) {
+                resid <- log1p(y[i]) - log1p(exposure[i])
+                j <- dembase::getIAfter(i = i,
+                                        transform = transform)
+                resid.vec[j] <- resid.vec[j] + resid
+            }
+        }
+        for (j in seq_along(alpha)) {
+            constraint.j <- constraint[j]
+            update <- is.na(constraint.j) || (constraint.j != 0L)
+            if (update) {
+                n.cell <- n.cell.vec[j]
+                prec.data  <- n.cell / varsigma.sq
+                prec.prior <- 1 / sigma.sq
+                V <- 1 / (prec.data + prec.prior)
+                resid <- resid.vec[j]
+                mean.post <- prec.data * V * resid / n.cell
+                sd.post <- sqrt(V)
+                if (is.na(constraint.j)) {
+                    alpha[j] <- stats::rnorm(n = 1L,
+                                             mean = mean.post,
+                                             sd = sd.post)
+                }
+                else if (constraint.j == -1L) {
+                    alpha[j] <- rtnorm1(mean = mean.post,
+                                        sd = sd.post,
+                                        lower = -Inf,
+                                        upper = 0)
+                }
+                else if (constraint.j == 1L) {
+                    alpha[j] <- rtnorm1(mean = mean.post,
+                                        sd = sd.post,
+                                        lower = 0,
+                                        upper = Inf)
+                }
+                else
+                    stop("invalid value for 'constraint'")
+            }
+        }
+        object@alphaLN2@.Data <- alpha
+        object
+    }
+}
+
+
+
+
 ## TRANSLATED
 ## HAS_TESTS (comparing R and C versions)
 updatePriorsBetas <- function(object, useC = FALSE) {

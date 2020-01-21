@@ -6042,8 +6042,83 @@ test_that("R and C versions of logLikelihood give same answer with TFixedUseExp"
     }
 })
 
+test_that("logLikelihood_LN2 gives valid answer", {
+    logLikelihood_LN2 <- demest:::logLikelihood_LN2
+    initialModel <- demest:::initialModel
+    getIAfter <- dembase::getIAfter
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        dataset <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- dataset + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = dataset,
+                              exposure = exposure)
+        model <- initialModel(spec, y = dataset, exposure = exposure)
+        i <- sample.int(length(dataset), size = 1)
+        ans.obtained <- logLikelihood_LN2(model = model,
+                                          count = exposure[[i]],
+                                          dataset = dataset,
+                                          i = i)
+        j <- getIAfter(i, model@transformLN2)
+        ans.expected <- dnorm(x = log1p(dataset[i]),
+                              mean = log1p(exposure[[i]]) +
+                                  model@alphaLN2@.Data[[j]],
+                              sd = model@varsigma@.Data,
+                              log = TRUE)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
 
-
+test_that("R and C versions of logLikelihood_LN2 give same answer", {
+    logLikelihood_LN2 <- demest:::logLikelihood_LN2
+    initialModel <- demest:::initialModel
+    getIAfter <- dembase::getIAfter
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        dataset <- Counts(array(rpois(n = 24, lambda = 10),
+                                dim = c(2, 4, 3),
+                                dimnames = c(list(sex = c("Female", "Male"),
+                                                  age = c("0-19", "20-39", "40-59", "60+"),
+                                                  time = c("2000", "2010", "2020")))))
+        exposure <- dataset + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = dataset,
+                              exposure = exposure)
+        model <- initialModel(spec, y = dataset, exposure = exposure)
+        i <- sample.int(length(dataset), size = 1)
+        ans.R <- logLikelihood_LN2(model = model,
+                                   count = exposure[[i]],
+                                   dataset = dataset,
+                                   i = i,
+                                   useC = FALSE)
+        ans.C <- logLikelihood_LN2(model = model,
+                                   count = exposure[[i]],
+                                   dataset = dataset,
+                                   i = i,
+                                   useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
 
 
 test_that("makeIOther gives valid answers", {

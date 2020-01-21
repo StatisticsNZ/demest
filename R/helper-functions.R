@@ -2283,7 +2283,46 @@ logLikelihood_TFixedUseExp <- function(model, count, dataset, i, useC = FALSE) {
     }
 }
 
-
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## Calling function should test that dataset[i] is not missing
+logLikelihood_LN2 <- function(model, count, dataset, i, useC = FALSE) {
+    ## model
+    stopifnot(methods::is(model, "Model"))
+    stopifnot(methods::is(model, "LN2"))
+    ## count
+    stopifnot(identical(length(count), 1L))
+    stopifnot(is.integer(count))
+    stopifnot(!is.na(count))
+    stopifnot(count >= 0L)
+    ## dataset
+    stopifnot(is.integer(dataset))
+    stopifnot(all(dataset[!is.na(dataset)] >= 0L))
+    ## i
+    stopifnot(identical(length(i), 1L))
+    stopifnot(is.integer(i))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## dataset and i
+    stopifnot(i <= length(dataset))
+    stopifnot(!is.na(dataset@.Data[i]))
+    if (useC) {
+        .Call(logLikelihood_LN2_R, model, count, dataset, i)
+    }
+    else {
+        alpha <- model@alphaLN2@.Data
+        transform <- model@transformLN2
+        sd <- model@varsigma@.Data
+        x <- log1p(dataset[[i]])
+        j <- dembase::getIAfter(i = i,
+                                transform = transform)
+        mean <- log1p(count) + alpha[j]
+        stats::dnorm(x = x,
+                     mean = mean,
+                     sd = sd,
+                     log = TRUE)
+    }
+}
 
 ## TRANSLATED
 ## HAS_TESTS

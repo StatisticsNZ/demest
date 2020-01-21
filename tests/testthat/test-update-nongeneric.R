@@ -4782,6 +4782,171 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
+test_that("updateAlphaLN2 gives valid answer", {
+    updateAlphaLN2 <- demest:::updateAlphaLN2
+    initialModel <- demest:::initialModel
+    rtnorm1 <- demest:::rtnorm1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        ## no missing values
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateAlphaLN2(model,
+                                       y = y,
+                                       exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        constr <- ans.expected@constraintLN2@.Data
+        include <- is.na(constr) | (constr != 0L)
+        alpha <- rep(0, times = length(constr))
+        resid.vec <- collapse(log1p(y) - log1p(exposure),
+                              transform = ans.expected@transformLN2)
+        V.vec <- 1 / ((ans.expected@nCellBeforeLN2/ans.expected@varsigma@.Data^2)
+            + (1/ans.expected@sigma@.Data^2))
+        mean.vec <- (1/ans.expected@varsigma@.Data^2) * V.vec * resid.vec # ncell cancels
+        for (j in seq_along(constr)) {
+            if (include[j]) {
+                if (is.na(constr[j]))
+                    alpha[j] <- rnorm(n = 1,
+                                      mean = mean.vec[j],
+                                      sd = sqrt(V.vec[j]))
+                else if (constr[j] == -1L)
+                    alpha[j] <- rtnorm1(mean = mean.vec[j],
+                                        sd = sqrt(V.vec[j]),
+                                        lower = -Inf,
+                                        upper = 0)
+                else
+                    alpha[j] <- rtnorm1(mean = mean.vec[j],
+                                        sd = sqrt(V.vec[j]),
+                                        lower = 0,
+                                        upper = Inf)
+            }
+        }
+        ans.expected@alphaLN2@.Data <- alpha
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        ## with missing values
+        y[1:4] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateAlphaLN2(model,
+                                       y = y,
+                                       exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        constr <- ans.expected@constraintLN2@.Data
+        include <- is.na(constr) | (constr != 0L)
+        alpha <- rep(0, times = length(constr))
+        resid.vec <- log1p(y) - log1p(exposure)
+        resid.vec[1:4] <- 0
+        resid.vec <- collapse(resid.vec,
+                              transform = ans.expected@transformLN2)
+        V.vec <- 1 / ((ans.expected@nCellBeforeLN2/ans.expected@varsigma@.Data^2)
+            + (1/ans.expected@sigma@.Data^2))
+        mean.vec <- (1/ans.expected@varsigma@.Data^2) * V.vec * resid.vec # ncell cancels
+        for (j in seq_along(constr)) {
+            if (include[j]) {
+                if (is.na(constr[j]))
+                    alpha[j] <- rnorm(n = 1,
+                                      mean = mean.vec[j],
+                                      sd = sqrt(V.vec[j]))
+                else if (constr[j] == -1L)
+                    alpha[j] <- rtnorm1(mean = mean.vec[j],
+                                        sd = sqrt(V.vec[j]),
+                                        lower = -Inf,
+                                        upper = 0)
+                else
+                    alpha[j] <- rtnorm1(mean = mean.vec[j],
+                                        sd = sqrt(V.vec[j]),
+                                        lower = 0,
+                                        upper = Inf)
+            }
+        }
+        ans.expected@alphaLN2@.Data <- alpha
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+
+test_that("R and C versions of updateAlphaLN2 give same answer", {
+    updateAlphaLN2 <- demest:::updateAlphaLN2
+    initialModel <- demest:::initialModel
+    rtnorm1 <- demest:::rtnorm1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        ## no missing values
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateAlphaLN2(model,
+                                y = y,
+                                exposure = exposure,
+                                useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateAlphaLN2(model,
+                                y = y,
+                                exposure = exposure,
+                                useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## with missing values
+        y[1:4] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateAlphaLN2(model,
+                                y = y,
+                                exposure = exposure,
+                                useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateAlphaLN2(model,
+                                y = y,
+                                exposure = exposure,
+                                useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 
 test_that("R and C versions of updatePriorsBetas give same answer", {
     updatePriorsBetas <- demest:::updatePriorsBetas
