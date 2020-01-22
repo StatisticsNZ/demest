@@ -261,6 +261,48 @@ checkSystemModelsSuitableForSimulation <- function(systemModels, account) {
     NULL
 }
 
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+## The contents of this function are
+## identical to 'predictAlphaLN2'. The only difference
+## is that it is called on "LN2" objects
+## rather than "LN2Predict". Repeating here just to
+## conform to our standard set-up, and avoid
+## creating special cases with method dispatch etc.
+drawAlphaLN2 <- function(object, useC = FALSE) {
+    ## object
+    stopifnot(methods::validObject(object))
+    stopifnot(methods::is(object, "LN2"))
+    if (useC) {
+        .Call(drawAlphaLN2_R, object)
+    }
+    else {
+        alpha <- object@alphaLN2@.Data
+        constraint <- object@constraintLN2@.Data
+        sigma <- object@sigma@.Data # variance of alpha
+        for (j in seq_along(alpha)) {
+            constraint.j <- constraint[j]
+            if (is.na(constraint.j) || (constraint.j != 0L)) {
+                x <- stats::rnorm(n = 1L,
+                                  mean = 0,
+                                  sd = sigma)
+                if (is.na(constraint.j))
+                    alpha[j] <- x
+                else if (constraint.j == -1L)
+                    alpha[j] <- -1 * abs(x)
+                else if (constraint.j == 1L)
+                    alpha[j] <- abs(x)
+                else
+                    stop("invalid value for 'constraint'")
+            }
+        }
+        object@alphaLN2@.Data <- alpha
+        object
+    }
+}
+
+
 ## TRANSLATED
 ## HAS_TESTS
 drawBetas <- function(object, useC = FALSE) {

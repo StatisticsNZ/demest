@@ -371,6 +371,15 @@ setMethod("show",
 #' @rdname show-methods
 #' @export
 setMethod("show",
+          signature(object = "SpecLikelihoodLN2"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printLN2LikEqns(object)
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
           signature(object = "SpecBinomialVarying"),
           function(object) {
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
@@ -472,6 +481,15 @@ setMethod("show",
           function(object) {
               cat("An object of class \"", class(object), "\"\n\n", sep = "")
               printTFixedSpecEqns(object)
+          })
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "SpecLN2"),
+          function(object) {
+              cat("An object of class \"", class(object), "\"\n\n", sep = "")
+              printLN2SpecEqns(object)
           })
 
 

@@ -2218,7 +2218,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
-    for (seed in seq_len(n.test * 2)) {
+    for (seed in seq_len(n.test * 3)) {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
@@ -2399,7 +2399,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
-    for (seed in seq_len(2 * n.test)) {
+    for (seed in seq_len(3 * n.test)) {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
@@ -2562,7 +2562,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(2 * n.test)) {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births

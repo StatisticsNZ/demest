@@ -329,6 +329,77 @@ test_that("checkSystemModelsSuitableForSimulation works", {
 
 
 
+test_that("drawAlphaLN2 works", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    drawAlphaLN2 <- demest:::drawAlphaLN2
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    has.non.zero <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- drawAlphaLN2(x)
+        set.seed(seed)
+        ans.expected <- x
+        not.zero <- is.na(x@constraintLN2@.Data) | (x@constraintLN2@.Data != 0L)
+        if (any(not.zero))
+            has.non.zero <- TRUE
+        pos <- !is.na(x@constraintLN2@.Data) & (x@constraintLN2@.Data > 0L)
+        neg <- !is.na(x@constraintLN2@.Data) & (x@constraintLN2@.Data < 0L)
+        ans.expected@alphaLN2@.Data[not.zero] <- rnorm(n = sum(not.zero),
+                                                       mean = 0,
+                                                       sd = x@sigma@.Data)
+        ans.expected@alphaLN2@.Data[pos] <- abs(ans.expected@alphaLN2@.Data[pos])
+        ans.expected@alphaLN2@.Data[neg] <- -1 * abs(ans.expected@alphaLN2@.Data[neg])
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+    if (!has.non.zero)
+        warning("no non-zero entries")
+})
+
+test_that("R and C versions of drawAlphaLN2 give same answer", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    drawAlphaLN2 <- demest:::drawAlphaLN2
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    x <- initialModel(spec, y = y, exposure = exposure)
+    has.non.zero <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- drawAlphaLN2(x, useC = FALSE)
+        set.seed(seed)
+        ans.C <- drawAlphaLN2(x, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+    if (!has.non.zero)
+        warning("no non-zero entries")
+})
 
 
                

@@ -9509,7 +9509,7 @@ test_that("R and C versions of updateThetaAndValueAgNormal_PoissonUseExp same an
     initialModel <- demest:::initialModel
     ## no missing values
     was.updated <- FALSE  ## only test if was ever updated, since only one update done per iteration
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(2 * n.test)) {
         set.seed(seed)
         aggregate <- AgNormal(value = 0.5, sd = 0.1)
         theta <- rbeta(n = 20, shape1 = 20, shape2 = 5)

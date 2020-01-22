@@ -710,6 +710,85 @@ test_that("R, C specific and C generic versions of drawModelUseExp for PoissonBi
 })
 
 
+test_that("drawModelUseExp works with LN2", {
+    initialModel <- demest:::initialModel
+    drawModelUseExp <- demest:::drawModelUseExp
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    drawVarsigma <- demest:::drawVarsigma
+    drawAlphaLN2 <- demest:::drawAlphaLN2
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.obtained <- drawModelUseExp(model, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- drawSigma_Varying(ans.expected)
+        ans.expected <- drawVarsigma(ans.expected)
+        ans.expected <- drawAlphaLN2(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R, C specific and C generic versions of drawModelUseExp for LN2 give same answer", {
+    initialModel <- demest:::initialModel
+    drawModelUseExp <- demest:::drawModelUseExp
+    drawSigma_Varying <- demest:::drawSigma_Varying
+    drawVarsigma <- demest:::drawVarsigma
+    drawAlphaLN2 <- demest:::drawAlphaLN2
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.R <- drawModelUseExp(model,
+                                 y = y,
+                                 exposure = exposure,
+                                 useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- drawModelUseExp(model,
+                                         y = y,
+                                         exposure = exposure,
+                                         useC = TRUE,
+                                         useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- drawModelUseExp(model,
+                                          y = y,
+                                          exposure = exposure,
+                                          useC = TRUE,
+                                          useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.specific)
+        else
+            expect_equal(ans.R, ans.C.specific)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
 
 ## describeModel #######################################################################
 
@@ -2773,6 +2852,7 @@ test_that("makeOutputModel works with NormalFixed", {
     pos <- 10L
     ans.obtained <- makeOutputModel(model = model, pos = pos)
     ans.expected <- list(mean = mean, sd = sd)
+    expect_equal(ans.obtained, ans.expected)
 })
 
 
@@ -2783,20 +2863,51 @@ test_that("makeOutputModel works with TFixed", {
     makeOutputModel <- demest:::makeOutputModel
     y <- Counts(array(rpois(20, lambda  = 10),
                       dim = c(2, 10),
-                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+                      dimnames = list(sex = c("f", "m"), age = as.character(0:9))))
     location <- Values(array(rpois(20, lambda  = 10),
                       dim = c(2, 10),
-                      dimnames = list(sex = c("f", "m"), age = 0:9)))
+                      dimnames = list(sex = c("f", "m"), age = as.character(0:9))))
     scale <- Values(array(runif(20),
                       dim = c(2, 10),
-                      dimnames = list(sex = c("f", "m"), age = 0:9)))
-    spec <- Model(y ~ TFixed(location = location, scale = scale, df = 3, useExpose = FALSE))
+                      dimnames = list(sex = c("f", "m"), age = as.character(0:9))))
+    spec <- Model(y ~ TFixed(location = location, scale = scale, df = 3L, useExpose = FALSE))
     model <- initialModel(spec, y = y, exposure = NULL)
     metadata <- y@metadata
     pos <- 10L
     ans.obtained <- makeOutputModel(model = model, pos = pos)
-    ans.expected <- list(location = location, scale = scale, df = 3)
+    ans.expected <- list(location = location, scale = scale, df = 3L)
+    expect_equal(ans.obtained, ans.expected)
 })
+
+test_that("makeOutputModel works with LN2", {
+    initialModel <- demest:::initialModel
+    makeOutputModel <- demest:::makeOutputModel
+    Skeleton <- demest:::Skeleton
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans.obtained <- makeOutputModel(model = model,
+                                    pos = 10L)
+    alpha <- Values(array(model@alphaLN2@.Data,
+                          dim = dim(t(constraint)),
+                          dimnames = dimnames(t(constraint))))
+    ans.expected <- list(likelihood = list(mean = Skeleton(alpha,
+                                                           first = 10L,
+                                                           margin= 1:2),
+                                           sd = Skeleton(first = 14L)),
+                         prior = list(sd = Skeleton(first = 15L)))
+    expect_identical(ans.obtained, ans.expected)                                           
+})
+
 
 
 
@@ -3618,6 +3729,109 @@ test_that("R, C-specific, and C-generic methods for predictModelUseExp give same
     else
         expect_equal(ans.R, ans.C.specific)
     expect_identical(ans.C.specific, ans.C.generic)
+})
+
+test_that("predictModelNotUseExp works with LN2", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    predictAlphaLN2 <- demest:::predictAlphaLN2
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    mod.est <- initialModel(spec, y = y, exposure = exposure)
+    x <- initialModelPredict(mod.est,
+                             along = 3L,
+                             labels = NULL,
+                             n = 4L,
+                             offsetModel = 1L,
+                             covariates = NULL,
+                             aggregate = NULL,
+                             lower = NULL,
+                             upper = NULL)
+    y.pred <- Counts(array(0L,
+                           dim = c(2, 4, 4),
+                           dimnames = c(list(sex = c("Female", "Male"),
+                                             age = c("0-19", "20-39", "40-59", "60+"),
+                                             time = c("2030", "2040", "2050", "2060")))))
+    exposure.pred <- y.pred
+    exposure.pred[] <- NA_integer_
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.obtained <- predictModelUseExp(x,
+                                           y = y.pred,
+                                           exposure = exposure.pred)
+        set.seed(seed)
+        ans.expected <- predictAlphaLN2(x)
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R, C-specific, and C-generic methods for predictModelUseExp give same answer with LN2", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    predictModelUseExp <- demest:::predictModelUseExp
+    predictAlphaLN2 <- demest:::predictAlphaLN2
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    mod.est <- initialModel(spec, y = y, exposure = exposure)
+    x <- initialModelPredict(mod.est,
+                             along = 3L,
+                             labels = NULL,
+                             n = 4L,
+                             offsetModel = 1L,
+                             covariates = NULL,
+                             aggregate = NULL,
+                             lower = NULL,
+                             upper = NULL)
+    y.pred <- Counts(array(0L,
+                           dim = c(2, 4, 4),
+                           dimnames = c(list(sex = c("Female", "Male"),
+                                             age = c("0-19", "20-39", "40-59", "60+"),
+                                             time = c("2030", "2040", "2050", "2060")))))
+    exposure.pred <- y.pred
+    exposure.pred[] <- NA_integer_
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ans.R <- predictModelUseExp(x,
+                                    y = y.pred,
+                                    exposure = exposure.pred,
+                                    useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- predictModelUseExp(x,
+                                            y = y.pred,
+                                            exposure = exposure.pred,
+                                            useC = TRUE,
+                                            useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- predictModelUseExp(x,
+                                             y = y.pred,
+                                             exposure = exposure.pred,
+                                             useC = TRUE,
+                                             useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.specific)
+        else
+            expect_equal(ans.R, ans.C.specific)
+        expect_identical(ans.C.specific, ans.C.generic)
+    }
 })
 
 
@@ -4486,6 +4700,93 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
     expect_identical(ans.C.generic, ans.C.specific)
 })
 
+
+test_that("transferParamModel gives valid answer with TFixedNotUseExpPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    transferParamModel <- demest:::transferParamModel
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale, useExpose = FALSE))
+    model <- initialModel(spec, y = y.est, exposure = NULL)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.obtained <- transferParamModel(model,
+                                       filename = "file",
+                                       lengthIter = 100L,
+                                       iteration = 1L)
+    ans.expected <- model
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R, C-specific, and C-generic methods for transferParamModel give same answer with TFixedNotUseExpPredict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    transferParamModel <- demest:::transferParamModel
+    y.est <- Counts(array(rpois(10, lambda  = 10),
+                          dim = c(2, 5),
+                          dimnames = list(sex = c("f", "m"), age = 0:4)))
+    y.pred <- Counts(array(as.integer(NA),
+                           dim = c(2, 5),
+                           dimnames = list(sex = c("f", "m"), age = 5:9)))
+    location <- Values(array(rpois(20, lambda  = 10),
+                         dim = c(2, 10),
+                         dimnames = list(sex = c("f", "m"), age = 0:9)))
+    scale <- Values(array(runif(20),
+                       dim = c(2, 10),
+                       dimnames = list(sex = c("f", "m"), age = 0:9)))
+    spec <- Model(y ~ TFixed(location = location, scale = scale, useExpose = FALSE))
+    model <- initialModel(spec, y = y.est, exposure = NULL)
+    model <- initialModelPredict(model,
+                                 along = 2L,
+                                 labels = NULL,
+                                 n = 5,
+                                 offsetModel = 1L,
+                                 covariates = NULL,
+                                 aggregate = NULL,
+                                 lower = NULL,
+                                 upper = NULL)
+    ans.R <- transferParamModel(model,
+                                filename = "file",
+                                lengthIter = 100L,
+                                iteration = 1L,
+                                useC = FALSE)                              
+    ans.C.specific <- transferParamModel(model,
+                                         filename = "file",
+                                         lengthIter = 100L,
+                                         iteration = 1L,
+                                         useC = TRUE,
+                                         useSpecific = TRUE)
+    ans.C.generic <- transferParamModel(model,
+                                        filename = "file",
+                                        lengthIter = 100L,
+                                        iteration = 1L,
+                                        useC = TRUE,
+                                        useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+
+
+
 test_that("transferParamModel gives valid answer with TFixedUseExpPredict", {
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
@@ -4581,6 +4882,116 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
     expect_identical(ans.R, ans.C.specific)
     expect_identical(ans.C.generic, ans.C.specific)
 })
+
+
+
+
+test_that("transferParamModel works with LN2Predict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    transferParamModel <- demest:::transferParamModel
+    transferParamVarsigma <- demest:::transferParamVarsigma
+    transferParamSigma <- demest:::transferParamSigma
+    extractValues <- demest:::extractValues
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    mod.est <- initialModel(spec, y = y, exposure = exposure)
+    x <- initialModelPredict(mod.est,
+                             along = 3L,
+                             labels = NULL,
+                             n = 4L,
+                             offsetModel = 1L,
+                             covariates = NULL,
+                             aggregate = NULL,
+                             lower = NULL,
+                             upper = NULL)
+    values <- extractValues(x)
+    lengthIter <- length(values)
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    writeBin(values, con = con)
+    close(con)
+    ans.obtained <- transferParamModel(model = x,
+                                       filename = filename,
+                                       lengthIter = lengthIter,
+                                       iteration = 1L)
+    ans.expected <- transferParamSigma(model = x,
+                                       filename = filename,
+                                       lengthIter = lengthIter,
+                                       iteration = 1L)
+    ans.expected <- transferParamVarsigma(model = ans.expected,
+                                          filename = filename,
+                                          lengthIter = lengthIter,
+                                          iteration = 1L)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("R, C-specific, and C-generic methods for transferParamModel give same answer with LN2Predict", {
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    transferParamModel <- demest:::transferParamModel
+    transferParamVarsigma <- demest:::transferParamVarsigma
+    transferParamSigma <- demest:::transferParamSigma
+    extractValues <- demest:::extractValues
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    mod.est <- initialModel(spec, y = y, exposure = exposure)
+    x <- initialModelPredict(mod.est,
+                             along = 3L,
+                             labels = NULL,
+                             n = 4L,
+                             offsetModel = 1L,
+                             covariates = NULL,
+                             aggregate = NULL,
+                             lower = NULL,
+                             upper = NULL)
+    values <- extractValues(x)
+    lengthIter <- length(values)
+    filename <- tempfile()
+    con <- file(filename, open = "wb")
+    writeBin(values, con = con)
+    close(con)
+    ans.R <- transferParamModel(model = x,
+                                filename = filename,
+                                lengthIter = lengthIter,
+                                iteration = 1L,
+                                useC = FALSE)
+    ans.C.generic <- transferParamModel(model = x,
+                                        filename = filename,
+                                        lengthIter = lengthIter,
+                                        iteration = 1L,
+                                        useC = TRUE,
+                                        useSpecific = FALSE)
+    ans.C.specific <- transferParamModel(model = ans.expected,
+                                         filename = filename,
+                                         lengthIter = lengthIter,
+                                         iteration = 1L,
+                                         useC = TRUE,
+                                         useSpecific = TRUE)
+    expect_identical(ans.R, ans.C.generic)
+    expect_identical(ans.R, ans.C.specific)
+})
+
+
+
 
 
 ## updateModelNotUseExp ##############################################################
@@ -6382,6 +6793,89 @@ test_that("R, generic C, and specific C versions updateModelUseExp method for TF
 })
 
 
+test_that("updateModelUseExp works with LN2", {
+    initialModel <- demest:::initialModel
+    updateModelUseExp <- demest:::updateModelUseExp
+    updateSigmaLN2 <- demest:::updateSigmaLN2
+    updateVarsigmaLN2 <- demest:::updateVarsigmaLN2
+    updateAlphaLN2 <- demest:::updateAlphaLN2
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.obtained <- updateModelUseExp(model, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.expected <- model
+        ans.expected <- updateAlphaLN2(ans.expected,
+                                       y = y,
+                                       exposure = exposure)
+        ans.expected <- updateVarsigmaLN2(ans.expected,
+                                          y = y,
+                                          exposure = exposure)
+        ans.expected <- updateSigmaLN2(ans.expected)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R, generic C, and specific C versions updateModelUseExp method for LN2 give same answer", {
+    initialModel <- demest:::initialModel
+    updateModelUseExp <- demest:::updateModelUseExp
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint))
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        model <- initialModel(spec, y = y, exposure = exposure)
+        set.seed(seed)
+        ans.R <- updateModelUseExp(model,
+                                   y = y,
+                                   exposure = exposure,
+                                   useC = FALSE)
+        set.seed(seed)
+        ans.C.generic <- updateModelUseExp(model,
+                                   y = y,
+                                   exposure = exposure,
+                                   useC = TRUE,
+                                   useSpecific = FALSE)
+        set.seed(seed)
+        ans.C.specific <- updateModelUseExp(model,
+                                            y = y,
+                                            exposure = exposure,
+                                            useC = TRUE,
+                                            useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.specific)
+        else
+            expect_equal(ans.R, ans.C.specific)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
+
+
+
 ## usesExposure ###################################################################
 
 test_that("usesExposure works", {
@@ -6489,6 +6983,9 @@ test_that("whereAcceptance works", {
     x <- new("TFixedUseExp")
     expect_identical(whereAcceptance(x),
                      list(NULL))
+    x <- new("LN2")
+    expect_identical(whereAcceptance(x),
+                     list(NULL))
 })
 
 
@@ -6554,6 +7051,9 @@ test_that("whereAutocorr works", {
     expect_identical(whereAutocorr(x),
                      list(NULL))
     x <- new("TFixedNotUseExp")
+    expect_identical(whereAutocorr(x),
+                     list(NULL))
+    x <- new("LN2")
     expect_identical(whereAutocorr(x),
                      list(NULL))
 })
@@ -6623,6 +7123,9 @@ test_that("whereJump works", {
     expect_identical(whereJump(x),
                      list(NULL))
     x <- new("Round3")
+    expect_identical(whereJump(x),
+                     list(NULL))
+    x <- new("LN2")
     expect_identical(whereJump(x),
                      list(NULL))
 })
@@ -7124,6 +7627,17 @@ test_that("whereEstimated works with TFixed", {
 })
 
 
+test_that("whereEstimated works with LN2", {
+    whereEstimated <- demest:::whereEstimated
+    model <- new("LN2")
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "mean"),
+                         c("likelihood", "sd"),
+                         c("prior", "sd"))
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 ## whereNoProposal ####################################################################
 
 test_that("whereNoProposal works", {
@@ -7202,6 +7716,9 @@ test_that("whereNoProposal works", {
     x <- new("TFixedNotUseExp")
     expect_identical(whereNoProposal(x),
                      list(NULL))
+    x <- new("LN2")
+    expect_identical(whereNoProposal(x),
+                     list(NULL))
 })
 
 
@@ -7229,4 +7746,6 @@ test_that("whereTheta works", {
     expect_error(whereTheta(x), "'object' has class \"Round3\"")
     x <- new("TFixedNotUseExp")
     expect_error(whereTheta(x), "'object' has class \"TFixedNotUseExp\"")
+    x <- new("LN2")
+    expect_error(whereTheta(x), "'object' has class \"LN2\"")
 })

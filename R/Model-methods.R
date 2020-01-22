@@ -397,6 +397,35 @@ setMethod("drawModelUseExp",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("drawModelUseExp",
+          signature(object = "LN2"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(!any(is.na(exposure)))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(drawModelUseExp_LN2_R, object, y, exposure)
+                  else
+                      .Call(drawModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- drawSigma_Varying(object) # not Varying, but works anyway
+                  object <- drawVarsigma(object)
+                  object <- drawAlphaLN2(object)
+                  object
+              }
+          })
+
 
 ## describeModel #######################################################################
 
@@ -1763,6 +1792,44 @@ setMethod("makeOutputModel",
                    df = df)
           })
 
+## HAS_TESTS
+setMethod("makeOutputModel",
+          signature(model = "LN2"),
+          function(model, pos, mcmc) {
+              metadata <- model@constraintLN2@metadata
+              alpha <- model@alphaLN2@.Data
+              ## make alpha
+              first <- pos
+              pos <- first + length(alpha)
+              .Data <- array(alpha,
+                             dim = dim(metadata),
+                             dimnames = dimnames(metadata))
+              alpha <- methods::new("Values",
+                                    .Data = .Data,
+                                    metadata = metadata)
+              s <- seq_along(dim(metadata))
+              alpha <- Skeleton(object = alpha,
+                                first = first,
+                                strucZeroArray = NULL,
+                                margin = s)
+              ## make varsigma
+              first <- pos
+              pos <- first + 1L
+              varsigma <- Skeleton(first = first)
+              ## make sigma
+              first <- pos
+              pos <- first + 1L
+              sigma <- Skeleton(first = first)
+              ## return value
+              likelihood <- list(mean = alpha,
+                                 sd = varsigma)
+              prior <- list(sd = sigma)
+              ans <- list(likelihood = likelihood,
+                          prior = prior)
+              ans
+          })
+
+
 
 
 
@@ -1937,6 +2004,7 @@ setMethod("predictModelUseExp",
               }
           })
 
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelUseExp",
@@ -2086,6 +2154,34 @@ setMethod("predictModelUseExp",
           })
 
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("predictModelUseExp",
+          signature(object = "LN2Predict"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(identical(length(y), length(object@cellInLik)))
+              stopifnot(all(is.na(y) | (y == 0L)))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictModelUseExp_LN2Predict_R,
+                            object, y, exposure)
+                  else
+                      .Call(predictModelUseExp_R,
+                            object, y, exposure)
+              }
+              else {
+                  object <- predictAlphaLN2(object)
+                  object
+              }
+          })
 
 
 ## printAgAccuracyEqns #####################################################
@@ -2323,6 +2419,13 @@ setMethod("showModelHelper",
           function(object) {
               printTFixedModEqns(object)
           })
+
+setMethod("showModelHelper",
+          signature(object = "LN2"),
+          function(object) {
+              printLN2ModEqns(object)
+          })
+
 
 
 
@@ -2569,7 +2672,7 @@ setMethod("transferParamModel",
               }
           })
 
-## READY_TO_TRANSLATE - translated but cannot find tests - JAH 10/2/2018
+## TRANSLATED
 ## HAS_TESTS
 setMethod("transferParamModel",
           signature(model = "TFixedNotUseExpPredict"),
@@ -2603,6 +2706,33 @@ setMethod("transferParamModel",
                             model, filename, lengthIter, iteration)
               }
               else {
+                  model
+              }
+          })
+
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("transferParamModel",
+          signature(model = "LN2Predict"),
+          function(model, filename, lengthIter, iteration,
+                   useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamModel_LN2Predict_R,
+                            model, filename, lengthIter, iteration)
+                  else
+                      .Call(transferParamModel_R,
+                            model, filename, lengthIter, iteration)
+              }
+              else {
+                  model <- transferParamVarsigma(model,
+                                                 filename = filename,
+                                                 lengthIter = lengthIter,
+                                                 iteration = iteration)
+                  model <- transferParamSigma(model,
+                                              filename = filename,
+                                              lengthIter = lengthIter,
+                                              iteration = iteration)
                   model
               }
           })
@@ -3612,6 +3742,42 @@ setMethod("updateModelUseExp",
               }
           })
 
+## READY_TO_TRANSLATE
+## HAS_TESTS
+setMethod("updateModelUseExp",
+          signature(object = "LN2"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(identical(length(y), length(object@cellInLik)))
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(!any(is.na(exposure)))
+              stopifnot(all(exposure >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_LN2_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  object <- updateAlphaLN2(object = object,
+                                           y = y,
+                                           exposure = exposure)
+                  object <- updateVarsigmaLN2(object = object,
+                                           y = y,
+                                           exposure = exposure)
+                  object <- updateSigmaLN2(object)
+                  object
+              }
+          })
+
+
 
 ## usesExposure ######################################################################
 
@@ -3773,6 +3939,12 @@ setMethod("whereAcceptance",
           signature(object = "TFixed"),
           function(object) list(NULL))
 
+## HAS_TESTS
+setMethod("whereAcceptance",
+          signature(object = "LN2"),
+          function(object) list(NULL))
+
+
 
 ## whereAutocorr #####################################################################
 
@@ -3887,6 +4059,12 @@ setMethod("whereAutocorr",
 setMethod("whereAutocorr",
           signature(object = "TFixed"),
           function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereAutocorr",
+          signature(object = "LN2"),
+          function(object) list(NULL))
+
 
 
 ## whereJump #########################################################################
@@ -4009,11 +4187,15 @@ setMethod("whereJump",
           function(object) list(NULL))
 
 
-## NO_TESTS
+## HAS_TESTS
 setMethod("whereJump",
           signature(object = "TFixed"),
           function(object) list(NULL))
 
+## HAS_TESTS
+setMethod("whereJump",
+          signature(object = "LN2"),
+          function(object) list(NULL))
 
 
 ## whereEstimated ####################################################################
@@ -4222,6 +4404,14 @@ setMethod("whereEstimated",
           signature(object = "TFixed"),
           function(object) list(NULL))
 
+## HAS_TESTS
+setMethod("whereEstimated",
+          signature(object = "LN2"),
+          function(object) {
+              list(c("likelihood", "mean"),
+                   c("likelihood", "sd"),
+                   c("prior", "sd"))
+          })
 
 ## whereNoProposal ###################################################################
 
@@ -4372,6 +4562,11 @@ setMethod("whereNoProposal",
           signature(object = "TFixed"),
           function(object) list(NULL))
 
+## HAS_TESTS
+setMethod("whereNoProposal",
+          signature(object = "LN2"),
+          function(object) list(NULL))
+
 
 ## whereTheta #########################################################################
 
@@ -4427,4 +4622,11 @@ setMethod("whereTheta",
                             "object", class(object)))
           })
 
+## HAS_TESTS
+setMethod("whereTheta",
+          signature(object = "LN2"),
+          function(object) {
+              stop(gettextf("'%s' has class \"%s\"",
+                            "object", class(object)))
+          })
 

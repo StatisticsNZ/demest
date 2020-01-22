@@ -353,6 +353,92 @@ printKnownEqns <- function(object, name) {
         cat(name, "[j] = mean[j]\n", sep = "")
 }
 
+printLN2LikEqns  <- function(object) {
+    nuVarsigma <- object@nuVarsigma@.Data
+    AVarsigma <- object@AVarsigma@.Data
+    varsigmaMax <- object@varsigmaMax@.Data
+    cat("   log(y[i] + 1) ~ N(log(exposure[i] + 1) + alpha[j[i]], sdData^2)\n")
+    cat("        alpha[i] ~ N*(0, sd^2)\n", sep = "")
+    cat("          sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
+    cat(squaredOrNA(AVarsigma), ", ", format(varsigmaMax, digits = 4), ")\n", sep = "")
+}
+
+printLN2ModEqns <- function(object) {
+    call <- object@call
+    series <- call$series
+    ASigma <- object@ASigma@.Data
+    sigmaMax <- object@sigmaMax
+    nuSigma <- object@nuSigma
+    AVarsigma <- object@AVarsigma@.Data
+    varsigmaMax <- object@varsigmaMax
+    nuVarsigma <- object@nuVarsigma
+    name.y <- deparse(call$formula[[2L]])
+    if (is.null(series)) {
+        if (identical(name.y, "y"))
+            exposure <- "exposure"
+        else
+            exposure <- "y"
+    }
+    else
+        exposure <- series
+    n.spaces <- max(5L - nchar(name.y), 0L)
+    spaces <- rep(" ", n.spaces)
+    response <- sprintf("%slog(%s + 1)", spaces, name.y)
+    cat(name.y, response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], sd^2)\n",
+        sep = "")
+    cat("      alpha[j] ~ N*(0, sdAlpha^2)")
+    cat("      sdAlpha ~ trunc-half-t(", nuSigma, ", ", sep = "")
+    cat(squaredOrNA(AVarsigma),
+        ", ",
+        format(varsigmaMax, digits = 4),
+        ")\n",
+        sep = "")
+    cat("      sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
+    cat(squaredOrNA(ASigma),
+        ", ",
+        format(sigmaMax, digits = 4),
+        ")\n",
+        sep = "")
+}
+
+printLN2SpecEqns <- function(object) {
+    series <- object@series@.Data
+    call <- object@call
+    ASigma <- object@ASigma@.Data
+    sigmaMax <- object@sigmaMax
+    nuSigma <- object@nuSigma
+    AVarsigma <- object@AVarsigma@.Data
+    varsigmaMax <- object@varsigmaMax
+    nuVarsigma <- object@nuVarsigma
+    nameY <- object@nameY
+    has.series <- !is.na(series)
+    name.y <- deparse(call$formula[[2L]])
+    if (has.series)
+        exposure <- series        
+    else
+        exposure <- "exposure"
+    n.spaces <- max(5L - nchar(name.y), 0L)
+    spaces <- paste(rep(" ", n.spaces), collapse = "")
+    response <- sprintf("%slog(%s + 1)", spaces, name.y)
+    cat(response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], sdData^2)\n",
+        sep = "")
+    cat("      alpha[j] ~ N*(0, sd^2)\n")
+    cat("        sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
+    cat(squaredOrNA(AVarsigma),
+        ", ",
+        format(varsigmaMax, digits = 4),
+        ")\n",
+        sep = "")
+    cat("            sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
+    cat(squaredOrNA(ASigma),
+        ", ",
+        format(sigmaMax, digits = 4),
+        ")\n",
+        sep = "")
+}
+
+
+
 printLevelTrendEqns <- function(object, isMain, hasTrend) {
     AAlpha <- object@AAlpha@.Data
     omegaAlphaMax <- object@omegaAlphaMax

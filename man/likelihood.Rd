@@ -6,7 +6,6 @@
 \alias{Normal}
 \alias{Poisson}
 \alias{CMP}
-\alias{LN2}
 \title{Specify first two levels of hierarchical model.}
 \usage{
 Poisson(formula, useExpose = TRUE, structuralZeros = NULL, boxcox = 0)
@@ -20,8 +19,6 @@ CMP(
 )
 
 Binomial(formula)
-
-LN2(restrict, structuralZeros = NULL, concordances = list(), priorSD = HalfT())
 
 Normal(formula, sd = NULL, priorSD = HalfT())
 }
@@ -45,13 +42,13 @@ implying that a log transform is used.}
 An object of class \code{\linkS4class{Dispersion}},
 typically created by a call to function \code{\link{Dispersion}}.}
 
-\item{priorSD}{An object of class \code{HalfT} specifying
-a non-default prior for the standard deviation in the
-likelihood for the normal model.}
-
 \item{sd}{Standard deviation in the likelihood for the
 normal model.  If a value is not supplied,
 it is estimated from the data.}
+
+\item{priorSD}{An object of class \code{HalfT} specifying
+a non-default prior for the standard deviation in the
+likelihood for the normal model.}
 }
 \value{
 An object of class \code{\linkS4class{SpecLikelihood}}.

@@ -236,7 +236,31 @@ Binomial <- function(formula) {
 
 
 ## HAS_TESTS
-#' @rdname likelihood
+#' Log-normal model with two levels
+#'
+#' THIS FUNCTION IS STILL EXPERIMENTAL.
+#'
+#' A simple hierarchical model in which the log of y + 1
+#' equals the log of exposure + 1, plus a bias term.
+#' The bias term can be subject to constraints.
+#'
+#' The bias term has the same level of detail as the constraints,
+#' which will almost always be less than the level of detail
+#' of \code{y}.
+#'
+#' The constraints are specified via a \code{\link[dembase:Values-class]{Values}},
+#' object composed of 0s, -1s, 1s, and NAs. A 0
+#' implies that the bias term is set to 0; a
+#' -1 implies that it must be negative; a 1
+#' implies that it must be positive, and a NA
+#' implies that there is no constraint.
+#'
+#' @inheritParams likelihood
+#' @param An object of class \code{\link[dembase:Values-class]{Values}},
+#' with values 0, -1, 1, and NA.
+#' @param concordances A named list of concordances used to
+#' map between \code{y} and \code{constraint}.
+#' 
 #' @export
 LN2 <- function(constraint, structuralZeros = NULL,
                 concordances = list(), priorSD = HalfT()) {

@@ -5028,7 +5028,7 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     if (useC) {
-        .Call(updateSigmaLN2_R, object)
+        .Call(updateSigmaLN2_R, object, y, exposure)
     }
     else {
         varsigma <- object@varsigma@.Data
