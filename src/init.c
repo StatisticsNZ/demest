@@ -978,6 +978,7 @@ SEXP resetCODPCP_R(SEXP iterator_R, SEXP i_R)
 /* predict */
 PREDICTOBJECT_WRAPPER_R(predictAlphaDLMNoTrend);
 PREDICTOBJECT_WRAPPER_R(predictAlphaDeltaDLMWithTrend);
+PREDICTOBJECT_WRAPPER_R(predictAlphaLN2);
 
 /* update betas */
 SEXP
@@ -1234,6 +1235,7 @@ UPDATEOBJECT_WRAPPER_R(updatePriorsBetas);
 
 /* wrap update sigma generic functions */
 UPDATEOBJECT_WRAPPER_R(updateSigma_Varying);
+UPDATEOBJECT_WRAPPER_R(updateSigmaLN2);
 
 /* wrap update theta generic functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateVarsigma);
@@ -1328,6 +1330,8 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgLife);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_NormalFixedUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_TFixedUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateAlphaLN2);
+
 
 /* wrap draw model functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnown);
@@ -1641,6 +1645,7 @@ LOGLIKELIHOOD_WRAPPER_R(logLikelihood_PoissonBinomialMixture);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_Round3);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_NormalFixedUseExp);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_TFixedUseExp);
+LOGLIKELIHOOD_WRAPPER_R(logLikelihood_LN2);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood);
 
 /* wrap predict prior functions */
@@ -2149,6 +2154,7 @@ updateSubsequentExpMove_R(SEXP combined_R)
 
 
 /* helper_simulate */
+UPDATEOBJECT_WRAPPER_R(drawAlphaLN2);
 UPDATEOBJECT_WRAPPER_R(drawBetas);
 UPDATEOBJECT_WRAPPER_R(drawDataModelsAccount);
 UPDATEOBJECT_WRAPPER_R(drawDelta0);
@@ -2265,6 +2271,7 @@ R_CallMethodDef callMethods[] = {
 
   CALLDEF(predictAlphaDLMNoTrend_R, 1),
   CALLDEF(predictAlphaDeltaDLMWithTrend_R, 1),
+  CALLDEF(predictAlphaLN2_R, 1),
   CALLDEF(predictBeta_R, 1),
   CALLDEF(transferAlphaDelta0_R, 5),
   CALLDEF(transferSeason0_R, 6),
@@ -2294,6 +2301,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(logLikelihood_Round3_R,4),
   CALLDEF(logLikelihood_NormalFixedUseExp_R, 4),
   CALLDEF(logLikelihood_TFixedUseExp_R, 4),
+  CALLDEF(logLikelihood_LN2_R, 4),
   CALLDEF(diffLogLik_R,6),
   CALLDEF(makeIOther_R,2),
 
@@ -2337,6 +2345,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateMu_R, 1),
 
   CALLDEF(updateSigma_Varying_R, 1),
+  CALLDEF(updateSigmaLN2_R, 1),
 
   CALLDEF(updateTheta_BinomialVarying_R, 3),
   CALLDEF(updateTheta_BinomialVaryingAgCertain_R, 3),
@@ -2437,6 +2446,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_NormalFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_TFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
+
+  CALLDEF(updateAlphaLN2_R, 3),
 
   CALLDEF(updatePriorsBetas_R, 1),
 
@@ -2669,6 +2680,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateSubsequentExpMove_R, 1),
 
   /* helper-simulate */
+  CALLDEF(drawAlphaLN2_R, 1),
   CALLDEF(drawBetas_R, 1),
   CALLDEF(drawDataModelsAccount_R, 1),
   CALLDEF(drawDelta0_R, 1),
@@ -3091,6 +3103,10 @@ R_init_demest(DllInfo *info)
   ADD_SYM(cumProbComp);
   ADD_SYM(scaleNoise);
   ADD_SYM(nCellAccount);
+  ADD_SYM(alphaLN2);
+  ADD_SYM(transformLN2);
+  ADD_SYM(constraintLN2);
+  ADD_SYM(nCellBeforeLN2);
 
 
 #undef ADD_SYM

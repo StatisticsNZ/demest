@@ -398,7 +398,12 @@ SEXP
   isSmallUpdate_sym,
   probPopn_sym,
   cumProbComp_sym,
-  nCellAccount_sym;
+  nCellAccount_sym,
+  /* LN@ */
+  alphaLN2_sym,
+  transformLN2_sym,
+  constraintLN2_sym,
+  nCellBeforeLN2_sym;
 
 
 /* Priors-methods */
@@ -569,6 +574,7 @@ double safeLogProp_Poisson(double log_th_new,
 
 void predictAlphaDLMNoTrend(SEXP prior_R);
 void predictAlphaDeltaDLMWithTrend(SEXP prior_R);
+void predictAlphaLN2(SEXP prior_R);
 void predictBeta(double* beta, SEXP prior_R, int J);
 void predictBetas(SEXP object_R);
 void predictComponentWeightMix(SEXP prior_R);
@@ -602,6 +608,7 @@ SEXP diff_R(SEXP vec_R, SEXP order_R);
 int makeIOther(int i, SEXP transform_R);
 
 /* helper-simulate */
+void drawAlphaLN2(SEXP object_R);
 void drawBetas(SEXP object_R);
 void drawDataModelsAccount(SEXP combined_R);
 void drawDelta0(SEXP prior_R);
@@ -635,6 +642,8 @@ double logLikelihood_Round3(SEXP model_R, int count,
 double logLikelihood_NormalFixedUseExp(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
 double logLikelihood_TFixedUseExp(SEXP model_R, int count,
+                                SEXP dataset_R, int i);
+double logLikelihood_LN2(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
 double logLikelihood(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
@@ -785,6 +794,7 @@ void
 updateSeason(SEXP prior_R, double *betaTilde, int J);
 
 void updateSigma_Varying(SEXP object);
+void updateSigmaLN2(SEXP object_R);
 
 void updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R);
@@ -916,7 +926,7 @@ void updateModelUseExp_NormalFixedUseExp
 void updateModelUseExp_TFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
-
+void updateAlphaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R);
 void updatePriorsBetas(SEXP object_R);
 
 /* update models not using exposure*/

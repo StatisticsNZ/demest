@@ -262,7 +262,7 @@ checkSystemModelsSuitableForSimulation <- function(systemModels, account) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## The contents of this function are
 ## identical to 'predictAlphaLN2'. The only difference

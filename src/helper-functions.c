@@ -1812,6 +1812,39 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
 
 
 void
+predictAlphaLN2(SEXP object_R)
+{
+    SEXP alpha_R = GET_SLOT(object_R, alphaLN2_sym);
+    double * alpha = REAL(alpha_R);
+    int n_alphas = LENGTH(alpha_R);
+
+    int * constraint = INTEGER(GET_SLOT(object_R, constraintLN2_sym));
+    double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
+
+    for (int j = 0; j < n_alphas; ++j) {
+
+        int constraint_j = constraint[j];
+
+        if ((constraint_j == NA_INTEGER) ||(constraint_j != 0)) {
+            double x = rnorm(0, sigma);
+
+            if (constraint_j == NA_INTEGER) {
+                alpha[j] = x;
+            }
+            else if (constraint_j == -1) {
+                alpha[j] = (-1) * fabs(x);
+            }
+            else if (constraint_j == 1) {
+                alpha[j] = fabs(x);
+            }
+            else {
+                error("invalid value for 'constraint'");
+            }
+        }
+    }
+}
+
+void
 predictBeta(double* beta, SEXP prior_R, int J)
 {
     int i_method_prior = *(INTEGER(GET_SLOT(prior_R, iMethodPrior_sym)));
@@ -2581,6 +2614,23 @@ logLikelihood_TFixedUseExp(SEXP model_R, int count,
     double x_rescaled = (x - thisMean)/thisSd;
 
     return dt(x_rescaled, nu, USE_LOG) - log(thisSd);
+}
+
+
+double
+logLikelihood_LN2(SEXP model_R, int count,
+                                SEXP dataset_R, int i)
+{
+    double *alpha = REAL(GET_SLOT(model_R, alphaLN2_sym));
+    SEXP transform_R = GET_SLOT(model_R, transformLN2_sym);
+    double sd = *REAL(GET_SLOT(model_R, varsigma_sym));
+    int *dataset = INTEGER(dataset_R);
+    int i_c = i - 1;
+    double x = log1p(dataset[i_c]);
+    int j_r = dembase_getIAfter(i, transform_R);
+    double mean = log1p(count) + alpha[j_r - 1];
+
+    return dnorm(x, mean, sd, USE_LOG);
 }
 
 
