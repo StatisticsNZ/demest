@@ -1237,8 +1237,9 @@ UPDATEOBJECT_WRAPPER_R(updatePriorsBetas);
 UPDATEOBJECT_WRAPPER_R(updateSigma_Varying);
 UPDATEOBJECT_WRAPPER_R(updateSigmaLN2);
 
-/* wrap update theta generic functions */
+/* wrap update varsigma and theta generic functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateVarsigma);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateVarsigmaLN2);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateTheta_BinomialVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateTheta_BinomialVaryingAgCertain);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgFun_Binomial);
@@ -1279,6 +1280,7 @@ TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedNotUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_TFixedNotUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_TFixedUseExpPredict);
+TRANSFERPARAM_WRAPPER_R(transferParamModel_LN2Predict);
 
 /* wrap predict model functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict);
@@ -1293,6 +1295,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_PoissonBinomialMixturePredict)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_Round3Predict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_NormalFixedUseExpPredict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_TFixedUseExpPredict);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_LN2Predict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp);
 
 
@@ -1329,6 +1332,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgPoisson);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgLife);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_NormalFixedUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_TFixedUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_LN2);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateAlphaLN2);
 
@@ -1342,6 +1346,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonBinomialMixture);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_NormalFixedUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_LN2);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp);
 
 /* wrap draw combined model functions */
@@ -2369,8 +2374,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateThetaAndNu_CMPVaryingNotUseExp_R, 2),
   CALLDEF(updateThetaAndNu_CMPVaryingUseExp_R, 3),
 
-
   CALLDEF(updateVarsigma_R, 2),
+  CALLDEF(updateVarsigmaLN2_R, 3),
 
   /* update counts */
   CALLDEF(updateCountsPoissonNotUseExp_R, 5),
@@ -2396,6 +2401,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamModel_NormalFixedUseExpPredict_R, 4),
   CALLDEF(transferParamModel_TFixedNotUseExpPredict_R, 4),
   CALLDEF(transferParamModel_TFixedUseExpPredict_R, 4),
+  CALLDEF(transferParamModel_LN2Predict_R, 4),
 
   CALLDEF(predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict_R, 2),
   CALLDEF(predictModelNotUseExp_NormalVaryingVarsigmaUnknownPredict_R, 2),
@@ -2410,6 +2416,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictModelUseExp_Round3Predict_R, 3),
   CALLDEF(predictModelUseExp_NormalFixedUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_TFixedUseExpPredict_R, 3),
+  CALLDEF(predictModelUseExp_LN2Predict_R, 3),
   CALLDEF(predictModelUseExp_R, 3),
 
   CALLDEF(updateModelNotUseExp_CMPVaryingNotUseExp_R, 2),
@@ -2445,6 +2452,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgLife_R, 3),
   CALLDEF(updateModelUseExp_NormalFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_TFixedUseExp_R, 3),
+  CALLDEF(updateModelUseExp_LN2_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
 
   CALLDEF(updateAlphaLN2_R, 3),
@@ -2460,6 +2468,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(drawModelUseExp_PoissonVarying_R, 3),
   CALLDEF(drawModelUseExp_PoissonBinomialMixture_R, 3),
   CALLDEF(drawModelUseExp_NormalFixedUseExp_R, 3),
+  CALLDEF(drawModelUseExp_LN2_R, 3),
   CALLDEF(drawModelUseExp_R, 3),
 
   /* draw combined */

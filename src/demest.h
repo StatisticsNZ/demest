@@ -819,6 +819,7 @@ void updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R);
 void updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R);
 
 void updateVarsigma(SEXP object, SEXP y_R);
+void updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R);
 
 /* update counts */
 void updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R,
@@ -860,6 +861,8 @@ void transferParamModel_TFixedNotUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
 void transferParamModel_TFixedUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
+void transferParamModel_LN2Predict(SEXP model_R,
+        const char *filename, int lengthIter, int iteration);
 
 
 /* predict models not using exposure*/
@@ -876,6 +879,7 @@ void predictModelUseExp_PoissonBinomialMixturePredict(SEXP object, SEXP y_R, SEX
 void predictModelUseExp_Round3Predict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_NormalFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_TFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
+void predictModelUseExp_LN2Predict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 
@@ -925,6 +929,7 @@ void updateModelUseExp_NormalFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_TFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
+void updateModelUseExp_LN2(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateAlphaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R);
 void updatePriorsBetas(SEXP object_R);
@@ -941,6 +946,7 @@ void drawModelUseExp_PoissonBinomialMixture
                                 (SEXP object, SEXP y_R, SEXP exposure_R);
 void drawModelUseExp_NormalFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_LN2(SEXP object, SEXP y_R, SEXP exposure_R);
 void drawModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 

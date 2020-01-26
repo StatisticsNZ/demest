@@ -5011,7 +5011,7 @@ updateVarsigma <- function(object, y, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
     ## object
@@ -5028,7 +5028,7 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     if (useC) {
-        .Call(updateSigmaLN2_R, object, y, exposure)
+        .Call(updateVarsigmaLN2_R, object, y, exposure)
     }
     else {
         varsigma <- object@varsigma@.Data
@@ -5048,15 +5048,20 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
                 n <- n + 1L
             }
         }
-        varsigma <- updateSDNorm(sigma = varsigma,
+        ##changed JAH 26/1/2020 after emails with John
+        if (n > 0L) {
+            varsigma <- updateSDNorm(sigma = varsigma,
                                  A = A,
                                  nu = nu,
                                  V = V,
                                  n = n,
                                  max = varsigma.max)
-        successfully.updated <- varsigma > 0
-        if (successfully.updated)
-            object@varsigma@.Data <- varsigma
+            successfully.updated <- varsigma > 0
+            if (successfully.updated)
+                object@varsigma@.Data <- varsigma
+        }
+        else
+            object@varsigma@.Data <- 0
         object
     }
 }

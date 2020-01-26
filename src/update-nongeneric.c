@@ -2841,7 +2841,7 @@ updateSigmaLN2(SEXP object_R)
         }
     }
     else {
-        SET_DOUBLESCALE_SLOT(object_R, sigma_sym, sigma);
+        SET_DOUBLESCALE_SLOT(object_R, sigma_sym, 0.0);
     }
 }
 
@@ -6906,6 +6906,52 @@ updateVarsigma(SEXP object, SEXP y_R)
   }
 }
 
+
+void
+updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R)
+{
+    double varsigma = *REAL(GET_SLOT(object_R, varsigma_sym));
+    double varsigma_max = *REAL(GET_SLOT(object_R, varsigmaMax_sym));
+    double A = *REAL(GET_SLOT(object_R, AVarsigma_sym));
+    double nu = *REAL(GET_SLOT(object_R, nuVarsigma_sym));
+
+    double * alpha = REAL(GET_SLOT(object_R, alphaLN2_sym));
+
+    int * cell_in_lik = INTEGER(GET_SLOT(object_R, cellInLik_sym));
+
+    SEXP transform_R = GET_SLOT(object_R, transformLN2_sym);
+
+    double V = 0.0;
+    int n = 0;
+
+    int n_y = LENGTH(y_R);
+    int * y = INTEGER(y_R);
+    int * exposure = INTEGER(exposure_R);
+
+    for (int i = 0; i < n_y; ++i) {
+
+        if (cell_in_lik[i]) {
+
+            int j_r = dembase_getIAfter(i+1, transform_R);
+            double alpha_j = alpha[j_r - 1];
+            double tmp = log1p(y[i]) - log1p(exposure[i]) - alpha_j;
+            V += tmp * tmp;
+            n++;
+        }
+    }
+
+    if (n > 0) {
+        varsigma = updateSDNorm(varsigma, A, nu, V, n, varsigma_max);
+        int successfully_updated = (varsigma > 0);
+
+        if (successfully_updated) {
+            SET_DOUBLESCALE_SLOT(object_R, varsigma_sym, varsigma);
+        }
+    }
+    else {
+        SET_DOUBLESCALE_SLOT(object_R, varsigma_sym, 0.0);
+    }
+}
 
 /* *************************** updating counts *************************** */
 

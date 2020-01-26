@@ -10,7 +10,7 @@ test.extended <- FALSE
 test_that("checkAllDimensionsHavePriors works with Varying", {
     checkAllDimensionsHavePriors <- demest:::checkAllDimensionsHavePriors
     model <- Model(y ~ Poisson(mean ~ age * sex),
-               `(Intercept)` ~ ExchFixed(sd = 10), 
+               `(Intercept)` ~ ExchFixed(sd = 10),
                age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                sex ~ ExchFixed(sd = 0.1),
                age:sex ~ ExchFixed(sd = 0.05),
@@ -164,7 +164,7 @@ test_that("drawHyperParam works with Varying", {
     drawBetas <- demest:::drawBetas
     drawSigma_Varying <- demest:::drawSigma_Varying
     spec <- Model(y ~ Poisson(mean ~ age + sex),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -199,7 +199,7 @@ test_that("drawHyperParam works with Varying", {
     drawBetas <- demest:::drawBetas
     drawSigma_Varying <- demest:::drawSigma_Varying
     spec <- Model(y ~ Poisson(mean ~ age + sex),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -239,7 +239,7 @@ test_that("drawModelNotUseExp works with NormalVaryingVarsigmaKnown", {
     updateMu <- demest:::updateMu
     updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     spec <- Model(y ~ Normal(mean ~ age + sex, sd = 0.1),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -276,7 +276,7 @@ test_that("R and C versions of drawModelNotUseExp give same answer with NormalVa
     initialModel <- demest:::initialModel
     drawModelNotUseExp <- demest:::drawModelNotUseExp
     spec <- Model(y ~ Normal(mean ~ age + sex, sd = 0.1),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -323,7 +323,7 @@ test_that("drawModelNotUseExp works with NormalVaryingVarsigmaUnknown", {
     drawVarsigma <- demest:::drawVarsigma
     updateTheta_NormalVarying <- demest:::updateTheta_NormalVarying
     spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -361,7 +361,7 @@ test_that("R and C versions of drawModelNotUseExp give same answer with NormalVa
     initialModel <- demest:::initialModel
     drawModelNotUseExp <- demest:::drawModelNotUseExp
     spec <- Model(y ~ Normal(mean ~ age + sex, priorSD = HalfT(scale = 0.05)),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -407,7 +407,7 @@ test_that("drawModelNotUseExp works with PoissonVaryingNotUseExp", {
     drawSigma_Varying <- demest:::drawSigma_Varying
     updateTheta_PoissonVaryingNotUseExp <- demest:::updateTheta_PoissonVaryingNotUseExp
     spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -442,7 +442,7 @@ test_that("R and C versions of drawModelNotUseExp give same answer with PoissonV
     initialModel <- demest:::initialModel
     drawModelNotUseExp <- demest:::drawModelNotUseExp
     spec <- Model(y ~ Poisson(mean ~ age + sex, useExpose = FALSE),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -489,7 +489,7 @@ test_that("drawModelUseExp works with BinomialVarying", {
     drawSigma_Varying <- demest:::drawSigma_Varying
     updateTheta_BinomialVarying <- demest:::updateTheta_BinomialVarying
     spec <- Model(y ~ Binomial(mean ~ age + sex),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -530,7 +530,7 @@ test_that("R and C versions of drawModelUseExp give same answer with BinomialVar
     initialModel <- demest:::initialModel
     drawModelUseExp <- demest:::drawModelUseExp
     spec <- Model(y ~ Binomial(mean ~ age + sex),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -581,7 +581,7 @@ test_that("drawModelUseExp works with PoissonVaryingUseExp", {
     drawSigma_Varying <- demest:::drawSigma_Varying
     updateTheta_PoissonVaryingUseExp <- demest:::updateTheta_PoissonVaryingUseExp
     spec <- Model(y ~ Poisson(mean ~ age + sex),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -622,7 +622,7 @@ test_that("R and C versions of drawModelUseExp give same answer with PoissonVary
     initialModel <- demest:::initialModel
     drawModelUseExp <- demest:::drawModelUseExp
     spec <- Model(y ~ Poisson(mean ~ age + sex),
-                  `(Intercept)` ~ ExchFixed(sd = 10), 
+                  `(Intercept)` ~ ExchFixed(sd = 10),
                   age ~ Exch(error = Error(scale = HalfT(scale = 0.1))),
                   sex ~ ExchFixed(sd = 0.1),
                   priorSD = HalfT(scale = 0.2))
@@ -1024,7 +1024,7 @@ test_that("getTransform works with PoissonVarying", {
     expect_equal(ans.obtained, ans.expected)
 })
 
-          
+
 ## logLikelihood ######################################################################
 
 ## Calculations tested in tests for logLikelihood_Binomial, logLikelihood_Poisson,
@@ -1885,7 +1885,7 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgCertain", {
     aggregate <- AgCertain(value = value)
     spec <- Model(y ~ Normal(mean ~ sex + age, sd = 2),
                   age ~ Exch(),
-                  aggregate = aggregate)    
+                  aggregate = aggregate)
     model <- initialModel(spec, y = y, weights = weights)
     metadata <- y@metadata
     pos <- 11L
@@ -1958,7 +1958,7 @@ test_that("makeOutputModel works with NormalVaryingVarsigmaKnown - AgNormal", {
     aggregate <- AgNormal(value = value, sd = sd)
     spec <- Model(y ~ Normal(mean ~ sex + age, sd = 2),
                   age ~ Exch(),
-                  aggregate = aggregate)    
+                  aggregate = aggregate)
     model <- initialModel(spec, y = y, weights = weights)
     metadata <- y@metadata
     pos <- 11L
@@ -2905,7 +2905,7 @@ test_that("makeOutputModel works with LN2", {
                                                            margin= 1:2),
                                            sd = Skeleton(first = 14L)),
                          prior = list(sd = Skeleton(first = 15L)))
-    expect_identical(ans.obtained, ans.expected)                                           
+    expect_identical(ans.obtained, ans.expected)
 })
 
 
@@ -3731,7 +3731,7 @@ test_that("R, C-specific, and C-generic methods for predictModelUseExp give same
     expect_identical(ans.C.specific, ans.C.generic)
 })
 
-test_that("predictModelNotUseExp works with LN2", {
+test_that("predictModelUseExp works with LN2", {
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
     predictModelUseExp <- demest:::predictModelUseExp
@@ -4404,7 +4404,7 @@ test_that("transferParamModel method for PoissonBinomialMixturePredict works", {
     ans <- transferParamModel(model,
                               filename = "file",
                               lengthIter = 100L,
-                              iteration = 1L)                              
+                              iteration = 1L)
     expect_identical(ans, model)
 })
 
@@ -4435,7 +4435,7 @@ test_that("R, generic C, and specific C versions transferParamModel method for P
                                 filename = "file",
                                 lengthIter = 100L,
                                 iteration = 1L,
-                                useC = FALSE)                              
+                                useC = FALSE)
     ans.C.specific <- transferParamModel(model,
                                          filename = "file",
                                          lengthIter = 100L,
@@ -4474,7 +4474,7 @@ test_that("transferParamModel method for Round3Predict works", {
     ans <- transferParamModel(model,
                               filename = "file",
                               lengthIter = 100L,
-                              iteration = 1L)                              
+                              iteration = 1L)
     expect_identical(ans, model)
 })
 
@@ -4502,7 +4502,7 @@ test_that("R, generic C, and specific C versions transferParamModel method for R
                                 filename = "file",
                                 lengthIter = 100L,
                                 iteration = 1L,
-                                useC = FALSE)                              
+                                useC = FALSE)
     ans.C.specific <- transferParamModel(model,
                                          filename = "file",
                                          lengthIter = 100L,
@@ -4551,7 +4551,7 @@ test_that("transferParamModel gives valid answer with NormalFixedNotUseExpPredic
     ans <- transferParamModel(model,
                               filename = "file",
                               lengthIter = 100L,
-                              iteration = 1L)                              
+                              iteration = 1L)
     expect_identical(ans, model)
 })
 
@@ -4586,7 +4586,7 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
                                 filename = "file",
                                 lengthIter = 100L,
                                 iteration = 1L,
-                                useC = FALSE)                              
+                                useC = FALSE)
     ans.C.specific <- transferParamModel(model,
                                          filename = "file",
                                          lengthIter = 100L,
@@ -4683,7 +4683,7 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
                                 filename = "file",
                                 lengthIter = 100L,
                                 iteration = 1L,
-                                useC = FALSE)                              
+                                useC = FALSE)
     ans.C.specific <- transferParamModel(model,
                                          filename = "file",
                                          lengthIter = 100L,
@@ -4767,7 +4767,7 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
                                 filename = "file",
                                 lengthIter = 100L,
                                 iteration = 1L,
-                                useC = FALSE)                              
+                                useC = FALSE)
     ans.C.specific <- transferParamModel(model,
                                          filename = "file",
                                          lengthIter = 100L,
@@ -4866,7 +4866,7 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
                                 filename = "file",
                                 lengthIter = 100L,
                                 iteration = 1L,
-                                useC = FALSE)                              
+                                useC = FALSE)
     ans.C.specific <- transferParamModel(model,
                                          filename = "file",
                                          lengthIter = 100L,
@@ -4980,7 +4980,7 @@ test_that("R, C-specific, and C-generic methods for transferParamModel give same
                                         iteration = 1L,
                                         useC = TRUE,
                                         useSpecific = FALSE)
-    ans.C.specific <- transferParamModel(model = ans.expected,
+    ans.C.specific <- transferParamModel(model = x,
                                          filename = filename,
                                          lengthIter = lengthIter,
                                          iteration = 1L,
@@ -5007,7 +5007,7 @@ test_that("updateModelNotUseExp for CMPVaryingNotUseExp updates the correct slot
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
@@ -5035,7 +5035,7 @@ test_that("R and C versions of updateModelNotUseExp give same answer with CMPVar
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ CMP(mean ~ age + region, useExpose = FALSE),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateModelNotUseExp(x, y = y, useC = FALSE)
@@ -5051,7 +5051,7 @@ test_that("R and C versions of updateModelNotUseExp give same answer with CMPVar
     }
 })
 
-## Only test that appropriate slots are updated.  
+## Only test that appropriate slots are updated.
 test_that("updateModelNotUseExp for NormalVaryingVarsigmaKnown with sd = 0 updates the correct slots", {
     updateModelNotUseExp <- demest:::updateModelNotUseExp
     initialModel <- demest:::initialModel
@@ -5095,7 +5095,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
                                 dim = 5:4,
                                 dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ Normal(mean ~ age + region, sd = 0),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x <- initialModel(spec, y = y, weights = weights)
         set.seed(seed + 1)
         ans.R <- updateModelNotUseExp(x, y = y, useC = FALSE)
@@ -5157,7 +5157,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
                                 dim = 5:4,
                                 dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ Normal(mean ~ age + region, sd = 0.1),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x <- initialModel(spec, y = y, weights = weights)
         set.seed(seed + 1)
         ans.R <- updateModelNotUseExp(x, y = y, useC = FALSE)
@@ -5187,7 +5187,7 @@ test_that("updateModelNotUseExp for NormalVaryingVarsigmaUnknown updates the cor
                                 dim = 5:4,
                                 dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ Normal(mean ~ age + region),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x0 <- initialModel(spec, y = y, weights = weights)
         set.seed(seed + 1)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
@@ -5219,7 +5219,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
                                 dim = 5:4,
                                 dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ Normal(mean ~ age + region),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x <- initialModel(spec, y = y, weights = weights)
         set.seed(seed + 1)
         ans.R <- updateModelNotUseExp(x, y = y, useC = FALSE)
@@ -5252,7 +5252,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExp updates the correct 
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x0 <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         x1 <- updateModelNotUseExp(x0, y = y, useC = FALSE)
@@ -5278,7 +5278,7 @@ test_that("R, generic C, and specific C versions updateModelNotUseExp method for
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ Poisson(mean ~ age + region, useExpose = FALSE),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x <- initialModel(spec, y = y, exposure = NULL)
         set.seed(seed + 1)
         ans.R <- updateModelNotUseExp(x, y = y, useC = FALSE)
@@ -5779,7 +5779,7 @@ test_that("updateModelNotUseExp for PoissonVaryingNotUseExpAgFun updates the cor
             expect_false(identical(x1@betas[[b]], x0@betas[[b]]))
             if (!is(x1@priorsBetas[[b]], "ExchFixed"))
                 expect_false(identical(x1@priorsBetas[[b]], x0@priorsBetas[[b]]))
-        }        
+        }
         expect_true(all(x1@mu != x0@mu))
         for (name in c("slotsToExtract", "iMethodModel", "namesBetas",
                        "scaleTheta", "iteratorBetas", "dims"))
@@ -6032,7 +6032,7 @@ test_that("updateModelUseExp for CMPVaryingUseExp updates the correct slots", {
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ CMP(mean ~ age + region),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x0 <- initialModel(spec, y = y, exposure = exposure)
         set.seed(seed + 1)
         x1 <- updateModelUseExp(x0, y = y, exposure = exposure, useC = FALSE)
@@ -6063,7 +6063,7 @@ test_that("R and C versions of updateModelUseExp give same answer with CMPVaryin
                           dim = 5:4,
                           dimnames = list(age = 0:4, region = letters[1:4])))
         spec <- Model(y ~ CMP(mean ~ age + region),
-                      age ~ Exch())                      
+                      age ~ Exch())
         x <- initialModel(spec, y = y, exposure = exposure)
         set.seed(seed + 1)
         ans.R <- updateModelUseExp(x, y = y, exposure = exposure, useC = FALSE)
@@ -7196,7 +7196,7 @@ test_that("whereEstimated works with NormalVaryingVarsigmaUnknown", {
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
                          c("likelihood", "sd"),
-                         c("prior", "mean"),                         
+                         c("prior", "mean"),
                          c("hyper", "age", "scaleLevel"),
                          c("hyper", "age", "scaleTrend"),
                          c("hyper", "age", "damp"),
@@ -7424,7 +7424,7 @@ test_that("whereEstimated works with PoissonVaryingNotUseExpAgNormal", {
     y <- Counts(array(rbinom(20, size = 20, prob = 0.7),
                       dim = c(2, 10),
                       dimnames = list(sex = c("f", "m"), age = 0:9)))
-    value <- collapseDimension(y, dimension = "age") 
+    value <- collapseDimension(y, dimension = "age")
     sd <- sqrt(value) + 0.1
     aggregate <- AgNormal(value = value, sd = sd)
     spec <- Model(y ~ Poisson(mean ~ sex + age, useExpose = FALSE),
