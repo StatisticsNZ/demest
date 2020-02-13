@@ -2513,6 +2513,47 @@ logLikelihood_Poisson(SEXP model_R, int count,
     return dpois(x, lambda, USE_LOG);
 }
 
+
+
+/* double */
+/* logLikelihood_Poisson(SEXP model_R, int count, */
+/*                                 SEXP dataset_R, int i) */
+/* { */
+/*     /\* int *dataset = INTEGER(dataset_R); *\/ */
+/*     /\* double x = dataset[i-1]; *\/ */
+/*     /\* double *theta = REAL(GET_SLOT(model_R,theta_sym)); *\/ */
+/*     /\* double lambda = (theta[i-1])*count; *\/ */
+
+/*     /\* return dpois(x, lambda, USE_LOG); *\/ */
+
+/*     int *dataset = INTEGER(dataset_R); */
+/*     double x = dataset[i-1]; */
+/*     double *mu_vec = REAL(GET_SLOT(model_R, mu_sym)); */
+/*     double mu = mu_vec[i-1]; */
+/*     double sigma = *REAL(GET_SLOT(model_R, sigma_sym)); */
+/*     double mult = -1 / (2 * sigma * sigma); */
+/*     double scale = 1 / count; */
+
+/*     double min = qgamma(0.01, x, scale, 1, 0); */
+/*     double max = qgamma(0.99, x, scale, 1, 0); */
+/*     double step = (max - min) / 100; */
+
+/*     double diff; */
+/*     double increment; */
+/*     double exp_ans = 0; */
+/*     double val = min; */
+/*     while (val < max) { */
+/*       diff = (log(val) - mu); */
+/*       increment = dgamma(val, x, scale, 1) + mult * diff * diff; */
+/*       exp_ans += exp(increment); */
+/*       val += step; */
+/*     } */
+/*     PrintValue(ScalarReal(exp_ans)); */
+/*     return log(exp_ans); */
+/* } */
+
+ 
+
 double
 logLikelihood_PoissonBinomialMixture(SEXP model_R, int count,
                                 SEXP dataset_R, int i)

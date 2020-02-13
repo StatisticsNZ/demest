@@ -854,6 +854,21 @@ checkListNames <- function(names, listName) {
     NULL
 }
 
+checkPredictData <- function(predictData, name = "predictData") {
+    ## predictData is logical
+    if (!is.logical(predictData))
+        stop(gettextf("'%s' does not have type \"%s\"",
+                      name, "logical"))
+    ## 'predictData' has length 1
+    if (!identical(length(predictData), 1L))
+        stop(gettextf("'%s' does not have length %d",
+                      name, 1L))
+    ## 'predictData' is not missing
+    if (is.na(predictData))
+        stop(gettextf("'%s' is missing",
+                      name))
+    NULL
+}
 
 ## HAS_TESTS
 checkSpecWeightAg <- function(weights, metadata) {

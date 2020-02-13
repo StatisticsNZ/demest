@@ -7053,15 +7053,38 @@ updateCountsBinomial(SEXP y_R, SEXP model_R,
 {
 
   double *theta = REAL(GET_SLOT(model_R, theta_sym));
+  double *mu = REAL(GET_SLOT(model_R, mu_sym));
+  double sigma = *REAL(GET_SLOT(model_R, sigma_sym));
   int *exposure = INTEGER(exposure_R);
+  int *cellInLik = INTEGER(GET_SLOT(model_R, cellInLik_sym));
   int nY = LENGTH(y_R);
   int *y = INTEGER(y_R);
-    
+
+  double eta_prop;
+  double theta_prop;
+  
   for(int i = 0; i < nY; ++i) {
         
     int ir = i+1; /* R style index */
-    
-    int yProp = rbinom(exposure[i], theta[i]);
+
+    if (cellInLik[i]) {
+      theta_prop = theta[i];
+    }
+    else {
+      eta_prop = rnorm(mu[i], sigma);
+      if (eta_prop > 0)
+    	theta_prop = 1 / (1 + exp(-eta_prop));
+      else
+    	theta_prop = exp(eta_prop) / (1 + exp(eta_prop));
+    }
+
+    /* eta_prop = rnorm(mu[i], sigma); */
+    /* if (eta_prop > 0) */
+    /*   theta_prop = 1 / (1 + exp(-eta_prop)); */
+    /* else */
+    /*   theta_prop = exp(eta_prop) / (1 + exp(eta_prop)); */
+
+    int yProp = rbinom(exposure[i], theta_prop);
     /* cast to int */
         
     double diffLL = diffLogLik(&yProp, y_R, 

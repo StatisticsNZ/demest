@@ -403,7 +403,8 @@ setGeneric("initialCombinedCounts",
 
 setGeneric("initialCombinedCountsPredict",
            function(combined, along, labels, n, exposure,
-                    covariates, aggregate, lower, upper)
+                    predictData, covariates,
+                    aggregate, lower, upper)
               standardGeneric("initialCombinedCountsPredict"))
 
 setGeneric("initialCombinedModel",

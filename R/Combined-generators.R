@@ -466,7 +466,23 @@ setMethod("initialCombinedCounts",
                                                   y = datasets[[i]],
                                                   exposure = y.collapsed)
               }
-              model <- initialModel(object, y = y, exposure = exposure)
+              y.tmp <- y
+              for (i.cell.y in seq_along(y)) {
+                  is.in.lik <- FALSE
+                  for (i.dataset in seq_along(transforms)) {
+                      transform <- transforms[[i.dataset]]
+                      i.cell.dataset <- dembase:::getIAfter(i = i.cell.y,
+                                                            transform = transform,
+                                                            useC = TRUE)
+                      if (i.cell.dataset > 0L) {
+                          is.in.lik <- TRUE
+                          break
+                      }
+                      if (!is.in.lik)
+                          y.tmp[i.cell.y] <- NA
+                  }
+              }
+              model <- initialModel(object, y = y.tmp, exposure = exposure)
               methods::new("CombinedCountsBinomial",
                            model = model,
                            y = y,
@@ -482,8 +498,9 @@ setMethod("initialCombinedCounts",
 
 ## HAS_TESTS
 setMethod("initialCombinedCountsPredict",
-          signature(combined = "CombinedCountsPoissonHasExp"),
-          function(combined, along, labels, n, exposure, covariates,
+          signature(combined = "CombinedCountsBinomial"),
+          function(combined, along, labels, n, exposure,
+                   predictData, covariates,
                    aggregate, lower, upper) {
               model.est <- combined@model
               metadata.y <- model.est@metadataY
@@ -509,40 +526,134 @@ setMethod("initialCombinedCountsPredict",
               pos <- pos + lengthValues(model.est)
               y.pred <- makeCountsPred(modelPred = model.pred)
               pos <- pos + lengthValues(y.est)
-              data.models.pred <- vector(mode = "list", length = n.dataset)
-              datasets.pred <- vector(mode = "list", length = n.dataset)
-              transforms.pred <- vector(mode = "list", length = n.dataset)
-              names.y <- names(metadata.y)
-              name.dim.along <- names.y[along]
-              for (i in seq_len(n.dataset)) {
-                  data.model.est <- data.models.est[[i]]
-                  name <- names.datasets[i]
-                  covariates.pred <- covariates[["dataModels"]][[name]]
-                  aggregate.pred <- aggregate[["dataModels"]][[name]]
-                  lower.pred <- lower[["dataModels"]][[name]]
-                  upper.pred <- upper[["dataModels"]][[name]]
-                  along.pred <- match(name.dim.along, names(datasets.est[[i]]), nomatch = 0L)
-                  if (along.pred == 0L)
-                      stop(gettextf("dataset \"%s\" does not contain '%s' dimension [\"%s\"]",
-                                    name, "along", name.dim.along))
-                  data.model.pred <- initialModelPredict(model = data.model.est,
-                                                         along = along.pred,
-                                                         labels = labels,
-                                                         n = n,
-                                                         offsetModel = pos,
-                                                         covariates = covariates.pred,
-                                                         aggregate = aggregate.pred,
-                                                         lower = lower.pred,
-                                                         upper = upper.pred)
-                  pos <- pos + lengthValues(data.model.est)
-                  dataset.pred <- makeCountsPred(modelPred = data.model.pred)
-                  transform.pred <- dembase::makeTransform(x = y.pred,
-                                                           y = dataset.pred,
-                                                           subset = TRUE)
-                  transform.pred <- dembase::makeCollapseTransformExtra(transform.pred)
-                  data.models.pred[[i]] <- data.model.pred
-                  datasets.pred[[i]] <- dataset.pred
-                  transforms.pred[[i]] <- transform.pred
+              if (predictData) {
+                  data.models.pred <- vector(mode = "list", length = n.dataset)
+                  datasets.pred <- vector(mode = "list", length = n.dataset)
+                  transforms.pred <- vector(mode = "list", length = n.dataset)
+                  names.y <- names(metadata.y)
+                  name.dim.along <- names.y[along]
+                  for (i in seq_len(n.dataset)) {
+                      data.model.est <- data.models.est[[i]]
+                      name <- names.datasets[i]
+                      covariates.pred <- covariates[["dataModels"]][[name]]
+                      aggregate.pred <- aggregate[["dataModels"]][[name]]
+                      lower.pred <- lower[["dataModels"]][[name]]
+                      upper.pred <- upper[["dataModels"]][[name]]
+                      along.pred <- match(name.dim.along, names(datasets.est[[i]]), nomatch = 0L)
+                      if (along.pred == 0L)
+                          stop(gettextf("dataset \"%s\" does not contain '%s' dimension [\"%s\"]",
+                                        name, "along", name.dim.along))
+                      data.model.pred <- initialModelPredict(model = data.model.est,
+                                                             along = along.pred,
+                                                             labels = labels,
+                                                             n = n,
+                                                             offsetModel = pos,
+                                                             covariates = covariates.pred,
+                                                             aggregate = aggregate.pred,
+                                                             lower = lower.pred,
+                                                             upper = upper.pred)
+                      pos <- pos + lengthValues(data.model.est)
+                      dataset.pred <- makeCountsPred(modelPred = data.model.pred)
+                      transform.pred <- dembase::makeTransform(x = y.pred,
+                                                               y = dataset.pred,
+                                                               subset = TRUE)
+                      transform.pred <- dembase::makeCollapseTransformExtra(transform.pred)
+                      data.models.pred[[i]] <- data.model.pred
+                      datasets.pred[[i]] <- dataset.pred
+                      transforms.pred[[i]] <- transform.pred
+                  }
+              }
+              else {
+                  data.models.pred <- list()
+                  datasets.pred <- list()
+                  names.datasets <- character()
+                  transforms.pred <- list()
+              }
+              methods::new("CombinedCountsBinomial",
+                           model = model.pred,
+                           y = y.pred,
+                           exposure = exposure,
+                           dataModels = data.models.pred,
+                           datasets = datasets.pred,
+                           namesDatasets = names.datasets,
+                           transforms = transforms.pred)
+          })
+
+
+
+
+## HAS_TESTS
+setMethod("initialCombinedCountsPredict",
+          signature(combined = "CombinedCountsPoissonHasExp"),
+          function(combined, along, labels, n, exposure,
+                   predictData, covariates,
+                   aggregate, lower, upper) {
+              model.est <- combined@model
+              metadata.y <- model.est@metadataY
+              y.est <- combined@y
+              datasets.est <- combined@datasets
+              data.models.est <- combined@dataModels
+              names.datasets <- combined@namesDatasets
+              n.dataset <- length(datasets.est)
+              pos <- 1L
+              covariates.pred <- covariates[["model"]]
+              aggregate.pred <- aggregate[["model"]]
+              lower.pred <- lower[["model"]]
+              upper.pred <- upper[["model"]]
+              model.pred <- initialModelPredict(model = model.est,
+                                                along = along,
+                                                labels = labels,
+                                                n = n,
+                                                offsetModel = pos,
+                                                covariates = covariates.pred,
+                                                aggregate = aggregate.pred,
+                                                lower = lower.pred,
+                                                upper = upper.pred)
+              pos <- pos + lengthValues(model.est)
+              y.pred <- makeCountsPred(modelPred = model.pred)
+              pos <- pos + lengthValues(y.est)
+              if (predictData) {
+                  data.models.pred <- vector(mode = "list", length = n.dataset)
+                  datasets.pred <- vector(mode = "list", length = n.dataset)
+                  transforms.pred <- vector(mode = "list", length = n.dataset)
+                  names.y <- names(metadata.y)
+                  name.dim.along <- names.y[along]
+                  for (i in seq_len(n.dataset)) {
+                      data.model.est <- data.models.est[[i]]
+                      name <- names.datasets[i]
+                      covariates.pred <- covariates[["dataModels"]][[name]]
+                      aggregate.pred <- aggregate[["dataModels"]][[name]]
+                      lower.pred <- lower[["dataModels"]][[name]]
+                      upper.pred <- upper[["dataModels"]][[name]]
+                      along.pred <- match(name.dim.along, names(datasets.est[[i]]), nomatch = 0L)
+                      if (along.pred == 0L)
+                          stop(gettextf("dataset \"%s\" does not contain '%s' dimension [\"%s\"]",
+                                        name, "along", name.dim.along))
+                      data.model.pred <- initialModelPredict(model = data.model.est,
+                                                             along = along.pred,
+                                                             labels = labels,
+                                                             n = n,
+                                                             offsetModel = pos,
+                                                             covariates = covariates.pred,
+                                                             aggregate = aggregate.pred,
+                                                             lower = lower.pred,
+                                                             upper = upper.pred)
+                      pos <- pos + lengthValues(data.model.est)
+                      dataset.pred <- makeCountsPred(modelPred = data.model.pred)
+                      transform.pred <- dembase::makeTransform(x = y.pred,
+                                                               y = dataset.pred,
+                                                               subset = TRUE)
+                      transform.pred <- dembase::makeCollapseTransformExtra(transform.pred)
+                      data.models.pred[[i]] <- data.model.pred
+                      datasets.pred[[i]] <- dataset.pred
+                      transforms.pred[[i]] <- transform.pred
+                  }
+              }
+              else {
+                  data.models.pred <- list()
+                  datasets.pred <- list()
+                  names.datasets <- character()
+                  transforms.pred <- list()
               }
               methods::new("CombinedCountsPoissonHasExp",
                            model = model.pred,
@@ -557,7 +668,8 @@ setMethod("initialCombinedCountsPredict",
 ## HAS_TESTS
 setMethod("initialCombinedCountsPredict",
           signature(combined = "CombinedCountsPoissonNotHasExp"),
-          function(combined, along, labels, n, exposure, covariates,
+          function(combined, along, labels, n, exposure,
+                   predictData, covariates,
                    aggregate, lower, upper) {
               model.est <- combined@model
               metadata.y <- model.est@metadataY
@@ -583,40 +695,48 @@ setMethod("initialCombinedCountsPredict",
               pos <- pos + lengthValues(model.est)
               y.pred <- makeCountsPred(modelPred = model.pred)
               pos <- pos + lengthValues(y.est)
-              data.models.pred <- vector(mode = "list", length = n.dataset)
-              datasets.pred <- vector(mode = "list", length = n.dataset)
-              transforms.pred <- vector(mode = "list", length = n.dataset)
-              names.y <- names(metadata.y)
-              name.dim.along <- names.y[along]
-              for (i in seq_len(n.dataset)) {
-                  data.model.est <- data.models.est[[i]]
-                  name <- names.datasets[i]
-                  covariates.pred <- covariates[["dataModels"]][[name]]
-                  aggregate.pred <- aggregate[["dataModels"]][[name]]
-                  lower.pred <- lower[["dataModels"]][[name]]
-                  upper.pred <- upper[["dataModels"]][[name]]
-                  along.pred <- match(name.dim.along, names(datasets.est[[i]]), nomatch = 0L)
-                  if (along.pred == 0L)
-                      stop(gettextf("dataset \"%s\" does not contain '%s' dimension [\"%s\"]",
-                                    name, "along", name.dim.along))
-                  data.model.pred <- initialModelPredict(model = data.model.est,
-                                                         along = along.pred,
-                                                         labels = labels,
-                                                         n = n,
-                                                         offsetModel = pos,
-                                                         covariates = covariates.pred,
-                                                         aggregate = aggregate.pred,
-                                                         lower = lower.pred,
-                                                         upper = upper.pred)
-                  pos <- pos + lengthValues(data.model.est)
-                  dataset.pred <- makeCountsPred(modelPred = data.model.pred)
-                  transform.pred <- dembase::makeTransform(x = y.pred,
-                                                           y = dataset.pred,
-                                                           subset = TRUE)
-                  transform.pred <- dembase::makeCollapseTransformExtra(transform.pred)
-                  data.models.pred[[i]] <- data.model.pred
-                  datasets.pred[[i]] <- dataset.pred
-                  transforms.pred[[i]] <- transform.pred
+              if (predictData) {
+                  data.models.pred <- vector(mode = "list", length = n.dataset)
+                  datasets.pred <- vector(mode = "list", length = n.dataset)
+                  transforms.pred <- vector(mode = "list", length = n.dataset)
+                  names.y <- names(metadata.y)
+                  name.dim.along <- names.y[along]
+                  for (i in seq_len(n.dataset)) {
+                      data.model.est <- data.models.est[[i]]
+                      name <- names.datasets[i]
+                      covariates.pred <- covariates[["dataModels"]][[name]]
+                      aggregate.pred <- aggregate[["dataModels"]][[name]]
+                      lower.pred <- lower[["dataModels"]][[name]]
+                      upper.pred <- upper[["dataModels"]][[name]]
+                      along.pred <- match(name.dim.along, names(datasets.est[[i]]), nomatch = 0L)
+                      if (along.pred == 0L)
+                          stop(gettextf("dataset \"%s\" does not contain '%s' dimension [\"%s\"]",
+                                        name, "along", name.dim.along))
+                      data.model.pred <- initialModelPredict(model = data.model.est,
+                                                             along = along.pred,
+                                                             labels = labels,
+                                                             n = n,
+                                                             offsetModel = pos,
+                                                             covariates = covariates.pred,
+                                                             aggregate = aggregate.pred,
+                                                             lower = lower.pred,
+                                                             upper = upper.pred)
+                      pos <- pos + lengthValues(data.model.est)
+                      dataset.pred <- makeCountsPred(modelPred = data.model.pred)
+                      transform.pred <- dembase::makeTransform(x = y.pred,
+                                                               y = dataset.pred,
+                                                               subset = TRUE)
+                      transform.pred <- dembase::makeCollapseTransformExtra(transform.pred)
+                      data.models.pred[[i]] <- data.model.pred
+                      datasets.pred[[i]] <- dataset.pred
+                      transforms.pred[[i]] <- transform.pred
+                  }
+              }
+              else {
+                  data.models.pred <- list()
+                  datasets.pred <- list()
+                  names.datasets <- character()
+                  transforms.pred <- list()
               }
               methods::new("CombinedCountsPoissonNotHasExp",
                            model = model.pred,

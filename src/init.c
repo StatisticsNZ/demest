@@ -1360,6 +1360,7 @@ PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelBinomial);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedModelPoissonHasExp);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedCountsPoissonNotHasExp);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedCountsPoissonHasExp);
+PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined_CombinedCountsBinomial);
 PREDICTCOMBINEDOBJECT_WRAPPER_R(predictCombined);
 
 /* wrap repetitive update of combined model functions */
@@ -2471,6 +2472,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictCombined_CombinedModelPoissonNotHasExp_R, 4),
   CALLDEF(predictCombined_CombinedCountsPoissonNotHasExp_R, 4),
   CALLDEF(predictCombined_CombinedCountsPoissonHasExp_R, 4),
+  CALLDEF(predictCombined_CombinedCountsBinomial_R, 4),
   CALLDEF(predictCombined_R, 4),
 
   /* update combined */

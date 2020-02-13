@@ -246,15 +246,17 @@ setClass("ResultsCountsEst",
              ## all elements of 'datasets' have class "Counts" or "SkeletonMissingDataset"
              is.counts <- sapply(datasets, is, "Counts")
              is.skeleton <- sapply(datasets, is, "SkeletonMissingDataset")
-             if (!all(is.counts | is.skeleton))
+             if (!all(mapply("|", is.counts, is.skeleton))) # works with length 0
                  return(gettextf("'%s' has elements not of class \"%s\" or \"%s\"",
                                  "datasets", "Counts", "SkeletonMissingDataset"))
              ## if an element of 'dataset' has class "Counts" it does not have any missing values
-             hasMissing <- function(x) any(is.na(x))
-             has.missing <- sapply(datasets[sapply(datasets, is, "Counts")], hasMissing)
-             if (any(has.missing))
-                 return(gettextf("'%s' has elements of class \"%s\" with missing values",
-                                 "datasets", "Counts"))             
+             if (any(is.counts)) {
+                 hasMissing <- function(x) any(is.na(x))
+                 has.missing <- sapply(datasets[is.counts], hasMissing)
+                 if (any(has.missing))
+                     return(gettextf("'%s' has elements of class \"%s\" with missing values",
+                                     "datasets", "Counts"))
+             }
              ## 'dataModels' and 'datasets' have same names
              if (!identical(names(dataModels), names(datasets)))
                  return(gettextf("'%s' and '%s' have different names",

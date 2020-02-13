@@ -5282,9 +5282,21 @@ updateCountsBinomial <- function(y, model, exposure, dataModels, datasets,
               dataModels, datasets, transforms)
     }
     else {
-        theta <- model@theta
+        mu <- model@mu
+        sigma <- model@sigma
+        cell.in.lik <- model@cellInLik
         for (i in seq_along(y)) {
-            y.prop <- stats::rbinom(n = 1L, size = exposure[i], prob = theta[i])
+            if (cell.in.lik[i]) {
+                theta.prop <- theta[i]
+            }
+            else {
+                eta.prop <- stats::rnorm(n = 1L, mean = mu[i], sd = sigma)
+                if (eta.prop > 0)
+                    theta.prop <- 1 / (1 + exp(-eta.prop))
+                else
+                    theta.prop <- exp(eta.prop) / (1 + exp(eta.prop))
+            }
+            y.prop <- stats::rbinom(n = 1L, size = exposure[i], prob = theta.prop)
             y.prop <- as.integer(y.prop)  # needed for R < 3.0
             diff.log.lik <- diffLogLik(yProp = y.prop,
                                        y = y,

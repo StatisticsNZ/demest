@@ -1984,7 +1984,6 @@ setMethod("predictModelUseExp",
               stopifnot(all(is.na(y)))
               ## exposure
               stopifnot(is.integer(exposure))
-              stopifnot(all(is.na(exposure)))
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               if (useC) {
@@ -2052,7 +2051,6 @@ setMethod("predictModelUseExp",
               stopifnot(all(is.na(y)))
               ## exposure
               stopifnot(is.integer(exposure))
-              stopifnot(all(is.na(exposure)))
               ## y and exposure
               stopifnot(identical(length(exposure), length(y)))
               if (useC) {

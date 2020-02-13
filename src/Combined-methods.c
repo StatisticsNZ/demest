@@ -444,6 +444,66 @@ predictCombined_CombinedModelPoissonHasExp(SEXP object_R,
 }
 
 void
+predictCombined_CombinedCountsBinomial(SEXP object_R,
+        const char *filename, int lengthIter, int iteration)
+{
+    SEXP model_R = GET_SLOT(object_R, model_sym);
+    SEXP y_R = GET_SLOT(object_R, y_sym);
+    int * y  = INTEGER(y_R);
+    SEXP exposure_R = GET_SLOT(object_R, exposure_sym);
+    SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
+    SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
+
+    transferParamModel(model_R, filename, lengthIter, iteration);
+
+    /* reset y_R to have NA_INTEGER */
+    int n_y = LENGTH(y_R);
+    for (int i = 0; i < n_y; ++i) {
+      y[i] = NA_INTEGER;
+    }
+    predictModelUseExp(model_R, y_R, exposure_R);
+
+    double * theta = REAL(GET_SLOT(model_R, theta_sym));
+    int * exposure = INTEGER(exposure_R);
+
+    for (int i = 0; i < n_y; ++i) {
+        y[i] = rbinom(exposure[i], theta[i]);
+    }
+
+    int n_models = LENGTH(dataModels_R);
+
+    for (int i = 0; i < n_models; ++i) {
+
+        SEXP dataModel_R = VECTOR_ELT(dataModels_R, i);
+        SEXP dataset_R = VECTOR_ELT(datasets_R, i);
+
+        /* if it is not a poisson datamodel we can use dataset as is
+         * as the exposure for predictModel,
+         * but if it is a poisson model need to use a double version
+         * of dataset as the exposure for predictModel */
+        const char *class_name = CHAR(STRING_ELT(GET_SLOT((dataModel_R),
+                                                    R_ClassSymbol), 0));
+        char *found = NULL;
+        found = strstr(class_name, "Poisson");
+
+        if (found) {
+
+            SEXP expose_R;
+            SEXP expose_tmp_R;
+            PROTECT( expose_tmp_R = duplicate(dataset_R) );
+            PROTECT(expose_R = coerceVector(expose_tmp_R, REALSXP));
+
+            predictModelUseExp(dataModel_R, dataset_R, expose_R);
+            UNPROTECT(2);
+        }
+        else {
+            predictModelUseExp(dataModel_R, dataset_R, dataset_R);
+        }
+    }
+}
+
+
+void
 predictCombined_CombinedCountsPoissonHasExp(SEXP object_R,
         const char *filename, int lengthIter, int iteration)
 {
@@ -508,6 +568,8 @@ predictCombined_CombinedCountsPoissonHasExp(SEXP object_R,
         }
     }
 }
+
+
 
 
 void
@@ -607,6 +669,10 @@ predictCombined(SEXP object_R,
         case 7: /* poisson counts, has exposure */
             predictCombined_CombinedCountsPoissonHasExp(object_R,
                                         filename, lengthIter, iteration);
+            break;
+        case 8: /* binomial counts */
+            predictCombined_CombinedCountsBinomial(object_R,
+						   filename, lengthIter, iteration);
             break;
 
         default:

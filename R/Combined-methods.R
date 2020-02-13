@@ -349,6 +349,67 @@ setMethod("predictCombined",
               }
           })
 
+
+
+setMethod("predictCombined",
+          signature(object = "CombinedCountsBinomial"),
+          function(object, nUpdate = 1L, filename,
+                   lengthIter, iteration,
+                   useC = FALSE, useSpecific = FALSE) {
+              ## object
+              methods::validObject(object)
+              ## nUpdate
+              stopifnot(identical(length(nUpdate), 1L))
+              stopifnot(is.integer(nUpdate))
+              stopifnot(!is.na(nUpdate))
+              stopifnot(nUpdate >= 0L)
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictCombined_CombinedCountsBinomial_R,
+                            object, filename, lengthIter, iteration)
+                  else
+                      .Call(predictCombined_R,
+                            object, filename, lengthIter, iteration)
+              }
+              else {
+                  model <- object@model
+                  y <- object@y
+                  exposure <- object@exposure
+                  datasets <- object@datasets
+                  data.models <- object@dataModels
+                  model <- transferParamModel(model = model,
+                                              filename = filename,
+                                              lengthIter = lengthIter,
+                                              iteration = iteration)
+                  ## Clear previous results. Need to clear for updateTheta to work properly.
+                  y[] <- NA_integer_
+                  model <- predictModelUseExp(model,
+                                              y = y,
+                                              exposure = exposure)
+                  theta <- model@theta
+                  y[] <- stats::rbinom(n = length(theta),
+                                       size = exposure,
+                                       prob = theta)
+                  for (i in seq_along(data.models)) {
+                      data.model <- data.models[[i]]
+                      dataset <- datasets[[i]] ## all NA
+                      expose <- dataset
+                      if (methods::is(data.model, "Poisson"))
+                          expose <- toDouble(expose)
+                      data.model <- predictModelUseExp(object = data.model,
+                                                       y = dataset,
+                                                       exposure = expose)
+                      data.models[[i]] <- data.model
+                  }
+                  object@model <- model
+                  object@y <- y
+                  object@dataModels <- data.models
+                  object
+              }
+          })
+
+
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictCombined",

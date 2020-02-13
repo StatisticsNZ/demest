@@ -557,10 +557,13 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
 #' Not written yet.
 #' 
 #' @inheritParams predictModel
+#' @param predictData Whether to predict data models
+#' and datasets. Defaults to \code{FALSE}.
 #'
 #' @export
 predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL, n = NULL,
-                          exposure = NULL, data = list(), aggregate = list(), lower = list(),
+                          exposure = NULL, predictData = FALSE,
+                          data = list(), aggregate = list(), lower = list(),
                           upper = list(), nBurnin = 0L,  parallel = TRUE, outfile = NULL,
                           verbose = FALSE, useC = TRUE) {
     checkEstAndPredFilenamesDifferent(filenameEst = filenameEst,
@@ -587,6 +590,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
     else
         checkFilename(filename = filenamePred,
                       name = "filenamePred")
+    checkPredictData(predictData)
     if (!(identical(aggregate, list()) || methods::is(aggregate, "SpecAggregate")))
         stop(gettextf("'%s' has class \"%s\"",
                       "aggregate", class(aggregate)))
@@ -607,6 +611,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
                                                   labels = labels,
                                                   n = n,
                                                   exposure = exposure,
+                                                  predictData = predictData,
                                                   covariates = data,
                                                   aggregate = aggregate,
                                                   lower = lower,
@@ -619,7 +624,8 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
                            nSim = mcmc.args.first[["nSim"]],
                            nChain = mcmc.args.first[["nChain"]],
                            nThin = mcmc.args.first[["nThin"]],
-                           nIteration = mcmc.args.first[["nIteration"]])
+                           nIteration = mcmc.args.first[["nIteration"]],
+                           nCore = mcmc.args.first[["nCore"]])
     tempfiles.first <- splitFile(filename = filenameEst,
                                  nChain = mcmc.args.first[["nChain"]],
                                  nIteration = mcmc.args.first[["nIteration"]],
