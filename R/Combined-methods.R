@@ -823,13 +823,13 @@ setMethod("diffLogDensAccount",
                       ans <- ans + diffLogDensExpPopn(combined)
                   else if (is.births) {
                       if (is.small.update) 
-                          ans <- ans + diffLogDensCompSmall(combined) 
+                          ans <- ans + diffLogDensJumpCompSmall(combined) 
                       else
                           ans <- ans + diffLogDensExpComp(combined)
                   }
                   else if (is.orig.dest) {
                       if (is.small.update) 
-                          ans <- ans + diffLogDensCompSmall(combined) 
+                          ans <- ans + diffLogDensJumpCompSmall(combined) 
                       else { 
                           if (model.uses.exposure[i.comp])
                               ans <- ans + diffLogDensJumpOrigDest(combined)
@@ -849,7 +849,7 @@ setMethod("diffLogDensAccount",
                   }
                   else {
                       if (is.small.update) 
-                          ans <- ans + diffLogDensCompSmall(combined) 
+                          ans <- ans + diffLogDensJumpCompSmall(combined) 
                       else { 
                           if (model.uses.exposure[i.comp])
                               ans <- ans + diffLogDensJumpComp(combined)

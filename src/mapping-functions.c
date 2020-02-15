@@ -754,6 +754,7 @@ getICellBirthsFromExp(int i, SEXP mapping_R)
     int stepTimeExp  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
     int stepTimeBirths  = *INTEGER(GET_SLOT(mapping_R, stepTimeTarget_sym));
     int hasAge  = *LOGICAL(GET_SLOT(mapping_R, hasAge_sym));
+    int hasSex  = *LOGICAL(GET_SLOT(mapping_R, hasSex_sym));
     
     SEXP nSharedVec_R = GET_SLOT(mapping_R, nSharedVec_sym);
     int *nSharedVec  = INTEGER(nSharedVec_R);
@@ -767,8 +768,23 @@ getICellBirthsFromExp(int i, SEXP mapping_R)
     int iTimeExp = (iMinus1 / stepTimeExp) % nTime;
     int iTimeBirths = iTimeExp;
     int returnZero = 0;
-    
-    if (hasAge) {
+
+    if (hasSex) {
+
+        int iSexDominant = *INTEGER(GET_SLOT(mapping_R, iSexDominant_sym));
+        int stepSexExp = *INTEGER(GET_SLOT(mapping_R, stepSexCurrent_sym));
+        int stepSexBirths = *INTEGER(GET_SLOT(mapping_R, stepSexTarget_sym));
+	int iSex = iMinus1/stepSexExp % 2;
+	if (iSex == iSexDominant) {
+	  iBirths_r += iSex * stepSexBirths;
+	}
+	else {
+	  iBirths_r = 0;
+	  returnZero = 1;
+	}
+
+    } /* end hasSex */
+    if (!returnZero && hasAge) {
 
         int nAgeExp = *INTEGER(GET_SLOT(mapping_R, nAgeCurrent_sym));
         int nAgeBirths = *INTEGER(GET_SLOT(mapping_R, nAgeTarget_sym));

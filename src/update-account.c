@@ -2254,6 +2254,7 @@ diffLogDensExpPopn(SEXP combined_R)
 
     int * modelUsesExposure = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
     SEXP mappingsFromExp_R = GET_SLOT(combined_R, mappingsFromExp_sym);
+    SEXP mappingsToExp_R = GET_SLOT(combined_R, mappingsToExp_sym);
 
     int iExpFirst_r = *INTEGER(GET_SLOT(combined_R, iExpFirst_sym));
     SEXP iteratorExposure_R = GET_SLOT(combined_R, iteratorExposure_sym);
@@ -2321,12 +2322,15 @@ diffLogDensExpPopn(SEXP combined_R)
                 int cellIsAffected = (iCell_r > 0);
                 if (cellIsAffected) {
 
+		    SEXP mappingToExp_R = VECTOR_ELT(mappingsToExp_R, i);
+		    int iExpFirstBirths_R = getIExposureFromBirths(iCell_r, mappingToExp_R);
+
                     if(isParCh) {
 
                         diffLog = diffLogDensExpOneOrigDestParChPool(iCell_r,
                                         hasAge, ageTimeStep, updatedPopnTrue,
                                         component_R, theta, strucZeroArray,
-                                        iteratorComp_R, iExpFirst_r,
+                                        iteratorComp_R, iExpFirstBirths_R,
                                         exposure, iteratorExposure_R,
                                         diff);
                     }
@@ -2336,7 +2340,7 @@ diffLogDensExpPopn(SEXP combined_R)
                         diffLog = diffLogDensExpOneComp(iCell_r,
                                         hasAge, ageTimeStep, updatedPopnTrue,
                                         component_R, theta, strucZeroArray,
-                                        iteratorComp_R, iExpFirst_r,
+                                        iteratorComp_R, iExpFirstBirths_R,
                                         exposure, iteratorExposure_R,
                                         diff);
                     }
@@ -2572,7 +2576,7 @@ diffLogDensJumpOrigDest(SEXP combined_R)
 
     int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
     double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
-
+    
     int iCell = iCell_r - 1;
     int iExposure = iExposure_r - 1;
 
@@ -2621,6 +2625,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
 
     int * modelUsesExposure = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
     SEXP mappingsFromExposure_R = GET_SLOT(combined_R, mappingsFromExp_sym);
+    SEXP mappingsToExposure_R = GET_SLOT(combined_R, mappingsToExp_sym);
 
     int iExpFirstOrig_r = *INTEGER(GET_SLOT(combined_R, iExpFirst_sym));
     int iExpFirstDest_r = *INTEGER(GET_SLOT(combined_R, iExpFirstOther_sym));
@@ -2722,6 +2727,11 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
 
                     int cellIsAffected = (iCellOrig_r > 0);
                     if(cellIsAffected) {
+
+		    SEXP mappingToExposure_R = VECTOR_ELT(mappingsToExposure_R, i);
+		    int iExpFirstOrigBirths_R = getIExposureFromBirths(iCellOrig_r, mappingToExposure_R);
+		    int iExpFirstDestBirths_R = getIExposureFromBirths(iCellDest_r, mappingToExposure_R);
+		      
                         if (isParCh) {
 
                             diffLogOrig
@@ -2731,7 +2741,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
-                                                    iExpFirstOrig_r,
+                                                    iExpFirstOrigBirths_R,
                                                     exposure,
                                                     iteratorExposure_R,
                                                     diffOrig);
@@ -2745,7 +2755,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                                             component_R, theta,
                                                             strucZeroArray,
                                                             iteratorComp_R,
-                                                            iExpFirstDest_r,
+                                                            iExpFirstDestBirths_R,
                                                             exposure,
                                                             iteratorExposure_R,
                                                             diffDest);
@@ -2760,7 +2770,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
-                                                    iExpFirstOrig_r,
+                                                    iExpFirstOrigBirths_R,
                                                     exposure,
                                                     iteratorExposure_R,
                                                     diffOrig);
@@ -2774,7 +2784,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                                             component_R, theta,
                                                             strucZeroArray,
                                                             iteratorComp_R,
-                                                            iExpFirstDest_r,
+                                                            iExpFirstDestBirths_R,
                                                             exposure,
                                                             iteratorExposure_R,
                                                             diffDest);
@@ -3081,6 +3091,7 @@ diffLogDensExpComp(SEXP combined_R)
 
     int * modelUsesExposure = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
     SEXP mappingsFromExposure_R = GET_SLOT(combined_R, mappingsFromExp_sym);
+    SEXP mappingsToExposure_R = GET_SLOT(combined_R, mappingsToExp_sym);
 
     int iExpFirst_r = *INTEGER(GET_SLOT(combined_R, iExpFirst_sym));
 
@@ -3155,7 +3166,11 @@ diffLogDensExpComp(SEXP combined_R)
 
                     int cellIsAffected = (iCell_r > 0);
                     if(cellIsAffected) {
-                        if (isParCh) {
+
+		    SEXP mappingToExposure_R = VECTOR_ELT(mappingsToExposure_R, i);
+		    int iExpFirstBirths_R = getIExposureFromBirths(iCell_r, mappingToExposure_R);
+
+		      if (isParCh) {
 
                             diffLog
                             = diffLogDensExpOneOrigDestParChPool(iCell_r,
@@ -3164,7 +3179,7 @@ diffLogDensExpComp(SEXP combined_R)
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
-                                                    iExpFirst_r,
+                                                    iExpFirstBirths_R,
                                                     exposure,
                                                     iteratorExposure_R,
                                                     diff);
@@ -3179,7 +3194,7 @@ diffLogDensExpComp(SEXP combined_R)
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
-                                                    iExpFirst_r,
+                                                    iExpFirstBirths_R,
                                                     exposure,
                                                     iteratorExposure_R,
                                                     diff);
@@ -3223,7 +3238,7 @@ diffLogDensExpComp(SEXP combined_R)
 }
 
 double
-diffLogDensCompSmall(SEXP combined_R)
+diffLogDensJumpCompSmall(SEXP combined_R)
 {
     int iComp = *INTEGER(GET_SLOT(combined_R, iComp_sym)) - 1;
     SEXP account_R = GET_SLOT(combined_R, account_sym);
@@ -3233,6 +3248,7 @@ diffLogDensCompSmall(SEXP combined_R)
     SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
     SEXP systemModel_R = VECTOR_ELT(systemModels_R, iComp + 1);
     double * theta = REAL(GET_SLOT(systemModel_R, theta_sym));
+    double tol = *REAL(GET_SLOT(systemModel_R, tolerance_sym));
 
     int i_cell_up = *INTEGER(GET_SLOT(combined_R, iCell_sym)) - 1;
     int i_cell_low = *INTEGER(GET_SLOT(combined_R, iCellOther_sym)) - 1;
@@ -3260,10 +3276,19 @@ diffLogDensCompSmall(SEXP combined_R)
         val_low_expected *= expose_low;
     }
 
+    double denom = val_up_expected + val_low_expected;
+    double prob = 0.5;
+    if (denom > tol) {
+      prob = val_up_expected/denom;
+    }
+    int size = val_up_curr + val_low_curr;
+
     double ans = dpois(val_up_prop, val_up_expected, USE_LOG) +
-                    dpois(val_low_prop, val_low_expected, USE_LOG) -
-                    dpois(val_up_curr, val_up_expected, USE_LOG) -
-                    dpois(val_low_curr, val_low_expected, USE_LOG);
+      dpois(val_low_prop, val_low_expected, USE_LOG) -
+      dpois(val_up_curr, val_up_expected, USE_LOG) -
+      dpois(val_low_curr, val_low_expected, USE_LOG) +
+      dbinom(val_up_curr, size, prob, USE_LOG) -
+      dbinom(val_up_prop, size, prob, USE_LOG);
 
     return ans;
 }

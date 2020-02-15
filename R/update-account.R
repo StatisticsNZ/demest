@@ -2293,6 +2293,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
         iterators.comp <- combined@iteratorsComp
         model.uses.exposure <- combined@modelUsesExposure
         mappings.from.exp <- combined@mappingsFromExp
+        mappings.to.exp <- combined@mappingsToExp
         i.exp.first <- combined@iExpFirst
         iterator.exposure <- combined@iteratorExposure
         diff <- combined@diffProp
@@ -2340,6 +2341,9 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                     mapping = mapping.from.exp)
                     cell.is.affected <- i.cell > 0L
                     if (cell.is.affected) {
+                        mapping.to.exp <- mappings.to.exp[[i]]
+                        i.exp.first.births <- getIExposureFromBirths(i = i.cell,
+                                                                     mapping = mapping.to.exp)
                         if (is.par.ch)
                             diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
                                                                            hasAge = has.age,
@@ -2349,7 +2353,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                                            theta = theta,
                                                                            strucZeroArray = strucZeroArray,
                                                                            iteratorComp = iterator.comp,
-                                                                           iExpFirst = i.exp.first,
+                                                                           iExpFirst = i.exp.first.births,
                                                                            exposure = exposure,
                                                                            iteratorExposure = iterator.exposure,
                                                                            diff = diff)
@@ -2362,7 +2366,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                               theta = theta,
                                                               strucZeroArray = strucZeroArray,
                                                               iteratorComp = iterator.comp,
-                                                              iExpFirst = i.exp.first,
+                                                              iExpFirst = i.exp.first.births,
                                                               exposure = exposure,
                                                               iteratorExposure = iterator.exposure,
                                                               diff = diff)
@@ -2675,6 +2679,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
         iterators.comp <- combined@iteratorsComp
         model.uses.exposure <- combined@modelUsesExposure
         mappings.from.exp <- combined@mappingsFromExp
+        mappings.to.exp <- combined@mappingsToExp
         i.exp.first.orig <- combined@iExpFirst
         i.exp.first.dest <- combined@iExpFirstOther
         iterator.exposure <- combined@iteratorExposure
@@ -2756,6 +2761,11 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                          mapping = mapping.from.exp)
                     cell.is.affected <- i.cell.orig > 0L
                     if (cell.is.affected) {
+                        mapping.to.exp <- mappings.to.exp[[i]]
+                        i.exp.first.orig.births <- getIExposureFromBirths(i = i.cell.orig,
+                                                                          mapping = mapping.to.exp)
+                        i.exp.first.dest.births <- getIExposureFromBirths(i = i.cell.dest,
+                                                                          mapping = mapping.to.exp)
                         if (is.par.ch) {
                             diff.log.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
                                                                                 hasAge = has.age,
@@ -2765,7 +2775,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                                 theta = theta,
                                                                                 strucZeroArray = strucZeroArray,
                                                                                 iteratorComp = iterator.comp,
-                                                                                iExpFirst = i.exp.first.orig,
+                                                                                iExpFirst = i.exp.first.orig.births,
                                                                                 exposure = exposure,
                                                                                 iteratorExposure = iterator.exposure,
                                                                                 diff = diff.orig)
@@ -2780,7 +2790,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                                 theta = theta,
                                                                                 strucZeroArray = strucZeroArray,
                                                                                 iteratorComp = iterator.comp,
-                                                                                iExpFirst = i.exp.first.dest,
+                                                                                iExpFirst = i.exp.first.dest.births,
                                                                                 exposure = exposure,
                                                                                 iteratorExposure = iterator.exposure,
                                                                                 diff = diff.dest)
@@ -2797,7 +2807,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                    theta = theta,
                                                                    strucZeroArray = strucZeroArray,
                                                                    iteratorComp = iterator.comp,
-                                                                   iExpFirst = i.exp.first.orig,
+                                                                   iExpFirst = i.exp.first.orig.births,
                                                                    exposure = exposure,
                                                                    iteratorExposure = iterator.exposure,
                                                                    diff = diff.orig)
@@ -2812,7 +2822,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                    theta = theta,
                                                                    strucZeroArray = strucZeroArray,
                                                                    iteratorComp = iterator.comp,
-                                                                   iExpFirst = i.exp.first.dest,
+                                                                   iExpFirst = i.exp.first.dest.births,
                                                                    exposure = exposure,
                                                                    iteratorExposure = iterator.exposure,
                                                                    diff = diff.dest)
@@ -3055,6 +3065,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
         iterators.comp <- combined@iteratorsComp
         model.uses.exposure <- combined@modelUsesExposure
         mappings.from.exp <- combined@mappingsFromExp
+        mappings.to.exp <- combined@mappingsToExp
         i.exp.first <- combined@iExpFirst
         iterator.exposure <- combined@iteratorExposure
         is.increment <- combined@isIncrement
@@ -3109,6 +3120,9 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                     mapping = mapping.from.exp)
                     cell.is.affected <- i.cell > 0L
                     if (cell.is.affected) {
+                        mapping.to.exp <- mappings.to.exp[[i]]
+                        i.exp.first.births <- getIExposureFromBirths(i = i.cell,
+                                                                     mapping = mapping.to.exp)
                         if (is.par.ch)
                             diff.log <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell,
                                                                            hasAge = has.age,
@@ -3118,7 +3132,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                                            theta = theta,
                                                                            strucZeroArray = strucZeroArray,
                                                                            iteratorComp = iterator.comp,
-                                                                           iExpFirst = i.exp.first,
+                                                                           iExpFirst = i.exp.first.births,
                                                                            exposure = exposure,
                                                                            iteratorExposure = iterator.exposure,
                                                                            diff = diff)
@@ -3131,7 +3145,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                               theta = theta,
                                                               strucZeroArray = strucZeroArray,
                                                               iteratorComp = iterator.comp,
-                                                              iExpFirst = i.exp.first,
+                                                              iExpFirst = i.exp.first.births,
                                                               exposure = exposure,
                                                               iteratorExposure = iterator.exposure,
                                                               diff = diff)
@@ -3167,10 +3181,10 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-diffLogDensCompSmall <- function(combined, useC = FALSE) {
+diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
-        .Call(diffLogDensCompSmall_R, combined)
+        .Call(diffLogDensJumpCompSmall_R, combined)
     }
     else {
         i.comp <- combined@iComp
@@ -3181,6 +3195,7 @@ diffLogDensCompSmall <- function(combined, useC = FALSE) {
         i.cell.low <- combined@iCellOther
         uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
         diff <- combined@diffProp
+        tol <- combined@systemModels[[i.comp + 1L]]@tolerance
         val.up.curr <- component[i.cell.up]
         val.low.curr <- component[i.cell.low]
         val.up.prop <- val.up.curr + diff
@@ -3196,10 +3211,18 @@ diffLogDensCompSmall <- function(combined, useC = FALSE) {
             val.up.expected <- val.up.expected * expose.up
             val.low.expected <- val.low.expected * expose.low
         }
+        denom <- val.up.expected + val.low.expected
+        if (denom > tol)
+            prob <- val.up.expected / denom
+        else
+            prob <- 0.5
+        size <- val.up.curr + val.low.curr
         ans <- (stats::dpois(x = val.up.prop, lambda = val.up.expected, log = TRUE) +
                 stats::dpois(x = val.low.prop, lambda = val.low.expected, log = TRUE) -
                 stats::dpois(x = val.up.curr, lambda = val.up.expected, log = TRUE) -
-                stats::dpois(x = val.low.curr, lambda = val.low.expected, log = TRUE))
+                stats::dpois(x = val.low.curr, lambda = val.low.expected, log = TRUE) +
+                stats::dbinom(x = val.up.curr, prob = prob, size = size, log = TRUE) -
+                stats::dbinom(x = val.up.prop, prob = prob, size = size, log = TRUE))
         ans
     }
 }

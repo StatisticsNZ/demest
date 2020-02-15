@@ -899,7 +899,7 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
     }
     else if (isBirths) {
         if (isSmallUpdate) {
-            ans += diffLogDensCompSmall(object_R);
+            ans += diffLogDensJumpCompSmall(object_R);
         }
         else {
             ans += diffLogDensExpComp(object_R);
@@ -908,7 +908,7 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
     else if (isOrigDest) {
 
         if (isSmallUpdate) {
-            ans += diffLogDensCompSmall(object_R);
+            ans += diffLogDensJumpCompSmall(object_R);
         }
         else {
 
@@ -941,7 +941,7 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
     else {
 
         if (isSmallUpdate) {
-            ans += diffLogDensCompSmall(object_R);
+            ans += diffLogDensJumpCompSmall(object_R);
         }
         else {
             int * usesExposureVec = LOGICAL(GET_SLOT(object_R, modelUsesExposure_sym));
