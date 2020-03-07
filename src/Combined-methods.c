@@ -874,12 +874,14 @@ double
 diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
 {
     int iComp_r = *INTEGER(GET_SLOT(object_R, iComp_sym));
+    int iBirths_r = *INTEGER(GET_SLOT(object_R, iBirths_sym));
     int iOrigDest_r = *INTEGER(GET_SLOT(object_R, iOrigDest_sym));
     int iPool_r = *INTEGER(GET_SLOT(object_R, iPool_sym));
     int iIntNet_r = *INTEGER(GET_SLOT(object_R, iIntNet_sym));
 
     int isSmallUpdate = *LOGICAL(GET_SLOT(object_R, isSmallUpdate_sym));
     int isPopn = (iComp_r == 0);
+    int isBirths = (iComp_r == iBirths_r);
     int isOrigDest = (iComp_r == iOrigDest_r);
     int isPool = (iComp_r == iPool_r);
     int isIntNet = (iComp_r == iIntNet_r);
@@ -895,10 +897,18 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
     if(isPopn) {
         ans += diffLogDensExpPopn(object_R);
     }
+    else if (isBirths) {
+        if (isSmallUpdate) {
+            ans += diffLogDensJumpCompSmall(object_R);
+        }
+        else {
+            ans += diffLogDensExpComp(object_R);
+        }
+    }
     else if (isOrigDest) {
 
         if (isSmallUpdate) {
-            ans += diffLogDensCompSmall(object_R);
+            ans += diffLogDensJumpCompSmall(object_R);
         }
         else {
 
@@ -931,7 +941,7 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
     else {
 
         if (isSmallUpdate) {
-            ans += diffLogDensCompSmall(object_R);
+            ans += diffLogDensJumpCompSmall(object_R);
         }
         else {
             int * usesExposureVec = LOGICAL(GET_SLOT(object_R, modelUsesExposure_sym));

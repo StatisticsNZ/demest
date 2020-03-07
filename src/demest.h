@@ -1138,7 +1138,7 @@ double diffLogDensJumpPoolNoExpose(SEXP combined_R);
 double diffLogDensJumpNet(SEXP combined_R);
 double diffLogDensJumpComp(SEXP combined_R);
 double diffLogDensExpComp(SEXP combined_R);
-double diffLogDensCompSmall(SEXP combined_R);
+double diffLogDensJumpCompSmall(SEXP combined_R);
 
 void updateAccSmall(SEXP combined_R);
 void updateCellMove(SEXP combined_R);

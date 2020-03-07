@@ -804,12 +804,14 @@ setMethod("diffLogDensAccount",
               }
               else {
                   i.comp <- combined@iComp
+                  i.births <- combined@iBirths
                   i.orig.dest <- combined@iOrigDest
                   i.pool <- combined@iPool
                   i.int.net <- combined@iIntNet
-                  is.small.update <- combined@isSmallUpdate@.Data ## NEW
+                  is.small.update <- combined@isSmallUpdate@.Data 
                   model.uses.exposure <- combined@modelUsesExposure
                   is.popn <- i.comp == 0L
+                  is.births <- i.comp == i.births
                   is.orig.dest <- i.comp == i.orig.dest
                   is.pool <- i.comp == i.pool
                   is.int.net <- i.comp == i.int.net
@@ -819,10 +821,16 @@ setMethod("diffLogDensAccount",
                       ans <- ans + diffLogDensPopn(combined)
                   if (is.popn)
                       ans <- ans + diffLogDensExpPopn(combined)
+                  else if (is.births) {
+                      if (is.small.update) 
+                          ans <- ans + diffLogDensJumpCompSmall(combined) 
+                      else
+                          ans <- ans + diffLogDensExpComp(combined)
+                  }
                   else if (is.orig.dest) {
-                      if (is.small.update) ## NEW
-                          ans <- ans + diffLogDensCompSmall(combined) ## NEW
-                      else { ## NEW
+                      if (is.small.update) 
+                          ans <- ans + diffLogDensJumpCompSmall(combined) 
+                      else { 
                           if (model.uses.exposure[i.comp])
                               ans <- ans + diffLogDensJumpOrigDest(combined)
                           ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
@@ -840,13 +848,13 @@ setMethod("diffLogDensAccount",
                       ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
                   }
                   else {
-                      if (is.small.update) ## NEW
-                          ans <- ans + diffLogDensCompSmall(combined) ## NEW
-                      else { ## NEW
+                      if (is.small.update) 
+                          ans <- ans + diffLogDensJumpCompSmall(combined) 
+                      else { 
                           if (model.uses.exposure[i.comp])
                               ans <- ans + diffLogDensJumpComp(combined)
                           ans <- ans + diffLogDensExpComp(combined)
-                      } ## NEW
+                      } 
                   }
                   ans
               }

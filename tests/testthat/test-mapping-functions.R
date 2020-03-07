@@ -4340,7 +4340,7 @@ test_that("R and C versions of getICellCompFromExp work with InternalMovementsPo
 })
 
 
-test_that("getICellBirthsFromExp works with BirthsNoParentChild", {
+test_that("getICellBirthsFromExp works with BirthsNoParentChild - no sex", {
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     BirthsMovements <- dembase:::BirthsMovements
     Population <- dembase:::Population
@@ -4445,7 +4445,7 @@ test_that("getICellBirthsFromExp works with BirthsNoParentChild", {
     }
 })
 
-test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsNoParentChild", {
+test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsNoParentChild - no sex", {
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     BirthsMovements <- dembase:::BirthsMovements
     Population <- dembase:::Population
@@ -4550,8 +4550,160 @@ test_that("R and C versions of getICellBirthsFromExp give same answer with Birth
     }
 })
 
+test_that("getICellBirthsFromExp works with BirthsNoParentChild - with sex", {
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    BirthsMovements <- dembase:::BirthsMovements
+    Population <- dembase:::Population
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("10-19", "20-29"),
+                                           sex = c("Female", "Male"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 5, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    population <- Population(population)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(2L, 0L, 1:4, rep(0L, 4),
+                 rep(0L, 10),
+                 1L, 2L, 9:12, rep(0L, 4),
+                 rep(0L, 10))
+    for (i in 1:40) {
+        ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
+        ans.expected <- ans.exp[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
 
-test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
+
+
+test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsNoParentChild - no sex", {
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    BirthsMovements <- dembase:::BirthsMovements
+    Population <- dembase:::Population
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    ## time is first dimension of two
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("10-19", "20-29"),
+                                           sex = c("Female", "Male"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 5, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    population <- Population(population)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(2L, 0L, 1:4, rep(0L, 4),
+                 1L, 2L, 5:8, rep(0L, 4))
+    for (i in 1:20) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## time is second dimension of two
+    births <- Counts(array(1:3,
+                           dim = c(3, 2, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           sex = c("Male", "Female"),
+                                           time = "2001-2010")))
+    population <- Counts(array(1:6,
+                               dim = c(3, 2, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               sex = c("Male", "Female"),
+                                               time = c(2000, 2010))))
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    population <- Population(population)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:3) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## time is second dimension of three
+    births <- Counts(array(1:36,
+                           dim = c(3, 2, 2, 2, 2),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           sex = c("Male", "Female"),
+                                           time = c("2001-2010", "2011-2020"),
+                                           age = c("10-19", "20-29"),
+                                           triangle = c("Lower", "Upper"))))
+    population <- Counts(array(1:36,
+                               dim = c(3, 2, 3, 4),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               sex = c("Male", "Female"),
+                                               time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30+"))))
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(4:6, rep(0L, 3), 1:12, rep(0L, 6),
+                 1:6, 13:24, rep(0L, 6))
+    for (i in 1:48) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## only has time dimension
+    births <- Counts(array(1:11,
+                           dim = c(11, 2),
+                           dimnames = list(time = paste(seq(2001, by = 5, len = 11),
+                                                        seq(2005, by = 5, len = 11),
+                                                        sep = "-"),
+                                           sex = c("Male", "Female"))))
+    population <- Counts(array(1:12,
+                               dim = c(12, 2),
+                               dimnames = list(time = seq(from = 2000,
+                                                          by = 5,
+                                                          length = 12),
+                                               sex = c("Male", "Female"))))
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:11) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
+
+
+test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild - no sex", {
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     BirthsMovements <- dembase:::BirthsMovements
     Exposure <- dembase:::Exposure
@@ -4683,7 +4835,7 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
 })
 
 
-test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
+test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsMovementHasParentChild - no sex", {
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     BirthsMovements <- dembase:::BirthsMovements
     Exposure <- dembase:::Exposure
@@ -4792,4 +4944,167 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
     }
 })
 
+
+
+test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild - with sex", {
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    BirthsMovements <- dembase:::BirthsMovements
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    births <- Counts(array(1:72,
+                           dim = c(2, 3, 3, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                               eth_parent = 1:3,
+                               eth_child = 1:3,
+                               triangle = c("Lower", "Upper"),
+                               age = c("10-19", "20-29"),
+                               sex = c("Female", "Male"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 3, 5, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                   eth = 1:3,
+                                   age = c("0-9", "10-19", "20-29", "30-39", "40+"),
+                                   sex = c("Female", "Male"))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(2L, 0L, 4L, 0L, 6L, 0L,
+                 1:6,
+                 19:24,
+                 rep(0L, 12),
+                 rep(0L, 30),
+                 1:6,
+                 73:78,
+                 91:96,
+                 rep(0L, 12),
+                 rep(0L, 30))
+    for (i in 1:72) {
+        ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
+        ans.expected <- ans.exp[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+
+test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsMovementHasParentChild - with sex", {
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    BirthsMovements <- dembase:::BirthsMovements
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    ## one parent-child, has age
+    births <- Counts(array(1:72,
+                           dim = c(2, 3, 3, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           eth_parent = 1:3,
+                                           eth_child = 1:3,
+                                           sex = c("Female", "Male"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("10-19", "20-29"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 3, 2, 5),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               eth = 1:3,
+                                               sex = c("Female", "Male"),
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:60) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    births <- Counts(array(1:36,
+                           dim = c(3, 3, 2, 2, 2, 1),
+                           dimnames = list(reg_parent = c("a", "b", "c"),
+                                           reg_child = c("a", "b", "c"),
+                                           eth_parent = 1:2,
+                                           eth_child = 1:2,
+                                           sex = c("Female", "Male"),
+                                           time = "2001-2010")))
+    population <- Counts(array(1:12,
+                               dim = c(3, 2, 2, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               eth = 1:2,
+                                               sex = c("Female", "Male"),
+                                               time = c(2000, 2010))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:6) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## one parent-child, has age
+    births <- Counts(array(1:72,
+                           dim = c(3, 3, 2, 2, 2, 2),
+                           dimnames = list(reg_parent = c("a", "b", "c"),
+                                           reg_child = c("a", "b", "c"),
+                                           sex = c("Female", "Male"),
+                                           time = c("2001-2010", "2011-2020"),
+                                           age = c("10-19", "20-29"),
+                                           triangle = c("Lower", "Upper"))))
+    population <- Counts(array(1:36,
+                               dim = c(3, 3, 2, 4),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2010, 2020),
+                                               sex = c("Female", "Male"),
+                                               age = c("0-9", "10-19", "20-29", "30+"))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:48) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## time dimension plus parent-child
+    births <- Counts(array(1:44,
+                           dim = c(11, 2, 2, 2),
+                           dimnames = list(time = paste(seq(2001, by = 5, len = 11),
+                                                        seq(2005, by = 5, len = 11),
+                                                        sep = "-"),
+                                           sex = c("Female", "Male"),
+                                           eth_parent = 1:2,
+                                           eth_child = 1:2)))
+    population <- Counts(array(1:24,
+                               dim = c(12, 2, 2),
+                               dimnames = list(time = seq(from = 2000,
+                                                          by = 5,
+                                                          length = 12),
+                                               sex = c("Female", "Male"),
+                                               eth = 1:2)))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(1:11, 23:33)
+    for (i in 1:22) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
 

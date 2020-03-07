@@ -708,7 +708,17 @@ getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
         step.time.exp <- mapping@stepTimeCurrent
         step.time.births <- mapping@stepTimeTarget
         has.age <- mapping@hasAge
+        has.sex <- mapping@hasSex
         i.births <- 1L
+        if (has.sex) {
+            i.sex.dominant <- mapping@iSexDominant
+            step.sex.exp <- mapping@stepSexCurrent
+            step.sex.births <- mapping@stepSexTarget
+            i.sex <- ((i - 1L) %/% step.sex.exp) %% 2L
+            if (i.sex != i.sex.dominant)
+                return(0L)
+            i.births <- i.births + i.sex * step.sex.births
+        }
         i.time.exp <- ((i - 1L) %/% step.time.exp) %% n.time
         if (has.age) {
             n.age.exp <- mapping@nAgeCurrent

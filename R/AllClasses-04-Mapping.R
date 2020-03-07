@@ -434,6 +434,7 @@ setClass("MappingExpToBirths",
                       "MappingMixinAge",
                       "MappingMixinIMinAge",
                       "MappingMixinNAgeTarget",
+                      "MappingMixinSex",
                       "MappingMixinStepTriangleCurrent",
                       "MappingMixinStepTriangleTarget"))
 
