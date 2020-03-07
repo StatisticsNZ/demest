@@ -1133,7 +1133,7 @@ setMethod("Mapping",
               dim.births <- dim(target)
               dimtypes.exp <- dembase::dimtypes(current, use.names = FALSE)
               dimtypes.births <- dembase::dimtypes(target, use.names = FALSE)
-              DimScales.births <- dembase:::DimScales(target, use.names = FALSE)
+              DimScales.births <- dembase::DimScales(target, use.names = FALSE)
               i.time.exp <- match("time", dimtypes.exp)
               i.time.births <- match("time", dimtypes.births)
               i.age.exp <- match("age", dimtypes.exp, nomatch = 0L)
