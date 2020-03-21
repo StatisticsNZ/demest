@@ -912,15 +912,29 @@ SEXP getMinValCohortAccession_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
     return ScalarInteger(ans);
 }
 
-/* one off wrapper for getMinValCohortPopulation */
-SEXP getMinValCohortPopulation_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
+/* one off wrapper for getMinValCohortPopulationHasAge */
+SEXP getMinValCohortPopulationHasAge_R(SEXP i_R, SEXP population_R, SEXP accession_R,
+				       SEXP iterator_R)
 {
     int i = *INTEGER(i_R);
 
-    SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortPopulation */
+    SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortPopulationHasAge */
     PROTECT(dup_R = duplicate(iterator_R));
 
-    int ans = getMinValCohortPopulation(i, series_R, dup_R);
+    int ans = getMinValCohortPopulationHasAge(i, population_R, accession_R, dup_R);
+    UNPROTECT(1);
+    return ScalarInteger(ans);
+}
+
+/* one off wrapper for getMinValCohortPopulationNoAge */
+SEXP getMinValCohortPopulationNoAge_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
+{
+    int i = *INTEGER(i_R);
+
+    SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortPopulationNoAge */
+    PROTECT(dup_R = duplicate(iterator_R));
+
+    int ans = getMinValCohortPopulationNoAge(i, series_R, dup_R);
     UNPROTECT(1);
     return ScalarInteger(ans);
 }
@@ -2537,7 +2551,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getIPopnNextFromPopn_R, 2),
   CALLDEF(getIExpFirstFromPopn_R, 2),
   CALLDEF(getMinValCohortAccession_R, 3),
-  CALLDEF(getMinValCohortPopulation_R, 3),
+  CALLDEF(getMinValCohortPopulationHasAge_R, 4),
+  CALLDEF(getMinValCohortPopulationNoAge_R, 3),
 
   /* mapping functions */
   CALLDEF(getIPopnNextFromComp_R, 2),

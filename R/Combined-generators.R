@@ -822,10 +822,11 @@ setMethod("initialCombinedAccount",
               update.component <- rep(TRUE, times = length(components))
               if (has.age) {
                   accession <- dembase::accession(account,
-                                                  births = FALSE)
+                                                  births = FALSE,
+                                                  openAge = TRUE)
                   accession <- methods::new("Accession",
-                                   .Data = accession@.Data,
-                                   metadata = accession@metadata)
+                                            .Data = accession@.Data,
+                                            metadata = accession@metadata)
                   iterator.acc <- CohortIterator(accession)
                   mappings.to.acc <- lapply(components, function(x) Mapping(x, accession))
                   methods::new("CombinedAccountMovementsHasAge",

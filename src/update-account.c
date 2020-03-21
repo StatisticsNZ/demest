@@ -72,7 +72,7 @@ updateProposalAccountMovePopn(SEXP combined_R)
     int iExposure_r = 0;
     int iExpFirst_r = getIExpFirstFromPopn(iCell_r, description_R);
     int iPopnNext_r = getIPopnNextFromPopn(iCell_r, description_R);
-    int minVal = getMinValCohortPopulation(iPopnNext_r, population_R,
+    int minVal = getMinValCohortPopulationNoAge(iPopnNext_r, population_R,
                                                         iteratorPopn_R);
 
     int iAccNext_r = 0;
@@ -198,7 +198,7 @@ updateProposalAccountMoveBirths(SEXP combined_R)
 
     int iExpFirst_r = getIExpFirstFromBirths(iCell_r, mappingToExp_R);
     int iPopnNext_r = getIPopnNextFromComp(iCell_r, mappingToPopn_R);
-    int minVal = getMinValCohortPopulation(iPopnNext_r, population_R,
+    int minVal = getMinValCohortPopulationNoAge(iPopnNext_r, population_R,
                                                         iteratorPopn_R);
     int iAccNext_r = 0;
     int isLowerTriangleValue = 0;
@@ -479,9 +479,9 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
     int iPopnNextOrig_r = pairArray[0];
     int iPopnNextDest_r = pairArray[1];
 
-    int minValOrig = getMinValCohortPopulation(iPopnNextOrig_r, population_R,
+    int minValOrig = getMinValCohortPopulationNoAge(iPopnNextOrig_r, population_R,
                                                         iteratorPopn_R);
-    int minValDest = getMinValCohortPopulation(iPopnNextDest_r, population_R,
+    int minValDest = getMinValCohortPopulationNoAge(iPopnNextDest_r, population_R,
                                                         iteratorPopn_R);
     int iAccNextOrig_r = 0;
     int iAccNextDest_r = 0;
@@ -820,9 +820,9 @@ updateProposalAccountMovePool(SEXP combined_R)
     int iPopnNextOut_r = getIPopnNextFromComp(iCellOut_r, mappingToPopn_R);
     int iPopnNextIn_r = getIPopnNextFromComp(iCellIn_r, mappingToPopn_R);
 
-    int minValOut = getMinValCohortPopulation(iPopnNextOut_r, population_R,
+    int minValOut = getMinValCohortPopulationNoAge(iPopnNextOut_r, population_R,
                                                         iteratorPopn_R);
-    int minValIn = getMinValCohortPopulation(iPopnNextIn_r, population_R,
+    int minValIn = getMinValCohortPopulationNoAge(iPopnNextIn_r, population_R,
                                                         iteratorPopn_R);
     int iAccNextOut_r = 0;
     int iAccNextIn_r = 0;
@@ -989,9 +989,9 @@ updateProposalAccountMoveNet(SEXP combined_R)
     int iPopnNextAdd_r = getIPopnNextFromComp(iCellAdd_r, mappingToPopn_R);
     int iPopnNextSub_r = getIPopnNextFromComp(iCellSub_r, mappingToPopn_R);
 
-    int minValAdd = getMinValCohortPopulation(iPopnNextAdd_r, population_R,
+    int minValAdd = getMinValCohortPopulationNoAge(iPopnNextAdd_r, population_R,
                                                         iteratorPopn_R);
-    int minValSub = getMinValCohortPopulation(iPopnNextSub_r, population_R,
+    int minValSub = getMinValCohortPopulationNoAge(iPopnNextSub_r, population_R,
                                                         iteratorPopn_R);
     int iAccNextAdd_r = 0;
     int iAccNextSub_r = 0;
@@ -1167,7 +1167,7 @@ updateProposalAccountMoveComp(SEXP combined_R)
 
     int iPopnNext_r = getIPopnNextFromComp(iCell_r, mappingToPopn_R);
 
-    int minVal = getMinValCohortPopulation(iPopnNext_r, population_R,
+    int minVal = getMinValCohortPopulationNoAge(iPopnNext_r, population_R,
                                                         iteratorPopn_R);
 
     int iAccNext_r = 0;

@@ -1041,7 +1041,9 @@ int getIAccNextFromPopn(int i, SEXP description_R);
 int getIPopnNextFromPopn(int i, SEXP description_R);
 int getIExpFirstFromPopn(int i, SEXP description_R);
 int getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R);
-int getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R);
+int getMinValCohortPopulationHasAge(int i, SEXP population_R, SEXP accession_R,
+				    SEXP iterator_R);
+int getMinValCohortPopulationNoAge(int i, SEXP series_R, SEXP iterator_R);
 
 /* mapping functions */
 int getIPopnNextFromComp(int i, SEXP mapping_R);

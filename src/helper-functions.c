@@ -3615,32 +3615,21 @@ int
 getIAccNextFromPopn(int i, SEXP description_R)
 {
     int nTimePopn = *INTEGER(GET_SLOT(description_R, nTime_sym));
-    int nAgePopn = *INTEGER(GET_SLOT(description_R, nAge_sym));
     int stepTimePopn = *INTEGER(GET_SLOT(description_R, stepTime_sym));
-    int stepAgePopn = *INTEGER(GET_SLOT(description_R, stepAge_sym));
     int nTimeAcc = nTimePopn - 1;
-    int nAgeAcc = nAgePopn - 1;
 
     int iTime_r = (((i - 1) / stepTimePopn) % nTimePopn) + 1; /* R-style */
-    int iAge_r = (((i - 1) / stepAgePopn) % nAgePopn) + 1; /* R-style */
     int iAcc = 0;
 
-    if ((iTime_r < nTimePopn) && (iAge_r < nAgePopn)) {
-        iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
+    if (iTime_r < nTimePopn) {
+      iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
             + ((i - 1) % (stepTimePopn * nTimePopn))) + 1;
-    int stepAgeAcc;
-    if (stepTimePopn > stepAgePopn) {
-        stepAgeAcc = stepAgePopn;
-    }
-    else {
-        stepAgeAcc = (stepAgePopn / nTimePopn) * nTimeAcc;
-    }
-    iAcc = (((iAcc - 1) / (stepAgeAcc * nAgePopn)) * (stepAgeAcc * nAgeAcc)
-        + ((iAcc - 1) % (stepAgeAcc * nAgePopn))) + 1;
     }
 
     return iAcc;
 }
+
+
 
 int
 getIExpFirstFromPopn(int i, SEXP description_R)
@@ -3717,8 +3706,56 @@ getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
     return ans;
 }
 
+
 int
-getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R)
+getMinValCohortPopulationHasAge(int i, SEXP population_R, SEXP accession_R, SEXP iterator_R)
+{
+    int *population = INTEGER(population_R);
+    int *accession = INTEGER(accession_R);
+
+    int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
+    int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
+
+    /* first value */
+
+    resetCP(iterator_R, i);
+    int populationCurrent = population[i-1];
+
+    int iTime = *INTEGER(GET_SLOT(iterator_R, iTime_sym));
+    int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
+    int iAcc = i - stepTime;
+    if (iTime > 1) {
+      if (iAge == nAge) {
+	populationCurrent -= accession[iAcc - 1];
+      }
+    }
+    int ans = populationCurrent;
+
+    /* subsequent values */
+
+    int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+    while(!(finished)) {
+        advanceCP(iterator_R);
+        i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+	populationCurrent = population[i - 1];
+	iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
+	if (iAge == nAge) {
+	  iAcc = i - stepTime;
+	  populationCurrent -= accession[iAcc - 1];
+	}
+	if (populationCurrent < ans) {
+	  ans = populationCurrent;
+        }
+        finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+    }
+
+    return ans;
+}
+
+
+
+int
+getMinValCohortPopulationNoAge(int i, SEXP series_R, SEXP iterator_R)
 {
     int *series = INTEGER(series_R);
 

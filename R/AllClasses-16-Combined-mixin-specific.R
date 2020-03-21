@@ -42,8 +42,10 @@ setClass("AccessionMixin",
                  else if (dimtypes.acc[i] == "age") {
                      dv.acc <- DS.acc@dimvalues
                      dv.popn <- DS.popn@dimvalues
+                     n.dv.acc <- length(dv.acc)
                      n.dv.popn <- length(dv.popn)
-                     valid <- isTRUE(all.equal(dv.acc, dv.popn[-c(1L, n.dv.popn)]))
+                     valid <- ((n.dv.acc == n.dv.popn - 1L)
+                         && isTRUE(all.equal(dv.acc[-n.dv.acc], dv.popn[-c(1L, n.dv.popn)])))
                  }
                  else
                      valid <- isTRUE(all.equal(DS.acc, DS.popn))

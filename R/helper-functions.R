@@ -3845,11 +3845,11 @@ isLowerTriangle <- function(i, description, useC = FALSE) {
     }
 }
 
+
 ## TRANSLATED
 ## HAS_TESTS
 ## Assumes that population and accession have identical dimensions,
-## except that time dimension for accession is one shorter than
-## time dimension for population
+## except for time dimensions
 getIAccNextFromPopn <- function(i, description, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
@@ -3866,34 +3866,19 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
     }
     else {
         n.time.popn <- description@nTime
-        n.age.popn <- description@nAge
         step.time.popn <- description@stepTime
-        step.age.popn <- description@stepAge
         n.time.acc <- n.time.popn - 1L
-        n.age.acc <- n.age.popn - 1L
         i.time.popn <- (((i - 1L) %/% step.time.popn) %% n.time.popn) + 1L ## R-style
         if (i.time.popn < n.time.popn) {
-            i.age.popn <- (((i - 1L) %/% step.age.popn) %% n.age.popn) + 1L ## R-style
-            if (i.age.popn < n.age.popn) {
-                ## adjust for loss of one time period
-                i.acc <- (((i - 1L) %/% (step.time.popn * n.time.popn)) * (step.time.popn * n.time.acc)
-                    + ((i - 1L) %% (step.time.popn * n.time.popn))) + 1L
-                ## adjust for loss of one age group
-                if (step.time.popn > step.age.popn)
-                    step.age.acc <- step.age.popn
-                else
-                    step.age.acc <- (step.age.popn %/% n.time.popn) * n.time.acc
-                i.acc <- (((i.acc - 1L) %/% (step.age.acc * n.age.popn)) * (step.age.acc * n.age.acc)
-                    + ((i.acc - 1L) %% (step.age.acc * n.age.popn))) + 1L
-                i.acc
-            }
-            else
-                0L
+            ## adjust for loss of one time period
+            (((i - 1L) %/% (step.time.popn * n.time.popn)) * (step.time.popn * n.time.acc)
+                + ((i - 1L) %% (step.time.popn * n.time.popn))) + 1L
         }
         else
             0L
     }
 }
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -4000,9 +3985,68 @@ getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {
 }
 
 
+
 ## TRANSLATED
 ## HAS_TESTS
-getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
+getMinValCohortPopulationHasAge <- function(i, population, accession, iterator, useC = FALSE) {
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## 'population'
+    stopifnot(is.integer(population))
+    stopifnot(!any(is.na(population)))
+    ## 'accession'
+    stopifnot(is.integer(accession))
+    stopifnot(!any(is.na(accession)))
+    ## 'iterator'
+    stopifnot(methods::is(iterator, "CohortIteratorPopulation"))
+    ## 'i' and 'population'
+    stopifnot(i <= length(population))
+    ## 'population' and 'accession'
+    stopifnot(length(population) %/% iterator@nTime == length(accession) %/% (iterator@nTime - 1L))
+    if (useC) {
+        .Call(getMinValCohortPopulationHasAge_R, i, population, accession, iterator)
+    }
+    else {
+        n.age <- iterator@nAge
+        step.time <- iterator@stepTime
+        ## first value
+        iterator <- resetCP(iterator, i = i)
+        population_current <- population[i]
+        i.time <- iterator@iTime
+        if (i.time > 1L) {
+            i.age <- iterator@iAge
+            if (i.age == n.age) {
+                ## calculate size of cohort reaching age A
+                i.acc <- i - step.time
+                population_current <- population_current - accession[i.acc]
+            }
+        }
+        ans <- population_current
+        ## subsequent values (guaranteed i.time > 1)
+        while (!iterator@finished) {
+            iterator <- advanceCP(iterator)
+            i <- iterator@i
+            population_current <- population[i]
+            i.age <- iterator@iAge
+            if (i.age == n.age) {
+                ## calculate size of cohort reaching age A
+                i.acc <- i - step.time
+                population_current <- population_current - accession[i.acc]
+            }
+            ans <- min(population_current, ans)
+        }
+        ans
+    }
+}
+
+
+
+## TRANSLATED
+## HAS_TESTS
+getMinValCohortPopulationNoAge <- function(i, series, iterator, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
@@ -4016,7 +4060,7 @@ getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
     ## 'i' and 'series'
     stopifnot(i <= length(series))
     if (useC) {
-        .Call(getMinValCohortPopulation_R, i, series, iterator)
+        .Call(getMinValCohortPopulationNoAge_R, i, series, iterator)
     }
     else {
         ans <- series[i]
@@ -4029,6 +4073,7 @@ getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
         ans
     }
 }
+
 
 ## HAS_TESTS
 makeTransformExpToBirths <- function(exposure, births,
