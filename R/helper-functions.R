@@ -4012,6 +4012,8 @@ getMinValCohortPopulationHasAge <- function(i, population, accession, iterator, 
     else {
         n.age <- iterator@nAge
         step.time <- iterator@stepTime
+        n.time.popn <- iterator@nTime
+        n.time.acc <- n.time.popn - 1L
         ## first value
         iterator <- resetCP(iterator, i = i)
         population_current <- population[i]
@@ -4020,7 +4022,10 @@ getMinValCohortPopulationHasAge <- function(i, population, accession, iterator, 
             i.age <- iterator@iAge
             if (i.age == n.age) {
                 ## calculate size of cohort reaching age A
-                i.acc <- i - step.time
+                i.acc <- ((i - 1L) %% (step.time * n.time.popn)
+                    - step.time
+                    + ((i - 1L) %/% (step.time * n.time.popn) * (step.time * n.time.acc))
+                    + 1L)
                 population_current <- population_current - accession[i.acc]
             }
         }
@@ -4033,7 +4038,10 @@ getMinValCohortPopulationHasAge <- function(i, population, accession, iterator, 
             i.age <- iterator@iAge
             if (i.age == n.age) {
                 ## calculate size of cohort reaching age A
-                i.acc <- i - step.time
+                i.acc <- ((i - 1L) %% (step.time * n.time.popn)
+                    - step.time
+                    + ((i - 1L) %/% (step.time * n.time.popn) * (step.time * n.time.acc))
+                    + 1L)
                 population_current <- population_current - accession[i.acc]
             }
             ans <- min(population_current, ans)

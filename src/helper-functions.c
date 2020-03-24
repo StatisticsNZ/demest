@@ -3715,6 +3715,8 @@ getMinValCohortPopulationHasAge(int i, SEXP population_R, SEXP accession_R, SEXP
 
     int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
     int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
+    int nTimePopn = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
+    int nTimeAcc = nTimePopn - 1;
 
     /* first value */
 
@@ -3723,10 +3725,12 @@ getMinValCohortPopulationHasAge(int i, SEXP population_R, SEXP accession_R, SEXP
 
     int iTime = *INTEGER(GET_SLOT(iterator_R, iTime_sym));
     int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
-    int iAcc = i - stepTime;
+    int iAcc_C = ((i - 1) % (stepTime * nTimePopn)
+		  - stepTime
+		  + ((i - 1) / (stepTime * nTimePopn) * (stepTime * nTimeAcc))); /* C-style */
     if (iTime > 1) {
       if (iAge == nAge) {
-	populationCurrent -= accession[iAcc - 1];
+	populationCurrent -= accession[iAcc_C];
       }
     }
     int ans = populationCurrent;
@@ -3735,18 +3739,20 @@ getMinValCohortPopulationHasAge(int i, SEXP population_R, SEXP accession_R, SEXP
 
     int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
     while(!(finished)) {
-        advanceCP(iterator_R);
-        i = *INTEGER(GET_SLOT(iterator_R, i_sym));
-	populationCurrent = population[i - 1];
-	iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
-	if (iAge == nAge) {
-	  iAcc = i - stepTime;
-	  populationCurrent -= accession[iAcc - 1];
-	}
-	if (populationCurrent < ans) {
-	  ans = populationCurrent;
-        }
-        finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+      advanceCP(iterator_R);
+      i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+      populationCurrent = population[i - 1];
+      iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
+      if (iAge == nAge) {
+	iAcc_C = ((i - 1) % (stepTime * nTimePopn)
+		  - stepTime
+		  + ((i - 1) / (stepTime * nTimePopn) * (stepTime * nTimeAcc))); /* C-style */
+	populationCurrent -= accession[iAcc_C];
+      }
+      if (populationCurrent < ans) {
+	ans = populationCurrent;
+      }
+      finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
     }
 
     return ans;

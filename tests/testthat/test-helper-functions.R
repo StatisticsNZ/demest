@@ -10558,14 +10558,13 @@ test_that("getMinValCohortPopulationHasAge gives valid answer", {
     iter <- CohortIterator(population)
     vec.ans.exp <- c(5:1, 5:1, 25:21, 45:41,
                      5:1, 5:1, 5:1, 25:21,
-                     rep(5:1, 3))
+                     rep(5:1, 4))
     for (i in 1:60) {
         ans.obtained <- getMinValCohortPopulationHasAge(i = i,
                                                         population = population,
                                                         accession = accession,
                                                         iter = iter)
-        print(ans.obtained)
-        ans.expected <- vec.ans.expect[i]
+        ans.expected <- vec.ans.exp[i]
         expect_identical(ans.obtained, ans.expected)
     }
 })
@@ -10575,48 +10574,65 @@ test_that("R and C versions of getMinValCohortPopulationHasAge give same answer"
     getMinValCohortPopulationHasAge <- demest:::getMinValCohortPopulationHasAge
     CohortIterator <- demest:::CohortIterator
     Population <- dembase:::Population
+    Accession <- dembase:::Accession
     population <- Counts(array(1:12,
-                           dim = c(4, 3),
+                               dim = c(4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
-                                 time = c(2000, 2005, 2010))))
+                                               time = c(2000, 2005, 2010))))
+    accession <- Counts(array(1:8,
+                              dim = c(4, 2),
+                              dimnames = list(age = c("5", "10", "15", "20"),
+                                              time = c("2001-2005", "2006-2010"))))
     population <- Population(population)
+    accession <- Accession(accession)
     iter <- CohortIterator(population)
     for (i in 1:12) {
-        ans.R <- getMinValCohortPopulationHasAge(i = i, series = population, iter = iter, useC = FALSE)
-        ans.C <- getMinValCohortPopulationHasAge(i = i, series = population, iter = iter, useC = TRUE)
+        ans.R <- getMinValCohortPopulationHasAge(i = i, population = population,
+                                                 accession = accession,
+                                                 iter = iter, useC = FALSE)
+        ans.C <- getMinValCohortPopulationHasAge(i = i, population = population,
+                                                 accession = accession,
+                                                 iter = iter, useC = TRUE)
         expect_identical(ans.R, ans.C)
     }
     population <- Counts(array(12:1,
                                dim = c(4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
-                                   time = c(2000, 2005, 2010))))
+                                               time = c(2000, 2005, 2010))))
     population <- Population(population)
+    accession <- Counts(array(8:1,
+                              dim = c(4, 2),
+                              dimnames = list(age = c("5", "10", "15", "20"),
+                                              time = c("2001-2005", "2006-2010"))))
+    accession <- Accession(accession)
     iter <- CohortIterator(population)
     for (i in 1:12) {
-        ans.R <- getMinValCohortPopulationHasAge(i = i, series = population, iter = iter, useC = FALSE)
-        ans.C <- getMinValCohortPopulationHasAge(i = i, series = population, iter = iter, useC = TRUE)
-        expect_identical(ans.R, ans.C)
-    }
-    population <- Counts(array(12:1,
-                               dim = c(4, 3),
-                               dimnames = list(region = 1:4, time = c(2000, 2005, 2010))))
-    population <- Population(population)
-    iter <- CohortIterator(population)
-    for (i in 1:12) {
-        ans.R <- getMinValCohortPopulationHasAge(i = i, series = population, iter = iter, useC = FALSE)
-        ans.C <- getMinValCohortPopulationHasAge(i = i, series = population, iter = iter, useC = TRUE)
+        ans.R <- getMinValCohortPopulationHasAge(i = i,  population = population,
+                                                 accession = accession, iter = iter, useC = FALSE)
+        ans.C <- getMinValCohortPopulationHasAge(i = i,  population = population,
+                                                 accession = accession, iter = iter, useC = TRUE)
         expect_identical(ans.R, ans.C)
     }
     population <- Counts(array(60:1,
                                dim = 5:3,
                                dimnames = list(region = 1:5,
-                                   time = c(2001, 2006, 2011, 2016),
-                                   age = c("0-4", "5-9", "10+"))))
+                                               time = c(2001, 2006, 2011, 2016),
+                                               age = c("0-4", "5-9", "10+"))))
     population <- Population(population)
+    accession <- Counts(array(c(15:1, rep(0L, 30)),
+                               dim = c(5, 3, 3),
+                               dimnames = list(region = 1:5,
+                                   time = c("2002-2006", "2007-2011", "2012-2016"),
+                                   age = c("5", "10", "15"))))
+    accession <- Accession(accession)
     iter <- CohortIterator(population)
     for (i in 1:60) {
-        ans.R <- getMinValCohortPopulationHasAge(i = i, series = population, iter = iter, useC = FALSE)
-        ans.C <- getMinValCohortPopulationHasAge(i = i, series = population, iter = iter, useC = TRUE)
+        ans.R <- getMinValCohortPopulationHasAge(i = i, population = population,
+                                                 accession = accession,
+                                                 iter = iter, useC = FALSE)
+        ans.C <- getMinValCohortPopulationHasAge(i = i, population = population,
+                                                 accession = accession,
+                                                 iter = iter, useC = TRUE)
         expect_identical(ans.R, ans.C)
     }
 })
