@@ -10267,16 +10267,12 @@ test_that("updateSubsequentAccMove works", {
         if (x1@generatedNewProposal@.Data) {
             tested.popn <- TRUE
             ans.obtained <- updateSubsequentAccMove(x1)
-            age <- as.data.frame(x1@account@population, direction = "long")[x1@iCell, "age"]
-            if (age == "0-4")
-                expect_equal(sum(ans.obtained@accession),
+            if (any(is.na(ans.obtained@accession))) {
+                print(ans.obtained@accession)
+                print(x1@iCell)
+            }
+            expect_equal(sum(ans.obtained@accession),
                              sum(x1@accession) + 2 * x1@diffProp)
-            else if (age == "5-9")
-                expect_equal(sum(ans.obtained@accession),
-                             sum(x1@accession) + x1@diffProp)
-            else
-                expect_equal(sum(ans.obtained@accession),
-                             sum(x1@accession))
         }
         ## updating orig-dest
         x0 <- x
@@ -10288,44 +10284,33 @@ test_that("updateSubsequentAccMove works", {
             expect_equal(sum(ans.obtained@accession),
                          sum(x1@accession))
         }
-        ## updating component
+        ## updating deaths
         x0 <- x
         x0@iComp <- 3L
         x1 <- updateProposalAccountMoveComp(x0)
         if (x1@generatedNewProposal@.Data) {
             tested.comp <- TRUE
             ans.obtained <- updateSubsequentAccMove(x1)
-            age <- as.data.frame(x1@account@components[[3]], direction = "long")[x1@iCell, "age"]
             time <- as.data.frame(x1@account@components[[3]], direction = "long")[x1@iCell, "time"]
             is.lower <- x1@isLowerTriangle@.Data
-            if (age == "10+") {
-                expect_equal(sum(ans.obtained@accession),
-                             sum(x1@accession))
-            }
-            else if (age == "5-9") {
-                if (time == "2006-2010" && is.lower)
-                    expect_equal(sum(ans.obtained@accession),
-                                 sum(x1@accession))
-                else
+            if (time == "2001-2005") {
+                if (is.lower) {
                     expect_equal(sum(ans.obtained@accession),
                                  sum(x1@accession) - x1@diffProp)
-            }
-            else {
-                if (time == "2001-2005") {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@accession),
-                                     sum(x1@accession) - x1@diffProp)
-                    else
-                        expect_equal(sum(ans.obtained@accession),
-                                     sum(x1@accession) - 2 * x1@diffProp)
                 }
                 else {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@accession),
-                                     sum(x1@accession))
-                    else
-                        expect_equal(sum(ans.obtained@accession),
-                                     sum(x1@accession) - 1 * x1@diffProp)
+                    expect_equal(sum(ans.obtained@accession),
+                                 sum(x1@accession) - 2 * x1@diffProp)
+                }
+            }
+            else {
+                if (is.lower) {
+                    expect_equal(sum(ans.obtained@accession),
+                                 sum(x1@accession))
+                }
+                else {
+                    expect_equal(sum(ans.obtained@accession),
+                                 sum(x1@accession) - x1@diffProp)
                 }
             }
         }

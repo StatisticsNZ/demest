@@ -235,8 +235,10 @@ advanceCA(SEXP iterator_R)
     ++iTime;
     i += stepTime;    
         
-    ++iAge;
-    i += stepAge;
+    if (iAge < nAge) {
+      ++iAge;
+      i += stepAge;
+    }
 
     *iAge_ptr = iAge;
     *iTime_ptr = iTime;
@@ -244,7 +246,7 @@ advanceCA(SEXP iterator_R)
     *i_ptr = i;
     
     SEXP finished_R = GET_SLOT(iterator_R, finished_sym);
-    LOGICAL(finished_R)[0] = ((iTime >= nTime) || (iAge >= nAge));
+    LOGICAL(finished_R)[0] = (iTime >= nTime);
 
 }
 
@@ -384,7 +386,7 @@ resetCA(SEXP iterator_R, int i)
     *i_ptr = i;
     
     SEXP finished_R = GET_SLOT(iterator_R, finished_sym);
-    LOGICAL(finished_R)[0] = ((iTime_R >= nTime) || (iAge_R >= nAge));
+    LOGICAL(finished_R)[0] = (iTime_R >= nTime);
 }
 
 /* reset cohort iterator */

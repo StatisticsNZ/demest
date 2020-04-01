@@ -124,9 +124,11 @@ advanceCA <- function(object, useC = FALSE) {
         i.age <- object@iAge
         i.time <- i.time + 1L
         i <- i + step.time
-        i.age <- i.age + 1L
-        i <- i + step.age
-        finished <- (i.time >= n.time) || (i.age >= n.age)
+        if (i.age < n.age) {
+            i.age <- i.age + 1L
+            i <- i + step.age
+        }
+        finished <- i.time >= n.time
         object@i <- i
         object@iTime <- i.time
         object@iAge <- i.age
@@ -273,7 +275,7 @@ resetCA <- function(object, i, useC = FALSE) {
         has.age <- object@hasAge
         i.time <- (((i - 1L) %/% step.time) %% n.time) + 1L # R-style
         i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
-        finished <- (i.time >= n.time) | (i.age >= n.age)
+        finished <- i.time >= n.time
         object@i <- i
         object@iTime <- i.time
         object@iAge <- i.age
