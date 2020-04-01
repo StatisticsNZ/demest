@@ -206,14 +206,7 @@ getIAccNextFromComp(int i, SEXP mapping_R)
         
         if (!returnZero) {
             int iAgeComp  = ( iMinus1 / stepAgeComp ) % nAgeComp;
-        
-            if (iAgeComp == (nAgeComp - 1)) {
-                iAccNext_r = 0;
-                returnZero = 1; 
-            }
-            else {
-                iAccNext_r += iAgeComp * stepAgeAcc;
-            }
+	    iAccNext_r += iAgeComp * stepAgeAcc;
         }
     }
 
@@ -297,36 +290,30 @@ getIAccNextFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
         int iAccNext = 1 + iTimeAcc * stepTimeAcc;
         int iAge = (iMinus1 / stepAgeComp) % nAge;
  
-        if ( iAge == (nAge - 1) ) {
-            returnZeros = 1;
-        }
-        else {
+	iAccNext += iAge * stepAgeAcc;
             
-            iAccNext += iAge * stepAgeAcc;
+	for (int d = 0; d < nDimShared; ++d) {
+	  int nShared = nSharedVec[d];
+	  int stepSharedComp = stepSharedCompVec[d];
+	  int stepSharedAcc = stepSharedAccVec[d];
+	  int iShared = (iMinus1/stepSharedComp) % nShared; 
+	  iAccNext += iShared * stepSharedAcc;
+	}
             
-            for (int d = 0; d < nDimShared; ++d) {
-                int nShared = nSharedVec[d];
-                int stepSharedComp = stepSharedCompVec[d];
-                int stepSharedAcc = stepSharedAccVec[d];
-                int iShared = (iMinus1/stepSharedComp) % nShared; 
-                iAccNext += iShared * stepSharedAcc;
-            }
+	iAccNextOrig_r = iAccNext;
+	iAccNextDest_r = iAccNext;
             
-            iAccNextOrig_r = iAccNext;
-            iAccNextDest_r = iAccNext;
-            
-            for (int d = 0; d < nDimOrigDest; ++d) {
-                int nOrigDest = nOrigDestVec[d];
-                int stepOrigComp = stepOrigCompVec[d];
-                int stepDestComp = stepDestCompVec[d];
-                int stepOrigDestAcc = stepOrigDestAccVec[d];
+	for (int d = 0; d < nDimOrigDest; ++d) {
+	  int nOrigDest = nOrigDestVec[d];
+	  int stepOrigComp = stepOrigCompVec[d];
+	  int stepDestComp = stepDestCompVec[d];
+	  int stepOrigDestAcc = stepOrigDestAccVec[d];
                 
-                int iOrig = (iMinus1/stepOrigComp) % nOrigDest; 
-                int iDest = (iMinus1/stepDestComp) % nOrigDest; 
-                iAccNextOrig_r += iOrig * stepOrigDestAcc;
-                iAccNextDest_r += iDest * stepOrigDestAcc;
-            }
-        }
+	  int iOrig = (iMinus1/stepOrigComp) % nOrigDest; 
+	  int iDest = (iMinus1/stepDestComp) % nOrigDest; 
+	  iAccNextOrig_r += iOrig * stepOrigDestAcc;
+	  iAccNextDest_r += iDest * stepOrigDestAcc;
+	}
     }
 
     ans[0] = iAccNextOrig_r;

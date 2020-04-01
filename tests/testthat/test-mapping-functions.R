@@ -1220,32 +1220,28 @@ test_that("getIAccNextFromComp works with ordinary component", {
                                               sex = c("Female", "Male"),
                                               triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10-19", "20+"))))
-    accession <- Counts(array(1:8,
-                              dim = c(2, 2, 2),
+    accession <- Counts(array(1:12,
+                              dim = c(2, 2, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               sex = c("Female", "Male"),
-                                              age = c("10", "20"))))
+                                              age = c("10", "20", "30"))))
     accession <- Accession(accession)
     component <- ExitsMovements(exits = component,
                                 template = component,
                                 name = "exits")
     mapping <- Mapping(current = component,
                        target = accession)
-    ans.obtained <- getIAccNextFromComp(i = 1L, mapping = mapping)
-    ans.expected <- 2L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 5L, mapping = mapping)
-    ans.expected <- 1L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 3L, mapping = mapping)
-    ans.expected <- 4L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 10L, mapping = mapping)
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 21L, mapping = mapping)
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
+    vec.ans.expected <- c(2L, 0L, 4L, 0L,
+                          1:4,
+                          6L, 0L, 8L, 0L,
+                          5:8,
+                          10L, 0L, 12L, 0L,
+                          9:12)
+    for (i in seq_along(component)) {
+        ans.obtained <- getIAccNextFromComp(i, mapping = mapping)
+        ans.expected <- vec.ans.expected[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
     ## time is second dimension of three
     component <- Counts(array(1:36,
                               dim = c(3, 2, 2, 2),
@@ -1253,11 +1249,11 @@ test_that("getIAccNextFromComp works with ordinary component", {
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("0-9", "10+"),
                                   triangle = c("Lower", "Upper"))))
-    accession <- Counts(array(1:18,
-                              dim = c(3, 2, 1),
+    accession <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
                               dimnames = list(reg = c("a", "b", "c"),
                                               time = c("2001-2010", "2011-2020"),
-                                              age = "10")),
+                                              age = c("10", "20"))),
                         dimscales = c(age = "Points"))
     accession <- Accession(accession)
     component <- ExitsMovements(exits = component,
@@ -1265,18 +1261,16 @@ test_that("getIAccNextFromComp works with ordinary component", {
                                 name = "exits")
     mapping <- Mapping(current = component,
                        target = accession)
-    ans.obtained <- getIAccNextFromComp(i = 1L, mapping = mapping)
-    ans.expected <- 4L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 4L, mapping = mapping)
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 8L, mapping = mapping)
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 13L, mapping = mapping)
-    ans.expected <- 1L
-    expect_identical(ans.obtained, ans.expected)
+    vec.ans.expected <- c(4:6,
+                          rep(0L, 3),
+                          10:12,
+                          rep(0L, 3),
+                          1:12)
+    for (i in seq_along(component)) {
+        ans.obtained <- getIAccNextFromComp(i, mapping = mapping)
+        ans.expected <- vec.ans.expected[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
 })
 
 test_that("R and C versions of getIAccNextFromComp give same answer with ordinary component", {
@@ -1292,11 +1286,11 @@ test_that("R and C versions of getIAccNextFromComp give same answer with ordinar
                                               sex = c("Female", "Male"),
                                               triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10-19", "20+"))))
-    accession <- Counts(array(1:8,
-                              dim = c(2, 2, 2),
+    accession <- Counts(array(1:12,
+                              dim = c(2, 2, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               sex = c("Female", "Male"),
-                                              age = c("10", "20"))))
+                                              age = c("10", "20", "30"))))
     accession <- Accession(accession)
     component <- ExitsMovements(exits = component,
                                 template = component,
@@ -1315,11 +1309,11 @@ test_that("R and C versions of getIAccNextFromComp give same answer with ordinar
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("0-9", "10+"),
                                   triangle = c("Lower", "Upper"))))
-    accession <- Counts(array(1:18,
-                              dim = c(3, 2, 1),
+    accession <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
                               dimnames = list(reg = c("a", "b", "c"),
                                               time = c("2001-2010", "2011-2020"),
-                                              age = "10")),
+                                              age = c("10", "20"))),
                         dimscales = c(age = "Points"))
     accession <- Accession(accession)
     component <- ExitsMovements(exits = component,
@@ -1357,10 +1351,10 @@ test_that("getIAccNextFromComp works with BirthsMovementNoParentChild", {
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
-    accession <- Counts(array(1:8,
-                              dim = c(2, 4),
+    accession <- Counts(array(1:10,
+                              dim = c(2, 5),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                              age = c("10", "20", "30", "40"))))
+                                              age = c("10", "20", "30", "40", "50"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = births,
                        target = accession)
@@ -1385,11 +1379,11 @@ test_that("getIAccNextFromComp works with BirthsMovementNoParentChild", {
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
-    accession <- Counts(array(1:36,
-                               dim = c(3, 2, 4),
-                               dimnames = list(reg = c("a", "b", "c"),
-                                               time = c("2001-2010", "2011-2020"),
-                                               age = c("10", "20", "30", "40"))))
+    accession <- Counts(array(1:30,
+                              dim = c(3, 2, 5),
+                              dimnames = list(reg = c("a", "b", "c"),
+                                              time = c("2001-2010", "2011-2020"),
+                                              age = c("10", "20", "30", "40", "50"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = births,
                        target = accession)
@@ -1421,10 +1415,10 @@ test_that("R and C versions of getIAccNextFromComp give same answer with BirthsM
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
-    accession <- Counts(array(1:8,
-                              dim = c(2, 4),
+    accession <- Counts(array(1:10,
+                              dim = c(2, 5),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                              age = c("10", "20", "30", "40"))))
+                                              age = c("10", "20", "30", "40", "50"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = births,
                        target = accession)
@@ -1449,11 +1443,11 @@ test_that("R and C versions of getIAccNextFromComp give same answer with BirthsM
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
-    accession <- Counts(array(1:36,
-                               dim = c(3, 2, 4),
-                               dimnames = list(reg = c("a", "b", "c"),
-                                               time = c("2001-2010", "2011-2020"),
-                                               age = c("10", "20", "30", "40"))))
+    accession <- Counts(array(1:30,
+                              dim = c(3, 2, 5),
+                              dimnames = list(reg = c("a", "b", "c"),
+                                              time = c("2001-2010", "2011-2020"),
+                                              age = c("10", "20", "30", "40", "50"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = births,
                        target = accession)
@@ -1640,23 +1634,25 @@ test_that("getIAccNextFromOrigDest works with InternalMovementsOrigDest", {
     template <- makeTemplateComponent(population)
     component <- InternalMovements(internal = component,
                                    template = template)
-    accession <- Counts(array(1:6,
-                              dim = c(2, 3, 1),
+    accession <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg = 1:3,
-                                              age = "10")),
+                                              age = c("10", "20"))),
                         dimscales = c(age = "Points"))
     accession <- Accession(accession)
     mapping <- Mapping(current = component,
                        target = accession)
     i <- seq_len(length(component))
     i <- i[slice.index(component, 2) != slice.index(component, 3)]
-    ans.exp <- c(list(c(4L, 2L), c(0L, 0L), c(6L, 2L), c(0L, 0L), c(2L, 4L), c(0L, 0L),
-                      c(6L, 4L), c(0L, 0L), c(2L, 6L), c(0L, 0L), c(4L, 6L), c(0L, 0L)),
-                 rep(list(c(0L, 0L)), times = 12),
-                 list(c(3L, 1L), c(4L, 2L), c(5L, 1L), c(6L, 2L), c(1L, 3L), c(2L, 4L),
-                      c(5L, 3L), c(6L, 4L), c(1L, 5L), c(2L, 6L), c(3L, 5L), c(4L, 6L)),
-                 rep(list(c(0L, 0L)), times = 12))
+    ans.exp <- list(c(4L, 2L), c(0L, 0L), c(6L, 2L), c(0L, 0L), c(2L, 4L), c(0L, 0L),
+                    c(6L, 4L), c(0L, 0L), c(2L, 6L), c(0L, 0L), c(4L, 6L), c(0L, 0L),
+                    c(10L, 8L), c(0L, 0L), c(12L, 8L), c(0L, 0L), c(8L, 10L), c(0L, 0L),
+                    c(12L, 10L), c(0L, 0L), c(8L, 12L), c(0L, 0L), c(10L, 12L), c(0L, 0L),
+                    c(3L, 1L), c(4L, 2L), c(5L, 1L), c(6L, 2L), c(1L, 3L), c(2L, 4L),
+                    c(5L, 3L), c(6L, 4L), c(1L, 5L), c(2L, 6L), c(3L, 5L), c(4L, 6L),
+                    c(9L, 7L), c(10L, 8L), c(11L, 7L), c(12L, 8L), c(7L, 9L), c(8L, 10L),
+                    c(11L, 9L), c(12L, 10L), c(7L, 11L), c(8L, 12L), c(9L, 11L), c(10L, 12L))
     for (j in seq_along(i)) {
         ans.obtained <- getIAccNextFromOrigDest(i = i[j], mapping = mapping, useC = FALSE)
         ans.expected <- ans.exp[[j]]
@@ -1686,11 +1682,11 @@ test_that("R and C versions of getIAccNextFromOrigDest give same answer with Int
     template <- makeTemplateComponent(population)
     component <- InternalMovements(internal = component,
                                    template = template)
-    accession <- Counts(array(1:6,
-                              dim = c(2, 3, 1),
+    accession <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg = 1:3,
-                                              age = "10")),
+                                              age = c("10", "20"))),
                         dimscales = c(age = "Points"))
     accession <- Accession(accession)
     mapping <- Mapping(current = component,
@@ -1728,19 +1724,17 @@ test_that("getIAccNextFromComp works with InternalMovementsPool", {
     internal <- InternalMovements(internal = internal,
                                   template = template)
     accession <- Counts(array(1:18,
-                              dim = c(2, 3, 2),
+                              dim = c(2, 3, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg = 1:3,
-                                              age = c("10", "20"))))
+                                              age = c("10", "20", "30"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = internal,
                        target = accession)
     ans.exp <- rep(c(2L, 0L, 4L, 0L, 6L, 0L,
-                     c(8L, 0L, 10L, 0L, 12L, 0L),
-                     rep(0L, 6),
-                     1:6,
-                     7:12,
-                     rep(0L, 6)),
+                     8L, 0L, 10L, 0L, 12L, 0L,
+                     14L, 0L, 16L, 0L, 18L, 0L,
+                     1:18),
                    times = 2)
     for (i in seq_along(internal)) {
         ans.obtained <- getIAccNextFromComp(i = i, mapping = mapping)
@@ -1773,20 +1767,13 @@ test_that("R and C versions of getIAccNextFromComp give same answer with Interna
     internal <- InternalMovements(internal = internal,
                                   template = template)
     accession <- Counts(array(1:18,
-                              dim = c(2, 3, 2),
+                              dim = c(2, 3, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg = 1:3,
-                                              age = c("10", "20"))))
+                                              age = c("10", "20", "30"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = internal,
                        target = accession)
-    ans.exp <- rep(c(2L, 0L, 4L, 0L, 6L, 0L,
-                     c(8L, 0L, 10L, 0L, 12L, 0L),
-                     rep(0L, 6),
-                     1:6,
-                     7:12,
-                     rep(0L, 6)),
-                   times = 2)
     for (i in seq_along(internal)) {
         ans.R <- getIAccNextFromComp(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getIAccNextFromComp(i = i, mapping = mapping, useC = TRUE)

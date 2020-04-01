@@ -139,7 +139,9 @@ getIPopnNextFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## TRANSLATED
 ## HAS_TESTS
 ## Assume that 'accession' does not contain age 0,
-## so has one less age group than 'component'
+## but does include pseudo-accession for oldest
+## cohort, so therefore has the same number of
+## age groups as 'component'.
 ## The only way that 'hasAge' in 'component' is FALSE, but the account
 ## has accession (and therefore has an age dimension) is if
 ## 'component' is births.
@@ -186,9 +188,7 @@ getIAccNextFromComp <- function(i, mapping, useC = FALSE) {
             else
                 i.time.acc <- i.time.comp
             i.age.comp <- ((i - 1L) %/% step.age.comp) %% n.age.comp # C-style
-            if (i.age.comp == (n.age.comp - 1L)) # C-style
-                return(0L)
-            i.acc.next <- i.acc.next + i.age.comp * step.age.acc    
+            i.acc.next <- i.acc.next + i.age.comp * step.age.acc
         }
         i.acc.next <- i.acc.next + i.time.acc * step.time.acc
         n.dim.shared <- length(n.shared.vec)
@@ -244,8 +244,6 @@ getIAccNextFromOrigDest <- function(i, mapping, useC = FALSE) {
             i.time.acc <- i.time.comp
         i.acc.next <- 1L + i.time.acc * step.time.acc
         i.age <- ((i - 1L) %/% step.age.comp) %% n.age # C-style
-        if (i.age == (n.age - 1L))
-            return(c(0L, 0L))
         i.acc.next <- i.acc.next + i.age * step.age.acc
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {

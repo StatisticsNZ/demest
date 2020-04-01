@@ -136,9 +136,15 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
                                                 description = description)
             i.popn.next <- getIPopnNextFromPopn(i = i.cell,
                                                 description = description)
-            min.val <- getMinValCohortPopulation(i = i.popn.next,
-                                                 series = population,
-                                                 iterator = iterator.popn)
+            if (has.age)
+                min.val <- getMinValCohortPopulationHasAge(i = i.popn.next,
+                                                           population = population,
+                                                           accession = accession,
+                                                           iterator = iterator.popn)
+            else
+                min.val <- getMinValCohortPopulationNoAge(i = i.popn.next,
+                                                          series = population,
+                                                          iterator = iterator.popn)
             if (has.age) {
                 i.acc.next <- getIAccNextFromPopn(i = i.cell,
                                                   description = description)
@@ -254,9 +260,15 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
                                                   mapping = mapping.to.exp)
             i.popn.next <- getIPopnNextFromComp(i = i.cell,
                                                 mapping = mapping.to.popn)
-            min.val <- getMinValCohortPopulation(i = i.popn.next,
-                                                 series = population,
-                                                 iterator = iterator.popn)
+            if (has.age)
+                min.val <- getMinValCohortPopulationHasAge(i = i.popn.next,
+                                                           population = population,
+                                                           accession = accession,
+                                                           iterator = iterator.popn)
+            else
+                min.val <- getMinValCohortPopulationNoAge(i = i.popn.next,
+                                                          series = population,
+                                                          iterator = iterator.popn)
             if (has.age) {
                 i.acc.next <- getIAccNextFromComp(i = i.cell,
                                                   mapping = mapping.to.acc)
@@ -494,12 +506,24 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
                                                        mapping = mapping.to.popn)
             i.popn.next.orig <- pair.popn.next[1L]
             i.popn.next.dest <- pair.popn.next[2L]
-            min.val.orig <- getMinValCohortPopulation(i = i.popn.next.orig,
-                                                      series = population,
-                                                      iterator = iterator.popn)
-            min.val.dest <- getMinValCohortPopulation(i = i.popn.next.dest,
-                                                      series = population,
-                                                      iterator = iterator.popn)
+            if (has.age) {
+                min.val.orig <- getMinValCohortPopulationHasAge(i = i.popn.next.orig,
+                                                                population = population,
+                                                                accession = accession,
+                                                                iterator = iterator.popn)
+                min.val.dest <- getMinValCohortPopulationHasAge(i = i.popn.next.dest,
+                                                                population = population,
+                                                                accession = accession,
+                                                                iterator = iterator.popn)
+            }
+            else {
+                min.val.orig <- getMinValCohortPopulationNoAge(i = i.popn.next.orig,
+                                                               series = population,
+                                                               iterator = iterator.popn)
+                min.val.dest <- getMinValCohortPopulationNoAge(i = i.popn.next.dest,
+                                                               series = population,
+                                                               iterator = iterator.popn)
+            }
             if (has.age) {
                 pair.acc.next <- getIAccNextFromOrigDest(i = i.cell,
                                                          mapping = mapping.to.acc)
@@ -784,12 +808,24 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
                                                     mapping = mapping.to.popn)
             i.popn.next.in <- getIPopnNextFromComp(i = i.cell.in,
                                                    mapping = mapping.to.popn)
-            min.val.out <- getMinValCohortPopulation(i = i.popn.next.out,
-                                                     series = population,
-                                                     iterator = iterator.popn)
-            min.val.in <- getMinValCohortPopulation(i = i.popn.next.in,
-                                                    series = population,
-                                                    iterator = iterator.popn)
+            if (has.age) {
+                min.val.out <- getMinValCohortPopulationHasAge(i = i.popn.next.out,
+                                                               population = population,
+                                                               accession = accession,
+                                                               iterator = iterator.popn)
+                min.val.in <- getMinValCohortPopulationHasAge(i = i.popn.next.in,
+                                                              population = population,
+                                                              accession = accession,
+                                                              iterator = iterator.popn)
+            }
+            else {
+                min.val.out <- getMinValCohortPopulationNoAge(i = i.popn.next.out,
+                                                              series = population,
+                                                              iterator = iterator.popn)
+                min.val.in <- getMinValCohortPopulationNoAge(i = i.popn.next.in,
+                                                             series = population,
+                                                             iterator = iterator.popn)
+            }
             if (has.age) {
                 i.acc.next.out <- getIAccNextFromComp(i = i.cell.out,
                                                       mapping = mapping.to.acc)
@@ -922,12 +958,24 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
                                                 mapping = mapping.to.popn)
         i.popn.next.sub <- getIPopnNextFromComp(i = i.cell.sub,
                                                 mapping = mapping.to.popn)
-        min.val.add <- getMinValCohortPopulation(i = i.popn.next.add,
-                                                 series = population,
-                                                 iterator = iterator.popn)
-        min.val.sub <- getMinValCohortPopulation(i = i.popn.next.sub,
-                                                 series = population,
-                                                 iterator = iterator.popn)
+        if (has.age) {
+            min.val.add <- getMinValCohortPopulationHasAge(i = i.popn.next.add,
+                                                           population = population,
+                                                           accession = accession,
+                                                           iterator = iterator.popn)
+            min.val.sub <- getMinValCohortPopulationHasAge(i = i.popn.next.sub,
+                                                           population = population,
+                                                           accession = accession,
+                                                           iterator = iterator.popn)
+        }
+        else {
+            min.val.add <- getMinValCohortPopulationNoAge(i = i.popn.next.add,
+                                                          series = population,
+                                                          iterator = iterator.popn)
+            min.val.sub <- getMinValCohortPopulationNoAge(i = i.popn.next.sub,
+                                                          series = population,
+                                                          iterator = iterator.popn)
+        }
         if (has.age) {
             i.acc.next.add <- getIAccNextFromComp(i = i.cell.add,
                                                   mapping = mapping.to.acc)
@@ -1066,9 +1114,15 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
                                                 mapping = mapping.to.exp)
             i.popn.next <- getIPopnNextFromComp(i = i.cell,
                                                 mapping = mapping.to.popn)
-            min.val <- getMinValCohortPopulation(i = i.popn.next,
-                                                 series = population,
-                                                 iterator = iterator.popn)
+            if (has.age)
+                min.val <- getMinValCohortPopulationHasAge(i = i.popn.next,
+                                                           population = population,
+                                                           accession = accession,
+                                                           iterator = iterator.popn)
+            else
+                min.val <- getMinValCohortPopulationNoAge(i = i.popn.next,
+                                                          series = population,
+                                                          iterator = iterator.popn)
             if (has.age) {
                 i.acc.next <- getIAccNextFromComp(i = i.cell,
                                                   mapping = mapping.to.acc)

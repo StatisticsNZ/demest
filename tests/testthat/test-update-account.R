@@ -7495,7 +7495,6 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
             }
             else
                 log.diff.births <- 0
-            print(log.diff.births)
             i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[2]])
             i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[2]])
             log.diff.internal <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,

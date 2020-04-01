@@ -44,6 +44,9 @@ updateProposalAccountMovePopn(SEXP combined_R)
     SEXP population_R = GET_SLOT(account_R, population_sym);
     int maxAttempt = *INTEGER(GET_SLOT(combined_R, maxAttempt_sym));
     int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
+    
+    SEXP accession_R;
+    SEXP iteratorAcc_R;
 
     SEXP descriptions_R = GET_SLOT(combined_R, descriptions_sym);
     SEXP description_R = VECTOR_ELT(descriptions_R, 0);
@@ -72,14 +75,22 @@ updateProposalAccountMovePopn(SEXP combined_R)
     int iExposure_r = 0;
     int iExpFirst_r = getIExpFirstFromPopn(iCell_r, description_R);
     int iPopnNext_r = getIPopnNextFromPopn(iCell_r, description_R);
-    int minVal = getMinValCohortPopulationNoAge(iPopnNext_r, population_R,
+
+    int minVal;
+    if (hasAge) {
+      accession_R = GET_SLOT(combined_R, accession_sym);
+      iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
+      minVal = getMinValCohortPopulationHasAge(iPopnNext_r, population_R,
+					       accession_R, iteratorPopn_R);
+    }
+    else
+      minVal = getMinValCohortPopulationNoAge(iPopnNext_r, population_R,
                                                         iteratorPopn_R);
+      
 
     int iAccNext_r = 0;
 
     if (hasAge) {
-        SEXP accession_R = GET_SLOT(combined_R, accession_sym);
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
 
         iAccNext_r = getIAccNextFromPopn(iCell_r, description_R);
 
@@ -163,6 +174,9 @@ updateProposalAccountMoveBirths(SEXP combined_R)
     int maxAttempt = *INTEGER(GET_SLOT(combined_R, maxAttempt_sym));
     int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
 
+    SEXP accession_R;
+    SEXP iteratorAcc_R;
+
     SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
     SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, iComp);
 
@@ -198,17 +212,24 @@ updateProposalAccountMoveBirths(SEXP combined_R)
 
     int iExpFirst_r = getIExpFirstFromBirths(iCell_r, mappingToExp_R);
     int iPopnNext_r = getIPopnNextFromComp(iCell_r, mappingToPopn_R);
-    int minVal = getMinValCohortPopulationNoAge(iPopnNext_r, population_R,
-                                                        iteratorPopn_R);
+
+    int minVal;
+    if (hasAge) {
+      accession_R = GET_SLOT(combined_R, accession_sym);
+      iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
+      minVal = getMinValCohortPopulationHasAge(iPopnNext_r, population_R,
+					       accession_R, iteratorPopn_R);
+    }
+    else
+      minVal = getMinValCohortPopulationNoAge(iPopnNext_r, population_R,
+					      iteratorPopn_R);
+      
     int iAccNext_r = 0;
     int isLowerTriangleValue = 0;
 
     if (hasAge) {
 
         isLowerTriangleValue = isLowerTriangle(iCell_r, description_R);
-
-        SEXP accession_R = GET_SLOT(combined_R, accession_sym);
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
 
         SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
         SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, iComp);
@@ -431,6 +452,9 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
     int maxAttempt = *INTEGER(GET_SLOT(combined_R, maxAttempt_sym));
     int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
 
+    SEXP accession_R;
+    SEXP iteratorAcc_R;
+
     SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
     SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, iComp);
 
@@ -479,10 +503,23 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
     int iPopnNextOrig_r = pairArray[0];
     int iPopnNextDest_r = pairArray[1];
 
-    int minValOrig = getMinValCohortPopulationNoAge(iPopnNextOrig_r, population_R,
-                                                        iteratorPopn_R);
-    int minValDest = getMinValCohortPopulationNoAge(iPopnNextDest_r, population_R,
-                                                        iteratorPopn_R);
+    int minValOrig;
+    int minValDest;
+    if (hasAge) {
+      accession_R = GET_SLOT(combined_R, accession_sym);
+      iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
+      minValOrig = getMinValCohortPopulationHasAge(iPopnNextOrig_r, population_R,
+						       accession_R, iteratorPopn_R);
+      minValDest = getMinValCohortPopulationHasAge(iPopnNextDest_r, population_R,
+						       accession_R, iteratorPopn_R);
+    }
+    else {
+      minValOrig = getMinValCohortPopulationNoAge(iPopnNextOrig_r, population_R,
+						      iteratorPopn_R);
+      minValDest = getMinValCohortPopulationNoAge(iPopnNextDest_r, population_R,
+						      iteratorPopn_R);
+    }
+      
     int iAccNextOrig_r = 0;
     int iAccNextDest_r = 0;
 
@@ -491,10 +528,7 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
     if (hasAge) {
 
         isLowerTriangleValue = isLowerTriangle(iCell_r, description_R);
-
-        SEXP accession_R = GET_SLOT(combined_R, accession_sym);
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
-
+	
         SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
         SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, iComp);
 
@@ -772,6 +806,9 @@ updateProposalAccountMovePool(SEXP combined_R)
     int maxAttempt = *INTEGER(GET_SLOT(combined_R, maxAttempt_sym));
     int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
 
+    SEXP accession_R;
+    SEXP iteratorAcc_R;
+
     SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
     SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, iComp);
 
@@ -820,10 +857,22 @@ updateProposalAccountMovePool(SEXP combined_R)
     int iPopnNextOut_r = getIPopnNextFromComp(iCellOut_r, mappingToPopn_R);
     int iPopnNextIn_r = getIPopnNextFromComp(iCellIn_r, mappingToPopn_R);
 
-    int minValOut = getMinValCohortPopulationNoAge(iPopnNextOut_r, population_R,
-                                                        iteratorPopn_R);
-    int minValIn = getMinValCohortPopulationNoAge(iPopnNextIn_r, population_R,
-                                                        iteratorPopn_R);
+    int minValOut;
+    int minValIn;
+    if (hasAge) {
+      accession_R = GET_SLOT(combined_R, accession_sym);
+      iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
+      minValOut = getMinValCohortPopulationHasAge(iPopnNextOut_r, population_R,
+						  accession_R, iteratorPopn_R);
+      minValIn = getMinValCohortPopulationHasAge(iPopnNextIn_r, population_R,
+						 accession_R, iteratorPopn_R);
+    }
+    else {
+      minValOut = getMinValCohortPopulationNoAge(iPopnNextOut_r, population_R,
+						 iteratorPopn_R);
+      minValIn = getMinValCohortPopulationNoAge(iPopnNextIn_r, population_R,
+						iteratorPopn_R);
+    }
     int iAccNextOut_r = 0;
     int iAccNextIn_r = 0;
 
@@ -832,9 +881,6 @@ updateProposalAccountMovePool(SEXP combined_R)
     if (hasAge) {
 
         isLowerTriangleValue = isLowerTriangle(iCellOut_r, description_R);
-
-        SEXP accession_R = GET_SLOT(combined_R, accession_sym);
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
 
         SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
         SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, iComp);
@@ -959,6 +1005,9 @@ updateProposalAccountMoveNet(SEXP combined_R)
     /* maxAttempts not used */
     int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
 
+    SEXP accession_R;
+    SEXP iteratorAcc_R;
+
     SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
     SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, iComp);
 
@@ -989,10 +1038,22 @@ updateProposalAccountMoveNet(SEXP combined_R)
     int iPopnNextAdd_r = getIPopnNextFromComp(iCellAdd_r, mappingToPopn_R);
     int iPopnNextSub_r = getIPopnNextFromComp(iCellSub_r, mappingToPopn_R);
 
-    int minValAdd = getMinValCohortPopulationNoAge(iPopnNextAdd_r, population_R,
-                                                        iteratorPopn_R);
-    int minValSub = getMinValCohortPopulationNoAge(iPopnNextSub_r, population_R,
-                                                        iteratorPopn_R);
+    int minValAdd;
+    int minValSub;
+    if (hasAge) {
+      accession_R = GET_SLOT(combined_R, accession_sym);
+      iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
+      minValAdd = getMinValCohortPopulationHasAge(iPopnNextAdd_r, population_R,
+						  accession_R, iteratorPopn_R);
+      minValSub = getMinValCohortPopulationHasAge(iPopnNextSub_r, population_R,
+						  accession_R, iteratorPopn_R);
+    }
+    else {
+      minValAdd = getMinValCohortPopulationNoAge(iPopnNextAdd_r, population_R,
+						 iteratorPopn_R);
+      minValSub = getMinValCohortPopulationNoAge(iPopnNextSub_r, population_R,
+						 iteratorPopn_R);
+    }
     int iAccNextAdd_r = 0;
     int iAccNextSub_r = 0;
 
@@ -1001,9 +1062,6 @@ updateProposalAccountMoveNet(SEXP combined_R)
     if (hasAge) {
 
         isLowerTriangleValue = isLowerTriangle(iCellAdd_r, description_R);
-
-        SEXP accession_R = GET_SLOT(combined_R, accession_sym);
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
 
         SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
         SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, iComp);
@@ -1116,6 +1174,9 @@ updateProposalAccountMoveComp(SEXP combined_R)
     int maxAttempt = *INTEGER(GET_SLOT(combined_R, maxAttempt_sym));
     int hasAge = *LOGICAL(GET_SLOT(combined_R, hasAge_sym));
 
+    SEXP accession_R;
+    SEXP iteratorAcc_R;
+
     SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
     SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, iComp);
 
@@ -1167,8 +1228,17 @@ updateProposalAccountMoveComp(SEXP combined_R)
 
     int iPopnNext_r = getIPopnNextFromComp(iCell_r, mappingToPopn_R);
 
-    int minVal = getMinValCohortPopulationNoAge(iPopnNext_r, population_R,
-                                                        iteratorPopn_R);
+    int minVal;
+    if (hasAge) {
+      accession_R = GET_SLOT(combined_R, accession_sym);
+      iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
+      minVal = getMinValCohortPopulationHasAge(iPopnNext_r, population_R,
+					       accession_R, iteratorPopn_R);
+    }
+    else
+      minVal = getMinValCohortPopulationNoAge(iPopnNext_r, population_R,
+					      iteratorPopn_R);
+      
 
     int iAccNext_r = 0;
 
@@ -1177,9 +1247,6 @@ updateProposalAccountMoveComp(SEXP combined_R)
     if (hasAge) {
 
         isLowerTriangleValue = isLowerTriangle(iCell_r, description_R);
-
-        SEXP accession_R = GET_SLOT(combined_R, accession_sym);
-        SEXP iteratorAcc_R = GET_SLOT(combined_R, iteratorAcc_sym);
 
         SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
         SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, iComp);
