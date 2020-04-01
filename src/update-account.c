@@ -1374,6 +1374,12 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
     SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
     SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, i_comp);
 
+    SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
+    SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, iComp);
+
+    int nAge = *INTEGER(GET_SLOT(mappingToPopn_R, nAgeCurrent_sym));
+    int stepAge = *INTEGER(GET_SLOT(mappingToPopn_R, stepAgeCurrent_sym));
+
     int * usesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
     int usesExposure = usesExposureVec[i_comp + 1];
 
@@ -1419,13 +1425,12 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
         i_acc_r = getIAccNextFromComp(i_cell_up_r, mappingToAcc_R);
         int i_acc = i_acc_r - 1;
 
-        int is_final_age_group = (i_acc_r == 0);
+	int i_age_r = ((i_cell_up / stepAge) % nAge) + 1;
+	int is_final_age_group = (i_age_r == nAge);
 
         int val_acc = 0;
 
-        if (!is_final_age_group) {
-            val_acc = accession[i_acc];
-        }
+	val_acc = accession[i_acc];
 
         int val_up_curr = component[i_cell_up];
         int val_low_curr = component[i_cell_low];
@@ -1446,6 +1451,11 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
             val_low_expected *= expose_low;
         }
 
+	int popn;
+	if (is_final_age_group) {
+	  popn = getIPopnNextFromComp(i_cell_up_r, mappingToPopn_R);
+	}
+	
         double denom = val_up_expected + val_low_expected;
         double prob = 0.5;
         if (denom > tol) {
@@ -1456,19 +1466,22 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
 
         int val_up_prop = 0;
 
-        if (is_final_age_group) {
-            val_up_prop = (int)rbinom(size, prob);
+	int lower = NA_INTEGER;
+	int upper = NA_INTEGER;
+	if (isIncrement) {
+	  lower = val_up_curr - val_acc;
+	  if (is_final_age_group) {
+            upper = val_up_curr + popn;
+	  }
         }
         else {
-            int lower = NA_INTEGER;
-            int upper = val_up_curr + val_acc;
-            if (isIncrement) {
-                lower = val_up_curr - val_acc;
-                upper = NA_INTEGER;
-            }
+	  if (is_final_age_group) {
+            lower = val_up_curr - popn;
+	  }
+	  upper = val_up_curr + val_acc;
+	}
 
-            val_up_prop = rbinomTrunc1(size, prob, lower, upper, maxAttempt);
-        }
+	val_up_prop = rbinomTrunc1(size, prob, lower, upper, maxAttempt);
 
         int found_value = !(val_up_prop == NA_INTEGER);
 

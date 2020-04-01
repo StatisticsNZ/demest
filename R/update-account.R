@@ -1237,6 +1237,7 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
         max.attempt <- combined@maxAttempt
         accession <- combined@accession
         mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
+        mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
         uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
         mapping.to.exp <- combined@mappingsToExp[[i.comp]]
         description <- combined@descriptions[[i.comp + 1L]]
@@ -1258,15 +1259,14 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
             ## is for oldest age group, in which case i.cell.low
             ## is from same age-period square
             i.cell.low <- getICellLowerTriNextFromComp(iCellUp = i.cell.up,
-                                                   description = description)
+                                                       description = description)
             i.acc <- getIAccNextFromComp(i = i.cell.up,
                                          mapping = mapping.to.acc)
-            is.final.age.group <- i.acc == 0L
-            ## Our existing accounting system ignores possible accession
-            ## for cohort aged A+ at time t. Future version should
-            ## include this.
-            if (!is.final.age.group)
-                val.acc <- accession[i.acc]
+            n.age <- mapping.to.exp@nAgeCurrent
+            step.age <- mapping.to.exp@stepAgeCurrent
+            i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L
+            is.final.age.group <- i.age == n.age
+            val.acc <- accession[i.acc]
             val.up.curr <- component[i.cell.up]
             val.low.curr <- component[i.cell.low]
             val.up.expected <- theta[i.cell.up]
@@ -1282,32 +1282,34 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
                 val.up.expected <- val.up.expected * expose.up
                 val.low.expected <- val.low.expected * expose.low
             }
+            if (is.final.age.group)
+                popn <- getIPopnNextFromComp(i = i.cell.up,
+                                             mapping = mapping.to.popn)
             denom <- val.up.expected + val.low.expected
             if (denom > tol)
                 prob <- val.up.expected / denom
             else
                 prob <- 0.5
             size <- val.up.curr + val.low.curr
-            if (is.final.age.group) { ## no accession constraint
-                val.up.prop <- stats::rbinom(n = 1L,
-                                      size = size,
-                                      prob = prob)
+            if (is.increment) {
+                lower <- val.up.curr - val.acc
+                if (is.final.age.group)
+                    upper <- val.up.curr + popn
+                else
+                    upper <- NA_integer_
             }
             else {
-                if (is.increment) {
-                    lower <- val.up.curr - val.acc
-                    upper <- NA_integer_
-                }
-                else {
+                if (is.final.age.group)
+                    lower <- val.up.curr - popn
+                else
                     lower <- NA_integer_
-                    upper <- val.up.curr + val.acc
-                }
-                val.up.prop <- rbinomTrunc1(size = size,
-                                            prob = prob,
-                                            lower = lower,
-                                            upper = upper,
-                                            maxAttempt = max.attempt)
+                upper <- val.up.curr + val.acc
             }
+            val.up.prop <- rbinomTrunc1(size = size,
+                                        prob = prob,
+                                        lower = lower,
+                                        upper = upper,
+                                        maxAttempt = max.attempt)
             found.value <- !is.na(val.up.prop)
             if (found.value) {
                 diff.prop <- unname(val.up.prop - val.up.curr)
@@ -1316,7 +1318,6 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
             else
                 generated.new.proposal  <- FALSE
         }
-
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- TRUE
