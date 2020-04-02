@@ -635,6 +635,9 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
     SEXP account_R = GET_SLOT(combined_R, account_sym);
     int i_comp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
     int i_comp = i_comp_r - 1;
+    
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    int * population = INTEGER(population_R);
 
     SEXP components_R = GET_SLOT(account_R, components_sym);
     SEXP component_R = VECTOR_ELT(components_R, i_comp);
@@ -648,11 +651,17 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
     SEXP mappingsToAcc_R = GET_SLOT(combined_R, mappingsToAcc_sym);
     SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, i_comp);
 
+    SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
+    SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, i_comp);
+
     int * usesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
     int usesExposure = usesExposureVec[i_comp + 1];
 
     SEXP mappingsToExp_R = GET_SLOT(combined_R, mappingsToExp_sym);
     SEXP mappingToExp_R = VECTOR_ELT(mappingsToExp_R, i_comp);
+
+    int nAge = *INTEGER(GET_SLOT(mappingToExp_R, nAgeCurrent_sym));
+    int stepAge = *INTEGER(GET_SLOT(mappingToExp_R, stepAgeCurrent_sym));
 
     SEXP descriptions_R = GET_SLOT(combined_R, descriptions_sym);
     SEXP description_R = VECTOR_ELT(descriptions_R, i_comp + 1);
@@ -701,15 +710,14 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
         int i_acc_orig = i_acc_orig_r - 1;
         int i_acc_dest = i_acc_dest_r - 1;
 
-        int is_final_age_group = (i_acc_orig_r == 0);
+	int i_age_r = ((i_cell_up / stepAge) % nAge) + 1;
+	int is_final_age_group = (i_age_r == nAge);
 
         int val_acc_orig = 0;
         int val_acc_dest = 0;
 
-        if (!is_final_age_group) {
-            val_acc_orig = accession[i_acc_orig];
-            val_acc_dest = accession[i_acc_dest];
-        }
+	val_acc_orig = accession[i_acc_orig];
+	val_acc_dest = accession[i_acc_dest];
 
         int val_up_curr = component[i_cell_up];
         int val_low_curr = component[i_cell_low];
@@ -729,7 +737,18 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
             val_low_expected *= expose_low;
         }
 
-        double denom = val_up_expected + val_low_expected;
+
+	int val_popn_orig = 0;
+	int val_popn_dest = 0;
+	if (is_final_age_group) {
+	  getIPopnNextFromOrigDestInternal(pairArray, i_cell_low_r, mappingToPopn_R);
+	  int i_popn_orig_r = pairArray[0];
+	  int i_popn_dest_r = pairArray[1];
+	  val_popn_orig = population[i_popn_orig_r - 1];
+	  val_popn_dest = population[i_popn_dest_r - 1];
+	}
+
+	double denom = val_up_expected + val_low_expected;
         double prob = 0.5;
         if (denom > tol) {
             prob = val_up_expected/denom;
@@ -738,14 +757,18 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
         int size = val_up_curr + val_low_curr;
         int val_up_prop = 0;
 
-        if (is_final_age_group) {
-            val_up_prop = (int)rbinom(size, prob);
-        }
-        else {
-            int lower = val_up_curr - val_acc_dest;
-            int upper = val_up_curr + val_acc_orig;
-            val_up_prop = rbinomTrunc1(size, prob, lower, upper, maxAttempt);
-        }
+	int lower = val_up_curr - val_acc_dest;
+	int upper = val_up_curr + val_acc_orig;
+	if (is_final_age_group) {
+	  if (val_popn_dest < val_acc_dest) {
+	    lower = val_up_curr - val_popn_dest;
+	  }
+	  if (val_popn_orig < val_acc_orig) {
+	    upper = val_up_curr + val_popn_orig;
+	  }
+	}
+	
+	val_up_prop = rbinomTrunc1(size, prob, lower, upper, maxAttempt);
 
         int foundValue = !(val_up_prop == NA_INTEGER);
 
@@ -1359,6 +1382,9 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
     int i_comp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
     int i_comp = i_comp_r - 1;
 
+    SEXP population_R = GET_SLOT(account_R, population_sym);
+    int * population = INTEGER(population_R);
+    
     SEXP components_R = GET_SLOT(account_R, components_sym);
     SEXP component_R = VECTOR_ELT(components_R, i_comp);
     int * component = INTEGER(component_R);
@@ -1375,16 +1401,16 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
     SEXP mappingToAcc_R = VECTOR_ELT(mappingsToAcc_R, i_comp);
 
     SEXP mappingsToPopn_R = GET_SLOT(combined_R, mappingsToPopn_sym);
-    SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, iComp);
-
-    int nAge = *INTEGER(GET_SLOT(mappingToPopn_R, nAgeCurrent_sym));
-    int stepAge = *INTEGER(GET_SLOT(mappingToPopn_R, stepAgeCurrent_sym));
+    SEXP mappingToPopn_R = VECTOR_ELT(mappingsToPopn_R, i_comp);
 
     int * usesExposureVec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
     int usesExposure = usesExposureVec[i_comp + 1];
 
     SEXP mappingsToExp_R = GET_SLOT(combined_R, mappingsToExp_sym);
     SEXP mappingToExp_R = VECTOR_ELT(mappingsToExp_R, i_comp);
+
+    int nAge = *INTEGER(GET_SLOT(mappingToExp_R, nAgeCurrent_sym));
+    int stepAge = *INTEGER(GET_SLOT(mappingToExp_R, stepAgeCurrent_sym));
 
     SEXP descriptions_R = GET_SLOT(combined_R, descriptions_sym);
     SEXP description_R = VECTOR_ELT(descriptions_R, i_comp + 1);
@@ -1437,7 +1463,7 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
         double val_up_expected = theta[i_cell_up];
         double val_low_expected = theta[i_cell_low];
 
-        if(usesExposure) {
+        if (usesExposure) {
             double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
             i_expose_up_r = getIExposureFromComp(i_cell_up_r, mappingToExp_R);
             int i_expose_up = i_expose_up_r - 1;
@@ -1451,9 +1477,10 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
             val_low_expected *= expose_low;
         }
 
-	int popn;
+	int val_popn;
 	if (is_final_age_group) {
-	  popn = getIPopnNextFromComp(i_cell_up_r, mappingToPopn_R);
+	  int i_popn_r = getIPopnNextFromComp(i_cell_low_r, mappingToPopn_R);
+	  val_popn = population[i_popn_r - 1];
 	}
 	
         double denom = val_up_expected + val_low_expected;
@@ -1471,12 +1498,12 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
 	if (isIncrement) {
 	  lower = val_up_curr - val_acc;
 	  if (is_final_age_group) {
-            upper = val_up_curr + popn;
+            upper = val_up_curr + val_popn;
 	  }
         }
         else {
 	  if (is_final_age_group) {
-            lower = val_up_curr - popn;
+            lower = val_up_curr - val_popn;
 	  }
 	  upper = val_up_curr + val_acc;
 	}

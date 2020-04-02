@@ -632,6 +632,7 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
         mapping.to.acc <- combined@mappingsToAcc[[i.comp]]
         uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
         mapping.to.exp <- combined@mappingsToExp[[i.comp]]
+        mapping.to.popn <- combined@mappingsToPopn[[i.comp]]
         description <- combined@descriptions[[i.comp + 1L]]
         sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         theta <- sys.mod.comp@theta
@@ -657,14 +658,12 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
                                                 mapping = mapping.to.acc)
             i.acc.orig <- pair.acc[1L]
             i.acc.dest <- pair.acc[2L]
-            is.final.age.group <- i.acc.orig == 0L
-            ## Our existing accounting system ignores possible accession
-            ## for cohort aged A+ at time t. Future version should
-            ## include this.
-            if (!is.final.age.group) {
-                val.acc.orig <- accession[i.acc.orig]
-                val.acc.dest <- accession[i.acc.dest]
-            }
+            n.age <- mapping.to.exp@nAgeCurrent
+            step.age <- mapping.to.exp@stepAgeCurrent
+            i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L
+            is.final.age.group <- i.age == n.age
+            val.acc.orig <- accession[i.acc.orig]
+            val.acc.dest <- accession[i.acc.dest]
             val.up.curr <- component[i.cell.up]
             val.low.curr <- component[i.cell.low]
             val.up.expected <- theta[i.cell.up]
@@ -680,26 +679,33 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
                 val.up.expected <- val.up.expected * expose.up
                 val.low.expected <- val.low.expected * expose.low
             }
+            if (is.final.age.group) {
+                pair.popn <- getIPopnNextFromOrigDest(i = i.cell.low,
+                                                      mapping = mapping.to.popn)
+                i.popn.orig <- pair.popn[1L]
+                i.popn.dest <- pair.popn[2L]
+                val.popn.orig <- population[i.popn.orig]
+                val.popn.dest <- population[i.popn.dest]
+            }
             denom <- val.up.expected + val.low.expected
             if (denom > tol)
                 prob <- val.up.expected / denom
             else
                 prob <- 0.5
             size <- val.up.curr + val.low.curr
-            if (is.final.age.group) { ## no accession constraint
-                val.up.prop <- stats::rbinom(n = 1L,
-                                             size = size,
-                                             prob = prob)
+            lower <- val.up.curr - val.acc.dest
+            upper <- val.up.curr + val.acc.orig
+            if (is.final.age.group) {
+                if (val.popn.dest < val.acc.dest)
+                    lower <- val.up.curr - val.popn.dest
+                if (val.popn.orig < val.acc.orig)
+                    upper <- val.up.curr + val.popn.orig
             }
-            else {
-                lower <- val.up.curr - val.acc.dest
-                upper <- val.up.curr + val.acc.orig
-                val.up.prop <- rbinomTrunc1(size = size,
-                                            prob = prob,
-                                            lower = lower,
-                                            upper = upper,
-                                            maxAttempt = max.attempt)
-            }
+            val.up.prop <- rbinomTrunc1(size = size,
+                                        prob = prob,
+                                        lower = lower,
+                                        upper = upper,
+                                        maxAttempt = max.attempt)
             found.value <- !is.na(val.up.prop)
             if (found.value) {
                 diff.prop <- unname(val.up.prop - val.up.curr)
@@ -1231,6 +1237,7 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
     }
     else {
         account <- combined@account
+        population <- combined@account@population
         i.comp <- combined@iComp
         component <- account@components[[i.comp]]
         is.increment <- combined@isIncrement[[i.comp]]
@@ -1282,9 +1289,11 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
                 val.up.expected <- val.up.expected * expose.up
                 val.low.expected <- val.low.expected * expose.low
             }
-            if (is.final.age.group)
-                popn <- getIPopnNextFromComp(i = i.cell.up,
-                                             mapping = mapping.to.popn)
+            if (is.final.age.group) {
+                i.popn <- getIPopnNextFromComp(i = i.cell.low,
+                                               mapping = mapping.to.popn)
+                val.popn <- population[i.popn]
+            }
             denom <- val.up.expected + val.low.expected
             if (denom > tol)
                 prob <- val.up.expected / denom
@@ -1292,18 +1301,18 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
                 prob <- 0.5
             size <- val.up.curr + val.low.curr
             if (is.increment) {
-                lower <- val.up.curr - val.acc
+                lower <- val.up.curr - val.acc ## from accession
                 if (is.final.age.group)
-                    upper <- val.up.curr + popn
+                    upper <- val.up.curr + val.popn ## from population
                 else
                     upper <- NA_integer_
             }
             else {
                 if (is.final.age.group)
-                    lower <- val.up.curr - popn
+                    lower <- val.up.curr - val.popn ## from population
                 else
                     lower <- NA_integer_
-                upper <- val.up.curr + val.acc
+                upper <- val.up.curr + val.acc ## from accession
             }
             val.up.prop <- rbinomTrunc1(size = size,
                                         prob = prob,
