@@ -3510,6 +3510,95 @@ updateSubsequentAccMove <- function(combined, useC = FALSE) {
     }
 }
 
+## ## TRANSLATED
+## ## HAS_TESTS
+## updateSubsequentExpMove <- function(combined, useC = FALSE) {
+##     stopifnot(methods::is(combined, "CombinedAccountMovements"))
+##     if (useC) {
+##         .Call(updateSubsequentExpMove_R, combined)
+##     }
+##     else {
+##         i.comp <- combined@iComp
+##         i.orig.dest <- combined@iOrigDest
+##         i.pool <- combined@iPool
+##         i.int.net <- combined@iIntNet
+##         i.exp.first <- combined@iExpFirst
+##         iterator <- combined@iteratorExposure
+##         diff <- combined@diffProp
+##         is.increment <- combined@isIncrement
+##         has.age <- combined@hasAge
+##         age.time.step <- combined@ageTimeStep
+##         no.subsequent.exposure <- i.exp.first == 0L
+##         if (no.subsequent.exposure)
+##             return(combined)
+##         is.popn <- i.comp == 0L
+##         is.orig.dest <- i.comp == i.orig.dest
+##         is.pool <- i.comp == i.pool
+##         is.int.net <- i.comp == i.int.net
+##         update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
+##         if (update.two.cohorts)
+##             i.exp.first.other <- combined@iExpFirstOther
+##         if (is.popn) {
+##             if (has.age)
+##                 diff <- 0.5 * diff * age.time.step
+##             else
+##                 diff <- diff * age.time.step
+##             iterator <- resetCC(iterator, i = i.exp.first)
+##             repeat {
+##                 i <- iterator@i
+##                 combined@exposure[i] <- combined@exposure[i] + diff
+##                 if (iterator@finished)
+##                     break
+##                 iterator <- advanceCC(iterator)
+##             }
+##         }
+##         else if (update.two.cohorts) {
+##             if (is.orig.dest || is.pool) {
+##                 diff.orig <- -0.5 * diff * age.time.step
+##                 diff.dest <- 0.5 * diff * age.time.step
+##             }
+##             else { # is.int.net
+##                 diff.orig <- 0.5 * diff * age.time.step
+##                 diff.dest <- -0.5 * diff * age.time.step
+##             }
+##             iterator.orig <- resetCC(iterator, i = i.exp.first)
+##             iterator.dest <- resetCC(iterator, i = i.exp.first.other)
+##             combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + diff.orig
+##             combined@exposure[i.exp.first.other] <- combined@exposure[i.exp.first.other] + diff.dest
+##             if (!has.age) {
+##                 diff.orig <- 2 * diff.orig
+##                 diff.dest <- 2 * diff.dest
+##             }
+##             while (!iterator.orig@finished) {
+##                 iterator.orig <- advanceCC(iterator.orig)
+##                 iterator.dest <- advanceCC(iterator.dest)
+##                 i.orig <- iterator.orig@i
+##                 i.dest <- iterator.dest@i
+##                 combined@exposure[i.orig] <- combined@exposure[i.orig] + diff.orig
+##                 combined@exposure[i.dest] <- combined@exposure[i.dest] + diff.dest
+##             }
+##         }
+##         else {
+##             if (is.increment[i.comp])
+##                 diff <- 0.5 * diff * age.time.step
+##             else
+##                 diff <- -0.5 * diff * age.time.step
+##             iterator <- resetCC(iterator, i = i.exp.first)
+##             combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + diff
+##             if (!has.age)
+##                 diff <- 2 * diff
+##             while (!iterator@finished) {
+##                 iterator <- advanceCC(iterator)
+##                 i <- iterator@i
+##                 combined@exposure[i] <- combined@exposure[i] + diff
+##             }
+##         }
+##         combined
+##     }
+## }
+
+
+
 ## TRANSLATED
 ## HAS_TESTS
 updateSubsequentExpMove <- function(combined, useC = FALSE) {
@@ -3527,6 +3616,10 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
         diff <- combined@diffProp
         is.increment <- combined@isIncrement
         has.age <- combined@hasAge
+        if (has.age) {
+            n.age <- iterator@nAge
+            first.time.final.age <- TRUE
+        }
         age.time.step <- combined@ageTimeStep
         no.subsequent.exposure <- i.exp.first == 0L
         if (no.subsequent.exposure)
@@ -3539,60 +3632,191 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
         if (update.two.cohorts)
             i.exp.first.other <- combined@iExpFirstOther
         if (is.popn) {
-            if (has.age)
-                diff <- 0.5 * diff * age.time.step
-            else
-                diff <- diff * age.time.step
             iterator <- resetCC(iterator, i = i.exp.first)
-            repeat {
-                i <- iterator@i
-                combined@exposure[i] <- combined@exposure[i] + diff
-                if (iterator@finished)
-                    break
-                iterator <- advanceCC(iterator)
+            i <- iterator@i
+            if (has.age) {
+                adj.diff <- 0.5 * age.time.step * diff
+                repeat {
+                    i.age <- iterator@iAge
+                    i.triangle <- iterator@iTriangle
+                    is.final <- i.age == n.age
+                    is.upper <- i.triangle == 2L
+                    if (is.final) {
+                        if (is.upper)
+                            incr.exp <- 2 * adj.diff
+                        else
+                            incr.exp <- if (first.time.final.age) adj.diff else 0
+                    }
+                    else
+                        incr.exp <- adj.diff
+                    combined@exposure[i] <- combined@exposure[i] + incr.exp
+                    first.time.final.age <- FALSE
+                }
             }
+            else {
+                incr.exp <- age.time.step * diff
+                combined@exposure[i] <- combined@exposure[i] + incr.exp
+            }
+            if (iterator@finished)
+                break
+            iterator <- advanceCC(iterator)
         }
         else if (update.two.cohorts) {
             if (is.orig.dest || is.pool) {
-                diff.orig <- -0.5 * diff * age.time.step
-                diff.dest <- 0.5 * diff * age.time.step
+                adj.diff.orig <- -1 * age.time.step * diff
+                adj.diff.dest <- age.time.step * diff
             }
             else { # is.int.net
-                diff.orig <- 0.5 * diff * age.time.step
-                diff.dest <- -0.5 * diff * age.time.step
+                adj.diff.orig <- age.time.step * diff
+                adj.diff.dest <- -1 * age.time.step * diff
             }
             iterator.orig <- resetCC(iterator, i = i.exp.first)
             iterator.dest <- resetCC(iterator, i = i.exp.first.other)
-            combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + diff.orig
-            combined@exposure[i.exp.first.other] <- combined@exposure[i.exp.first.other] + diff.dest
-            if (!has.age) {
-                diff.orig <- 2 * diff.orig
-                diff.dest <- 2 * diff.dest
+            i.orig <- iterator.orig@i
+            i.dest <- iterator.dest@i
+            if (has.age) {
+                i.age <- iterator.orig@iAge
+                i.triangle <- iterator.orig@iTriangle
+                is.final.age <- i.age == n.age
+                is.upper <- i.triangle == 2L
+                ## adjust first cell for change in net increments
+                if (is.final) {
+                    if (is.upper) {
+                        incr.exp.orig <- (1/2) * adj.diff.orig
+                        incr.exp.dest <- (1/2) * adj.diff.dest
+                    }
+                    else {
+                        incr.exp.orig <- -1 * (1/6) * adj.diff.orig
+                        incr.exp.dest <- -1 * (1/6) * adj.diff.dest
+                    }
+                }
+                else {
+                    if (is.upper) {
+                        incr.exp.orig <- (1/6) * adj.diff.orig
+                        incr.exp.dest <- (1/6) * adj.diff.dest
+                    }
+                    else {
+                        incr.exp.orig <- -1 * (1/6) * adj.diff.orig
+                        incr.exp.dest <- -1 * (1/6) * adj.diff.dest
+                    }
+                }
+                ## adjust for change in population
+                if (is.final) {
+                    if (is.upper) {
+                        incr.exp.orig <- incr.exp.orig + adj.diff.orig
+                        incr.exp.dest <- incr.exp.dest + adj.diff.dest
+                    }
+                    else {
+                        incr.exp.orig <- incr.exp.orig + (1/2) * adj.diff.orig
+                        incr.exp.dest <- incr.exp.dest + (1/2) * adj.diff.dest
+                    }
+                }
+                else {
+                    incr.exp.orig <- incr.exp.orig + (1/2) * adj.diff.orig
+                    incr.exp.dest <- incr.exp.dest + (1/2) * adj.diff.dest
+                }
             }
+            else  {
+                incr.exp.orig <- adj.diff.orig
+                incr.exp.dest <- adj.diff.dest
+            }
+            combined@exposure[i.orig] <- combined@exposure[i.orig] + incr.exp.orig
+            combined@exposure[i.dest] <- combined@exposure[i.dest] + incr.dest
+            ## subsequent cells
             while (!iterator.orig@finished) {
                 iterator.orig <- advanceCC(iterator.orig)
                 iterator.dest <- advanceCC(iterator.dest)
                 i.orig <- iterator.orig@i
                 i.dest <- iterator.dest@i
+                if (has.age) {
+                    i.age <- iterator.orig@iAge
+                    i.triangle <- iterator.orig@iTriangle
+                    is.final.age <- i.age == n.age
+                    is.upper <- i.triangle == 2L
+                    if (is.final.age) {
+                        if (is.upper) {
+                            incr.exp.orig <- adj.diff.orig
+                            incr.exp.dest <- adj.diff.dest
+                        }
+                        else {
+                            incr.exp.orig <- 0
+                            incr.exp.dest <- 0
+                        }
+                    }
+                    else {
+                        incr.exp.orig <- (1/2) * adj.diff.orig
+                        incr.exp.dest <- (1/2) * adj.diff.dest
+                    }
+                }
+                else {
+                    incr.exp.orig <- adj.diff.orig
+                    incr.exp.dest <- adj.diff.dest
+                }
                 combined@exposure[i.orig] <- combined@exposure[i.orig] + diff.orig
                 combined@exposure[i.dest] <- combined@exposure[i.dest] + diff.dest
             }
         }
         else {
-            if (is.increment[i.comp])
-                diff <- 0.5 * diff * age.time.step
-            else
-                diff <- -0.5 * diff * age.time.step
+            sign <- if (is.increment[i.comp]) 1 else -1
+            adj.diff <- sign * age.time.step * diff
+            ## first cell
             iterator <- resetCC(iterator, i = i.exp.first)
-            combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + diff
-            if (!has.age)
-                diff <- 2 * diff
+            i <- iterator@i
+            if (has.age) {
+                i.age <- iterator@iAge
+                i.triangle <- iterator@iTriangle
+                is.final.age <- i.age == n.age
+                is.upper <- i.triangle == 2L
+                ## adjust first cell for change in net increments
+                if (is.final) {
+                    if (is.upper)
+                        incr.exp <- (1/2) * adj.diff
+                    else
+                        incr.exp <- -1 * (1/6) * adj.diff
+                }
+                else {
+                    if (is.upper)
+                        incr.exp <- (1/6) * adj.diff
+                    else
+                        incr.exp <- -1 * (1/6) * adj.diff
+                }
+                ## adjust for change in population
+                if (is.final) {
+                    if (is.upper)
+                        incr.exp <- incr.exp + adj.diff
+                    else
+                        incr.exp <- incr.exp + (1/2) * adj.diff
+                }
+                else
+                    incr.exp <- incr.exp + (1/2) * adj.diff
+            }
+            else 
+                incr.exp <- adj.diff
+            combined@exposure[i] <- combined@exposure[i] + diff
+            ## subsequent cells
             while (!iterator@finished) {
                 iterator <- advanceCC(iterator)
                 i <- iterator@i
-                combined@exposure[i] <- combined@exposure[i] + diff
+                if (has.age) {
+                    i.age <- iterator@iAge
+                    i.triangle <- iterator@iTriangle
+                    is.final.age <- i.age == n.age
+                    is.upper <- i.triangle == 2L
+                    if (is.final.age) {
+                        if (is.upper)
+                            incr.exp <- adj.diff
+                        else
+                            incr.exp <- 0
+                    }
+                    else
+                        incr.exp <- (1/2) * adj.diff
+                }
+                else 
+                    incr.exp <- adj.diff
+                combined@exposure[i] <- combined@exposure[i] + incr.exp
             }
         }
         combined
     }
 }
+
