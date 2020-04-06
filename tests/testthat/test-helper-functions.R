@@ -10016,7 +10016,8 @@ test_that("getIExpFirstFromPopn works - with age", {
                                dim = c(3, 2),
                                dimnames = list(time = c(2000, 2010, 2020),
                                                age = c("0-9", "10+"))))
-    exposure <- exposureWithTriangles(population)
+    exposure <- exposureWithTriangles(population,
+                                      openTriangles = "standard")
     population <- Population(population)
     description <- Description(population)
     ans.obtained <- getIExpFirstFromPopn(description, i = 1L)
@@ -10030,7 +10031,8 @@ test_that("getIExpFirstFromPopn works - with age", {
                                dim = c(3, 3),
                                dimnames = list(age = c("0-9", "10-19", "20+"),
                                                time = c(2000, 2010, 2020))))
-    exposure <- exposureWithTriangles(population)
+    exposure <- exposureWithTriangles(population,
+                                      openTriangles = "standard")
     population <- Population(population)
     description <- Description(population)
     ans.obtained <- getIExpFirstFromPopn(description, i = 1L)
@@ -10048,7 +10050,8 @@ test_that("getIExpFirstFromPopn works - with age", {
                                dimnames = list(reg = c("a", "b", "c"),
                                    time = c(2000, 2010, 2020),
                                    age = c("0-9", "10+"))))
-    exposure <- exposureWithTriangles(population)
+    exposure <- exposureWithTriangles(population,
+                                      openTriangles = "standard")
     population <- Population(population)
     description <- Description(population)
     ans.obtained <- getIExpFirstFromPopn(description, i = 1L)
@@ -10081,7 +10084,8 @@ test_that("R and C versions of getIExpFirstFromPopn give same answer - with age"
                                dim = c(3, 2),
                                dimnames = list(time = c(2000, 2010, 2020),
                                                age = c("0-9", "10+"))))
-    exposure <- exposureWithTriangles(population)
+    exposure <- exposureWithTriangles(population,
+                                      openTriangles = "standard")
     population <- Population(population)
     description <- Description(population)
     ans.R <- getIExpFirstFromPopn(description, i = 1L, useC = FALSE)
@@ -10095,7 +10099,8 @@ test_that("R and C versions of getIExpFirstFromPopn give same answer - with age"
                                dim = c(3, 3),
                                dimnames = list(age = c("0-9", "10-19", "20+"),
                                                time = c(2000, 2010, 2020))))
-    exposure <- exposureWithTriangles(population)
+    exposure <- exposureWithTriangles(population,
+                                      openTriangles = "standard")
     population <- Population(population)
     description <- Description(population)
     ans.R <- getIExpFirstFromPopn(description, i = 1L, useC = FALSE)
@@ -10113,7 +10118,8 @@ test_that("R and C versions of getIExpFirstFromPopn give same answer - with age"
                                dimnames = list(reg = c("a", "b", "c"),
                                    time = c(2000, 2010, 2020),
                                    age = c("0-9", "10+"))))
-    exposure <- exposureWithTriangles(population)
+    exposure <- exposureWithTriangles(population,
+                                      openTriangles = "standard")
     population <- Population(population)
     description <- Description(population)
     ans.R <- getIExpFirstFromPopn(description, i = 1L, useC = FALSE)
@@ -10422,7 +10428,7 @@ test_that("getMinValCohortAccession gives valid answer", {
     ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- getMinValCohortAccession(i = 3L, series = accession, iter = iter)
-    ans.expected <- 5L
+    ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
     accession <- Counts(array(12:1,
                               dim = c(3, 4),
@@ -10437,20 +10443,20 @@ test_that("getMinValCohortAccession gives valid answer", {
     ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
     accession <- Counts(array(60:1,
-                               dim = 5:3,
-                               dimnames = list(region = 1:5,
-                                   time = c(2001, 2006, 2011, 2016),
-                                   age = c("5", "10", "15"))))
+                              dim = 5:3,
+                              dimnames = list(region = 1:5,
+                                              time = c(2001, 2006, 2011, 2016),
+                                              age = c("5", "10", "15"))))
     accession <- Accession(accession)
     iter <- CohortIterator(accession)
     ans.obtained <- getMinValCohortAccession(i = 7L, series = accession, iter = iter)
     ans.expected <- 4L
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- getMinValCohortAccession(i = 2L, series = accession, iter = iter)
-    ans.expected <- 9L
+    ans.expected <- 4L
     expect_identical(ans.obtained, ans.expected)
     ans.obtained <- getMinValCohortAccession(i = 45L, series = accession, iter = iter)
-    ans.expected <- 16L
+    ans.expected <- 1L
     expect_identical(ans.obtained, ans.expected)
 })
 

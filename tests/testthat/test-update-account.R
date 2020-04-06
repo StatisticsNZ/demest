@@ -8814,7 +8814,7 @@ test_that("diffLogDensExpComp works", {
                                                                      theta = x@systemModels[[2]]@theta,
                                                                      strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                                      iteratorComp = x@iteratorsComp[[1]],
-                                                                     iExpFirst = x@iExpFirst,
+                                                                     iExpFirst = i.cell.exp.first,
                                                                      exposure = x@exposure,
                                                                      iteratorExposure = x@iteratorExposure,
                                                                      diff = -x@diffProp)

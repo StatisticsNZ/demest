@@ -229,15 +229,19 @@ setClass("ExposureMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              exposure <- object@exposure
-             population <- object@account@population
+             account <- object@account
+             population <- account@population
              hasAge <- object@hasAge@.Data
              ## 'exposure' object equals result of calling 'exposure'
              ## function on 'population'
-             exposure.calc <- dembase::exposure(population,
-                                                triangles = hasAge)
+             if (hasAge)
+                 exposure.calc <- dembase::exposureHMD(account)
+             else
+                 exposure.calc <- dembase::exposure(population,
+                                                    triangles = FALSE)
              exposure.calc <- methods::new("Exposure",
-                                  .Data = exposure.calc@.Data,
-                                  metadata = exposure.calc@metadata)
+                                           .Data = exposure.calc@.Data,
+                                           metadata = exposure.calc@metadata)
              if (!isTRUE(all.equal(exposure, exposure.calc))) {
                  return(gettextf("'%s' and '%s' inconsistent",
                                  "exposure", "population"))

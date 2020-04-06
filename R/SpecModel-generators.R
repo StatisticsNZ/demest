@@ -256,7 +256,7 @@ Binomial <- function(formula) {
 #' implies that there is no constraint.
 #'
 #' @inheritParams likelihood
-#' @param An object of class \code{\link[dembase:Values-class]{Values}},
+#' @param constraint An object of class \code{\link[dembase:Values-class]{Values}},
 #' with values 0, -1, 1, and NA.
 #' @param concordances A named list of concordances used to
 #' map between \code{y} and \code{constraint}.

@@ -674,11 +674,14 @@ setMethod("initialCombinedAccount",
               i.pool <- if (any(is.pool)) which(is.pool) else -1L
               i.int.net <- if (any(is.int.net)) which(is.int.net) else -1L
               is.net <- is.int.net | is.net.move
-              exposure <- dembase::exposure(population,
-                                            triangles = has.age)
+              if (has.age)
+                  exposure <- dembase::exposureHMD(account)
+              else
+                  exposure <- dembase::exposure(population,
+                                                triangles = FALSE)
               exposure <- methods::new("Exposure",
-                              .Data = exposure@.Data,
-                              metadata = exposure@metadata)
+                                       .Data = exposure@.Data,
+                                       metadata = exposure@metadata)
               population <- methods::new("Population",
                                          .Data = population@.Data,
                                          metadata = population@metadata)
@@ -797,8 +800,8 @@ setMethod("initialCombinedAccount",
                                                               transform = transforms[[i]])
                   dimnames(.Data.series.collapsed) <- dimnames(metadata.series.collapsed)
                   series.collapsed <- methods::new("Counts",
-                                          .Data = .Data.series.collapsed,
-                                          metadata = metadata.series.collapsed)
+                                                   .Data = .Data.series.collapsed,
+                                                   metadata = metadata.series.collapsed)
                   model <- dataModels[[i]]
                   if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
                       series.collapsed <- dembase::toDouble(series.collapsed)

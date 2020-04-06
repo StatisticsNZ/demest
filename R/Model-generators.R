@@ -2123,8 +2123,8 @@ setMethod("initialModelPredict",
               }
               else {
                   .Data <- array(1L,
-                                 dim = dim(metadata.second),
-                                 dimnames = dimnames(metadata.second))
+                                 dim = dim(metadata.y.second),
+                                 dimnames = dimnames(metadata.y.second))
                   struc.zero.array.second <- methods::new("Counts",
                                                           .Data = .Data,
                                                           metadata = metadata.y.second)
