@@ -461,6 +461,9 @@ getIExposureFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## iExpFirst is the index of the first cell in 'exposure' that
 ## will change if the cell being updated is changed
 
+## These functions are overly complicated,
+## because of the way that they have developed.
+
 ## component - getIExpFirstFromComp DONE
 ## births no parent - getIExpFirstFromBirths DONE
 ## births with parent - getIExpFirstFromBirths DONE
@@ -497,19 +500,10 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
+            step.triangle.exp <- mapping@stepTriangleTarget
             i.age.comp <- ((i - 1L) %/% step.age.comp) %% n.age
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
-            is.lower <- i.triangle.comp == 0L
-            if (is.lower) {
-                i.age.exp <- i.age.comp
-            }
-            else {
-                if (i.age.comp == (n.age - 1L))
-                    i.age.exp <- i.age.comp
-                else
-                    i.age.exp <- i.age.comp + 1L
-            }
-            i.exp <- i.exp + i.age.exp * step.age.exp
+            i.exp <- i.exp + i.age.comp * step.age.exp + i.triangle.comp * step.triangle.exp
         }
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {
@@ -600,19 +594,10 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
+            step.triangle.exp <- mapping@stepTriangleTarget
             i.age.comp <- ((i - 1L) %/% step.age.comp) %% n.age
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
-            is.lower <- i.triangle.comp == 0L
-            if (is.lower) {
-                i.age.exp <- i.age.comp
-            }
-            else {
-                if (i.age.comp == (n.age - 1L))
-                    i.age.exp <- i.age.comp
-                else
-                    i.age.exp <- i.age.comp + 1L
-            }
-            i.exp <- i.exp + i.age.exp * step.age.exp
+            i.exp <- i.exp + i.age.comp * step.age.exp + i.triangle.comp * step.triangle.exp
         }
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {

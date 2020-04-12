@@ -3817,3 +3817,37 @@ updateSubsequentExpMove(SEXP combined_R)
     } /* end if !noSubsequentExposure */
 }
 
+
+
+
+void
+updateSubsequentExpMoveOneCohortNoAge(SEXP combined_R)
+{
+  int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+  int iExpFirst_r = *INTEGER(GET_SLOT(combined_R, iExpFirst_sym));
+  int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+  int * isIncrementVec = LOGICAL(GET_SLOT(combined_R, isIncrement_sym));
+  int isIncrement = isIncrementVec[iComp_r - 1];
+  double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
+  double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
+  SEXP iterator_R = GET_SLOT(combined_R, iteratorExposure_sym);
+  int * i_ptr = INTEGER(GET_SLOT(iterator_R, i_sym));
+  int * finished_ptr = LOGICAL(GET_SLOT(iterator_R, finished_sym));
+  /* first cell */
+  double incrExp = 0.5 * ageTimeStep * diff;
+  if (!isIncrement) {
+    incrExp = -1 * incrExp;
+  }
+  resetCC(iterator_R, iExpFirst_r);
+  int i = *i_ptr - 1;
+  exposure[i] += incrExp;
+  /* subsequent cells */
+  incrExp = 2 * incrExp;
+  int finished = *finished_ptr;
+  while (!finished) {
+    advanceCC(iterator_R);
+    i = *i_ptr - 1;
+    exposure[i] += incrExp;
+    finished = *finished_ptr;
+  }
+}

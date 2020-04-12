@@ -347,7 +347,7 @@ resetCC <- function(object, i, useC = FALSE) {
             if (i.triangle == 1L)
                 finished <- i.time == n.time
             else
-                finished <- !last.age.group.open && (i.age == n.age)
+                finished <- last.age.group.open && (i.age == n.age)
         }
         else
             finished <- i.time == n.time

@@ -1147,6 +1147,7 @@ void updateCellMove(SEXP combined_R);
 void updateSubsequentPopnMove(SEXP combined_R);
 void updateSubsequentAccMove(SEXP combined_R);
 void updateSubsequentExpMove(SEXP combined_R);
+void updateSubsequentExpMoveOneCohortNoAge(SEXP combined_R);
 
 
 /* pointers for routines from dembase package

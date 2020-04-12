@@ -2388,6 +2388,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                                    hasAge = has.age,
                                                                    ageTimeStep = age.time.step,
                                                                    updatedPopn = TRUE,
+                                                                   updatedBirths = FALSE,
                                                                    component = component,
                                                                    theta = theta,
                                                                    strucZeroArray = strucZeroArray,
@@ -2413,6 +2414,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                                            hasAge = has.age,
                                                                            ageTimeStep = age.time.step,
                                                                            updatedPopn = TRUE,
+                                                                           updatedBirths = FALSE,
                                                                            component = component,
                                                                            theta = theta,
                                                                            strucZeroArray = strucZeroArray,
@@ -2426,6 +2428,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                               hasAge = has.age,
                                                               ageTimeStep = age.time.step,
                                                               updatedPopn = TRUE,
+                                                              updatedBirths = FALSE,
                                                               component = component,
                                                               theta = theta,
                                                               strucZeroArray = strucZeroArray,
@@ -2446,6 +2449,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                       hasAge = has.age,
                                                       ageTimeStep = age.time.step,
                                                       updatedPopn = TRUE,
+                                                      updatedBirths = FALSE,
                                                       component = component,
                                                       theta = theta,
                                                       strucZeroArray = strucZeroArray,
@@ -2466,7 +2470,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
-diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updatedPopn,
+diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
                                                component, theta, strucZeroArray,
                                                iteratorComp, iExpFirst, exposure, iteratorExposure,
                                                diff, useC = FALSE) {
@@ -2488,6 +2492,10 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
     stopifnot(identical(length(updatedPopn), 1L))
     stopifnot(is.logical(updatedPopn))
     stopifnot(!is.na(updatedPopn))
+    ## updatedBirths
+    stopifnot(identical(length(updatedBirths), 1L))
+    stopifnot(is.logical(updatedBirths))
+    stopifnot(!is.na(updatedBirths))
     ## component
     stopifnot(methods::is(component, "InternalMovementsOrigDest")
               || methods::is(component, "InternalMovementsPool")
@@ -2524,30 +2532,91 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
     stopifnot(identical(length(component), length(theta)))
     if (useC) {
         .Call(diffLogDensExpOneOrigDestParChPool_R,
-              iCell, hasAge, ageTimeStep, updatedPopn,
+              iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
               component, theta, strucZeroArray, iteratorComp,
               iExpFirst, exposure, iteratorExposure,
               diff)
     }
     else {
+        ans <- 0
         iteratorComp <- resetCODPCP(iteratorComp, i = iCell)
         iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
-        ans <- 0
+        is.first.cell <- TRUE
+        is.first.final <- TRUE
         length.vec <- iteratorComp@lengthVec
         repeat {
             i.e <- iteratorExposure@i
             i.c.vec <- iteratorComp@iVec
-            if (hasAge)
-                diff.exposure <- 0.5 * diff * ageTimeStep
-            else {
-                is.first.cell <- i.e == iExpFirst
-                if (is.first.cell && !updatedPopn)
-                    diff.exposure <- 0.5 * diff * ageTimeStep
-                else
-                    diff.exposure <- diff * ageTimeStep
+            incr.exp <- 0
+            if (hasAge) {
+                n.age <- iteratorComp@nAge
+                i.age <- iteratorComp@iAge
+                i.triangle <- iteratorComp@iTriangle
+                is.final <- i.age == n.age
+                is.upper <- i.triangle == 2L
+                if (is.first.cell) {
+                    if (updatedPopn) { ## first cell is always upper
+                        if (is.final)
+                            incr.exp <- incr.exp + ageTimeStep * diff
+                        else
+                            incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                    }
+                    else { ## not popn
+                        ## Adjust for change in net increments
+                        ## Not needed for births.
+                        if (!updatedBirths) {
+                            if (is.final) {
+                                if (is.upper)
+                                    incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                                else
+                                    incr.exp <- incr.exp - (1/6) * ageTimeStep * diff
+                            }
+                            else {
+                                if (is.upper)
+                                    incr.exp <- incr.exp + (1/6) * ageTimeStep * diff
+                                else
+                                    incr.exp <- incr.exp - (1/6) * ageTimeStep * diff
+                            }
+                        }
+                        ## adjust for change in population
+                        if (!is.upper) {
+                            incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                        }
+                    }
+                    if (is.final)
+                        is.first.final <- FALSE
+                    is.first.cell <- FALSE
+                }
+                else { ## not first cell - only adjust for popn
+                    if (is.final) {
+                        if (is.upper)
+                            incr.exp <- incr.exp + ageTimeStep * diff
+                        else {
+                            if (is.first.final)
+                                incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                        }
+                    }
+                    else {
+                        incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                    }
+                }
+                if (is.final)
+                    is.first.final <- FALSE
+            }
+            else { ## no age
+                if (is.first.cell) {
+                    if (updatedPopn)
+                        incr.exp <- ageTimeStep * diff
+                    else
+                        incr.exp <- 0.5 * ageTimeStep * diff
+                    is.first.cell <- FALSE
+                }
+                else {
+                    incr.exp <- 0.5 * ageTimeStep * diff
+                }
             }
             exposure.curr <- exposure[i.e]
-            exposure.prop <- exposure.curr + diff.exposure
+            exposure.prop <- exposure.curr + incr.exp
             for (j in seq_len(length.vec)) {
                 i.c <- i.c.vec[j]
                 is.struc.zero <- strucZeroArray[i.c] == 0L
@@ -2575,9 +2644,11 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
     }
 }
 
+
+
 ## TRANSLATED
 ## HAS_TESTS
-diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
+diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
                                   component, theta, strucZeroArray, iteratorComp,
                                   iExpFirst, exposure, iteratorExposure,
                                   diff, useC = FALSE) {
@@ -2599,6 +2670,10 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
     stopifnot(identical(length(updatedPopn), 1L))
     stopifnot(is.logical(updatedPopn))
     stopifnot(!is.na(updatedPopn))
+    ## updatedBirths
+    stopifnot(identical(length(updatedBirths), 1L))
+    stopifnot(is.logical(updatedBirths))
+    stopifnot(!is.na(updatedBirths))
     ## component
     stopifnot(methods::is(component, "Component"))
     ## theta
@@ -2633,14 +2708,16 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
     stopifnot(identical(length(component), length(theta)))
     if (useC) {
         .Call(diffLogDensExpOneComp_R,
-              iCell, hasAge, ageTimeStep, updatedPopn,
+              iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
               component, theta, strucZeroArray, iteratorComp,
               iExpFirst, exposure, iteratorExposure, diff)
     }
     else {
+        ans <- 0
         iteratorComp <- resetCC(iteratorComp, i = iCell)
         iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
-        ans <- 0
+        is.first.cell <- TRUE
+        is.first.final <- TRUE
         repeat {
             i.c <- iteratorComp@i
             is.struc.zero <- strucZeroArray[i.c] == 0L
@@ -2648,25 +2725,87 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
                 i.e <- iteratorExposure@i
                 comp.curr <- component[i.c]
                 theta.curr <- theta[i.c]
-                if (hasAge)
-                    diff.exposure <- 0.5 * diff * ageTimeStep
-                else {
-                    is.first.cell <- i.c == iCell
-                    if (is.first.cell && !updatedPopn)
-                        diff.exposure <- 0.5 * diff * ageTimeStep
-                    else
-                        diff.exposure <- diff * ageTimeStep
+                ## get increment to exposure
+                incr.exp <- 0
+                if (hasAge) {
+                    n.age <- iteratorComp@nAge
+                    i.age <- iteratorComp@iAge
+                    i.triangle <- iteratorComp@iTriangle
+                    is.final <- i.age == n.age
+                    is.upper <- i.triangle == 2L
+                    if (is.first.cell) {
+                        if (updatedPopn) { 
+                            ## adjust for change in population
+                            ## (first cell always upper triangle)
+                            if (is.final)
+                                incr.exp <- incr.exp + ageTimeStep * diff
+                            else
+                                incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                        }
+                        else { ## not popn
+                            ## Adjust for change in net increments
+                            ## Not needed for births.
+                            if (!updatedBirths) {
+                                if (is.final) {
+                                    if (is.upper)
+                                        incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                                    else
+                                        incr.exp <- incr.exp - (1/6) * ageTimeStep * diff
+                                }
+                                else {
+                                    if (is.upper)
+                                        incr.exp <- incr.exp + (1/6) * ageTimeStep * diff
+                                    else
+                                        incr.exp <- incr.exp - (1/6) * ageTimeStep * diff
+                                }
+                            }
+                            ## adjust for change in population
+                            if (!is.upper) {
+                                incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                            }
+                        }
+                        if (is.final)
+                            is.first.final <- FALSE
+                        is.first.cell <- FALSE
+                    }
+                    else { ## not first cell - only adjust for popn
+                        if (is.final) {
+                            if (is.upper)
+                                incr.exp <- incr.exp + ageTimeStep * diff
+                            else {
+                                if (is.first.final)
+                                    incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                            }
+                        }
+                        else {
+                            incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
+                        }
+                    }
+                    if (is.final)
+                        is.first.final <- FALSE
+                }
+                else { ## no age
+                    if (is.first.cell) {
+                        if (updatedPopn)
+                            incr.exp <- ageTimeStep * diff
+                        else
+                            incr.exp <- 0.5 * ageTimeStep * diff
+                        is.first.cell <- FALSE
+                    }
+                    else {
+                        incr.exp <- 0.5 * ageTimeStep * diff
+                    }
                 }
                 exposure.curr <- exposure[i.e]
-                exposure.prop <- exposure.curr + diff.exposure
-                if ((comp.curr > 0L) && !(exposure.prop > 0)) ## testing for exposure.prop == 0, since exposure.prop should be >= 0
+                exposure.prop <- exposure.curr + incr.exposure
+                if ((comp.curr > 0L) && !(exposure.prop > 0))
                     return(-Inf)
                 diff.log.lik <- (stats::dpois(x = comp.curr,
-                                       lambda = theta.curr * exposure.prop,
-                                       log = TRUE)
+                                              lambda = theta.curr * exposure.prop,
+                                              log = TRUE)
                     - stats::dpois(x = comp.curr,
-                            lambda = theta.curr * exposure.curr,
-                            log = TRUE))
+                                   lambda = theta.curr * exposure.curr,
+                                   log = TRUE))
                 ans <- ans + diff.log.lik
             }
             if (iteratorComp@finished)
@@ -2678,6 +2817,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn,
         ans
     }
 }
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -2703,14 +2843,29 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
         exposure.cell.curr <- exposure[i.exposure]
         exposure.cell.jump <- expected.exposure[i.exposure]
         if (has.age) {
-            is.lower.triangle <- combined@isLowerTriangle
-            if (is.lower.triangle)
-                exposure.cell.prop <- exposure.cell.curr - 0.5 * diff * age.time.step
-            else
-                exposure.cell.prop <- exposure.cell.curr
+            iterator <- combined@iteratorExposure
+            iterator <- resetCC(iterator, i = i.cell)
+            n.age <- iterator@nAge
+            i.age <- iterator@iAge
+            i.triangle <- iterator@iTriangle
+            is.final <- i.age == n.age
+            is.upper <- i.triangle == 2L
+            if (is.final) {
+                if (is.upper)
+                    incr.exp <- -0.5 * age.time.step * diff
+                else
+                    incr.exp <- -1 * (1/3) * age.time.step * diff
+            }
+            else {
+                if (is.upper)
+                    incr.exp <- -1 * (1/6) * age.time.step * diff
+                else
+                    incr.exp <- -1 * (1/3) * age.time.step * diff
+            }
         }
         else
-            exposure.cell.prop <- exposure.cell.curr - 0.5 * diff * age.time.step
+            incr.exp <- -0.5 * age.time.step * diff
+        exposure.cell.prop <- exposure.cell.curr + incr.exp
         lambda.dens.prop <- theta.cell * exposure.cell.prop
         lambda.jump <- theta.cell * exposure.cell.jump
         val.curr <- component[i.cell]
@@ -2791,6 +2946,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                         hasAge = has.age,
                                                                         ageTimeStep = age.time.step,
                                                                         updatedPopn = FALSE,
+                                                                        updatedBirths = FALSE,
                                                                         component = component,
                                                                         theta = theta,
                                                                         strucZeroArray = strucZeroArray,
@@ -2806,6 +2962,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                         hasAge = has.age,
                                                                         ageTimeStep = age.time.step,
                                                                         updatedPopn = FALSE,
+                                                                        updatedBirths = FALSE,
                                                                         component = component,
                                                                         theta = theta,
                                                                         strucZeroArray = strucZeroArray,
@@ -2835,6 +2992,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                                 hasAge = has.age,
                                                                                 ageTimeStep = age.time.step,
                                                                                 updatedPopn = FALSE,
+                                                                                updatedBirths = FALSE,
                                                                                 component = component,
                                                                                 theta = theta,
                                                                                 strucZeroArray = strucZeroArray,
@@ -2850,6 +3008,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                                 hasAge = has.age,
                                                                                 ageTimeStep = age.time.step,
                                                                                 updatedPopn = FALSE,
+                                                                                updatedBirths = FALSE,
                                                                                 component = component,
                                                                                 theta = theta,
                                                                                 strucZeroArray = strucZeroArray,
@@ -2867,6 +3026,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                    hasAge = has.age,
                                                                    ageTimeStep = age.time.step,
                                                                    updatedPopn = FALSE,
+                                                                   updatedBirths = FALSE,
                                                                    component = component,
                                                                    theta = theta,
                                                                    strucZeroArray = strucZeroArray,
@@ -2882,6 +3042,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                    hasAge = has.age,
                                                                    ageTimeStep = age.time.step,
                                                                    updatedPopn = FALSE,
+                                                                   updatedBirths = FALSE,
                                                                    component = component,
                                                                    theta = theta,
                                                                    strucZeroArray = strucZeroArray,
@@ -2905,6 +3066,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                            hasAge = has.age,
                                                            ageTimeStep = age.time.step,
                                                            updatedPopn = FALSE,
+                                                           updatedBirths = FALSE,
                                                            component = component,
                                                            theta = theta,
                                                            strucZeroArray = strucZeroArray,
@@ -2920,6 +3082,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                            hasAge = has.age,
                                                            ageTimeStep = age.time.step,
                                                            updatedPopn = FALSE,
+                                                           updatedBirths = FALSE,
                                                            component = component,
                                                            theta = theta,
                                                            strucZeroArray = strucZeroArray,
@@ -2964,20 +3127,30 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
         exposure.in.curr <- exposure[i.exposure.in]
         exposure.out.jump <- expected.exposure[i.exposure.out]
         if (has.age) {
-            is.lower.triangle <- combined@isLowerTriangle
-            if (is.lower.triangle) {
-                exposure.out.prop <- exposure.out.curr - 0.5 * diff * age.time.step
-                exposure.in.prop <- exposure.in.curr + 0.5 * diff * age.time.step
+            iterator <- combined@iteratorExposure
+            iterator <- resetCC(iterator, i = i.cell)
+            n.age <- iterator@nAge
+            i.age <- iterator@iAge
+            i.triangle <- iterator@iTriangle
+            is.final <- i.age == n.age
+            is.upper <- i.triangle == 2L
+            if (is.final) {
+                if (is.upper)
+                    incr.exp <- -0.5 * age.time.step * diff
+                else
+                    incr.exp <- -1 * (1/3) * age.time.step * diff
             }
             else {
-                exposure.out.prop <- exposure.out.curr
-                exposure.in.prop <- exposure.in.curr
+                if (is.upper)
+                    incr.exp <- -1 * (1/6) * age.time.step * diff
+                else
+                    incr.exp <- -1 * (1/3) * age.time.step * diff
             }
         }
-        else {
-            exposure.out.prop <- exposure.out.curr - 0.5 * diff * age.time.step
-            exposure.in.prop <- exposure.in.curr + 0.5 * diff * age.time.step
-        }
+        else
+            incr.exp <- -0.5 * age.time.step * diff
+        exposure.out.prop <- exposure.out.prop + incr.exp
+        exposure.in.prop <- exposure.in.prop - incr.exp
         lambda.dens.out.prop <- theta.out * exposure.out.prop
         lambda.dens.in.prop <- theta.in * exposure.in.prop
         lambda.dens.out.curr <- theta.out * exposure.out.curr
@@ -3081,22 +3254,31 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
         exposure.cell.curr <- exposure[i.exposure]
         exposure.cell.jump <- expected.exposure[i.exposure]
         if (has.age) {
-            is.lower.triangle <- combined@isLowerTriangle
-            if (is.lower.triangle) {
-                if (is.increment[i.comp])
-                    exposure.cell.prop <- exposure.cell.curr + 0.5 * diff * age.time.step
+            iterator <- combined@iteratorExposure
+            iterator <- resetCC(iterator, i = i.cell)
+            n.age <- iterator@nAge
+            i.age <- iterator@iAge
+            i.triangle <- iterator@iTriangle
+            is.final <- i.age == n.age
+            is.upper <- i.triangle == 2L
+            if (is.final) {
+                if (is.upper)
+                    incr.exp <- 0.5 * age.time.step * diff
                 else
-                    exposure.cell.prop <- exposure.cell.curr - 0.5 * diff * age.time.step
+                    incr.exp <- (1/3) * age.time.step * diff
             }
-            else
-                exposure.cell.prop <- exposure.cell.curr
+            else {
+                if (is.upper)
+                    incr.exp <- (1/6) * age.time.step * diff
+                else
+                    incr.exp <- (1/3) * age.time.step * diff
+            }
         }
-        else {
-            if (is.increment[i.comp])
-                exposure.cell.prop <- exposure.cell.curr + 0.5 * diff * age.time.step
-            else
-                exposure.cell.prop <- exposure.cell.curr - 0.5 * diff * age.time.step
-        }
+        else
+            incr.exp <- 0.5 * age.time.step * diff
+        if (!is.increment[i.comp])
+            incr.exp <- -1 * incr.exp
+        exposure.cell.prop <- exposure.cell.curr + incr.exp
         lambda.dens.prop <- theta.cell * exposure.cell.prop
         lambda.jump <- theta.cell * exposure.cell.jump
         val.curr <- component[i.cell]
@@ -3149,6 +3331,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
         ans <- 0
         if (!is.increment[i.comp])
             diff <- -diff
+        updated.births <- i.comp == i.births
         for (i in seq_along(components)) {
             if (model.uses.exposure[i + 1L]) { ## note that 'net' components never use exposure
                 component <- components[[i]]
@@ -3167,6 +3350,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                                    hasAge = has.age,
                                                                    ageTimeStep = age.time.step,
                                                                    updatedPopn = FALSE,
+                                                                   updatedBirths = updated.births,
                                                                    component = component,
                                                                    theta = theta,
                                                                    strucZeroArray = strucZeroArray,
@@ -3192,6 +3376,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                                            hasAge = has.age,
                                                                            ageTimeStep = age.time.step,
                                                                            updatedPopn = FALSE,
+                                                                           updatedBirths = updated.births,
                                                                            component = component,
                                                                            theta = theta,
                                                                            strucZeroArray = strucZeroArray,
@@ -3205,6 +3390,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                               hasAge = has.age,
                                                               ageTimeStep = age.time.step,
                                                               updatedPopn = FALSE,
+                                                              updatedBirths = updated.births,
                                                               component = component,
                                                               theta = theta,
                                                               strucZeroArray = strucZeroArray,
@@ -3225,6 +3411,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                       hasAge = has.age,
                                                       ageTimeStep = age.time.step,
                                                       updatedPopn = FALSE,
+                                                      updatedBirths = updated.births,
                                                       component = component,
                                                       theta = theta,
                                                       strucZeroArray = strucZeroArray,
@@ -3599,6 +3786,132 @@ updateSubsequentAccMove <- function(combined, useC = FALSE) {
 
 
 
+## ## TRANSLATED
+## ## HAS_TESTS
+## updateSubsequentExpMove <- function(combined, useC = FALSE) {
+##     stopifnot(methods::is(combined, "CombinedAccountMovements"))
+##     if (useC) {
+##         .Call(updateSubsequentExpMove_R, combined)
+##     }
+##     else {
+##         i.exp.first <- combined@iExpFirst
+##         no.subsequent.exposure <- i.exp.first == 0L
+##         if (no.subsequent.exposure)
+##             return(combined)
+##         i.comp <- combined@iComp
+##         i.orig.dest <- combined@iOrigDest
+##         i.pool <- combined@iPool
+##         i.int.net <- combined@iIntNet
+##         is.popn <- i.comp == 0L
+##         is.orig.dest <- i.comp == i.orig.dest
+##         is.pool <- i.comp == i.pool
+##         is.int.net <- i.comp == i.int.net
+##         update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
+##         iterator <- combined@iteratorExposure
+##         diff <- combined@diffProp
+##         age.time.step <- combined@ageTimeStep
+##         has.age <- combined@hasAge
+##         ## first cell ----------------------------------------------------------
+##         iterator <- resetCC(iterator, i = i.exp.first)
+##         if (has.age) {
+##             n.age <- iterator@nAge
+##             i.age <- iterator@iAge
+##             i.triangle <- iterator@iTriangle
+##             is.final <- i.age == n.age
+##             is.upper <- i.triangle == 2L
+##             if (is.popn) { 
+##                 ## adjust for change in population
+##                 ## (note that always upper tri)
+##                 if (is.final)
+##                     incr.exp <- age.time.step * diff
+##                 else
+##                     incr.exp <- 0.5 * age.time.step * diff
+##             }
+##             else { ## not popn
+##                 ## adjust for change in net increments
+##                 if (is.final) {
+##                     if (is.upper)
+##                         incr.exp <- 0.5 * age.time.step * diff
+##                     else
+##                         incr.exp <- -1 * (1/6) * age.time.step * diff
+##                 }
+##                 else {
+##                     if (is.upper)
+##                         incr.exp <- (1/6) * age.time.step * diff
+##                     else
+##                         incr.exp <- -1 * (1/6) * age.time.step * diff
+##                 }
+##                 ## adjust for change in population
+##                 if (is.final) {
+##                     if (!is.upper)
+##                         incr.exp <- incr.exp + age.time.step * diff
+##                     else
+##                         incr.exp <- incr.exp + 0.5 * age.time.step * diff
+##                 }
+##                 else
+##                     incr.exp <- incr.exp + (1/2) * adj.diff
+##             }
+##         }
+##         else { ## no age
+##             if (is.popn)
+##                 incr.exp <- age.time.step * diff
+##             else
+##                 incr.exp <- 0.5 * age.time.step * diff
+##         }
+##         if (update.two.cohorts) {
+##             if (is.orig.dest || is.pool)
+##                 incr.exp.orig <- -1 * incr.exp
+##             else # is.int.net
+##                 incr.exp.orig <- incr.exp
+##             incr.exp.dest <- -1 * incr.exp.orig
+##             i.exp.first.oth  <- combined@iExpFirstOther
+##             iterator.oth <- resetCC(iterator, i = i.exp.first.oth)
+##             combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + incr.exp.orig
+##             combined@exposure[i.exp.first.oth] <- combined@exposure[i.exp.first] + incr.exp.dest
+##         }
+##         else { ## one cohort
+##             combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + incr.exp
+##         }
+##         ## subsequent cells ------------------------------------------------------------
+##         while (!iterator@finished) {
+##             iterator <- advanceCC(iterator)
+##             i <- iterator@i
+##             if (has.age) {
+##                 n.age <- iterator@nAge
+##                 i.age <- iterator@iAge
+##                 i.triangle <- iterator@iTriangle
+##                 is.final <- i.age == n.age
+##                 is.upper <- i.triangle == 2L
+##                 if (is.final) {
+##                     if (is.upper)
+##                         incr.exp <- age.time.step * diff
+##                     else
+##                         incr.exp <- 0
+##                 }
+##                 else
+##                     incr.exp <- 0.5 * age.time.step * diff
+##             }
+##             if (update.two.cohorts) {
+##                 if (is.orig.dest || is.pool)
+##                     incr.exp.orig <- -1 * incr.exp
+##                 else # is.int.net
+##                     incr.exp.orig <- incr.exp
+##                 incr.exp.dest <- -1 * incr.exp.orig
+##                 iterator.oth <- advanceCC(iterator.oth)
+##                 i.oth <- iterator.oth@i
+##                 combined@exposure[i] <- combined@exposure[i] + incr.exp.orig
+##                 combined@exposure[i.oth] <- combined@exposure[i.oth] + incr.exp.dest
+##             }
+##             else {
+##                 combined@exposure[i] <- combined@exposure[i] + incr.exp
+##             }
+##         }
+##         combined
+##     }
+## }
+
+
+
 ## TRANSLATED
 ## HAS_TESTS
 updateSubsequentExpMove <- function(combined, useC = FALSE) {
@@ -3611,212 +3924,122 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
         i.orig.dest <- combined@iOrigDest
         i.pool <- combined@iPool
         i.int.net <- combined@iIntNet
-        i.exp.first <- combined@iExpFirst
-        iterator <- combined@iteratorExposure
-        diff <- combined@diffProp
-        is.increment <- combined@isIncrement
-        has.age <- combined@hasAge
-        if (has.age) {
-            n.age <- iterator@nAge
-            first.time.final.age <- TRUE
-        }
-        age.time.step <- combined@ageTimeStep
-        no.subsequent.exposure <- i.exp.first == 0L
-        if (no.subsequent.exposure)
-            return(combined)
         is.popn <- i.comp == 0L
         is.orig.dest <- i.comp == i.orig.dest
         is.pool <- i.comp == i.pool
         is.int.net <- i.comp == i.int.net
         update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
-        if (update.two.cohorts)
-            i.exp.first.other <- combined@iExpFirstOther
-        if (is.popn) {
-            iterator <- resetCC(iterator, i = i.exp.first)
-            i <- iterator@i
-            if (has.age) {
-                adj.diff <- 0.5 * age.time.step * diff
-                repeat {
-                    i.age <- iterator@iAge
-                    i.triangle <- iterator@iTriangle
-                    is.final <- i.age == n.age
-                    is.upper <- i.triangle == 2L
-                    if (is.final) {
-                        if (is.upper)
-                            incr.exp <- 2 * adj.diff
-                        else
-                            incr.exp <- if (first.time.final.age) adj.diff else 0
-                    }
-                    else
-                        incr.exp <- adj.diff
-                    combined@exposure[i] <- combined@exposure[i] + incr.exp
-                    first.time.final.age <- FALSE
-                }
+        iterator <- combined@iteratorExposure
+        diff <- combined@diffProp
+        age.time.step <- combined@ageTimeStep
+        has.age <- combined@hasAge
+        is.increment.vec <- combined@isIncrement
+        ## deal with population and increments in first cell -------------------------------
+        i.exp.first <- combined@iExpFirst
+        iterator <- resetCC(iterator, i = i.exp.first)
+        if (has.age) {
+            n.age <- iterator@nAge
+            i.age <- iterator@iAge
+            i.triangle <- iterator@iTriangle
+            is.final <- i.age == n.age
+            is.upper <- i.triangle == 2L
+            if (is.popn) { 
+                ## adjust for change in population
+                ## (note that always upper tri)
+                if (is.final)
+                    incr.exp <- age.time.step * diff
+                else
+                    incr.exp <- 0.5 * age.time.step * diff
             }
-            else {
-                incr.exp <- age.time.step * diff
-                combined@exposure[i] <- combined@exposure[i] + incr.exp
-            }
-            if (iterator@finished)
-                break
-            iterator <- advanceCC(iterator)
-        }
-        else if (update.two.cohorts) {
-            if (is.orig.dest || is.pool) {
-                adj.diff.orig <- -1 * age.time.step * diff
-                adj.diff.dest <- age.time.step * diff
-            }
-            else { # is.int.net
-                adj.diff.orig <- age.time.step * diff
-                adj.diff.dest <- -1 * age.time.step * diff
-            }
-            iterator.orig <- resetCC(iterator, i = i.exp.first)
-            iterator.dest <- resetCC(iterator, i = i.exp.first.other)
-            i.orig <- iterator.orig@i
-            i.dest <- iterator.dest@i
-            if (has.age) {
-                i.age <- iterator.orig@iAge
-                i.triangle <- iterator.orig@iTriangle
-                is.final.age <- i.age == n.age
-                is.upper <- i.triangle == 2L
-                ## adjust first cell for change in net increments
+            else { ## not popn
+                ## adjust for change in net increments
                 if (is.final) {
-                    if (is.upper) {
-                        incr.exp.orig <- (1/2) * adj.diff.orig
-                        incr.exp.dest <- (1/2) * adj.diff.dest
-                    }
-                    else {
-                        incr.exp.orig <- -1 * (1/6) * adj.diff.orig
-                        incr.exp.dest <- -1 * (1/6) * adj.diff.dest
-                    }
+                    if (is.upper)
+                        incr.exp <- 0.5 * age.time.step * diff
+                    else
+                        incr.exp <- -1 * (1/6) * age.time.step * diff
                 }
                 else {
-                    if (is.upper) {
-                        incr.exp.orig <- (1/6) * adj.diff.orig
-                        incr.exp.dest <- (1/6) * adj.diff.dest
-                    }
-                    else {
-                        incr.exp.orig <- -1 * (1/6) * adj.diff.orig
-                        incr.exp.dest <- -1 * (1/6) * adj.diff.dest
-                    }
+                    if (is.upper)
+                        incr.exp <- (1/6) * age.time.step * diff
+                    else
+                        incr.exp <- -1 * (1/6) * age.time.step * diff
                 }
                 ## adjust for change in population
-                if (is.final) {
-                    if (is.upper) {
-                        incr.exp.orig <- incr.exp.orig + adj.diff.orig
-                        incr.exp.dest <- incr.exp.dest + adj.diff.dest
-                    }
-                    else {
-                        incr.exp.orig <- incr.exp.orig + (1/2) * adj.diff.orig
-                        incr.exp.dest <- incr.exp.dest + (1/2) * adj.diff.dest
-                    }
+                if (!is.upper) {
+                    incr.exp <- incr.exp + 0.5 * age.time.step * diff
                 }
-                else {
-                    incr.exp.orig <- incr.exp.orig + (1/2) * adj.diff.orig
-                    incr.exp.dest <- incr.exp.dest + (1/2) * adj.diff.dest
-                }
-            }
-            else  {
-                incr.exp.orig <- adj.diff.orig
-                incr.exp.dest <- adj.diff.dest
-            }
-            combined@exposure[i.orig] <- combined@exposure[i.orig] + incr.exp.orig
-            combined@exposure[i.dest] <- combined@exposure[i.dest] + incr.dest
-            ## subsequent cells
-            while (!iterator.orig@finished) {
-                iterator.orig <- advanceCC(iterator.orig)
-                iterator.dest <- advanceCC(iterator.dest)
-                i.orig <- iterator.orig@i
-                i.dest <- iterator.dest@i
-                if (has.age) {
-                    i.age <- iterator.orig@iAge
-                    i.triangle <- iterator.orig@iTriangle
-                    is.final.age <- i.age == n.age
-                    is.upper <- i.triangle == 2L
-                    if (is.final.age) {
-                        if (is.upper) {
-                            incr.exp.orig <- adj.diff.orig
-                            incr.exp.dest <- adj.diff.dest
-                        }
-                        else {
-                            incr.exp.orig <- 0
-                            incr.exp.dest <- 0
-                        }
-                    }
-                    else {
-                        incr.exp.orig <- (1/2) * adj.diff.orig
-                        incr.exp.dest <- (1/2) * adj.diff.dest
-                    }
-                }
-                else {
-                    incr.exp.orig <- adj.diff.orig
-                    incr.exp.dest <- adj.diff.dest
-                }
-                combined@exposure[i.orig] <- combined@exposure[i.orig] + diff.orig
-                combined@exposure[i.dest] <- combined@exposure[i.dest] + diff.dest
             }
         }
-        else {
-            sign <- if (is.increment[i.comp]) 1 else -1
-            adj.diff <- sign * age.time.step * diff
-            ## first cell
-            iterator <- resetCC(iterator, i = i.exp.first)
+        else { ## no age
+            if (is.popn)
+                incr.exp <- age.time.step * diff
+            else
+                incr.exp <- 0.5 * age.time.step * diff
+        }
+        if (update.two.cohorts) {
+            if (is.orig.dest || is.pool)
+                incr.exp.orig <- -1 * incr.exp
+            else # is.int.net
+                incr.exp.orig <- incr.exp
+            incr.exp.dest <- -1 * incr.exp.orig
+            i.exp.first.oth  <- combined@iExpFirstOther
+            combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + incr.exp.orig
+            combined@exposure[i.exp.first.oth] <- combined@exposure[i.exp.first] + incr.exp.dest
+            iterator.oth <- resetCC(iterator, i = i.exp.first.oth)
+        }
+        else { ## one cohort
+            if (!is.increment.vec[i.comp])
+                incr.exp <- -1 * incr.exp
+            combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + incr.exp
+        }
+        ## deal with population in subsequent cells ---------------------------------------
+        is.first.time.final <- TRUE
+        while (!iterator@finished) {
+            iterator <- advanceCC(iterator)
             i <- iterator@i
             if (has.age) {
+                n.age <- iterator@nAge
                 i.age <- iterator@iAge
                 i.triangle <- iterator@iTriangle
-                is.final.age <- i.age == n.age
+                is.final <- i.age == n.age
                 is.upper <- i.triangle == 2L
-                ## adjust first cell for change in net increments
                 if (is.final) {
                     if (is.upper)
-                        incr.exp <- (1/2) * adj.diff
-                    else
-                        incr.exp <- -1 * (1/6) * adj.diff
-                }
-                else {
-                    if (is.upper)
-                        incr.exp <- (1/6) * adj.diff
-                    else
-                        incr.exp <- -1 * (1/6) * adj.diff
-                }
-                ## adjust for change in population
-                if (is.final) {
-                    if (is.upper)
-                        incr.exp <- incr.exp + adj.diff
-                    else
-                        incr.exp <- incr.exp + (1/2) * adj.diff
-                }
-                else
-                    incr.exp <- incr.exp + (1/2) * adj.diff
-            }
-            else 
-                incr.exp <- adj.diff
-            combined@exposure[i] <- combined@exposure[i] + diff
-            ## subsequent cells
-            while (!iterator@finished) {
-                iterator <- advanceCC(iterator)
-                i <- iterator@i
-                if (has.age) {
-                    i.age <- iterator@iAge
-                    i.triangle <- iterator@iTriangle
-                    is.final.age <- i.age == n.age
-                    is.upper <- i.triangle == 2L
-                    if (is.final.age) {
-                        if (is.upper)
-                            incr.exp <- adj.diff
+                        incr.exp <- age.time.step * diff
+                    else {
+                        if (is.first.time.final)
+                            incr.exp <- 0.5 * age.time.step * diff
                         else
                             incr.exp <- 0
                     }
-                    else
-                        incr.exp <- (1/2) * adj.diff
+                    is.first.time.final <- FALSE
                 }
-                else 
-                    incr.exp <- adj.diff
+                else
+                    incr.exp <- 0.5 * age.time.step * diff
+            }
+            if (update.two.cohorts) {
+                if (is.orig.dest || is.pool)
+                    incr.exp.orig <- -1 * incr.exp
+                else # is.int.net
+                    incr.exp.orig <- incr.exp
+                incr.exp.dest <- -1 * incr.exp.orig
+                iterator.oth <- advanceCC(iterator.oth)
+                i.oth <- iterator.oth@i
+                combined@exposure[i] <- combined@exposure[i] + incr.exp.orig
+                combined@exposure[i.oth] <- combined@exposure[i.oth] + incr.exp.dest
+            }
+            else {
+                if (!is.increment.vec[i.comp])
+                    incr.exp <- -1 * incr.exp
                 combined@exposure[i] <- combined@exposure[i] + incr.exp
             }
         }
         combined
     }
 }
+
+        
+
+
 

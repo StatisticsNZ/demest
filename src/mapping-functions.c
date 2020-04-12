@@ -544,14 +544,11 @@ getIExpFirstFromComp(int i, SEXP mapping_R)
         int stepAgeExp = *INTEGER(GET_SLOT(mapping_R, stepAgeTarget_sym));
         int stepTriangleComp = *INTEGER(GET_SLOT(mapping_R, 
                                                 stepTriangleCurrent_sym));
+        int stepTriangleExp = *INTEGER(GET_SLOT(mapping_R, 
+                                                stepTriangleTarget_sym));
         int iAgeComp = ( iMinus1 / stepAgeComp ) % nAge;
         int iTriangleComp = ( iMinus1 / stepTriangleComp ) % 2;
-        int iAgeExp = iAgeComp;
-        int isLower = (iTriangleComp == 0);
-        if (!isLower && (iAgeComp < (nAge - 1))) {
-            iAgeExp++;
-        }
-        iExp_r += iAgeExp * stepAgeExp;
+        iExp_r += iAgeComp * stepAgeExp + iTriangleComp * stepTriangleExp;
     }
     
     for (int d = 0; d < nDimShared; ++d) {
@@ -657,14 +654,10 @@ getIExpFirstPairFromOrigDestInternal(int *ans, int i, SEXP mapping_R)
         int stepAgeComp = *INTEGER(GET_SLOT(mapping_R, stepAgeCurrent_sym));
         int stepAgeExp = *INTEGER(GET_SLOT(mapping_R, stepAgeTarget_sym));
         int stepTriangleComp = *INTEGER(GET_SLOT(mapping_R, stepTriangleCurrent_sym));
+        int stepTriangleExp = *INTEGER(GET_SLOT(mapping_R, stepTriangleTarget_sym));
         int iAgeComp = (iMinus1 / stepAgeComp) % nAge;
         int iTriangleComp = (iMinus1 / stepTriangleComp) % 2;
-        int isLower = (iTriangleComp == 0);
-        int iAgeExp = iAgeComp;
-        if (!isLower && (iAgeComp < (nAge - 1))) {
-           iAgeExp++;
-        }
-        iExp += iAgeExp * stepAgeExp;
+        iExp += iAgeComp * stepAgeExp + iTriangleComp * stepTriangleExp;
     }
             
     for (int d = 0; d < nDimShared; ++d) {
