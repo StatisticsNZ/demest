@@ -2212,6 +2212,7 @@ diffLogLikAccountMoveCompSmall <- function(combined, useC = FALSE) {
 
 ## LOG DENSITY ################################################################
 
+## EXPOSURE
 ## TRANSLATED
 ## HAS_TESTS
 diffLogDensPopn <- function(combined, useC = FALSE) {
@@ -2289,6 +2290,7 @@ diffLogDensPopn <- function(combined, useC = FALSE) {
     }
 }
 
+## EXPOSURE
 ## TRANSLATED
 ## HAS_TESTS
 diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta, strucZeroArray,
@@ -2341,6 +2343,7 @@ diffLogDensPopnOneCohort <- function(diff, population, i, iterator, theta, struc
     }
 }
 
+## EXPOSURE
 ## TRANSLATED
 ## HAS_TESTS
 ## Difference in log-density of current values for
@@ -2468,6 +2471,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
     }
 }
 
+## EXPOSURE
 ## TRANSLATED
 ## HAS_TESTS
 diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
@@ -2583,9 +2587,6 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                             incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                         }
                     }
-                    if (is.final)
-                        is.first.final <- FALSE
-                    is.first.cell <- FALSE
                 }
                 else { ## not first cell - only adjust for popn
                     if (is.final) {
@@ -2600,8 +2601,6 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                         incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                     }
                 }
-                if (is.final)
-                    is.first.final <- FALSE
             }
             else { ## no age
                 if (is.first.cell) {
@@ -2636,6 +2635,9 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
             }
             if (iteratorComp@finished)
                 break
+            is.first.cell <- FALSE
+            if (is.final)
+                is.first.final <- FALSE
             iteratorComp <- advanceCODPCP(iteratorComp)
             iteratorExposure <- advanceCC(iteratorExposure)
         }
@@ -2644,8 +2646,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
     }
 }
 
-
-
+## EXPOSURE
 ## TRANSLATED
 ## HAS_TESTS
 diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
@@ -2717,22 +2718,25 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
         iteratorComp <- resetCC(iteratorComp, i = iCell)
         iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
         is.first.cell <- TRUE
+        is.final <- FALSE
         is.first.final <- TRUE
         repeat {
             i.c <- iteratorComp@i
+            i.e <- iteratorExposure@i
+            if (hasAge) {
+                n.age <- iteratorComp@nAge
+                i.age <- iteratorComp@iAge
+                i.triangle <- iteratorComp@iTriangle
+                is.final <- i.age == n.age
+                is.upper <- i.triangle == 2L
+            }
             is.struc.zero <- strucZeroArray[i.c] == 0L
             if (!is.struc.zero) {
-                i.e <- iteratorExposure@i
                 comp.curr <- component[i.c]
                 theta.curr <- theta[i.c]
                 ## get increment to exposure
                 incr.exp <- 0
                 if (hasAge) {
-                    n.age <- iteratorComp@nAge
-                    i.age <- iteratorComp@iAge
-                    i.triangle <- iteratorComp@iTriangle
-                    is.final <- i.age == n.age
-                    is.upper <- i.triangle == 2L
                     if (is.first.cell) {
                         if (updatedPopn) { 
                             ## adjust for change in population
@@ -2764,9 +2768,6 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
                                 incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                             }
                         }
-                        if (is.final)
-                            is.first.final <- FALSE
-                        is.first.cell <- FALSE
                     }
                     else { ## not first cell - only adjust for popn
                         if (is.final) {
@@ -2777,30 +2778,25 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
                                     incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                             }
                         }
-                        else {
+                        else
                             incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
-                        }
                     }
-                    if (is.final)
-                        is.first.final <- FALSE
                 }
                 else { ## no age
                     if (is.first.cell) {
                         if (updatedPopn)
-                            incr.exp <- ageTimeStep * diff
+                            incr.exp <- incr.exp + ageTimeStep * diff
                         else
-                            incr.exp <- 0.5 * ageTimeStep * diff
-                        is.first.cell <- FALSE
+                            incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                     }
-                    else {
-                        incr.exp <- 0.5 * ageTimeStep * diff
-                    }
+                    else
+                        incr.exp <- incr.exp + ageTimeStep * diff
                 }
                 exposure.curr <- exposure[i.e]
-                exposure.prop <- exposure.curr + incr.exposure
+                exposure.prop <- exposure.curr + incr.exp
                 if ((comp.curr > 0L) && !(exposure.prop > 0))
                     return(-Inf)
-                diff.log.lik <- (stats::dpois(x = comp.curr,
+                diff.log.lik <-  (stats::dpois(x = comp.curr,
                                               lambda = theta.curr * exposure.prop,
                                               log = TRUE)
                     - stats::dpois(x = comp.curr,
@@ -2810,6 +2806,9 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
             }
             if (iteratorComp@finished)
                 break
+            is.first.cell <- FALSE
+            if (is.final)
+                is.first.final <- FALSE
             iteratorComp <- advanceCC(iteratorComp)
             iteratorExposure <- advanceCC(iteratorExposure)
         }

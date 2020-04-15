@@ -2382,6 +2382,7 @@ diffLogDensExpPopn(SEXP combined_R)
     double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
 
     int updatedPopnTrue = 1;
+    int updatedBirthsFalse = 0;
 
 
     for (int i = 0; i < nComponents; ++i) {
@@ -2414,7 +2415,8 @@ diffLogDensExpPopn(SEXP combined_R)
                 int iCell_r = getICellCompFromExp(iExpFirst_r, mappingFromExp_R);
 
                 diffLog = diffLogDensExpOneOrigDestParChPool(iCell_r,
-                                        hasAge, ageTimeStep, updatedPopnTrue,
+                                        hasAge, ageTimeStep,
+  				        updatedPopnTrue, updatedBirthsFalse,
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirst_r,
                                         exposure, iteratorExposure_R,
@@ -2436,6 +2438,7 @@ diffLogDensExpPopn(SEXP combined_R)
 
                         diffLog = diffLogDensExpOneOrigDestParChPool(iCell_r,
                                         hasAge, ageTimeStep, updatedPopnTrue,
+  				        updatedBirthsFalse,
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirstBirths_R,
                                         exposure, iteratorExposure_R,
@@ -2446,6 +2449,7 @@ diffLogDensExpPopn(SEXP combined_R)
 
                         diffLog = diffLogDensExpOneComp(iCell_r,
                                         hasAge, ageTimeStep, updatedPopnTrue,
+							updatedBirthsFalse,
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirstBirths_R,
                                         exposure, iteratorExposure_R,
@@ -2458,6 +2462,7 @@ diffLogDensExpPopn(SEXP combined_R)
 
                 diffLog = diffLogDensExpOneComp(iCell_r,
                                         hasAge, ageTimeStep, updatedPopnTrue,
+						updatedBirthsFalse,
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirst_r,
                                         exposure, iteratorExposure_R,
@@ -2482,180 +2487,274 @@ diffLogDensExpPopn(SEXP combined_R)
 
 double
 diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
-                        double ageTimeStep, int updatedPopn,
-                        SEXP component_R, double * theta,
-                        int * strucZeroArray,
-                        SEXP iteratorComp_R,
-                        int iExpFirst_r, double * exposure,
-                        SEXP iteratorExposure_R,
-                        int diff)
-
+				   double ageTimeStep, int updatedPopn, int updatedBirths,
+				   SEXP component_R, double * theta,
+				   int * strucZeroArray,
+				   SEXP iteratorComp_R,
+				   int iExpFirst_r, double * exposure,
+				   SEXP iteratorExposure_R,
+				   int diff)
 {
-    double ans = 0;
-
-    int * component = INTEGER(component_R);
-
-    resetCODPCP(iteratorComp_R, iCell_r);
-    resetCC(iteratorExposure_R, iExpFirst_r);
-
-    int lengthVec = *INTEGER(GET_SLOT(iteratorComp_R, lengthVec_sym));
-
-    int * iExp_ptr = INTEGER(GET_SLOT(iteratorExposure_R, i_sym));
-    int *iCompVec = INTEGER(GET_SLOT(iteratorComp_R, iVec_sym));
-
-    int * finishedComp_ptr = LOGICAL(GET_SLOT(iteratorComp_R, finished_sym));
-
-    int keepGoing = 1;
-    while (keepGoing) {
-
-       int iExp_r = *iExp_ptr;
-
-       double diffExposure = 0;
-
-       if (hasAge) {
-           diffExposure = 0.5 * diff * ageTimeStep;
-       }
-       else {
-
-           int isFirstCell = (iExp_r == iExpFirst_r);
-           if (isFirstCell && !updatedPopn) {
-               diffExposure = 0.5 * diff * ageTimeStep;
-           }
-            else {
-               diffExposure = diff * ageTimeStep;
-            }
-        }
-        double exposureCurr = exposure[iExp_r - 1];
-        double exposureProp = exposureCurr + diffExposure;
-
-        int j = 0;
-
-        while (j < lengthVec && keepGoing ) {
-            int iComp = iCompVec[j] - 1;
-            int isStrucZero = strucZeroArray[iComp] == 0;
-            if (!isStrucZero) {
-                int compCurr = component[iComp];
-
-                if ( (compCurr > 0) && !(exposureProp > 0) ) {
-
-                    ans = R_NegInf;
-                    keepGoing = 0;
-
-                }
-                else {
-                    double thetaCurr = theta[iComp];
-                    double lambdaProp = thetaCurr * exposureProp;
-                    double lambdaCurr = thetaCurr * exposureCurr;
-                    double diffLogLik = dpois(compCurr, lambdaProp, USE_LOG)
-                    -
-                    dpois(compCurr, lambdaCurr, USE_LOG);
-                    ans += diffLogLik;
-
-                }
-            }
-            ++j;
-        }
-        if (keepGoing) {
-            int finishedComp = *finishedComp_ptr;
-            if (finishedComp) {
-                keepGoing = 0;
-            }
-            else {
-                advanceCODPCP(iteratorComp_R);
-                advanceCC(iteratorExposure_R);
-            }
-        }
-
-    } /* end main while loop */
-
-    return ans;
+  double ans = 0;
+  int * component = INTEGER(component_R);
+  resetCODPCP(iteratorComp_R, iCell_r);
+  resetCC(iteratorExposure_R, iExpFirst_r);
+  int * iExp_ptr = INTEGER(GET_SLOT(iteratorExposure_R, i_sym));
+  int * iCompVec = INTEGER(GET_SLOT(iteratorComp_R, iVec_sym));
+  int * iAge_ptr = INTEGER(GET_SLOT(iteratorComp_R, iAge_sym));
+  int * iTri_ptr = INTEGER(GET_SLOT(iteratorComp_R, iTriangle_sym));
+  int * finishedComp_ptr = LOGICAL(GET_SLOT(iteratorComp_R, finished_sym));
+  int isFirstCell = 1;
+  int isFinal = 0;
+  int isFirstFinal = 1;
+  int lengthVec = *INTEGER(GET_SLOT(iteratorComp_R, lengthVec_sym));
+  int nAge = 0;
+  int iAge = 0;
+  int iTri = 0;
+  int isUpper = 0;
+  int keepGoing = 1;
+  while (keepGoing) {
+    int iExp_r = *iExp_ptr;
+    double diffExposure = 0;
+    if (hasAge) {
+      nAge = *INTEGER(GET_SLOT(iteratorComp_R, nAge_sym));
+      iAge = *iAge_ptr;
+      iTri = *iTri_ptr;
+      isFinal = iAge == nAge;
+      isUpper = iTri == 2;
+      if (isFirstCell) {
+	if (updatedPopn) {       
+	  if (isFinal)		/* always upper */
+	    diffExposure += ageTimeStep * diff;
+	  else
+	    diffExposure += 0.5 * ageTimeStep * diff;
+	}
+	else {
+	  /* adjust for increments */
+	  if (!updatedBirths) {
+	    if (isFinal) {
+	      if (isUpper)
+		diffExposure += 0.5 * ageTimeStep * diff;
+	      else
+		diffExposure -= (1.0/6.0) * ageTimeStep * diff;
+	    }
+	    else {
+	      if (isUpper)
+		diffExposure += (1.0/6.0) * ageTimeStep * diff;
+	      else
+		diffExposure -= (1.0/6.0) * ageTimeStep * diff;
+	    }
+	  }
+	  /* adjust for popn */
+	  if (!isUpper)
+	    diffExposure += 0.5 * ageTimeStep * diff;
+	}
+      }
+      else { 			/* not first cell, so only */
+	if (isFinal) {		/* adjust for popn */
+	  if (isUpper)
+	    diffExposure += ageTimeStep * diff;
+	  else {
+	    if (isFirstFinal)
+	      diffExposure += 0.5 * ageTimeStep * diff;
+	  }
+	}
+	else
+	  diffExposure += 0.5 * ageTimeStep * diff;
+      }
+    }
+    else { 			/* no age */
+      if (isFirstCell) {
+	if (updatedPopn)
+	  diffExposure += ageTimeStep * diff;
+	else
+	  diffExposure += 0.5 * ageTimeStep * diff;
+      }
+      else
+	diffExposure += ageTimeStep * diff;
+    }	
+    double exposureCurr = exposure[iExp_r - 1];
+    double exposureProp = exposureCurr + diffExposure;
+    int j = 0;
+    while (j < lengthVec && keepGoing) {
+      int iComp = iCompVec[j] - 1;
+      int isStrucZero = strucZeroArray[iComp] == 0;
+      if (!isStrucZero) {
+	int compCurr = component[iComp];
+	if ( (compCurr > 0) && !(exposureProp > 0) ) {
+	  ans = R_NegInf;
+	  keepGoing = 0;
+	}
+	else {
+	  double thetaCurr = theta[iComp];
+	  double lambdaProp = thetaCurr * exposureProp;
+	  double lambdaCurr = thetaCurr * exposureCurr;
+	  double diffLogLik = dpois(compCurr, lambdaProp, USE_LOG)
+	    -
+	    dpois(compCurr, lambdaCurr, USE_LOG);
+	  ans += diffLogLik;
+	}
+      }
+      ++j;
+    }
+    isFirstCell = 0;
+    if (isFinal)
+      isFirstFinal = 0;
+    if (keepGoing) {
+      int finishedComp = *finishedComp_ptr;
+      if (finishedComp) {
+	keepGoing = 0;
+      }
+      else {
+	advanceCODPCP(iteratorComp_R);
+	advanceCC(iteratorExposure_R);
+      }
+    }
+  } /* end main while loop */
+  return ans;
 }
 
 
 double
 diffLogDensExpOneComp(int iCell_r, int hasAge,
-                        double ageTimeStep, int updatedPopn,
-                        SEXP component_R, double * theta, int * strucZeroArray,
-                        SEXP iteratorComp_R,
-                        int iExpFirst_r, double * exposure,
-                        SEXP iteratorExposure_R,
-                        int diff)
+		      double ageTimeStep, int updatedPopn, int updatedBirths,
+		      SEXP component_R, double * theta, int * strucZeroArray,
+		      SEXP iteratorComp_R,
+		      int iExpFirst_r, double * exposure,
+		      SEXP iteratorExposure_R,
+		      int diff)
 {
-    double ans = 0;
+  double ans = 0;
+  int * component = INTEGER(component_R);
+  resetCC(iteratorComp_R, iCell_r);
+  resetCC(iteratorExposure_R, iExpFirst_r);
+  int * iExp_ptr = INTEGER(GET_SLOT(iteratorExposure_R, i_sym));
+  int * iComp_ptr = INTEGER(GET_SLOT(iteratorComp_R, i_sym));
+  int * iAge_ptr = INTEGER(GET_SLOT(iteratorComp_R, iAge_sym));
+  int * iTri_ptr = INTEGER(GET_SLOT(iteratorComp_R, iTriangle_sym));
+  int * finishedComp_ptr = LOGICAL(GET_SLOT(iteratorComp_R, finished_sym));
+  int keepGoing = 1;
+  int isFirstCell = 1;
+  int isFinal = 0;
+  int isFirstFinal = 1;
+  int nAge = 0;
+  int iAge = 0;
+  int iTri = 0;
+  int isUpper = 0;
+  while (keepGoing) {
+    int iComp_r = *iComp_ptr;
+    int iExp = *iExp_ptr - 1;
+    int iComp = iComp_r - 1;
+    if (hasAge) {
+      nAge = *INTEGER(GET_SLOT(iteratorComp_R, nAge_sym));
+      iAge = *iAge_ptr;
+      iTri = *iTri_ptr;
+      isFinal = iAge == nAge;
+      isUpper = iTri == 2;
+    }
+    int isStrucZero = strucZeroArray[iComp] == 0;
+    if (!isStrucZero) {
+      int compCurr = component[iComp];
+      double diffExposure = 0;
+      if (hasAge) {
+	if (isFirstCell) {
+	  if (updatedPopn) {
+	    if (isFinal) {
+	      diffExposure += ageTimeStep * diff;
+	    }
+	    else {
+	      diffExposure += 0.5 * ageTimeStep * diff;
+	    }
+	  }
+	  else {
+	    /* increment due to component */
+	    if (!updatedBirths) {
+	      if (isFinal) {
+		if (isUpper) {
+		  diffExposure += 0.5 * ageTimeStep * diff;
+		}
+		else {
+		  diffExposure -= (1.0/6.0) * ageTimeStep * diff;
+		}
+	      }
+	      else {
+		if (isUpper) {
+		  diffExposure += (1.0/6.0) * ageTimeStep * diff;
+		}
+		else {
+		  diffExposure -= (1.0/6.0) * ageTimeStep * diff;
+		}
+	      }
+	    }
+	    /* increment due to popn */
+	    if (!isUpper) {
+	      diffExposure += 0.5 * ageTimeStep * diff;
+	    }
+	  }
+	}
+	else {
+	  if (isFinal) {
+	    if (isUpper) {
+	      diffExposure += ageTimeStep * diff;
+	    }
+	    else {
+	      if (isFirstFinal) {
+		diffExposure += 0.5 * ageTimeStep * diff;
+	      }
+	    }
+	  }
+	  else {
+	    diffExposure += 0.5 * ageTimeStep * diff;
+	  }
+	}
+      }
+      else { 			/* no age */
+	if (isFirstCell) {
+	  if (updatedPopn) {
+	    diffExposure += ageTimeStep * diff;
+	  }
+	  else {
+	    diffExposure += 0.5 * ageTimeStep * diff;
+	  }
+	}
+	else {
+	  diffExposure += ageTimeStep * diff;
+	}
+      }
+      double exposureCurr = exposure[iExp];
+      double exposureProp = exposureCurr + diffExposure;
+      if ( (compCurr > 0) && !(exposureProp > 0) ) {
+	ans = R_NegInf;
+	keepGoing = 0;
+      }
+      else {
+	double thetaCurr = theta[iComp];
+	double lambdaProp = thetaCurr * exposureProp;
+	double lambdaCurr = thetaCurr * exposureCurr;
+	double diffLogLik = dpois(compCurr, lambdaProp, USE_LOG)
+	  -
+	  dpois(compCurr, lambdaCurr, USE_LOG);
+	ans += diffLogLik;
+      }
+    }
+    isFirstCell = 0;
+    if (isFinal) {
+      isFirstFinal = 0;
+    }
+    if (keepGoing) {
+      int finishedComp = *finishedComp_ptr;
+      if (finishedComp) {
+	keepGoing = 0;
+      }
+      else {
+	advanceCC(iteratorComp_R);
+	advanceCC(iteratorExposure_R);
+      }
+    }
 
-    int * component = INTEGER(component_R);
+  } /* end main while loop */
 
-    resetCC(iteratorComp_R, iCell_r);
-    resetCC(iteratorExposure_R, iExpFirst_r);
-
-    int * iExp_ptr = INTEGER(GET_SLOT(iteratorExposure_R, i_sym));
-    int * iComp_ptr = INTEGER(GET_SLOT(iteratorComp_R, i_sym));
-
-    int * finishedComp_ptr = LOGICAL(GET_SLOT(iteratorComp_R, finished_sym));
-
-    int keepGoing = 1;
-
-    while (keepGoing) {
-
-        int iComp_r = *iComp_ptr;
-        int iExp = *iExp_ptr - 1;
-        int iComp = iComp_r - 1;
-
-        int isStrucZero = strucZeroArray[iComp] == 0;
-        if (!isStrucZero) {
-
-            int compCurr = component[iComp];
-
-            double diffExposure = 0;
-
-            if (hasAge) {
-                diffExposure = 0.5 * diff * ageTimeStep;
-            }
-            else {
-
-                int isFirstCell = (iComp_r == iCell_r);
-                if (isFirstCell && !updatedPopn) {
-                    diffExposure = 0.5 * diff * ageTimeStep;
-                }
-                else {
-                    diffExposure = diff * ageTimeStep;
-                }
-            }
-            double exposureCurr = exposure[iExp];
-            double exposureProp = exposureCurr + diffExposure;
-
-            if ( (compCurr > 0) && !(exposureProp > 0) ) {
-
-               ans = R_NegInf;
-               keepGoing = 0;
-
-            }
-            else {
-               double thetaCurr = theta[iComp];
-               double lambdaProp = thetaCurr * exposureProp;
-               double lambdaCurr = thetaCurr * exposureCurr;
-               double diffLogLik = dpois(compCurr, lambdaProp, USE_LOG)
-               -
-               dpois(compCurr, lambdaCurr, USE_LOG);
-               ans += diffLogLik;
-
-            }
-
-        }
-        if (keepGoing) {
-            int finishedComp = *finishedComp_ptr;
-            if (finishedComp) {
-                keepGoing = 0;
-            }
-            else {
-                advanceCC(iteratorComp_R);
-                advanceCC(iteratorExposure_R);
-            }
-        }
-
-    } /* end main while loop */
-
-    return ans;
+  return ans;
 }
 
 double
@@ -2757,6 +2856,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
     double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
 
     int updatedPopnFalse = 0;
+    int updatedBirthsFalse = 0;
 
     double ans = 0;
 
@@ -2803,6 +2903,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                             = diffLogDensExpOneOrigDestParChPool(iCellOrig_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+						 updatedBirthsFalse,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
@@ -2816,6 +2917,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                             = diffLogDensExpOneOrigDestParChPool(iCellDest_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+   						    updatedBirthsFalse,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
@@ -2845,6 +2947,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                             = diffLogDensExpOneOrigDestParChPool(iCellOrig_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+ 						    updatedBirthsFalse,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
@@ -2859,6 +2962,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                     = diffLogDensExpOneOrigDestParChPool(iCellDest_r,
                                                             hasAge, ageTimeStep,
                                                             updatedPopnFalse,
+							    updatedBirthsFalse,
                                                             component_R, theta,
                                                             strucZeroArray,
                                                             iteratorComp_R,
@@ -2874,6 +2978,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                             = diffLogDensExpOneComp(iCellOrig_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+						    updatedBirthsFalse,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
@@ -2888,6 +2993,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                     = diffLogDensExpOneComp(iCellDest_r,
                                                             hasAge, ageTimeStep,
                                                             updatedPopnFalse,
+							    updatedBirthsFalse,
                                                             component_R, theta,
                                                             strucZeroArray,
                                                             iteratorComp_R,
@@ -2914,6 +3020,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                             = diffLogDensExpOneComp(iCellOrig_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+						    updatedBirthsFalse,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
@@ -2928,6 +3035,7 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                             = diffLogDensExpOneComp(iCellDest_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+						    updatedBirthsFalse,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
@@ -3222,6 +3330,7 @@ diffLogDensExpComp(SEXP combined_R)
     double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
 
     int updatedPopnFalse = 0;
+    int updatedBirths = iComp_r == iBirths_r;
 
     double ans = 0;
 
@@ -3258,6 +3367,7 @@ diffLogDensExpComp(SEXP combined_R)
                     diffLog = diffLogDensExpOneOrigDestParChPool(iCell_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+								 updatedBirths,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
@@ -3283,6 +3393,7 @@ diffLogDensExpComp(SEXP combined_R)
                             = diffLogDensExpOneOrigDestParChPool(iCell_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+								 updatedBirths,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
@@ -3298,6 +3409,7 @@ diffLogDensExpComp(SEXP combined_R)
                             = diffLogDensExpOneComp(iCell_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+						    updatedBirths,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,
@@ -3318,6 +3430,7 @@ diffLogDensExpComp(SEXP combined_R)
                     diffLog = diffLogDensExpOneComp(iCell_r,
                                                     hasAge, ageTimeStep,
                                                     updatedPopnFalse,
+						    updatedBirths,
                                                     component_R, theta,
                                                     strucZeroArray,
                                                     iteratorComp_R,

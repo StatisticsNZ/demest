@@ -1119,7 +1119,7 @@ double diffLogDensPopnOneCohort (int diff, SEXP population_R, int i_r,
                  SEXP iterator_R, double * theta, int * strucZeroArray);
 double diffLogDensExpPopn(SEXP combined_R);
 double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
-                        double ageTimeStep, int updatedPopn,
+					  double ageTimeStep, int updatedPopn, int updatedBirths,
                         SEXP component_R, double * theta,
                         int * strucZeroArray,
                         SEXP iteratorComp_R,
@@ -1127,7 +1127,7 @@ double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
                         SEXP iteratorExposure_R,
                         int diff);
 double diffLogDensExpOneComp(int iCell_r, int hasAge,
-                        double ageTimeStep, int updatedPopn,
+			     double ageTimeStep, int updatedPopn, int updatedBirths,
                         SEXP component_R, double * theta, int * strucZeroArray,
                         SEXP iteratorComp_R,
                         int iExpFirst_r, double * exposure,
