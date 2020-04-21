@@ -876,25 +876,25 @@ setMethod("diffLogLikAccount",
                   i.orig.dest <- object@iOrigDest
                   i.pool <- object@iPool
                   i.int.net <- object@iIntNet
-                  is.small.update <- object@isSmallUpdate ## NEW
+                  is.small.update <- object@isSmallUpdate
                   if (i.comp == 0L)
                       diffLogLikAccountMovePopn(object)
-                  else if (i.comp == i.orig.dest) { ## NEW
-                      if (is.small.update) ## NEW
-                          diffLogLikAccountMoveCompSmall(object) ## NEW
-                      else ## NEW
+                  else if (i.comp == i.orig.dest) {
+                      if (is.small.update)
+                          diffLogLikAccountMoveCompSmall(object)
+                      else
                           diffLogLikAccountMoveOrigDest(object)
-                  } ## NEW
+                  }
                   else if (i.comp == i.pool)
                       diffLogLikAccountMovePool(object)
                   else if (i.comp == i.int.net)
                       diffLogLikAccountMoveNet(object)
-                  else { ## NEW
-                      if (is.small.update) ## NEW
-                          diffLogLikAccountMoveCompSmall(object) ## NEW
-                      else ## NEW
+                  else {
+                      if (is.small.update)
+                          diffLogLikAccountMoveCompSmall(object)
+                      else
                           diffLogLikAccountMoveComp(object)
-                  } ## NEW
+                  }
               }
           })
 
