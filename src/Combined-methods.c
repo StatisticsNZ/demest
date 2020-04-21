@@ -1185,20 +1185,34 @@ updateExpectedExposure_CombinedAccountMovements(SEXP combined_R)
 
     double halfAgeTimeStep = 0.5 * ageTimeStep;
 
+    int nAge = 0;
+    int stepAgePopn = 0;
+    if (hasAge) {
+      nAge = *INTEGER(GET_SLOT(description_R, nAge_sym));
+      stepAgePopn = *INTEGER(GET_SLOT(description_R, stepAge_sym));
+    }
+
     for (int i = 0; i < lengthExpNoTri; ++i) {
 
       int iPopnStart = (i / lengthSliceExp) * lengthSlicePopn
-    + i % lengthSliceExp; /* C style */
+	+ i % lengthSliceExp; /* C style */
       int iPopnEnd = iPopnStart + stepTime;
       double expStart = halfAgeTimeStep * theta[iPopnStart];
       double expEnd = halfAgeTimeStep * theta[iPopnEnd];
 
       if (hasAge) {
-    expectedExposure[i + lengthExpNoTri] = expStart;
-    expectedExposure[i] = expEnd;
+	int iAge_r = ((iPopnStart / stepAgePopn) % nAge) + 1;
+	int isFinal = iAge_r == nAge;
+	if (isFinal) {
+	  double expTotal = expStart + expEnd;
+	  expStart = (2.0/3.0) * expTotal;
+	  expEnd = (1.0/3.0) * expTotal;
+	}
+	expectedExposure[i + lengthExpNoTri] = expStart;
+	expectedExposure[i] = expEnd;
       }
       else {
-    expectedExposure[i] = expStart + expEnd;
+	expectedExposure[i] = expStart + expEnd;
       }
 
     }

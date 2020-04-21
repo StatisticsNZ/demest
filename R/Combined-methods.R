@@ -1011,6 +1011,10 @@ setMethod("updateExpectedExposure",
                   step.time <- description@stepTime
                   length.popn <- description@length
                   has.age <- combined@hasAge@.Data
+                  if (has.age) {
+                      n.age <- description@nAge
+                      step.age.popn <- description@stepAge
+                  }
                   n.time.exp <- n.time.popn - 1L
                   length.exp.no.tri <- (length.popn %/% n.time.popn) * n.time.exp # excludes triangle dim, if any
                   length.slice.popn <- n.time.popn * step.time
@@ -1023,6 +1027,13 @@ setMethod("updateExpectedExposure",
                       exp.start <- 0.5 * age.time.step * theta[i.popn.start]
                       exp.end <- 0.5 * age.time.step * theta[i.popn.end]
                       if (has.age) {
+                          i.age <- (((i.popn.start - 1L) %/% step.age.popn) %% n.age) + 1L
+                          is.final  <- i.age == n.age
+                          if (is.final) {
+                              exp.total <- exp.start + exp.end
+                              exp.start <- (2/3) * exp.total
+                              exp.end <- (1/3) * exp.total
+                          }
                           expected.exposure[i + length.exp.no.tri] <- exp.start # upper triangle
                           expected.exposure[i] <- exp.end # lower triangle
                       }
