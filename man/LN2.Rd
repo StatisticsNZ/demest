@@ -12,6 +12,9 @@ LN2(
 )
 }
 \arguments{
+\item{constraint}{An object of class \code{\link[dembase:Values-class]{Values}},
+with values 0, -1, 1, and NA.}
+
 \item{structuralZeros}{Location of any structural zeros
 in the data. An object of class \code{\link[dembase:Values-class]{Values}},
 or, for the typical case, the word \code{"diag"}.}
@@ -22,9 +25,6 @@ map between \code{y} and \code{constraint}.}
 \item{priorSD}{An object of class \code{HalfT} specifying
 a non-default prior for the standard deviation in the
 likelihood for the normal model.}
-
-\item{An}{object of class \code{\link[dembase:Values-class]{Values}},
-with values 0, -1, 1, and NA.}
 }
 \description{
 THIS FUNCTION IS STILL EXPERIMENTAL.

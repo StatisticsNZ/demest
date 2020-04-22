@@ -3238,6 +3238,9 @@ diffLogDensJumpComp(SEXP combined_R)
     SEXP component_R = VECTOR_ELT(components_R, iComp_r - 1);
     int * component = INTEGER(component_R);
 
+    int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
+    int isBirths = iComp_r == iBirths_r;
+
     SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
     SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, iComp_r); /* iComp_r is c-style index + 1*/
     SEXP theta_R = GET_SLOT(thisSystemModel_R, theta_sym);
@@ -3248,6 +3251,7 @@ diffLogDensJumpComp(SEXP combined_R)
 
     int iCell_r = *INTEGER(GET_SLOT(combined_R, iCell_sym));
     int iExposure_r = *INTEGER(GET_SLOT(combined_R, iExposure_sym));
+    int iExpFirst_r = *INTEGER(GET_SLOT(combined_R, iExpFirst_sym));
 
     SEXP iterator_R = GET_SLOT(combined_R, iteratorExposure_sym);
 
@@ -3270,33 +3274,38 @@ diffLogDensJumpComp(SEXP combined_R)
     int isIncrement = isIncrementVec[iComp_r -1];
 
     double incrExp = 0;
-    
-    if (hasAge) {
-      resetCC(iterator_R, iCell_r);
-      int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
-      int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
-      int iTri = *INTEGER(GET_SLOT(iterator_R, iTriangle_sym));
-      int isFinal = iAge == nAge;
-      int isUpper = iTri == 2;
-      if (isFinal) {
-	if (isUpper)
-	  incrExp = 0.5 * ageTimeStep * diff;
-	else
-	  incrExp = (1.0/3.0) * ageTimeStep * diff;
+    int expChanges = 1;
+
+    if (isBirths)
+      expChanges = (iExpFirst_r != 0) && (iExpFirst_r == iExposure_r);
+
+    if (expChanges) {
+      if (hasAge) {
+	resetCC(iterator_R, iCell_r);
+	int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
+	int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
+	int iTri = *INTEGER(GET_SLOT(iterator_R, iTriangle_sym));
+	int isFinal = iAge == nAge;
+	int isUpper = iTri == 2;
+	if (isFinal) {
+	  if (isUpper)
+	    incrExp = 0.5 * ageTimeStep * diff;
+	  else
+	    incrExp = (1.0/3.0) * ageTimeStep * diff;
+	}
+	else {
+	  if (isUpper)
+	    incrExp = (1.0/6.0) * ageTimeStep * diff;
+	  else
+	    incrExp = (1.0/3.0) * ageTimeStep * diff;
+	}
       }
       else {
-	if (isUpper)
-	  incrExp = (1.0/6.0) * ageTimeStep * diff;
-	else
-	  incrExp = (1.0/3.0) * ageTimeStep * diff;
+	incrExp = 0.5 * ageTimeStep * diff;
       }
+      if (!isIncrement)
+	incrExp = -1 * incrExp;
     }
-    else {
-      incrExp = 0.5 * ageTimeStep * diff;
-    }
-
-    if (!isIncrement)
-      incrExp = -1 * incrExp;
 
     exposureCellProp = exposureCellCurr + incrExp;
     
@@ -3844,10 +3853,12 @@ void
 updateSubsequentExpMove(SEXP combined_R)
 {
   int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+  int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
   int iOrigDest_r = *INTEGER(GET_SLOT(combined_R, iOrigDest_sym));
   int iPool_r = *INTEGER(GET_SLOT(combined_R, iPool_sym));
   int iIntNet_r = *INTEGER(GET_SLOT(combined_R, iIntNet_sym));
   int isPopn = (iComp_r == 0);
+  int isBirths = (iComp_r == iBirths_r);
   int isOrigDest = (iComp_r == iOrigDest_r);
   int isPool = (iComp_r == iPool_r);
   int isIntNet = (iComp_r == iIntNet_r);
@@ -3887,17 +3898,19 @@ updateSubsequentExpMove(SEXP combined_R)
 	incrExp += 0.5 * ageTimeStep * diff;
     }
     else {
-      if (isFinal) {
-	if (isUpper)
-	  incrExp += 0.5 * ageTimeStep * diff;
-	else
-	  incrExp -= (1.0/6.0) * ageTimeStep * diff;
-      }
-      else {
-	if (isUpper)
-	  incrExp += (1.0/6.0) * ageTimeStep * diff;
-	else
-	  incrExp -= (1.0/6.0) * ageTimeStep * diff;
+      if (!isBirths) {
+	if (isFinal) {
+	  if (isUpper)
+	    incrExp += 0.5 * ageTimeStep * diff;
+	  else
+	    incrExp -= (1.0/6.0) * ageTimeStep * diff;
+	}
+	else {
+	  if (isUpper)
+	    incrExp += (1.0/6.0) * ageTimeStep * diff;
+	  else
+	    incrExp -= (1.0/6.0) * ageTimeStep * diff;
+	}
       }
       if (!isUpper) {
 	incrExp += 0.5 * ageTimeStep * diff;
@@ -3948,6 +3961,9 @@ updateSubsequentExpMove(SEXP combined_R)
       }
       else
 	incrExp += 0.5 * ageTimeStep * diff;
+    }
+    else {
+      incrExp += ageTimeStep * diff;
     }
     if (updateTwoCohorts) {
       advanceCC(iteratorOth_R);

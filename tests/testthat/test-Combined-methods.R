@@ -2138,6 +2138,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
     updateProposalAccount <- demest:::updateProposalAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(1)
     popn <- Counts(array(rpois(n = 90, lambda = 500),
                          dim = c(3, 2, 5, 3),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2218,7 +2219,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
-    for (seed in seq_len(n.test * 3)) {
+    for (seed in seq_len(n.test * 7)) {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
@@ -2245,7 +2246,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
-                is.small.deaths <- TRUE
+                is.small.internal <- TRUE
             set.seed(seed)
             ans.R <- diffLogDensAccount(x1, useC = FALSE)
             set.seed(seed)
@@ -2294,6 +2295,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
     updateProposalAccount <- demest:::updateProposalAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(1)
     popn <- Counts(array(rpois(n = 90, lambda = 500),
                          dim = c(3, 2, 5, 3),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2418,7 +2420,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
-                is.small.deaths <- TRUE
+                is.small.internal <- TRUE
             ans.obtained <- diffLogLikAccount(x1)
             expect_true(is.numeric(ans.obtained))
             expect_true(!is.na(ans.obtained))
@@ -2448,6 +2450,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
     updateProposalAccount <- demest:::updateProposalAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(21)
     popn <- Counts(array(rpois(n = 90, lambda = 500),
                          dim = c(3, 2, 5, 3),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2589,7 +2592,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
-                is.small.deaths <- TRUE
+                is.small.internal <- TRUE
             set.seed(seed)
             ans.R <- diffLogLikAccount(x1, useC = FALSE)
             set.seed(seed)
@@ -4147,8 +4150,8 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
