@@ -290,60 +290,60 @@ advanceCP(SEXP iterator_R)
 void
 advanceCC(SEXP iterator_R)
 {
-    int * i_ptr = INTEGER(GET_SLOT(iterator_R, i_sym));
-    int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
-    int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
-    int * iTime_ptr = INTEGER(GET_SLOT(iterator_R, iTime_sym));
-    int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
-   
-    int i = *i_ptr;
-    int iTime = *iTime_ptr;
-    
-    int finished = 0;
-            
-    if (hasAge) {
-        int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
-        int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
+  int * i_ptr = INTEGER(GET_SLOT(iterator_R, i_sym));
+  int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
+  int nTime = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
+  int * iTime_ptr = INTEGER(GET_SLOT(iterator_R, iTime_sym));
+  int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
+  int i = *i_ptr;
+  int iTime = *iTime_ptr;
+  int finished = 0;
+  if (hasAge) {
+    int stepAge = *INTEGER(GET_SLOT(iterator_R, stepAge_sym));
+    int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
     int lastAgeGroupOpen = *INTEGER(GET_SLOT(iterator_R, lastAgeGroupOpen_sym));
-        int stepTriangle = *INTEGER(GET_SLOT(iterator_R, stepTriangle_sym));
+    int stepTriangle = *INTEGER(GET_SLOT(iterator_R, stepTriangle_sym));
     int * iAge_ptr = INTEGER(GET_SLOT(iterator_R, iAge_sym));
     int * iTriangle_ptr = INTEGER(GET_SLOT(iterator_R, iTriangle_sym));
-        
-        int iAge = *iAge_ptr;
-        int iTriangle = *iTriangle_ptr; 
-        
-        if (iTriangle == 1) {
-            ++iTime;
-        i += stepTime;
-            ++iTriangle;
-            i += stepTriangle;
-        finished = !lastAgeGroupOpen && (iAge == nAge);
-        }
-        
-        else {
-        --iTriangle;
-        i -= stepTriangle;
-            if (iAge < nAge) {
-                ++iAge;
-        i += stepAge;
-        }
-        finished = (iTime == nTime);
-        }
-
-        *iAge_ptr = iAge;
-        *iTriangle_ptr = iTriangle;
+    int iAge = *iAge_ptr;
+    int iTriangle = *iTriangle_ptr;
+    int isLowerBefore = iTriangle == 1;
+    int isOldestAgeBefore = iAge == nAge;
+    if (isLowerBefore) {
+      ++iTime;
+      i += stepTime;
+      ++iTriangle;
+      i += stepTriangle;
+      if (lastAgeGroupOpen)
+	finished = (iTime == nTime) && isOldestAgeBefore;
+      else
+	finished = isOldestAgeBefore;
     }
     else {
-        ++iTime;
-        i += stepTime;
-        finished = (iTime == nTime);
-    }   
-
-    *i_ptr = i;
-    *iTime_ptr = iTime;
-    
-    SEXP finished_R = GET_SLOT(iterator_R, finished_sym);
-    LOGICAL(finished_R)[0] = (finished != 0);
+      if (isOldestAgeBefore) {
+	++iTime;
+	i += stepTime;
+      }
+      else {
+	++iAge;
+        i += stepAge;
+        --iTriangle;
+        i -= stepTriangle;
+      }
+      finished = (iTime == nTime);
+    }
+    *iAge_ptr = iAge;
+    *iTriangle_ptr = iTriangle;
+  }
+  else {
+    ++iTime;
+    i += stepTime;
+    finished = (iTime == nTime);
+  }   
+  *i_ptr = i;
+  *iTime_ptr = iTime;
+  SEXP finished_R = GET_SLOT(iterator_R, finished_sym);
+  LOGICAL(finished_R)[0] = (finished != 0);
 }
 
 

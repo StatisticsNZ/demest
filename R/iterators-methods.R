@@ -180,6 +180,9 @@ advanceCP <- function(object, useC = FALSE) {
 ## HAS_TESTS
 ## It is the caller's responsibility to make
 ## sure that the iterator has not finished
+## When last age group is open, iterator jumps
+## from upper triange to upper triangle after
+## once it reaches the last age group.
 advanceCC <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "CohortIteratorComponent"))
     if (useC) {
@@ -198,21 +201,30 @@ advanceCC <- function(object, useC = FALSE) {
             step.triangle <- object@stepTriangle
             i.age <- object@iAge
             i.triangle <- object@iTriangle
-            if (i.triangle == 1L) {
+            is.lower.before <- i.triangle == 1L
+            is.oldest.age.before <- i.age == n.age
+            if (is.lower.before) {
                 i.time <- i.time + 1L
                 i <- i + step.time
                 i.triangle <- i.triangle + 1L
-                i <- i + step.triangle
-                finished <- !last.age.group.open && (i.age == n.age) # new triangle is 'upper'
+                i <- i + step.triangle                 
+                if (last.age.group.open)
+                    finished  <- (i.time == n.time) && is.oldest.age.before
+                else
+                    finished <- is.oldest.age.before
             }
-            else {
-                i.triangle <- i.triangle - 1L
-                i <- i  - step.triangle
-                if (i.age < n.age) {
+            else { ## is upper before
+                if (is.oldest.age.before) { ## oldest age group open; otherwise would have finished
+                    i.time <- i.time + 1L
+                    i <- i + step.time
+                }
+                else {
                     i.age <- i.age + 1L
                     i <- i + step.age
+                    i.triangle <- i.triangle - 1L
+                    i <- i  - step.triangle
                 }
-                finished <- i.time == n.time # new triangle is 'lower'
+                finished <- i.time == n.time
             }
         }
         else {

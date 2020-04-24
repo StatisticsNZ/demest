@@ -674,6 +674,112 @@ test_that("R and C versions of advanceCP give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
+
+test_that("advanceCC works with time, age, triangle dimensions, last age group open", {
+    advanceCC <- demest:::advanceCC
+    resetCC <- demest:::resetCC
+    CohortIterator <- demest:::CohortIterator
+    EntriesMovements <- dembase:::EntriesMovements
+    entries <- Counts(array(1:24,
+                            dim = c(3, 4, 2),
+                            dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            time = c("2001-2005", "2006-2010", "2011-2015",
+                                                     "2016-2020"),
+                                            triangle = c("Lower", "Upper"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 4, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            time = c("2001-2005", "2006-2010", "2011-2015",
+                                                     "2016-2020"),
+                                             triangle = c("Lower", "Upper"))))
+    component <- EntriesMovements(entries = entries,
+                                  template = template,
+                                  name = "immigration")
+    iterator <- CohortIterator(component)
+    ## start at 1
+    iterator <- resetCC(i = 1L, iterator)
+    expect_identical(iterator@i, 1L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 16L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 5L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 20L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 9L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 24L)
+    expect_true(iterator@finished)
+    ## start at 14
+    iterator <- resetCC(i = 14L, iterator)
+    expect_identical(iterator@i, 14L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 3L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 18L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 21L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 24L)
+    expect_true(iterator@finished)
+    ## starts at 22
+    iterator <- resetCC(i = 22L, iterator)
+    expect_identical(iterator@i, 22L)
+    expect_false(iterator@finished)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 11L)
+    expect_true(iterator@finished)
+})
+    
+
+test_that("R and C versions of advanceCC give same answer with time, age, triangle dimensions, last age group open", {
+    advanceCC <- demest:::advanceCC
+    resetCC <- demest:::resetCC
+    CohortIterator <- demest:::CohortIterator
+    EntriesMovements <- dembase:::EntriesMovements
+    entries <- Counts(array(1:24,
+                            dim = c(3, 4, 2),
+                            dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            time = c("2001-2005", "2006-2010", "2011-2015",
+                                                     "2016-2020"),
+                                            triangle = c("Lower", "Upper"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 4, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            time = c("2001-2005", "2006-2010", "2011-2015",
+                                                     "2016-2020"),
+                                             triangle = c("Lower", "Upper"))))
+    component <- EntriesMovements(entries = entries,
+                                  template = template,
+                                  name = "immigration")
+    iterator <- CohortIterator(component)
+    ## start at 1
+    iterator.R <- resetCC(i = 1L, iterator)
+    iterator.C <- resetCC(i = 1L, iterator)
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCC(iterator.R, useC = FALSE)
+        iterator.C <- advanceCC(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+    ## start at 14
+    iterator.R <- resetCC(i = 14L, iterator)
+    iterator.C <- resetCC(i = 14L, iterator)
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCC(iterator.R, useC = FALSE)
+        iterator.C <- advanceCC(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+    ## starts at 22
+    iterator.R <- resetCC(i = 22L, iterator)
+    iterator.C <- resetCC(i = 22L, iterator)
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCC(iterator.R, useC = FALSE)
+        iterator.C <- advanceCC(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+})
+
+
 test_that("advanceCC works", {
     advanceCC <- demest:::advanceCC
     resetCC <- demest:::resetCC
@@ -697,6 +803,7 @@ test_that("advanceCC works", {
                                   template = template,
                                   name = "immigration")
     iterator <- CohortIterator(component)
+    ## start at 19
     iterator <- resetCC(iterator, i = 19L)
     iterator <- advanceCC(iterator)
     expect_identical(iterator@i, 2L)
@@ -706,14 +813,11 @@ test_that("advanceCC works", {
     iterator <- advanceCC(iterator)
     expect_identical(iterator@i, 12L)
     expect_true(iterator@finished)
+    ## start at 21
     iterator <- resetCC(iterator, i = 21L)
     expect_false(iterator@finished)
     iterator <- advanceCC(iterator)
-    expect_identical(iterator@i, 3L)
-    iterator <- advanceCC(iterator)
     expect_identical(iterator@i, 30L)
-    iterator <- advanceCC(iterator)
-    expect_identical(iterator@i, 12L)
     expect_true(iterator@finished)
     ## with age - last age group closed
     entries <- Counts(array(1:36,
