@@ -1143,6 +1143,7 @@ double diffLogDensExpComp(SEXP combined_R);
 double diffLogDensJumpCompSmall(SEXP combined_R);
 
 void updateAccSmall(SEXP combined_R);
+void updateExpSmall(SEXP combined_R);
 void updateCellMove(SEXP combined_R);
 void updateSubsequentPopnMove(SEXP combined_R);
 void updateSubsequentAccMove(SEXP combined_R);

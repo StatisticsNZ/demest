@@ -1129,6 +1129,7 @@ updateValuesAccount_CombinedAccountMovements(SEXP object_R)
 
     if (isSmallUpdate) {
         updateAccSmall(object_R);
+	updateExpSmall(object_R);
     }
     else {
         updateSubsequentPopnMove(object_R);

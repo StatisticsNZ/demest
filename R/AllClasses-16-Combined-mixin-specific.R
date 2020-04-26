@@ -53,6 +53,15 @@ setClass("AccessionMixin",
                      return(gettextf("'%s' and '%s' have inconsistent %s for dimension \"%s\" with %s \"%s\"",
                                      "accession", "population", "dimscales", names.acc[i], "dimtype", dimtypes.acc[i]))
              }
+             ## 'accession' object equals result of calling 'accession'
+             ## function on 'object'
+             accession.calc <- dembase::accession(object@account,
+                                                  births = FALSE,
+                                                  openAge = TRUE)
+             if (!isTRUE(all.equal(as(accession, "Counts"), accession.calc))) {
+                 return(gettextf("'%s' inconsistent with '%s' and '%s'",
+                                 "accession", "population", "components"))
+             }
              TRUE
          })
 
@@ -243,7 +252,6 @@ setClass("ExposureMixin",
                                            .Data = exposure.calc@.Data,
                                            metadata = exposure.calc@metadata)
              if (!isTRUE(all.equal(exposure, exposure.calc))) {
-                 browser()
                  return(gettextf("'%s' and '%s' inconsistent",
                                  "exposure", "population"))
              }

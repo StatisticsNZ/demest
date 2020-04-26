@@ -452,10 +452,13 @@ resetCC(SEXP iterator_R, int i)
         *iTriangle_ptr = iTriangle_R;
 
         if (iTriangle_R == 1) {
-            finished = (iTime_R == nTime);
+	  finished = (iTime_R == nTime);
         }
         else {
-            finished = !lastAgeGroupOpen && (iAge_R == nAge);
+	  if (lastAgeGroupOpen)
+            finished = (iTime_R == nTime) && (iAge_R == nAge);
+	  else
+            finished = (iAge_R == nAge);
         }
     }
     else {

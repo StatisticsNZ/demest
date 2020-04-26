@@ -912,8 +912,8 @@ setMethod("updateProposalAccount",
               }
               else {
                   prob.popn <- object@probPopn
-                  prob.small.update <- object@probSmallUpdate@.Data ## NEW
-                  has.age <- object@hasAge@.Data ## NEW
+                  prob.small.update <- object@probSmallUpdate@.Data 
+                  has.age <- object@hasAge@.Data 
                   update.popn <- stats::runif(n = 1L) < prob.popn
                   if (update.popn) {
                       object@iComp <- 0L
@@ -925,34 +925,34 @@ setMethod("updateProposalAccount",
                       i.orig.dest <- object@iOrigDest
                       i.pool <- object@iPool
                       i.int.net <- object@iIntNet
-                      is.net.vec <- object@isNet ## NEW
-                      prob.small.update <- object@probSmallUpdate ## NEW
+                      is.net.vec <- object@isNet 
+                      prob.small.update <- object@probSmallUpdate 
                       i.comp <- rcateg1(cum.prob)
                       object@iComp <- i.comp
                       if (i.comp == i.births) {
-                          is.small.update <- has.age && (stats::runif(n = 1L) < prob.small.update) ## NEW
-                          if (is.small.update) ## NEW
-                              updateProposalAccountMoveBirthsSmall(object) ## NEW
-                          else ## NEW
+                          is.small.update <- has.age && (stats::runif(n = 1L) < prob.small.update) 
+                          if (is.small.update) 
+                              updateProposalAccountMoveBirthsSmall(object) 
+                          else 
                               updateProposalAccountMoveBirths(object)
-                      } ## NEW
+                      } 
                       else if (i.comp == i.orig.dest) {
-                          is.small.update <- has.age && (stats::runif(n = 1L) < prob.small.update) ## NEW
-                          if (is.small.update) ## NEW
-                              updateProposalAccountMoveOrigDestSmall(object) ## NEW
-                          else ## NEW
-                              updateProposalAccountMoveOrigDest(object) ## NEW
+                          is.small.update <- has.age && (stats::runif(n = 1L) < prob.small.update) 
+                          if (is.small.update) 
+                              updateProposalAccountMoveOrigDestSmall(object) 
+                          else 
+                              updateProposalAccountMoveOrigDest(object) 
                       }
                       else if (i.comp == i.pool)
                           updateProposalAccountMovePool(object)
                       else if (i.comp == i.int.net)
                           updateProposalAccountMoveNet(object)
                       else { # comp
-                          is.net <- is.net.vec[i.comp] ## NEW
-                          is.small.update <- !is.net && has.age && (stats::runif(n = 1L) < prob.small.update) ## NEW
-                          if (is.small.update) ## NEW
-                              updateProposalAccountMoveCompSmall(object) ## NEW
-                          else ## NEW
+                          is.net <- is.net.vec[i.comp] 
+                          is.small.update <- !is.net && has.age && (stats::runif(n = 1L) < prob.small.update) 
+                          if (is.small.update) 
+                              updateProposalAccountMoveCompSmall(object) 
+                          else 
                               updateProposalAccountMoveComp(object)
                       }
                   }
@@ -973,16 +973,18 @@ setMethod("updateValuesAccount",
               }
               else {
                   has.age <- combined@hasAge
-                  is.small.update <- combined@isSmallUpdate ## NEW
+                  is.small.update <- combined@isSmallUpdate
                   combined <- updateCellMove(combined)
-                  if (is.small.update) ## NEW
-                      combined <- updateAccSmall(combined) ## NEW
-                  else { ## NEW
+                  if (is.small.update) {
+                      combined <- updateAccSmall(combined)
+                      combined <- updateExpSmall(combined)
+                  }
+                  else {
                       combined <- updateSubsequentPopnMove(combined)
                       combined <- updateSubsequentExpMove(combined)
                       if (has.age)
                           combined <- updateSubsequentAccMove(combined)
-                  } ## NEW
+                  }
                   combined
               }
           })

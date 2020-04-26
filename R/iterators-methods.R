@@ -356,10 +356,15 @@ resetCC <- function(object, i, useC = FALSE) {
             step.triangle <- object@stepTriangle
             i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
             i.triangle <- (((i - 1L) %/% step.triangle) %% 2L) + 1L # R-style
-            if (i.triangle == 1L)
+            is.lower <- i.triangle == 1L
+            if (is.lower)
                 finished <- i.time == n.time
-            else
-                finished <- !last.age.group.open && (i.age == n.age)
+            else {
+                if (last.age.group.open)
+                    finished <- (i.time == n.time) && (i.age == n.age)
+                else
+                    finished <- i.age == n.age
+            }
         }
         else
             finished <- i.time == n.time

@@ -9362,6 +9362,7 @@ test_that("R and C versions of diffLogDensJumpCompSmall give same answer", {
 test_that("updateAccSmall works", {
     updateAccSmall <- demest:::updateAccSmall
     updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
     updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -9443,11 +9444,24 @@ test_that("updateAccSmall works", {
                                 namesDatasets = namesDatasets,
                                 transforms = transforms,
                                 probSmallUpdate = 1)
-    tested.comp <- FALSE
+    tested.births <- FALSE
     tested.orig.dest <- FALSE
+    tested.comp <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        ## updating 
+        ## updating births
+        x0 <- x
+        x0@iComp <- 1L
+        x1 <- updateProposalAccountMoveBirthsSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.births <- TRUE
+            ans.obtained <- updateAccSmall(x1)
+            expect_equal(sum(ans.obtained@account@components[[2]]),
+                         sum(x1@account@components[[2]]))
+            expect_equal(ans.obtained@accession,
+                         x1@accession)
+        }
+        ## updating internal
         x0 <- x
         x0@iComp <- 2L
         x1 <- updateProposalAccountMoveOrigDestSmall(x0)
@@ -9457,7 +9471,7 @@ test_that("updateAccSmall works", {
             expect_equal(sum(ans.obtained@account@components[[2]]),
                          sum(x1@account@components[[2]]))
             expect_equal(ans.obtained@accession[ans.obtained@iAccNext],
-                         x1@accession[ans.obtained@iAccNext] +
+                         x1@accession[ans.obtained@iAccNext] -
                          ans.obtained@diffProp)
         }
         ## updating component
@@ -9474,6 +9488,10 @@ test_that("updateAccSmall works", {
                          ans.obtained@diffProp)
         }
     }
+    if (!tested.births)
+        warning("births not updated")
+    if (!tested.orig.dest)
+        warning("orig-dest not updated")
     if (!tested.comp)
         warning("deaths not updated")
 })
@@ -9481,6 +9499,7 @@ test_that("updateAccSmall works", {
 test_that("R and C versions of updateAccSmall give same answer", {
     updateAccSmall <- demest:::updateAccSmall
     updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
     updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -9562,15 +9581,27 @@ test_that("R and C versions of updateAccSmall give same answer", {
                                 namesDatasets = namesDatasets,
                                 transforms = transforms,
                                 probSmallUpdate = 1)
+    tested.births <- FALSE
+    tested.orig.dest <- FALSE
     tested.comp <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
+        ## updating births
+        x0 <- x
+        x0@iComp <- 1L
+        x1 <- updateProposalAccountMoveBirthsSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.births <- TRUE
+            ans.R <- updateAccSmall(x1, useC = FALSE)
+            ans.C <- updateAccSmall(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
+        }
         ## updating orig-dest
         x0 <- x
         x0@iComp <- 2L
         x1 <- updateProposalAccountMoveOrigDestSmall(x0)
         if (x1@generatedNewProposal@.Data) {
-            tested.comp <- TRUE
+            tested.orig.dest <- TRUE
             ans.R <- updateAccSmall(x1, useC = FALSE)
             ans.C <- updateAccSmall(x1, useC = TRUE)
             expect_identical(ans.R, ans.C)
@@ -9586,9 +9617,312 @@ test_that("R and C versions of updateAccSmall give same answer", {
             expect_identical(ans.R, ans.C)
         }
     }
+    if (!tested.births)
+        warning("births not updated")
+    if (!tested.orig.dest)
+        warning("orig-dest not updated")
     if (!tested.comp)
         warning("deaths not updated")
 })
+
+test_that("updateExpSmall works", {
+    updateExpSmall <- demest:::updateExpSmall
+    updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    births <- Counts(array(rpois(n = 90, lambda = 5),
+                           dim = c(1, 2, 5, 2, 2),
+                           dimnames = list(age = "5-9",
+                                           sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    internal <- Counts(array(rpois(n = 300, lambda = 2),
+                             dim = c(3, 2, 5, 5, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("m", "f"),
+                                             reg_orig = 1:5,
+                                             reg_dest = 1:5,
+                                             time = c("2001-2005", "2006-2010"),
+                                             triangle = c("Lower", "Upper"))))
+    deaths <- Counts(array(rpois(n = 72, lambda = 10),
+                           dim = c(3, 2, 5, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"),
+                                           reg = 5:1,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    account <- Movements(population = popn,
+                         births = births,
+                         internal = internal,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ reg_orig)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL, NULL, NULL, NULL)
+    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
+    register <- Counts(array(rpois(n = 90, lambda = popn),
+                             dim = dim(popn),
+                             dimnames = dimnames(popn)))
+    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
+                               dim = dim(births),
+                               dimnames = dimnames(births)))
+    address.change <- Counts(array(rpois(n = 300, lambda = internal),
+                                   dim = dim(internal),
+                                   dimnames = dimnames(internal)))
+    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
+                               dim = dim(deaths),
+                               dimnames = dimnames(deaths))) + 1L
+    datasets <- list(census, register, reg.births, address.change, reg.deaths)
+    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
+    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
+                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
+                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
+                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms,
+                                probSmallUpdate = 1)
+    tested.births <- FALSE
+    tested.orig.dest <- FALSE
+    tested.comp <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ## updating births
+        x0 <- x
+        x0@iComp <- 1L
+        x1 <- updateProposalAccountMoveBirthsSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.births <- TRUE
+            ans.obtained <- updateExpSmall(x1)
+            expect_equal(sum(ans.obtained@account@components[[1]]),
+                         sum(x1@account@components[[1]]))
+            expect_equal(ans.obtained@exposure,
+                         x1@exposure)
+        }
+        ## updating internal
+        x0 <- x
+        x0@iComp <- 2L
+        x1 <- updateProposalAccountMoveOrigDestSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.orig.dest <- TRUE
+            ans.obtained <- updateExpSmall(x1)
+            expect_equal(sum(ans.obtained@account@components[[2]]),
+                         sum(x1@account@components[[2]]))
+            is.final <- (x1@iCell-1L) %% 3L == 2L
+            if (is.final) {
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposure],
+                             x1@exposure[ans.obtained@iExposure] -
+                             0.5 * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
+                             x1@exposure[ans.obtained@iExposureOther] +
+                             (1/3) * 5 * ans.obtained@diffProp)
+            }
+            else {
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposure],
+                             x1@exposure[ans.obtained@iExposure] -
+                             (1/6)  * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
+                             x1@exposure[ans.obtained@iExposureOther] -
+                             (1/6) * 5 * ans.obtained@diffProp)
+            }
+        }   
+        ## updating component
+        x0 <- x
+        x0@iComp <- 3L
+        x1 <- updateProposalAccountMoveCompSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.comp <- TRUE
+            ans.obtained <- updateExpSmall(x1)
+            expect_equal(sum(ans.obtained@account@components[[3]]),
+                         sum(x1@account@components[[3]]))
+            is.final <- (x1@iCell-1L) %% 3L == 2L
+            if (is.final) {
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposure],
+                             x1@exposure[ans.obtained@iExposure] -
+                             0.5 * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
+                             x1@exposure[ans.obtained@iExposureOther] +
+                             (1/3) * 5 * ans.obtained@diffProp)
+            }
+            else {
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposure],
+                             x1@exposure[ans.obtained@iExposure] -
+                             (1/6) * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
+                             x1@exposure[ans.obtained@iExposureOther] -
+                             (1/6) * 5 * ans.obtained@diffProp)
+            }
+        }
+    }
+    if (!tested.births)
+        warning("births not updated")
+    if (!tested.orig.dest)
+        warning("orig-dest not updated")
+    if (!tested.comp)
+        warning("deaths not updated")
+})
+
+
+
+test_that("R and C versions of updateExpSmall give same answer", {
+    updateExpSmall <- demest:::updateExpSmall
+    updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    births <- Counts(array(rpois(n = 90, lambda = 5),
+                           dim = c(1, 2, 5, 2, 2),
+                           dimnames = list(age = "5-9",
+                                           sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    internal <- Counts(array(rpois(n = 300, lambda = 2),
+                             dim = c(3, 2, 5, 5, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("m", "f"),
+                                             reg_orig = 1:5,
+                                             reg_dest = 1:5,
+                                             time = c("2001-2005", "2006-2010"),
+                                             triangle = c("Lower", "Upper"))))
+    deaths <- Counts(array(rpois(n = 72, lambda = 10),
+                           dim = c(3, 2, 5, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"),
+                                           reg = 5:1,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    account <- Movements(population = popn,
+                         births = births,
+                         internal = internal,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ reg_orig)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL, NULL, NULL, NULL)
+    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
+    register <- Counts(array(rpois(n = 90, lambda = popn),
+                             dim = dim(popn),
+                             dimnames = dimnames(popn)))
+    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
+                               dim = dim(births),
+                               dimnames = dimnames(births)))
+    address.change <- Counts(array(rpois(n = 300, lambda = internal),
+                                   dim = dim(internal),
+                                   dimnames = dimnames(internal)))
+    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
+                               dim = dim(deaths),
+                               dimnames = dimnames(deaths))) + 1L
+    datasets <- list(census, register, reg.births, address.change, reg.deaths)
+    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+                              Model(register ~ Poisson(mean ~ 1), series = "population"),
+                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
+    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
+                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
+                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
+                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms,
+                                probSmallUpdate = 1)
+    tested.births <- FALSE
+    tested.orig.dest <- FALSE
+    tested.comp <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ## updating births
+        x0 <- x
+        x0@iComp <- 1L
+        x1 <- updateProposalAccountMoveBirthsSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.births <- TRUE
+            ans.R <- updateExpSmall(x1, useC = FALSE)
+            ans.C <- updateExpSmall(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
+        }
+        ## updating orig-dest
+        x0 <- x
+        x0@iComp <- 2L
+        x1 <- updateProposalAccountMoveOrigDestSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.orig.dest <- TRUE
+            ans.R <- updateExpSmall(x1, useC = FALSE)
+            ans.C <- updateExpSmall(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
+        }
+        ## updating component
+        x0 <- x
+        x0@iComp <- 3L
+        x1 <- updateProposalAccountMoveCompSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.comp <- TRUE
+            ans.R <- updateExpSmall(x1, useC = FALSE)
+            ans.C <- updateExpSmall(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
+        }
+    }
+    if (!tested.births)
+        warning("births not updated")
+    if (!tested.orig.dest)
+        warning("orig-dest not updated")
+    if (!tested.comp)
+        warning("deaths not updated")
+})
+
+
+
 
 test_that("updateCellMove works", {
     updateCellMove <- demest:::updateCellMove

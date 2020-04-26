@@ -2112,6 +2112,7 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpCompSmall);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateCellMove);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateAccSmall);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateExpSmall);
 
 /* duplicates the iterator and replaces the unused iterator when finished
  * used when calling the code directly from R */
@@ -2698,6 +2699,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensJumpCompSmall_R, 1),
 
   CALLDEF(updateAccSmall_R, 1),
+  CALLDEF(updateExpSmall_R, 1),
   CALLDEF(updateCellMove_R, 1),
   CALLDEF(updateSubsequentPopnMove_R, 1),
   CALLDEF(updateSubsequentAccMove_R, 1),
