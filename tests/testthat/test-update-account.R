@@ -7724,8 +7724,6 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
 })
 
 
-
-
 test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answer - with age", {
     diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     getICellCompFromExp <- demest:::getICellCompFromExp

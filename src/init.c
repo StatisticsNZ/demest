@@ -2114,6 +2114,7 @@ UPDATEOBJECT_NOPRNG_WRAPPER_R(updateCellMove);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateAccSmall);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateExpSmall);
 
+
 /* duplicates the iterator and replaces the unused iterator when finished
  * used when calling the code directly from R */
 SEXP
@@ -2132,6 +2133,7 @@ updateSubsequentPopnMove_R(SEXP combined_R)
     UNPROTECT(2);
     return ans_R;
 }
+
 
 
 /* duplicates the iterator and replaces the unused iterator when finished

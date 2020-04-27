@@ -2506,25 +2506,29 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
   int * finishedComp_ptr = LOGICAL(GET_SLOT(iteratorComp_R, finished_sym));
   int isFirstCell = 1;
   int isFinal = 0;
+  int iAge;
+  int iTri;
+  int nAge;
+  int lastAgeGroupOpen;
+  if (hasAge) {
+    nAge = *INTEGER(GET_SLOT(iteratorComp_R, nAge_sym));
+    lastAgeGroupOpen = *INTEGER(GET_SLOT(iteratorComp_R, lastAgeGroupOpen_sym));
+  }
   int lengthVec = *INTEGER(GET_SLOT(iteratorComp_R, lengthVec_sym));
   double tolExposure = 0.000001;
-  int nAge = 0;
-  int iAge = 0;
-  int iTri = 0;
   int isUpper = 0;
   int keepGoing = 1;
   while (keepGoing) {
     int iExp_r = *iExp_ptr;
     double diffExposure = 0;
     if (hasAge) {
-      nAge = *INTEGER(GET_SLOT(iteratorComp_R, nAge_sym));
       iAge = *iAge_ptr;
       iTri = *iTri_ptr;
       isFinal = iAge == nAge;
       isUpper = iTri == 2;
       if (isFirstCell) {
 	if (updatedPopn) {       
-	  if (isFinal)		/* always upper */
+	  if (isFinal && lastAgeGroupOpen)		/* always upper */
 	    diffExposure += ageTimeStep * diff;
 	  else
 	    diffExposure += 0.5 * ageTimeStep * diff;
@@ -2532,7 +2536,7 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
 	else {
 	  /* adjust for increments */
 	  if (!updatedBirths) {
-	    if (isFinal) {
+	    if (isFinal && lastAgeGroupOpen) {
 	      if (isUpper)
 		diffExposure += 0.5 * ageTimeStep * diff;
 	      else
@@ -2551,12 +2555,11 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
 	}
       }
       else { 			/* not first cell, so only */
-	if (isFinal) {		/* adjust for popn */
+	if (isFinal && lastAgeGroupOpen) {		/* adjust for popn */
 	  if (isUpper)
 	    diffExposure += ageTimeStep * diff;
-	  else {
+	  else
 	      diffExposure += 0.5 * ageTimeStep * diff;
-	  }
 	}
 	else
 	  diffExposure += 0.5 * ageTimeStep * diff;
@@ -2640,16 +2643,20 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
   int isFirstCell = 1;
   int isFinal = 0;
   double tolExposure = 0.000001;
-  int nAge = 0;
-  int iAge = 0;
-  int iTri = 0;
-  int isUpper = 0;
+  int nAge;
+  int lastAgeGroupOpen;
+  if (hasAge) {
+    nAge = *INTEGER(GET_SLOT(iteratorComp_R, nAge_sym));
+    lastAgeGroupOpen = *INTEGER(GET_SLOT(iteratorComp_R, lastAgeGroupOpen_sym));
+  }
+  int iAge;
+  int iTri;
+  int isUpper;
   while (keepGoing) {
     int iComp_r = *iComp_ptr;
     int iExp = *iExp_ptr - 1;
     int iComp = iComp_r - 1;
     if (hasAge) {
-      nAge = *INTEGER(GET_SLOT(iteratorComp_R, nAge_sym));
       iAge = *iAge_ptr;
       iTri = *iTri_ptr;
       isFinal = iAge == nAge;
@@ -2662,7 +2669,7 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
       if (hasAge) {
 	if (isFirstCell) {
 	  if (updatedPopn) {
-	    if (isFinal) {
+	    if (isFinal && lastAgeGroupOpen) {
 	      diffExposure += ageTimeStep * diff;
 	    }
 	    else {
@@ -2672,7 +2679,7 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
 	  else {
 	    /* increment due to component */
 	    if (!updatedBirths) {
-	      if (isFinal) {
+	      if (isFinal && lastAgeGroupOpen) {
 		if (isUpper) {
 		  diffExposure += 0.5 * ageTimeStep * diff;
 		}
@@ -2696,12 +2703,12 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
 	  }
 	}
 	else {
-	  if (isFinal) {
+	  if (isFinal && lastAgeGroupOpen) {
 	    if (isUpper) {
 	      diffExposure += ageTimeStep * diff;
 	    }
 	    else {
-		diffExposure += 0.5 * ageTimeStep * diff;
+	      diffExposure += 0.5 * ageTimeStep * diff;
 	    }
 	  }
 	  else {
@@ -2778,15 +2785,18 @@ diffLogDensJumpOrigDest(SEXP combined_R)
   int iCell_r = *INTEGER(GET_SLOT(combined_R, iCell_sym));
   int iExposure_r = *INTEGER(GET_SLOT(combined_R, iExposure_sym));
   int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
-  SEXP iterator_R = GET_SLOT(combined_R, iteratorExposure_sym);
+  SEXP iterators_R = GET_SLOT(combined_R, iteratorsComp_sym);
+  SEXP iterator_R = VECTOR_ELT(iterators_R, iComp_r - 1);
   int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
   double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
+  double tolExposure = 0.000001;
   int iCell = iCell_r - 1;
   int iExposure = iExposure_r - 1;
   double thetaCell = theta[iCell];
   double exposureCellCurr = exposure[iExposure];
   double exposureCellJump = expectedExposure[iExposure];
   double exposureCellProp = exposureCellCurr;
+  double ans = 0;
   if (hasAge) {
     resetCC(iterator_R, iCell_r);
     int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
@@ -2810,15 +2820,25 @@ diffLogDensJumpOrigDest(SEXP combined_R)
   else {
     exposureCellProp -= 0.5 * ageTimeStep * diff;
   }
-  double lambdaDensProp = thetaCell * exposureCellProp;
-  double lambdaJump = thetaCell * exposureCellJump;
+  if (exposureCellProp < tolExposure) {
+    if (exposureCellProp > -1 * tolExposure)
+      exposureCellProp = 0;
+    else
+      error("negative value for 'exposureCellProp' : %f", exposureCellProp);
+  }
   int valCurr = component[iCell];
   int valProp = valCurr + diff;
-  double diffLogDens = dpois(valProp, lambdaDensProp, USE_LOG) -
-    dpois(valCurr, lambdaDensProp, USE_LOG);
-  double diffLogJump = dpois(valCurr, lambdaJump, USE_LOG) -
-    dpois(valProp, lambdaJump, USE_LOG);
-  double ans = diffLogDens + diffLogJump;
+  if ((valProp > 0) && !(exposureCellProp > 0))
+    ans = R_NegInf;
+  else {
+    double lambdaDensProp = thetaCell * exposureCellProp;
+    double lambdaJump = thetaCell * exposureCellJump;
+    double diffLogDens = dpois(valProp, lambdaDensProp, USE_LOG) -
+      dpois(valCurr, lambdaDensProp, USE_LOG);
+    double diffLogJump = dpois(valCurr, lambdaJump, USE_LOG) -
+      dpois(valProp, lambdaJump, USE_LOG);
+    ans = diffLogDens + diffLogJump;
+  }
   return ans;
 }
 
@@ -3093,7 +3113,9 @@ diffLogDensJumpPoolWithExpose(SEXP combined_R)
     int iExposureOut_r = *INTEGER(GET_SLOT(combined_R, iExposure_sym));
     int iExposureIn_r = *INTEGER(GET_SLOT(combined_R, iExposureOther_sym));
 
-    SEXP iterator_R = GET_SLOT(combined_R, iteratorExposure_sym);
+    SEXP iterators_R = GET_SLOT(combined_R, iteratorsComp_sym);
+    SEXP iterator_R = VECTOR_ELT(iterators_R, iComp_r - 1);
+
     int hasAge = *LOGICAL(GET_SLOT(iterator_R, hasAge_sym));
 
     int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
@@ -3113,8 +3135,11 @@ diffLogDensJumpPoolWithExpose(SEXP combined_R)
 
     double exposureOutProp = exposureOutCurr;
     double exposureInProp = exposureInCurr;
+    double tolExposure = 0.000001;
 
     double incrExpose = 0;
+
+    double ans = 0;
 
     if (hasAge) {
       resetCC(iterator_R, iCellOut_r);
@@ -3143,24 +3168,41 @@ diffLogDensJumpPoolWithExpose(SEXP combined_R)
     exposureOutProp += incrExpose;
     exposureInProp -= incrExpose;
 
-    double lambdaDensOutProp = thetaOut * exposureOutProp;
-    double lambdaDensInProp = thetaIn * exposureInProp;
-    double lambdaDensOutCurr = thetaOut * exposureOutCurr;
-    double lambdaDensInCurr = thetaIn * exposureInCurr;
-    double lambdaJump = thetaOut * exposureOutJump;
+    if (exposureOutProp < tolExposure) {
+      if (exposureOutProp > -1 * tolExposure)
+	exposureOutProp = 0;
+      else
+	error("negative value for 'exposureOutProp' : %f", exposureOutProp);
+    }
+    if (exposureInProp < tolExposure) {
+      if (exposureInProp > -1 * tolExposure)
+	exposureInProp = 0;
+      else
+	error("negative value for 'exposureInProp' : %f", exposureInProp);
+    }
+
     int valOutCurr = component[iCellOut];
     int valInCurr = component[iCellIn];
     int valOutProp = valOutCurr + diff;
     int valInProp = valInCurr + diff;
 
-    double diffLogDens = dpois(valOutProp, lambdaDensOutProp, USE_LOG)
-                          - dpois(valOutCurr, lambdaDensOutCurr, USE_LOG)
-                          + dpois(valInProp, lambdaDensInProp, USE_LOG)
-                          - dpois(valInCurr, lambdaDensInCurr, USE_LOG);
-    double diffLogJump = dpois(valOutCurr, lambdaJump, USE_LOG)
-                          - dpois(valOutProp, lambdaJump, USE_LOG);
-    double ans = diffLogDens + diffLogJump;
-
+    if (((valOutProp > 0) && !(exposureOutProp > 0))
+	|| ((valInProp > 0) && !(exposureInProp > 0)))
+      ans = R_NegInf;
+    else {
+      double lambdaDensOutProp = thetaOut * exposureOutProp;
+      double lambdaDensInProp = thetaIn * exposureInProp;
+      double lambdaDensOutCurr = thetaOut * exposureOutCurr;
+      double lambdaDensInCurr = thetaIn * exposureInCurr;
+      double lambdaJump = thetaOut * exposureOutJump;
+      double diffLogDens = dpois(valOutProp, lambdaDensOutProp, USE_LOG)
+	- dpois(valOutCurr, lambdaDensOutCurr, USE_LOG)
+	+ dpois(valInProp, lambdaDensInProp, USE_LOG)
+	- dpois(valInCurr, lambdaDensInCurr, USE_LOG);
+      double diffLogJump = dpois(valOutCurr, lambdaJump, USE_LOG)
+	- dpois(valOutProp, lambdaJump, USE_LOG);
+      ans = diffLogDens + diffLogJump;
+    }
     return ans;
 }
 
@@ -3257,7 +3299,8 @@ diffLogDensJumpComp(SEXP combined_R)
     int iExposure_r = *INTEGER(GET_SLOT(combined_R, iExposure_sym));
     int iExpFirst_r = *INTEGER(GET_SLOT(combined_R, iExpFirst_sym));
 
-    SEXP iterator_R = GET_SLOT(combined_R, iteratorExposure_sym);
+    SEXP iterators_R = GET_SLOT(combined_R, iteratorsComp_sym);
+    SEXP iterator_R = VECTOR_ELT(iterators_R, iComp_r - 1);
 
     int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
 
@@ -3274,11 +3317,14 @@ diffLogDensJumpComp(SEXP combined_R)
     double exposureCellJump = expectedExposure[iExposure];
 
     double exposureCellProp = 0;
+    double tolExposure = 0.000001;
 
     int isIncrement = isIncrementVec[iComp_r -1];
 
     double incrExp = 0;
     int expChanges = 1;
+
+    double ans = 0;
 
     if (isBirths)
       expChanges = (iExpFirst_r != 0) && (iExpFirst_r == iExposure_r);
@@ -3287,11 +3333,12 @@ diffLogDensJumpComp(SEXP combined_R)
       if (hasAge) {
 	resetCC(iterator_R, iCell_r);
 	int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
+	int lastAgeGroupOpen = *INTEGER(GET_SLOT(iterator_R, lastAgeGroupOpen_sym));
 	int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
 	int iTri = *INTEGER(GET_SLOT(iterator_R, iTriangle_sym));
 	int isFinal = iAge == nAge;
 	int isUpper = iTri == 2;
-	if (isFinal) {
+	if (isFinal && lastAgeGroupOpen) {
 	  if (isUpper)
 	    incrExp = 0.5 * ageTimeStep * diff;
 	  else
@@ -3312,18 +3359,28 @@ diffLogDensJumpComp(SEXP combined_R)
     }
 
     exposureCellProp = exposureCellCurr + incrExp;
-    
-    double lambdaDensProp = thetaCell * exposureCellProp;
-    double lambdaJump = thetaCell * exposureCellJump;
+
+    if (exposureCellProp < tolExposure) {
+      if (exposureCellProp > -1 * tolExposure)
+	exposureCellProp = 0;
+      else
+	error("negative value for 'exposureCellProp' : %f", exposureCellProp);
+    }
+
     int valCurr = component[iCell];
     int valProp = valCurr + diff;
-
-    double diffLogDens = dpois(valProp, lambdaDensProp, USE_LOG)
-                          - dpois(valCurr, lambdaDensProp, USE_LOG);
-    double diffLogJump = dpois(valCurr, lambdaJump, USE_LOG)
-                          - dpois(valProp, lambdaJump, USE_LOG);
-    double ans = diffLogDens + diffLogJump;
-
+    if ((valProp > 0) && !(exposureCellProp > 0)) {
+      ans = R_NegInf;
+    }
+    else  {
+      double lambdaDensProp = thetaCell * exposureCellProp;
+      double lambdaJump = thetaCell * exposureCellJump;
+      double diffLogDens = dpois(valProp, lambdaDensProp, USE_LOG)
+	- dpois(valCurr, lambdaDensProp, USE_LOG);
+      double diffLogJump = dpois(valCurr, lambdaJump, USE_LOG)
+	- dpois(valProp, lambdaJump, USE_LOG);
+      ans = diffLogDens + diffLogJump;
+    }
     return ans;
 }
 
@@ -3509,14 +3566,17 @@ diffLogDensJumpCompSmall(SEXP combined_R)
   int isBirths = iBirths == iComp;
   int isOrigDest = iOrigDest == iComp;
   double tol = *REAL(GET_SLOT(systemModel_R, tolerance_sym));
-  SEXP mappings_R = GET_SLOT(combined_R, mappingsToExp_sym);
-  SEXP mapping_R = VECTOR_ELT(mappings_R, iComp);
+  SEXP iterators_R = GET_SLOT(combined_R, iteratorsComp_sym);
+  SEXP iterator_R = VECTOR_ELT(iterators_R, iComp);
+  SEXP iteratorDup_R = NULL;
+  PROTECT(iteratorDup_R = iterator_R);
   int i_cell_up = *INTEGER(GET_SLOT(combined_R, iCell_sym)) - 1;
   int i_cell_low = *INTEGER(GET_SLOT(combined_R, iCellOther_sym)) - 1;
   int * usesExposure_vec = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
   int usesExposure = usesExposure_vec[iComp + 1];
   int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
   double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
+  double tolExposure = 0.000001;
   int val_up_curr = component[i_cell_up];
   int val_low_curr = component[i_cell_low];
   int val_up_prop = val_up_curr + diff;
@@ -3525,6 +3585,8 @@ diffLogDensJumpCompSmall(SEXP combined_R)
   double val_low_expect_curr = theta[i_cell_low];
   double val_up_expect_prop = val_up_expect_curr;
   double val_low_expect_prop = val_low_expect_curr;
+  int val_prop_valid = 1;
+  double ans = 0;
   if (usesExposure) {
     double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
     int i_expose_up = *INTEGER(GET_SLOT(combined_R, iExposure_sym)) - 1;
@@ -3534,12 +3596,13 @@ diffLogDensJumpCompSmall(SEXP combined_R)
     double expose_up_prop = expose_up_curr;
     double expose_low_prop = expose_low_curr;
     if (!isBirths) {
-      int nAge = *INTEGER(GET_SLOT(mapping_R, nAgeCurrent_sym));
-      int stepAge = *INTEGER(GET_SLOT(mapping_R, stepAgeCurrent_sym));
-      int iAge_r = ((i_cell_up / stepAge) % nAge) + 1;
+      resetCC(iteratorDup_R, i_cell_up + 1);
+      int nAge = *INTEGER(GET_SLOT(iteratorDup_R, nAge_sym));
+      int lastAgeGroupOpen = *INTEGER(GET_SLOT(iteratorDup_R, lastAgeGroupOpen_sym));
+      int iAge_r = *INTEGER(GET_SLOT(iteratorDup_R, iAge_sym));
       int isFinal = iAge_r == nAge;
       int sign = (isOrigDest || !isIncrement) ? -1 : 1;
-      if (isFinal) {
+      if (isFinal && lastAgeGroupOpen) {
 	expose_up_prop += 0.5 * sign * ageTimeStep * diff;
 	expose_low_prop -= (1.0/3.0) * sign * ageTimeStep * diff;
       }
@@ -3547,6 +3610,20 @@ diffLogDensJumpCompSmall(SEXP combined_R)
 	expose_up_prop += (1.0/6.0) * sign * ageTimeStep * diff;
 	expose_low_prop += (1.0/6.0) * sign * ageTimeStep * diff;
       }
+      if (expose_up_prop < tolExposure) {
+	if (expose_up_prop > -1 * tolExposure)
+	  expose_up_prop = 0;
+	else
+	  error("negative value for 'expose_up_prop' : %f", expose_up_prop);
+      }
+      if (expose_low_prop < tolExposure) {
+	if (expose_low_prop > -1 * tolExposure)
+	  expose_low_prop = 0;
+	else
+	  error("negative value for 'expose_low_prop' : %f", expose_low_prop);
+      }
+      val_prop_valid = (((val_up_prop > 0) && !(expose_up_prop > 0))
+			|| ((val_low_prop > 0) && !(expose_low_prop > 0)));
     }
     val_up_expect_curr *= expose_up_curr;
     val_low_expect_curr *= expose_low_curr;
@@ -3558,13 +3635,20 @@ diffLogDensJumpCompSmall(SEXP combined_R)
   if (denom > tol) {
     prob = val_up_expect_curr/denom;
   }
-  int size = val_up_curr + val_low_curr;
-  double ans = dpois(val_up_prop, val_up_expect_prop, USE_LOG) +
-    dpois(val_low_prop, val_low_expect_prop, USE_LOG) -
-    dpois(val_up_curr, val_up_expect_curr, USE_LOG) -
-    dpois(val_low_curr, val_low_expect_curr, USE_LOG) +
-    dbinom(val_up_curr, size, prob, USE_LOG) -
-    dbinom(val_up_prop, size, prob, USE_LOG);
+  if (val_prop_valid) {
+    ans = R_NegInf;
+  }
+  else {
+    int size = val_up_curr + val_low_curr;
+    double ans_dens_prop = dpois(val_up_prop, val_up_expect_prop, USE_LOG) +
+      dpois(val_low_prop, val_low_expect_prop, USE_LOG);
+    double ans_dens_curr = dpois(val_up_curr, val_up_expect_curr, USE_LOG) +
+      dpois(val_low_curr, val_low_expect_curr, USE_LOG);
+    double ans_jump = dbinom(val_up_curr, size, prob, USE_LOG) -
+      dbinom(val_up_prop, size, prob, USE_LOG);
+    ans = ans_dens_prop - ans_dens_curr + ans_jump;
+  }
+  UNPROTECT(1);
   return ans;
 }
 
@@ -3610,17 +3694,20 @@ updateExpSmall(SEXP combined_R)
     int i_exp_low_r = *INTEGER(GET_SLOT(combined_R, iExposureOther_sym));
     int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
     double age_time_step = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
-    SEXP mappings_R = GET_SLOT(combined_R, mappingsToExp_sym);
-    SEXP mapping_R = VECTOR_ELT(mappings_R, i_comp_r - 1);
-    int n_age = *INTEGER(GET_SLOT(mapping_R, nAgeCurrent_sym));
-    int step_age = *INTEGER(GET_SLOT(mapping_R, stepAgeCurrent_sym));
-    int i_age_r = (((i_cell_up_r - 1) / step_age) % n_age) + 1;
+    SEXP iterators_R = GET_SLOT(combined_R, iteratorsComp_sym);
+    SEXP iteratorsDup_R = NULL;
+    PROTECT(iteratorsDup_R = duplicate(iterators_R));
+    SEXP iterator_R = VECTOR_ELT(iteratorsDup_R, i_comp_r - 1);
+    resetCC(iterator_R, i_cell_up_r);
+    int n_age = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
+    int last_age_group_open = *INTEGER(GET_SLOT(iterator_R, lastAgeGroupOpen_sym));
+    int i_age_r = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
     int is_final = i_age_r == n_age;
     int sign = (is_orig_dest || !is_increment) ? -1 : 1;
     double incr_exp_up = 0;
     double incr_exp_low = 0;
     double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
-    if (is_final) {
+    if (is_final && last_age_group_open) {
       incr_exp_up += 0.5 * sign * age_time_step * diff;
       incr_exp_low -= (1.0/3.0) * sign * age_time_step * diff;
     }
@@ -3630,6 +3717,7 @@ updateExpSmall(SEXP combined_R)
     }
     exposure[i_exp_up_r - 1] += incr_exp_up;
     exposure[i_exp_low_r - 1] += incr_exp_low;
+    UNPROTECT(1);
   }
 }
 

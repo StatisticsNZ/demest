@@ -2556,11 +2556,12 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                 n.age <- iteratorComp@nAge
                 i.age <- iteratorComp@iAge
                 i.triangle <- iteratorComp@iTriangle
+                last.age.group.open <- iteratorComp@lastAgeGroupOpen
                 is.final <- i.age == n.age
                 is.upper <- i.triangle == 2L
                 if (is.first.cell) {
                     if (updatedPopn) { ## first cell is always upper
-                        if (is.final)
+                        if (is.final && last.age.group.open)
                             incr.exp <- incr.exp + ageTimeStep * diff
                         else
                             incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
@@ -2569,7 +2570,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                         ## Adjust for change in net increments
                         ## Not needed for births.
                         if (!updatedBirths) {
-                            if (is.final) {
+                            if (is.final && last.age.group.open) {
                                 if (is.upper)
                                     incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                                 else
@@ -2589,7 +2590,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                     }
                 }
                 else { ## not first cell - only adjust for popn
-                    if (is.final) {
+                    if (is.final && last.age.group.open) {
                         if (is.upper)
                             incr.exp <- incr.exp + ageTimeStep * diff
                         else
@@ -2628,13 +2629,13 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                     if ((comp.curr > 0L) && !(exposure.prop > 0))
                         return(-Inf)
                     theta.curr <- theta[i.c]
-                    diff.log.lik <- (stats::dpois(x = comp.curr,
-                                           lambda = theta.curr * exposure.prop,
-                                           log = TRUE)
-                        - stats::dpois(x = comp.curr,
-                                lambda = theta.curr * exposure.curr,
-                                log = TRUE))
-                    ans <- ans + diff.log.lik
+                    log.lik.prop <- stats::dpois(x = comp.curr,
+                                                 lambda = theta.curr * exposure.prop,
+                                                 log = TRUE)
+                    log.lik.curr <- stats::dpois(x = comp.curr,
+                                                 lambda = theta.curr * exposure.curr,
+                                                 log = TRUE)
+                    ans <- ans + log.lik.prop - log.lik.curr
                 }
             }
             if (iteratorComp@finished)
@@ -2719,6 +2720,10 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
         ans <- 0
         iteratorComp <- resetCC(iteratorComp, i = iCell)
         iteratorExposure <- resetCC(iteratorExposure, i = iExpFirst)
+        if (hasAge) {
+            n.age <- iteratorComp@nAge
+            last.age.group.open <- iteratorComp@lastAgeGroupOpen
+        }
         is.first.cell <- TRUE
         is.final <- FALSE
         tol.exposure <- 0.000001
@@ -2726,7 +2731,6 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
             i.c <- iteratorComp@i
             i.e <- iteratorExposure@i
             if (hasAge) {
-                n.age <- iteratorComp@nAge
                 i.age <- iteratorComp@iAge
                 i.triangle <- iteratorComp@iTriangle
                 is.final <- i.age == n.age
@@ -2743,7 +2747,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
                         if (updatedPopn) { 
                             ## adjust for change in population
                             ## (first cell always upper triangle)
-                            if (is.final)
+                            if (is.final && last.age.group.open)
                                 incr.exp <- incr.exp + ageTimeStep * diff
                             else
                                 incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
@@ -2752,7 +2756,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
                             ## Adjust for change in net increments
                             ## Not needed for births.
                             if (!updatedBirths) {
-                                if (is.final) {
+                                if (is.final && last.age.group.open) {
                                     if (is.upper)
                                         incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                                     else
@@ -2772,7 +2776,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
                         }
                     }
                     else { ## not first cell - only adjust for popn
-                        if (is.final) {
+                        if (is.final && last.age.group.open) {
                             if (is.upper)
                                 incr.exp <- incr.exp + ageTimeStep * diff
                             else
@@ -2842,11 +2846,12 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
         diff <- combined@diffProp
         has.age <- combined@hasAge@.Data
         age.time.step <- combined@ageTimeStep
+        tol.exposure <- 0.000001
         theta.cell <- theta[i.cell]
         exposure.cell.curr <- exposure[i.exposure]
         exposure.cell.jump <- expected.exposure[i.exposure]
         if (has.age) {
-            iterator <- combined@iteratorExposure
+            iterator <- combined@iteratorsComp[[i.comp]]
             iterator <- resetCC(iterator, i = i.cell)
             n.age <- iterator@nAge
             i.age <- iterator@iAge
@@ -2869,16 +2874,26 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
         else
             incr.exp <- -0.5 * age.time.step * diff
         exposure.cell.prop <- exposure.cell.curr + incr.exp
-        lambda.dens.prop <- theta.cell * exposure.cell.prop
-        lambda.jump <- theta.cell * exposure.cell.jump
+        if (exposure.cell.prop < tol.exposure) {
+            if (exposure.cell.prop > -1 * tol.exposure)
+                exposure.cell.prop <- 0
+            else
+                stop(sprintf("negative value for 'exposure.cell.prop' : %f", exposure.cell.prop))
+        }
         val.curr <- component[i.cell]
         val.prop <- val.curr + diff
-        diff.log.dens <- (stats::dpois(x = val.prop, lambda = lambda.dens.prop, log = TRUE)
-            - stats::dpois(x = val.curr, lambda = lambda.dens.prop, log = TRUE))
-        diff.log.jump <- (stats::dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
-            - stats::dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
-        ans <- diff.log.dens + diff.log.jump
-        ans <- unname(ans)
+        if ((val.prop > 0) && !(exposure.cell.prop > 0))
+            ans <- -Inf
+        else {
+            lambda.dens.prop <- theta.cell * exposure.cell.prop
+            lambda.jump <- theta.cell * exposure.cell.jump
+            diff.log.dens <- (stats::dpois(x = val.prop, lambda = lambda.dens.prop, log = TRUE)
+                - stats::dpois(x = val.curr, lambda = lambda.dens.prop, log = TRUE))
+            diff.log.jump <- (stats::dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
+                - stats::dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
+            ans <- diff.log.dens + diff.log.jump
+            ans <- unname(ans)
+        }
         ans
 
     }
@@ -3126,13 +3141,14 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
         diff <- combined@diffProp
         has.age <- combined@hasAge
         age.time.step <- combined@ageTimeStep
+        tol.exposure <- 0.000001
         theta.out <- theta[i.cell.out]
         theta.in <- theta[i.cell.in]
         exposure.out.curr <- exposure[i.exposure.out]
         exposure.in.curr <- exposure[i.exposure.in]
         exposure.out.jump <- expected.exposure[i.exposure.out]
         if (has.age) {
-            iterator <- combined@iteratorExposure
+            iterator <- combined@iteratorsComp[[i.comp]]
             iterator <- resetCC(iterator, i = i.cell.out)
             n.age <- iterator@nAge
             i.age <- iterator@iAge
@@ -3156,23 +3172,40 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
             incr.exp <- -0.5 * age.time.step * diff
         exposure.out.prop <- exposure.out.curr + incr.exp
         exposure.in.prop <- exposure.in.curr - incr.exp
-        lambda.dens.out.prop <- theta.out * exposure.out.prop
-        lambda.dens.in.prop <- theta.in * exposure.in.prop
-        lambda.dens.out.curr <- theta.out * exposure.out.curr
-        lambda.dens.in.curr <- theta.in * exposure.in.curr
-        lambda.jump <- theta.out * exposure.out.jump
+        if (exposure.out.prop < tol.exposure) {
+            if (exposure.out.prop > -1 * tol.exposure)
+                exposure.out.prop <- 0
+            else
+                stop(sprintf("negative value for 'exposure.out.prop' : %f", exposure.out.prop))
+        }
+        if (exposure.in.prop < tol.exposure) {
+            if (exposure.in.prop > -1 * tol.exposure)
+                exposure.in.prop <- 0
+            else
+                stop(sprintf("negative value for 'exposure.in.prop' : %f", exposure.in.prop))
+        }
         val.out.curr <- component[i.cell.out]
         val.in.curr <- component[i.cell.in]
         val.out.prop <- val.out.curr + diff
         val.in.prop <- val.in.curr + diff
-        diff.log.dens <- (stats::dpois(x = val.out.prop, lambda = lambda.dens.out.prop, log = TRUE)
-                          - stats::dpois(x = val.out.curr, lambda = lambda.dens.out.curr, log = TRUE)
-                          + stats::dpois(x = val.in.prop, lambda = lambda.dens.in.prop, log = TRUE)
-                          - stats::dpois(x = val.in.curr, lambda = lambda.dens.in.curr, log = TRUE))
-        diff.log.jump <- (stats::dpois(x = val.out.curr, lambda = lambda.jump, log = TRUE)
-                          - stats::dpois(x = val.out.prop, lambda = lambda.jump, log = TRUE))
-        ans <- diff.log.dens + diff.log.jump
-        ans <- unname(ans)
+        if (((val.out.prop > 0) && !(exposure.out.prop > 0))
+            || ((val.in.prop > 0) && !(exposure.in.prop > 0)))
+            ans <- -Inf
+        else {
+            lambda.dens.out.prop <- theta.out * exposure.out.prop
+            lambda.dens.in.prop <- theta.in * exposure.in.prop
+            lambda.dens.out.curr <- theta.out * exposure.out.curr
+            lambda.dens.in.curr <- theta.in * exposure.in.curr
+            lambda.jump <- theta.out * exposure.out.jump
+            diff.log.dens <- (stats::dpois(x = val.out.prop, lambda = lambda.dens.out.prop, log = TRUE)
+                - stats::dpois(x = val.out.curr, lambda = lambda.dens.out.curr, log = TRUE)
+                + stats::dpois(x = val.in.prop, lambda = lambda.dens.in.prop, log = TRUE)
+                - stats::dpois(x = val.in.curr, lambda = lambda.dens.in.curr, log = TRUE))
+            diff.log.jump <- (stats::dpois(x = val.out.curr, lambda = lambda.jump, log = TRUE)
+                - stats::dpois(x = val.out.prop, lambda = lambda.jump, log = TRUE))
+            ans <- diff.log.dens + diff.log.jump
+            ans <- unname(ans)
+        }
         ans
     }
 }
@@ -3261,6 +3294,7 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
         has.age <- combined@hasAge@.Data
         age.time.step <- combined@ageTimeStep
         is.increment <- combined@isIncrement
+        tol.exposure <- 0.000001
         theta.cell <- theta[i.cell]
         exposure.cell.curr <- exposure[i.exposure]
         exposure.cell.jump <- expected.exposure[i.exposure]
@@ -3270,14 +3304,15 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
             exp.changes <- TRUE
         if (exp.changes) {
             if (has.age) {
-                iterator <- combined@iteratorExposure
+                iterator <- combined@iteratorsComp[[i.comp]]
                 iterator <- resetCC(iterator, i = i.cell)
                 n.age <- iterator@nAge
+                last.age.group.open <- iterator@lastAgeGroupOpen
                 i.age <- iterator@iAge
                 i.triangle <- iterator@iTriangle
                 is.final <- i.age == n.age
                 is.upper <- i.triangle == 2L
-                if (is.final) {
+                if (is.final && last.age.group.open) {
                     if (is.upper)
                         incr.exp <- 0.5 * age.time.step * diff
                     else
@@ -3298,16 +3333,26 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
         else
             incr.exp <- 0
         exposure.cell.prop <- exposure.cell.curr + incr.exp
-        lambda.dens.prop <- theta.cell * exposure.cell.prop
-        lambda.jump <- theta.cell * exposure.cell.jump
+        if (exposure.cell.prop < tol.exposure) {
+            if (exposure.cell.prop > -1 * tol.exposure)
+                exposure.cell.prop <- 0
+            else
+                stop(sprintf("negative value for 'exposure.cell.prop' : %f", exposure.cell.prop))
+        }
         val.curr <- component[i.cell]
         val.prop <- val.curr + diff
-        diff.log.dens <- (stats::dpois(x = val.prop, lambda = lambda.dens.prop, log = TRUE)
-            - stats::dpois(x = val.curr, lambda = lambda.dens.prop, log = TRUE))
-        diff.log.jump <- (stats::dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
-            - stats::dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
-        ans <- diff.log.dens + diff.log.jump
-        ans <- unname(ans)
+        if ((val.prop > 0) && !(exposure.cell.prop > 0))
+            ans <- -Inf ## even if same is true for current value
+        else {
+            lambda.dens.prop <- theta.cell * exposure.cell.prop
+            lambda.jump <- theta.cell * exposure.cell.jump
+            diff.log.dens <- (stats::dpois(x = val.prop, lambda = lambda.dens.prop, log = TRUE)
+                - stats::dpois(x = val.curr, lambda = lambda.dens.prop, log = TRUE))
+            diff.log.jump <- (stats::dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
+                - stats::dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
+            ans <- diff.log.dens + diff.log.jump
+            ans <- unname(ans)
+        }
         ans
     }
 }
@@ -3473,8 +3518,10 @@ diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
         is.orig.dest <- i.comp == i.orig.dest
         diff <- combined@diffProp
         tol <- combined@systemModels[[i.comp + 1L]]@tolerance
-        mapping <- combined@mappingsToExp[[i.comp]]
+        iterator <- combined@iteratorsComp[[i.comp]]
+        iterator <- resetCC(iterator, i = i.cell.up)
         age.time.step <- combined@ageTimeStep
+        tol.exposure <- 0.000001
         val.up.curr <- component[i.cell.up]
         val.low.curr <- component[i.cell.low]
         val.up.prop <- val.up.curr + diff
@@ -3488,13 +3535,14 @@ diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
             expose.up.curr <- exposure[i.expose.up]
             expose.low.curr <- exposure[i.expose.low]
             if (!is.births) {
-                n.age <- mapping@nAgeCurrent
-                step.age <- mapping@stepAgeCurrent
-                i.age <- (((i.cell.up - 1L) %/% step.age) %% n.age) + 1L
+                iterator <- resetCC(iterator, i = i.cell.up)
+                n.age <- iterator@nAge
+                last.age.group.open <- iterator@lastAgeGroupOpen
+                i.age <- iterator@iAge
                 is.final <- i.age == n.age
                 sign <- if (is.orig.dest || !is.increment) -1 else 1
                 ## add diff to up and subtract diff from low
-                if (is.final) { 
+                if (is.final && last.age.group.open) { 
                     expose.up.prop <- expose.up.curr + 0.5 * sign * age.time.step * diff
                     expose.low.prop <- expose.low.curr - (1.0/3.0) * sign * age.time.step * diff
                 }
@@ -3502,11 +3550,28 @@ diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
                     expose.up.prop <- expose.up.curr + (1.0/6.0) * sign * age.time.step * diff
                     expose.low.prop <- expose.low.curr + (1.0/6.0) * sign * age.time.step * diff
                 }
+                if (expose.up.prop < tol.exposure) {
+                    if (expose.up.prop > -1 * tol.expose)
+                        expose.up.prop <- 0
+                    else
+                        stop(sprintf("negative value for 'expose.up.prop' : %f", expose.up.prop))
+                }
+                if (expose.low.prop < tol.exposure) {
+                    if (expose.low.prop > -1 * tol.exposure)
+                        expose.low.prop <- 0
+                    else
+                        stop(sprintf("negative value for 'expose.low.prop' : %f", expose.low.prop))
+                }
             }
             else {
                 expose.up.prop <- expose.up.curr
                 expose.low.prop <- expose.low.curr
             }
+
+            if (((val.up.prop > 0) && !(expose.up.prop > 0))
+                || ((val.low.prop > 0) && !(expose.low.prop > 0)))
+                return(-Inf)
+                
             val.up.expect.curr <- theta.up * expose.up.curr
             val.low.expect.curr <- theta.low * expose.low.curr
             val.up.expect.prop <- theta.up * expose.up.prop
@@ -3524,12 +3589,13 @@ diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
         else
             prob <- 0.5
         size <- val.up.curr + val.low.curr
-        ans <- (stats::dpois(x = val.up.prop, lambda = val.up.expect.prop, log = TRUE) +
-                stats::dpois(x = val.low.prop, lambda = val.low.expect.prop, log = TRUE) -
-                stats::dpois(x = val.up.curr, lambda = val.up.expect.curr, log = TRUE) -
-                stats::dpois(x = val.low.curr, lambda = val.low.expect.curr, log = TRUE) +
-                stats::dbinom(x = val.up.curr, prob = prob, size = size, log = TRUE) -
-                stats::dbinom(x = val.up.prop, prob = prob, size = size, log = TRUE))
+        ans.dens.prop <- stats::dpois(x = val.up.prop, lambda = val.up.expect.prop, log = TRUE) +
+            stats::dpois(x = val.low.prop, lambda = val.low.expect.prop, log = TRUE)
+        ans.dens.curr <- stats::dpois(x = val.up.curr, lambda = val.up.expect.curr, log = TRUE) +
+            stats::dpois(x = val.low.curr, lambda = val.low.expect.curr, log = TRUE)
+        ans.jump <- (stats::dbinom(x = val.up.curr, prob = prob, size = size, log = TRUE) -
+                     stats::dbinom(x = val.up.prop, prob = prob, size = size, log = TRUE))
+        ans <- ans.dens.prop - ans.dens.curr + ans.jump
         ans
     }
 }
@@ -3569,6 +3635,8 @@ updateAccSmall <- function(combined, useC = FALSE) {
 }
 
 
+## TRANSLATED
+## HAS_TESTS
 updateExpSmall <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovementsHasAge"))
     if (useC) {
@@ -3588,14 +3656,15 @@ updateExpSmall <- function(combined, useC = FALSE) {
             i.exp.low <- combined@iExposureOther
             diff <- combined@diffProp
             age.time.step <- combined@ageTimeStep
-            mapping <- combined@mappingsToExp[[i.comp]]
-            n.age <- mapping@nAgeCurrent
-            step.age <- mapping@stepAgeCurrent
-            i.age.up <- (((i.cell.up - 1L) %/% step.age) %% n.age) + 1L
-            is.final.age.group <- i.age.up == n.age
+            iterator <- combined@iteratorsComp[[i.comp]]
+            iterator <- resetCC(iterator, i = i.cell.up)
+            n.age <- iterator@nAge
+            last.age.group.open <- iterator@lastAgeGroupOpen
+            i.age <- iterator@iAge
+            is.final.age.group <- i.age == n.age
             sign <- if (is.orig.dest || !is.increment) -1 else 1
             ## add 'diff' to upper and subtract from lower
-            if (is.final.age.group) {
+            if (is.final.age.group && last.age.group.open) {
                 incr.exp.up <- 0.5 * sign * age.time.step * diff
                 incr.exp.low <- -1 * (1/3) * sign * age.time.step * diff
             }
