@@ -3845,6 +3845,21 @@ isLowerTriangle <- function(i, description, useC = FALSE) {
     }
 }
 
+## TRANSLATED
+## HAS_TESTS
+isOldestAgeGroup <- function(i, description, useC = FALSE) {
+    stopifnot(methods::is(description, "Description"))
+    stopifnot(description@hasAge)
+    if (useC) {
+        .Call(isOldestAgeGroup_R, i, description)
+    }
+    else {
+        n.age <- description@nAge
+        step.age <- description@stepAge
+        i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L
+        i.age == n.age
+    }
+}
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -3984,11 +3999,16 @@ getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {
     }
 }
 
-
-
 ## TRANSLATED
 ## HAS_TESTS
-getMinValCohortPopulationHasAge <- function(i, population, accession, iterator, useC = FALSE) {
+## 'i' should always be 'i.popn.next',
+## implying that i.time >= 2.
+## Function should not be called if the cell
+## that has been updated is the initial population
+## of the oldest age group, or the upper Lexis
+## triangle for the oldest age group.
+getMinValCohortPopulationHasAge <- function(i, population, accession, iterator,
+                                            useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
@@ -4014,46 +4034,44 @@ getMinValCohortPopulationHasAge <- function(i, population, accession, iterator, 
         step.time <- iterator@stepTime
         n.time.popn <- iterator@nTime
         n.time.acc <- n.time.popn - 1L
-        ## first value
-        iterator <- resetCP(iterator, i = i)
-        population_current <- population[i]
-        i.time <- iterator@iTime
-        if (i.time > 1L) {
-            i.age <- iterator@iAge
-            if (i.age == n.age) {
-                ## calculate size of cohort reaching age A
-                i.acc <- ((i - 1L) %% (step.time * n.time.popn)
-                    - step.time
-                    + ((i - 1L) %/% (step.time * n.time.popn) * (step.time * n.time.acc))
-                    + 1L)
-                population_current <- population_current - accession[i.acc]
-            }
-        }
-        ans <- population_current
-        ## subsequent values (guaranteed i.time > 1)
-        while (!iterator@finished) {
-            iterator <- advanceCP(iterator)
+        processed.oldest.age <- FALSE
+        first.iter <- TRUE
+        keep.going <- TRUE
+        ## subsequent values
+        while (keep.going) {
+            if (first.iter)
+                iterator <- resetCP(iterator, i = i)
+            else
+                iterator <- advanceCP(iterator)                
             i <- iterator@i
-            population_current <- population[i]
             i.age <- iterator@iAge
             if (i.age == n.age) {
-                ## calculate size of cohort reaching age A
                 i.acc <- ((i - 1L) %% (step.time * n.time.popn)
                     - step.time
                     + ((i - 1L) %/% (step.time * n.time.popn) * (step.time * n.time.acc))
                     + 1L)
-                population_current <- population_current - accession[i.acc]
+                population.current <- population[i] - accession[i.acc]
+                processed.oldest.age <- TRUE
             }
-            ans <- min(population_current, ans)
+            else
+                population.current <- population[i]
+            if (first.iter) {
+                ans <- population.current
+                first.iter <- FALSE
+            }
+            else
+                ans <- min(population.current, ans)
+            keep.going <- !processed.oldest.age && !iterator@finished
         }
         ans
     }
 }
 
 
-
 ## TRANSLATED
 ## HAS_TESTS
+## 'i' should always be 'i.popn.next',
+## implying that i.time >= 2.
 getMinValCohortPopulationNoAge <- function(i, series, iterator, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))

@@ -3610,6 +3610,15 @@ isLowerTriangle(int i, SEXP description_R)
     return (iTriangle == 0);
 }
 
+int
+isOldestAgeGroup(int i, SEXP description_R)
+{
+    int nAge = *INTEGER(GET_SLOT(description_R, nAge_sym));
+    int stepAge = *INTEGER(GET_SLOT(description_R, stepAge_sym));
+    int iAge_r = (((i - 1) / stepAge) % nAge) + 1;
+    return (iAge_r == nAge);
+}
+
 
 int
 getIAccNextFromPopn(int i, SEXP description_R)
@@ -3718,41 +3727,38 @@ getMinValCohortPopulationHasAge(int i, SEXP population_R, SEXP accession_R, SEXP
     int nTimePopn = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
     int nTimeAcc = nTimePopn - 1;
 
-    /* first value */
+    int processedOldestAge = 0;
+    int firstIter = 1;
+    int keepGoing = 1;
+    int ans;
 
-    resetCP(iterator_R, i);
-    int populationCurrent = population[i-1];
+    while (keepGoing) {
 
-    int iTime = *INTEGER(GET_SLOT(iterator_R, iTime_sym));
-    int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
-    int iAcc_C = ((i - 1) % (stepTime * nTimePopn)
-		  - stepTime
-		  + ((i - 1) / (stepTime * nTimePopn) * (stepTime * nTimeAcc))); /* C-style */
-    if (iTime > 1) {
-      if (iAge == nAge) {
-	populationCurrent -= accession[iAcc_C];
-      }
-    }
-    int ans = populationCurrent;
-
-    /* subsequent values */
-
-    int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
-    while(!(finished)) {
-      advanceCP(iterator_R);
+      if (firstIter)
+	resetCP(iterator_R, i);
+      else
+	advanceCP(iterator_R);
       i = *INTEGER(GET_SLOT(iterator_R, i_sym));
-      populationCurrent = population[i - 1];
-      iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
+      int populationCurrent = population[i - 1];
+      int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
       if (iAge == nAge) {
-	iAcc_C = ((i - 1) % (stepTime * nTimePopn)
-		  - stepTime
-		  + ((i - 1) / (stepTime * nTimePopn) * (stepTime * nTimeAcc))); /* C-style */
-	populationCurrent -= accession[iAcc_C];
+	int iAcc = ((i - 1) % (stepTime * nTimePopn)
+		    - stepTime
+		    + ((i - 1) / (stepTime * nTimePopn) * (stepTime * nTimeAcc))); /* C-style */
+	populationCurrent -= accession[iAcc];
+	processedOldestAge = 1;
       }
-      if (populationCurrent < ans) {
+      if (firstIter) {
 	ans = populationCurrent;
+	firstIter = 0;
       }
-      finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+      else {
+	if (populationCurrent < ans) {
+	  ans = populationCurrent;
+	}
+      }
+      int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+      keepGoing = !processedOldestAge && !finished;
     }
 
     return ans;

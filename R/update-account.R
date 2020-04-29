@@ -136,11 +136,17 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
                                                 description = description)
             i.popn.next <- getIPopnNextFromPopn(i = i.cell,
                                                 description = description)
-            if (has.age)
-                min.val <- getMinValCohortPopulationHasAge(i = i.popn.next,
-                                                           population = population,
-                                                           accession = accession,
-                                                           iterator = iterator.popn)
+            if (has.age) {
+                is.oldest.age.group <- isOldestAgeGroup(i = i.cell,
+                                                        description = description)
+                if (is.oldest.age.group)
+                    min.val <- NA_integer_
+                else
+                    min.val <- getMinValCohortPopulationHasAge(i = i.popn.next,
+                                                               population = population,
+                                                               accession = accession,
+                                                               iterator = iterator.popn)
+            }
             else
                 min.val <- getMinValCohortPopulationNoAge(i = i.popn.next,
                                                           series = population,
@@ -153,7 +159,8 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
                     min.acc <- getMinValCohortAccession(i = i.acc.next,
                                                         series = accession,
                                                         iterator = iterator.acc)
-                    min.val <- min(min.val, min.acc)
+                    if (is.na(min.val) || (min.acc < min.val))
+                        min.val <- min.acc
                 }
             }
             val.curr <- population[i.cell]
@@ -507,14 +514,22 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
             i.popn.next.orig <- pair.popn.next[1L]
             i.popn.next.dest <- pair.popn.next[2L]
             if (has.age) {
-                min.val.orig <- getMinValCohortPopulationHasAge(i = i.popn.next.orig,
-                                                                population = population,
-                                                                accession = accession,
-                                                                iterator = iterator.popn)
-                min.val.dest <- getMinValCohortPopulationHasAge(i = i.popn.next.dest,
-                                                                population = population,
-                                                                accession = accession,
-                                                                iterator = iterator.popn)
+                is.oldest.age.group <- isOldestAgeGroup(i = i.cell,
+                                                        description = description)
+                if (is.oldest.age.group && !is.lower.triangle) {
+                    min.val.orig <- NA_integer_
+                    min.val.dest <- NA_integer_
+                }
+                else {
+                    min.val.orig <- getMinValCohortPopulationHasAge(i = i.popn.next.orig,
+                                                                    population = population,
+                                                                    accession = accession,
+                                                                    iterator = iterator.popn)
+                    min.val.dest <- getMinValCohortPopulationHasAge(i = i.popn.next.dest,
+                                                                    population = population,
+                                                                    accession = accession,
+                                                                    iterator = iterator.popn)
+                }
             }
             else {
                 min.val.orig <- getMinValCohortPopulationNoAge(i = i.popn.next.orig,
@@ -537,8 +552,10 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
                     min.acc.dest <- getMinValCohortAccession(i = i.acc.next.dest,
                                                              series = accession,
                                                              iterator = iterator.acc)
-                    min.val.orig <- min(min.val.orig, min.acc.orig)
-                    min.val.dest <- min(min.val.dest, min.acc.dest)
+                    if (is.na(min.val.orig) || (min.acc.orig < min.val.orig))
+                        min.val.orig <- min.acc.orig
+                    if (is.na(min.val.dest) || (min.acc.dest < min.val.dest))
+                        min.val.dest <- min.acc.dest
                 }
             }
             val.curr <- component[i.cell]
@@ -554,6 +571,10 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
             if (lower > upper)
                 found.value <- FALSE
             else {
+                if (is.infinite(lower))
+                    lower <- NA_integer_
+                if (is.infinite(upper))
+                    upper <- NA_integer_
                 val.prop <- rpoisTrunc1(lambda = lambda,
                                         lower = lower,
                                         upper = upper,
@@ -815,14 +836,22 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
             i.popn.next.in <- getIPopnNextFromComp(i = i.cell.in,
                                                    mapping = mapping.to.popn)
             if (has.age) {
-                min.val.out <- getMinValCohortPopulationHasAge(i = i.popn.next.out,
-                                                               population = population,
-                                                               accession = accession,
-                                                               iterator = iterator.popn)
-                min.val.in <- getMinValCohortPopulationHasAge(i = i.popn.next.in,
-                                                              population = population,
-                                                              accession = accession,
-                                                              iterator = iterator.popn)
+                is.oldest.age.group <- isOldestAgeGroup(i = i.cell.out,
+                                                        description = description)
+                if (is.oldest.age.group && !is.lower.triangle) {
+                    min.val.out <- NA_integer_
+                    min.val.in <- NA_integer_
+                }
+                else {
+                    min.val.out <- getMinValCohortPopulationHasAge(i = i.popn.next.out,
+                                                                   population = population,
+                                                                   accession = accession,
+                                                                   iterator = iterator.popn)
+                    min.val.in <- getMinValCohortPopulationHasAge(i = i.popn.next.in,
+                                                                  population = population,
+                                                                  accession = accession,
+                                                                  iterator = iterator.popn)
+                }
             }
             else {
                 min.val.out <- getMinValCohortPopulationNoAge(i = i.popn.next.out,
@@ -845,8 +874,10 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
                     min.acc.in <- getMinValCohortAccession(i = i.acc.next.in,
                                                            series = accession,
                                                            iterator = iterator.acc)
-                    min.val.out <- min(min.val.out, min.acc.out)
-                    min.val.in <- min(min.val.in, min.acc.in)
+                    if (is.na(min.val.out) || (min.acc.out < min.val.out))
+                        min.val.out <- min.acc.out
+                    if (is.na(min.val.in) || (min.acc.in < min.val.in))
+                        min.val.in <- min.acc.in
                 }
             }
             val.curr.out <- component[i.cell.out]
@@ -965,14 +996,22 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
         i.popn.next.sub <- getIPopnNextFromComp(i = i.cell.sub,
                                                 mapping = mapping.to.popn)
         if (has.age) {
-            min.val.add <- getMinValCohortPopulationHasAge(i = i.popn.next.add,
-                                                           population = population,
-                                                           accession = accession,
-                                                           iterator = iterator.popn)
-            min.val.sub <- getMinValCohortPopulationHasAge(i = i.popn.next.sub,
-                                                           population = population,
-                                                           accession = accession,
-                                                           iterator = iterator.popn)
+            is.oldest.age.group <- isOldestAgeGroup(i = i.cell.add,
+                                                    description = description)
+            if (is.oldest.age.group & !is.lower.triangle) {
+                min.val.add <- NA_integer_
+                min.val.sub <- NA_integer_
+            }
+            else {
+                min.val.add <- getMinValCohortPopulationHasAge(i = i.popn.next.add,
+                                                               population = population,
+                                                               accession = accession,
+                                                               iterator = iterator.popn)
+                min.val.sub <- getMinValCohortPopulationHasAge(i = i.popn.next.sub,
+                                                               population = population,
+                                                               accession = accession,
+                                                               iterator = iterator.popn)
+            }
         }
         else {
             min.val.add <- getMinValCohortPopulationNoAge(i = i.popn.next.add,
@@ -995,8 +1034,10 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
                 min.acc.sub <- getMinValCohortAccession(i = i.acc.next.sub,
                                                         series = accession,
                                                         iterator = iterator.acc)
-                min.val.add <- min(min.val.add, min.acc.add)
-                min.val.sub <- min(min.val.sub, min.acc.sub)
+                if (is.na(min.val.add) || (min.acc.add < min.val.add))
+                    min.val.add <- min.acc.add
+                if (is.na(min.val.sub) || (min.acc.sub < min.val.sub))
+                    min.val.sub <- min.acc.sub
             }
         }
         mean.add <- theta[i.cell.add]
@@ -1120,11 +1161,17 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
                                                 mapping = mapping.to.exp)
             i.popn.next <- getIPopnNextFromComp(i = i.cell,
                                                 mapping = mapping.to.popn)
-            if (has.age)
-                min.val <- getMinValCohortPopulationHasAge(i = i.popn.next,
-                                                           population = population,
-                                                           accession = accession,
-                                                           iterator = iterator.popn)
+            if (has.age) {
+                is.oldest.age.group <- isOldestAgeGroup(i = i.cell,
+                                                        description = description)
+                if (is.oldest.age.group && !is.lower.triangle)
+                    min.val <- NA_integer_
+                else
+                    min.val <- getMinValCohortPopulationHasAge(i = i.popn.next,
+                                                               population = population,
+                                                               accession = accession,
+                                                               iterator = iterator.popn)
+            }
             else
                 min.val <- getMinValCohortPopulationNoAge(i = i.popn.next,
                                                           series = population,
@@ -1137,7 +1184,8 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
                     min.acc <- getMinValCohortAccession(i = i.acc.next,
                                                         series = accession,
                                                         iterator = iterator.acc)
-                    min.val <- min(min.val, min.acc)
+                    if (is.na(min.val) || (min.acc < min.val))
+                        min.val <- min.acc
                 }
             }
             val.curr <- component[i.cell]
@@ -2697,7 +2745,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
     ## exposure
     stopifnot(methods::is(exposure, "Exposure"))
     stopifnot(is.double(exposure))
-    stopifnot(all(exposure[!is.na(exposure)] >= 0))
+    ## stopifnot(all(exposure[!is.na(exposure)] >= 0))
     ## iteratorExposure
     stopifnot(methods::is(iteratorExposure, "CohortIteratorComponent"))
     ## diff
@@ -3571,7 +3619,9 @@ diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
             if (((val.up.prop > 0) && !(expose.up.prop > 0))
                 || ((val.low.prop > 0) && !(expose.low.prop > 0)))
                 return(-Inf)
-                
+            if (((val.up.curr > 0) && !(expose.up.curr > 0))
+                || ((val.low.curr > 0) && !(expose.low.curr > 0)))
+                return(Inf)
             val.up.expect.curr <- theta.up * expose.up.curr
             val.low.expect.curr <- theta.low * expose.low.curr
             val.up.expect.prop <- theta.up * expose.up.prop
@@ -3656,6 +3706,7 @@ updateExpSmall <- function(combined, useC = FALSE) {
             i.exp.low <- combined@iExposureOther
             diff <- combined@diffProp
             age.time.step <- combined@ageTimeStep
+            tol.exposure <- 0.000001
             iterator <- combined@iteratorsComp[[i.comp]]
             iterator <- resetCC(iterator, i = i.cell.up)
             n.age <- iterator@nAge
@@ -3672,8 +3723,22 @@ updateExpSmall <- function(combined, useC = FALSE) {
                 incr.exp.up <- (1/6) * sign * age.time.step * diff
                 incr.exp.low <- (1/6) * sign * age.time.step * diff
             }
-            combined@exposure[i.exp.up] <- combined@exposure[i.exp.up] + incr.exp.up
-            combined@exposure[i.exp.low] <- combined@exposure[i.exp.low] + incr.exp.low
+            expose.new.up <- combined@exposure[i.exp.up] + incr.exp.up
+            expose.new.low <- combined@exposure[i.exp.low] + incr.exp.low
+            if (expose.new.up < tol.exposure) {
+                if (expose.new.up > -1 * tol.expose)
+                    expose.new.up <- 0
+                else
+                    stop(sprintf("negative value for 'expose.new.up' : %f", expose.new.up))
+            }
+            if (expose.new.low < tol.exposure) {
+                if (expose.new.low > -1 * tol.exposure)
+                    expose.new.low <- 0
+                else
+                    stop(sprintf("negative value for 'expose.new.low' : %f", expose.new.low))
+            }
+            combined@exposure[i.exp.up] <- expose.new.up
+            combined@exposure[i.exp.low] <- expose.new.low
         }
         combined
     }
@@ -3898,8 +3963,15 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
         is.increment.vec <- combined@isIncrement
         is.increment <- is.popn || is.increment.vec[i.comp]
         is.final <- FALSE
-        ## deal with population and increments in first cell -------------------------------
+        tol.exposure <- 0.000001
         i.exp.first <- combined@iExpFirst
+        i.exp.first.oth  <- combined@iExpFirstOther
+        ## deal with orig-dest where orig equals dest
+        ## (not just for efficiency - the function
+        ##  doesn't behave properly in this case)
+        if (is.orig.dest && (i.exp.first == i.exp.first.oth))
+            return(combined)
+        ## deal with population and increments in first cell -------------------------------
         iterator <- resetCC(iterator, i = i.exp.first)
         if (has.age) {
             n.age <- iterator@nAge
@@ -3952,14 +4024,35 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
                 incr.exp.orig <- incr.exp
             incr.exp.dest <- -1 * incr.exp.orig
             i.exp.first.oth  <- combined@iExpFirstOther
-            combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + incr.exp.orig
-            combined@exposure[i.exp.first.oth] <- combined@exposure[i.exp.first.oth] + incr.exp.dest
+            expose.new.orig <- combined@exposure[i.exp.first] + incr.exp.orig
+            expose.new.dest <- combined@exposure[i.exp.first.oth] + incr.exp.dest
+            if (expose.new.orig < tol.exposure) {
+                if (expose.new.orig > -1 * tol.exposure)
+                    expose.new.orig <- 0
+                else
+                    stop(sprintf("negative value for 'expose.new.orig' : %f", expose.new.orig))
+            }
+            if (expose.new.dest < tol.exposure) {
+                if (expose.new.dest > -1 * tol.exposure)
+                    expose.new.dest <- 0
+                else
+                    stop(sprintf("negative value for 'expose.new.dest' : %f", expose.new.dest))
+            }
+            combined@exposure[i.exp.first] <- expose.new.orig
+            combined@exposure[i.exp.first.oth] <- expose.new.dest
             iterator.oth <- resetCC(iterator, i = i.exp.first.oth)
         }
         else { ## one cohort
             if (!is.increment)
                 incr.exp <- -1 * incr.exp
-            combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + incr.exp
+            expose.new <- combined@exposure[i.exp.first] + incr.exp
+            if (expose.new < tol.exposure) {
+                if (expose.new > -1 * tol.exposure)
+                    expose.new <- 0
+                else
+                    stop(sprintf("negative value for 'expose.new' : %f", expose.new))
+            }
+            combined@exposure[i.exp.first] <- expose.new
         }
         ## deal with population in subsequent cells ---------------------------------------
         while (!iterator@finished) {
@@ -3990,149 +4083,38 @@ updateSubsequentExpMove <- function(combined, useC = FALSE) {
                 incr.exp.dest <- -1 * incr.exp.orig
                 iterator.oth <- advanceCC(iterator.oth)
                 i.oth <- iterator.oth@i
-                combined@exposure[i] <- combined@exposure[i] + incr.exp.orig
-                combined@exposure[i.oth] <- combined@exposure[i.oth] + incr.exp.dest
-            }
-            else {
-                if (!is.increment)
-                    incr.exp <- -1 * incr.exp
-                combined@exposure[i] <- combined@exposure[i] + incr.exp
-            }
-        }
-        combined
-    }
-}
-
-        
-
-## TRANSLATED
-## HAS_TESTS
-updateSubsequentExpMoveSmall <- function(combined, useC = FALSE) {
-    stopifnot(methods::is(combined, "CombinedAccountMovements"))
-    if (useC) {
-        .Call(updateSubsequentExpMove_R, combined)
-    }
-    else {
-        i.comp <- combined@iComp
-        i.births <- combined@iBirths
-        i.orig.dest <- combined@iOrigDest
-        i.pool <- combined@iPool
-        i.int.net <- combined@iIntNet
-        is.popn <- i.comp == 0L
-        is.births <- i.comp == i.births
-        is.orig.dest <- i.comp == i.orig.dest
-        is.pool <- i.comp == i.pool
-        is.int.net <- i.comp == i.int.net
-        update.two.cohorts <- (is.orig.dest || is.pool || is.int.net)
-        iterator <- combined@iteratorExposure
-        diff <- combined@diffProp
-        age.time.step <- combined@ageTimeStep
-        has.age <- combined@hasAge
-        is.increment.vec <- combined@isIncrement
-        is.increment <- is.popn || is.increment.vec[i.comp]
-        is.final <- FALSE
-        ## deal with population and increments in first cell -------------------------------
-        i.exp.first <- combined@iExpFirst
-        iterator <- resetCC(iterator, i = i.exp.first)
-        if (has.age) {
-            n.age <- iterator@nAge
-            i.age <- iterator@iAge
-            i.triangle <- iterator@iTriangle
-            is.final <- i.age == n.age
-            is.upper <- i.triangle == 2L
-            if (is.popn) { 
-                ## adjust for change in population
-                ## (note that always upper tri)
-                if (is.final)
-                    incr.exp <- age.time.step * diff
-                else
-                    incr.exp <- 0.5 * age.time.step * diff
-            }
-            else { ## not popn
-                ## adjust for change in net increments
-                if (is.births)
-                    incr.exp <- 0
-                else {
-                    if (is.final) {
-                        if (is.upper)
-                            incr.exp <- 0.5 * age.time.step * diff
-                        else
-                            incr.exp <- -1 * (1/6) * age.time.step * diff
-                    }
-                    else {
-                        if (is.upper)
-                            incr.exp <- (1/6) * age.time.step * diff
-                        else
-                            incr.exp <- -1 * (1/6) * age.time.step * diff
-                    }
-                }
-                ## adjust for change in population
-                if (!is.upper) {
-                    incr.exp <- incr.exp + 0.5 * age.time.step * diff
-                }
-            }
-        }
-        else { ## no age
-            if (is.popn)
-                incr.exp <- age.time.step * diff
-            else
-                incr.exp <- 0.5 * age.time.step * diff
-        }
-        if (update.two.cohorts) {
-            if (is.orig.dest || is.pool)
-                incr.exp.orig <- -1 * incr.exp
-            else # is.int.net
-                incr.exp.orig <- incr.exp
-            incr.exp.dest <- -1 * incr.exp.orig
-            i.exp.first.oth  <- combined@iExpFirstOther
-            combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + incr.exp.orig
-            combined@exposure[i.exp.first.oth] <- combined@exposure[i.exp.first.oth] + incr.exp.dest
-            iterator.oth <- resetCC(iterator, i = i.exp.first.oth)
-        }
-        else { ## one cohort
-            if (!is.increment)
-                incr.exp <- -1 * incr.exp
-            combined@exposure[i.exp.first] <- combined@exposure[i.exp.first] + incr.exp
-        }
-        if (is.final)
-        ## deal with population in subsequent cells ---------------------------------------
-        while (!iterator@finished) {
-            iterator <- advanceCC(iterator)
-            i <- iterator@i
-            if (has.age) {
-                i.age <- iterator@iAge
-                i.triangle <- iterator@iTriangle
-                is.final <- i.age == n.age
-                is.upper <- i.triangle == 2L
-                if (is.final) {
-                    if (is.upper)
-                        incr.exp <- age.time.step * diff
+                expose.new.orig <- combined@exposure[i] + incr.exp.orig
+                expose.new.dest <- combined@exposure[i.oth] + incr.exp.dest
+                if (expose.new.orig < tol.exposure) {
+                    if (expose.new.orig > -1 * tol.exposure)
+                        expose.new.orig <- 0
                     else
-                        incr.exp <- 0.5 * age.time.step * diff ## iterator ensures that will only ever encounter final lower once
+                        stop(sprintf("negative value for 'expose.new.orig' : %f", expose.new.orig))
                 }
-                else
-                    incr.exp <- 0.5 * age.time.step * diff
-            }
-            else { ## no age
-                incr.exp <- age.time.step * diff
-            }
-            if (update.two.cohorts) {
-                if (is.orig.dest || is.pool)
-                    incr.exp.orig <- -1 * incr.exp
-                else # is.int.net
-                    incr.exp.orig <- incr.exp
-                incr.exp.dest <- -1 * incr.exp.orig
-                iterator.oth <- advanceCC(iterator.oth)
-                i.oth <- iterator.oth@i
-                combined@exposure[i] <- combined@exposure[i] + incr.exp.orig
-                combined@exposure[i.oth] <- combined@exposure[i.oth] + incr.exp.dest
+                if (expose.new.dest < tol.exposure) {
+                    if (expose.new.dest > -1 * tol.exposure)
+                        expose.new.dest <- 0
+                    else
+                        stop(sprintf("negative value for 'expose.new.dest' : %f", expose.new.dest))
+                }
+                combined@exposure[i] <- expose.new.orig
+                combined@exposure[i.oth] <- expose.new.dest
             }
             else {
                 if (!is.increment)
                     incr.exp <- -1 * incr.exp
-                combined@exposure[i] <- combined@exposure[i] + incr.exp
+                expose.new <- combined@exposure[i] + incr.exp
+                if (expose.new < tol.exposure) {
+                    if (expose.new > -1 * tol.exposure)
+                        expose.new <- 0
+                    else
+                        stop(sprintf("negative value for 'expose.new' : %f", expose.new))
+                }
+                combined@exposure[i] <- expose.new
             }
         }
         combined
     }
 }
+
+   

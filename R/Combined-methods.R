@@ -790,7 +790,6 @@ setMethod("updateCombined",
 
 
 ## Accounts
-
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("diffLogDensAccount",
@@ -804,61 +803,72 @@ setMethod("diffLogDensAccount",
               }
               else {
                   i.comp <- combined@iComp
-                  i.births <- combined@iBirths
                   i.orig.dest <- combined@iOrigDest
                   i.pool <- combined@iPool
                   i.int.net <- combined@iIntNet
                   is.small.update <- combined@isSmallUpdate@.Data 
                   model.uses.exposure <- combined@modelUsesExposure
                   is.popn <- i.comp == 0L
-                  is.births <- i.comp == i.births
                   is.orig.dest <- i.comp == i.orig.dest
                   is.pool <- i.comp == i.pool
                   is.int.net <- i.comp == i.int.net
                   use.prior.popn <- combined@usePriorPopn@.Data
-                  ans <- 0
                   if (use.prior.popn && !is.small.update)
-                      ans <- ans + diffLogDensPopn(combined)
-                  if (is.popn)
-                      ans <- ans + diffLogDensExpPopn(combined)
-                  else if (is.births) {
-                      if (is.small.update) 
-                          ans <- ans + diffLogDensJumpCompSmall(combined) 
-                      else
-                          ans <- ans + diffLogDensExpComp(combined)
+                      diff.dens.popn <- diffLogDensPopn(combined)
+                  else
+                      diff.dens.popn <- 0
+                  if (is.popn) {
+                      diff.dens.self <- 0
+                      diff.dens.exp <- diffLogDensExpPopn(combined)
                   }
                   else if (is.orig.dest) {
-                      if (is.small.update) 
-                          ans <- ans + diffLogDensJumpCompSmall(combined) 
+                      if (is.small.update)  {
+                          diff.dens.self <- diffLogDensJumpCompSmall(combined)
+                          diff.dens.exp <- 0
+                      }
                       else { 
                           if (model.uses.exposure[i.comp])
-                              ans <- ans + diffLogDensJumpOrigDest(combined)
-                          ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
+                              diff.dens.self <- diffLogDensJumpOrigDest(combined)
+                          else
+                              diff.dens.self <- 0
+                          diff.dens.exp <- diffLogDensExpOrigDestPoolNet(combined)
                       }
                   }
                   else if (is.pool) {
                       if (model.uses.exposure[i.comp])
-                          ans <- ans + diffLogDensJumpPoolWithExpose(combined)
+                          diff.dens.self <- diffLogDensJumpPoolWithExpose(combined)
                       else
-                          ans <- ans + diffLogDensJumpPoolNoExpose(combined)
-                      ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
+                          diff.dens.self <- diffLogDensJumpPoolNoExpose(combined)
+                      diff.dens.exp <- diffLogDensExpOrigDestPoolNet(combined)
                   }
                   else if (is.int.net) {
-                      ans <- ans + diffLogDensJumpNet(combined)
-                      ans <- ans + diffLogDensExpOrigDestPoolNet(combined)
+                      diff.dens.self <- diffLogDensJumpNet(combined)
+                      diff.dens.exp <- diffLogDensExpOrigDestPoolNet(combined)
                   }
                   else {
-                      if (is.small.update) 
-                          ans <- ans + diffLogDensJumpCompSmall(combined) 
+                      if (is.small.update) {
+                          diff.dens.self <- diffLogDensJumpCompSmall(combined)
+                          diff.dens.exp <- 0
+                      }
                       else { 
                           if (model.uses.exposure[i.comp])
-                              ans <- ans + diffLogDensJumpComp(combined)
-                          ans <- ans + diffLogDensExpComp(combined)
+                              diff.dens.self <- diffLogDensJumpComp(combined)
+                          else
+                              diff.dens.self <- 0
+                          diff.dens.exp <- diffLogDensExpComp(combined)
                       } 
                   }
+                  is.invalid <- (is.infinite(diff.dens.self)
+                      && is.infinite(diff.dens.exp)
+                      && ((diff.dens.self > diff.dens.exp) || (diff.dens.self < diff.dens.exp)))
+                  if (is.invalid)
+                      ans <- -Inf ## stay at current position
+                  else
+                      ans <- diff.dens.popn + diff.dens.self + diff.dens.exp
                   ans
               }
           })
+
 
 ## TRANSLATED
 ## HAS_TESTS

@@ -9857,7 +9857,42 @@ test_that("R and C versions of isLowerTriangle give same answer", {
         expect_identical(isLowerTriangle(i = i, description = description, useC = FALSE),
                          isLowerTriangle(i = i, description = description, useC = TRUE))
 })
-    
+
+test_that("isOldestAgeGroup works", {
+    isOldestAgeGroup <- demest:::isOldestAgeGroup
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                                           age = c("0-9", "10+"),
+                                           triangle = c("Lower", "Upper"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    for (i in c(4:6, 10:12))
+        expect_true(isOldestAgeGroup(i = i, description = description))
+    for (i in c(1:3, 7:9))
+        expect_false(isOldestAgeGroup(i = i, description = description))
+})
+
+test_that("R and C versions of isOldestAgeGroup give same answer", {
+    isOldestAgeGroup <- demest:::isOldestAgeGroup
+    Description <- demest:::Description
+    object <- Counts(array(1:12,
+                           dim = c(3, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020", "2021-2030"),
+                               age = c("0-9", "10+"),
+                               triangle = c("Lower", "Upper"))))
+    object <- new("EntriesMovements",
+                  .Data = object@.Data,
+                  metadata = object@metadata)
+    description <- Description(object)
+    for (i in 1:12)
+        expect_identical(isOldestAgeGroup(i = i, description = description, useC = FALSE),
+                         isOldestAgeGroup(i = i, description = description, useC = TRUE))
+})
+
 test_that("getIAccNextFromPopn works", {
     getIAccNextFromPopn <- demest:::getIAccNextFromPopn
     Description <- demest:::Description
@@ -10516,15 +10551,14 @@ test_that("getMinValCohortPopulationHasAge gives valid answer", {
     population <- Population(population)
     accession <- Accession(accession)
     iter <- CohortIterator(population)
-    vec.ans.expect <- c(1L, 2L, 3L, 4L,
-                        5L, 6L, 4L, 4L,
+    vec.ans.expect <- c(5L, 6L, 4L, 4L,
                         9L, 10L, 11L, 4L)
-    for (i in 1:12) {
+    for (i in 5:12) {
         ans.obtained <- getMinValCohortPopulationHasAge(i = i,
                                                         population = population,
                                                         accession = accession,
                                                         iter = iter)
-        ans.expected <- vec.ans.expect[i]
+        ans.expected <- vec.ans.expect[i - 4]
         expect_identical(ans.obtained, ans.expected)
     }
     population <- Counts(array(12:1,
@@ -10538,11 +10572,10 @@ test_that("getMinValCohortPopulationHasAge gives valid answer", {
                                               time = c("2001-2005", "2006-2010"))))
     accession <- Accession(accession)
     iter <- CohortIterator(population)
-    vec.ans.expect <- c(2L, 0L, 0L, 0L,
-                        3L, 2L, 0L, 0L,
+    vec.ans.expect <- c(3L, 2L, 0L, 0L,
                         4L, 3L, 2L, 0L)
-    for (i in 1:12) {
-        ans.obtained <- getMinValCohortPopulationHasAge(i = i,
+    for (i in 1:8) {
+        ans.obtained <- getMinValCohortPopulationHasAge(i = i + 4L,
                                                         population = population,
                                                         accession = accession,
                                                         iter = iter)
@@ -10562,11 +10595,12 @@ test_that("getMinValCohortPopulationHasAge gives valid answer", {
                                    age = c("5", "10", "15"))))
     accession <- Accession(accession)
     iter <- CohortIterator(population)
-    vec.ans.exp <- c(5:1, 5:1, 25:21, 45:41,
-                     5:1, 5:1, 5:1, 25:21,
-                     rep(5:1, 4))
-    for (i in 1:60) {
-        ans.obtained <- getMinValCohortPopulationHasAge(i = i,
+    vec.i <- c(6:20, 26:40, 46:60)
+    vec.ans.exp <- c(5:1, 25:21, 45:41,
+                     10:6, 5:1, 25:21,
+                     15:1)
+    for (i in seq_along(vec.i)) {
+        ans.obtained <- getMinValCohortPopulationHasAge(i = vec.i[i],
                                                         population = population,
                                                         accession = accession,
                                                         iter = iter)
@@ -10592,7 +10626,7 @@ test_that("R and C versions of getMinValCohortPopulationHasAge give same answer"
     population <- Population(population)
     accession <- Accession(accession)
     iter <- CohortIterator(population)
-    for (i in 1:12) {
+    for (i in 5:12) {
         ans.R <- getMinValCohortPopulationHasAge(i = i, population = population,
                                                  accession = accession,
                                                  iter = iter, useC = FALSE)
@@ -10612,7 +10646,7 @@ test_that("R and C versions of getMinValCohortPopulationHasAge give same answer"
                                               time = c("2001-2005", "2006-2010"))))
     accession <- Accession(accession)
     iter <- CohortIterator(population)
-    for (i in 1:12) {
+    for (i in 5:12) {
         ans.R <- getMinValCohortPopulationHasAge(i = i,  population = population,
                                                  accession = accession, iter = iter, useC = FALSE)
         ans.C <- getMinValCohortPopulationHasAge(i = i,  population = population,
@@ -10632,7 +10666,7 @@ test_that("R and C versions of getMinValCohortPopulationHasAge give same answer"
                                    age = c("5", "10", "15"))))
     accession <- Accession(accession)
     iter <- CohortIterator(population)
-    for (i in 1:60) {
+    for (i in c(6:20, 26:40, 46:60)) {
         ans.R <- getMinValCohortPopulationHasAge(i = i, population = population,
                                                  accession = accession,
                                                  iter = iter, useC = FALSE)

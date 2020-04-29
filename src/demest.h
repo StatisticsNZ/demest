@@ -393,6 +393,7 @@ SEXP
   iExposure_sym,
   iExposureOther_sym,
   isLowerTriangle_sym,
+  isOldestAgeGroup_sym,
   generatedNewProposal_sym,
   probSmallUpdate_sym,
   isSmallUpdate_sym,
@@ -1037,6 +1038,7 @@ SEXP chooseICellSubAddNet(SEXP description_R);
 int getICellLowerTriFromComp(int i_cell_up_r, SEXP description_R);
 int getICellLowerTriNextFromComp(int i_cell_up_r, SEXP description_R);
 int isLowerTriangle(int i, SEXP description_R);
+int isOldestAgeGroup(int i, SEXP description_R);
 int getIAccNextFromPopn(int i, SEXP description_R);
 int getIPopnNextFromPopn(int i, SEXP description_R);
 int getIExpFirstFromPopn(int i, SEXP description_R);

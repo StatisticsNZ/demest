@@ -880,6 +880,14 @@ SEXP isLowerTriangle_R(SEXP i_R, SEXP description_R)
     return ScalarLogical(ans);
 }
 
+/* one off wrapper for isOldestAgeGroup */
+SEXP isOldestAgeGroup_R(SEXP i_R, SEXP description_R)
+{
+    int i = *INTEGER(i_R);
+    int ans = isOldestAgeGroup(i, description_R);
+    return ScalarLogical(ans);
+}
+
 /* wrap getIMappingFunctions */
 MAPPING_GET_I_WRAPPER(getIAccNextFromPopn);
 MAPPING_GET_I_WRAPPER(getIPopnNextFromPopn);
@@ -2550,6 +2558,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(chooseICellPopn_R, 1),
   CALLDEF(chooseICellSubAddNet_R, 1),
   CALLDEF(isLowerTriangle_R, 2),
+  CALLDEF(isOldestAgeGroup_R, 2),
   CALLDEF(getIAccNextFromPopn_R, 2),
   CALLDEF(getIPopnNextFromPopn_R, 2),
   CALLDEF(getIExpFirstFromPopn_R, 2),
@@ -3124,6 +3133,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iExposure);
   ADD_SYM(iExposureOther);
   ADD_SYM(isLowerTriangle);
+  ADD_SYM(isOldestAgeGroup);
   ADD_SYM(generatedNewProposal);
   ADD_SYM(probSmallUpdate);
   ADD_SYM(isSmallUpdate);

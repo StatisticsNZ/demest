@@ -874,41 +874,35 @@ double
 diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
 {
     int iComp_r = *INTEGER(GET_SLOT(object_R, iComp_sym));
-    int iBirths_r = *INTEGER(GET_SLOT(object_R, iBirths_sym));
     int iOrigDest_r = *INTEGER(GET_SLOT(object_R, iOrigDest_sym));
     int iPool_r = *INTEGER(GET_SLOT(object_R, iPool_sym));
     int iIntNet_r = *INTEGER(GET_SLOT(object_R, iIntNet_sym));
 
     int isSmallUpdate = *LOGICAL(GET_SLOT(object_R, isSmallUpdate_sym));
     int isPopn = (iComp_r == 0);
-    int isBirths = (iComp_r == iBirths_r);
     int isOrigDest = (iComp_r == iOrigDest_r);
     int isPool = (iComp_r == iPool_r);
     int isIntNet = (iComp_r == iIntNet_r);
 
     int usePriorPopn = *INTEGER(GET_SLOT(object_R, usePriorPopn_sym));
 
+    double diffDensPopn = 0;
+    double diffDensSelf = 0;
+    double diffDensExp = 0;
+
     double ans = 0;
 
     if (usePriorPopn && !(isSmallUpdate)) {
-        ans += diffLogDensPopn(object_R);
+        diffDensPopn += diffLogDensPopn(object_R);
     }
 
     if(isPopn) {
-        ans += diffLogDensExpPopn(object_R);
-    }
-    else if (isBirths) {
-        if (isSmallUpdate) {
-            ans += diffLogDensJumpCompSmall(object_R);
-        }
-        else {
-            ans += diffLogDensExpComp(object_R);
-        }
+        diffDensExp += diffLogDensExpPopn(object_R);
     }
     else if (isOrigDest) {
 
         if (isSmallUpdate) {
-            ans += diffLogDensJumpCompSmall(object_R);
+            diffDensSelf += diffLogDensJumpCompSmall(object_R);
         }
         else {
 
@@ -916,9 +910,9 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
             int usesExposure = usesExposureVec[iComp_r - 1];
 
             if(usesExposure) {
-                ans += diffLogDensJumpOrigDest(object_R);
+                diffDensSelf += diffLogDensJumpOrigDest(object_R);
             }
-            ans += diffLogDensExpOrigDestPoolNet(object_R);
+            diffDensExp += diffLogDensExpOrigDestPoolNet(object_R);
         }
     }
     else if(isPool) {
@@ -927,32 +921,43 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
         int usesExposure = usesExposureVec[iComp_r - 1];
 
         if(usesExposure) {
-            ans += diffLogDensJumpPoolWithExpose(object_R);
+            diffDensSelf += diffLogDensJumpPoolWithExpose(object_R);
         }
         else {
-            ans += diffLogDensJumpPoolNoExpose(object_R);
+            diffDensSelf += diffLogDensJumpPoolNoExpose(object_R);
         }
-        ans += diffLogDensExpOrigDestPoolNet(object_R);
+        diffDensExp += diffLogDensExpOrigDestPoolNet(object_R);
     }
     else if(isIntNet) {
-        ans += diffLogDensJumpNet(object_R);
-        ans += diffLogDensExpOrigDestPoolNet(object_R);
+        diffDensSelf += diffLogDensJumpNet(object_R);
+        diffDensExp += diffLogDensExpOrigDestPoolNet(object_R);
     }
     else {
 
         if (isSmallUpdate) {
-            ans += diffLogDensJumpCompSmall(object_R);
+            diffDensSelf += diffLogDensJumpCompSmall(object_R);
         }
         else {
             int * usesExposureVec = LOGICAL(GET_SLOT(object_R, modelUsesExposure_sym));
             int usesExposure = usesExposureVec[iComp_r - 1];
 
             if(usesExposure) {
-                ans += diffLogDensJumpComp(object_R);
+                diffDensSelf += diffLogDensJumpComp(object_R);
             }
-            ans += diffLogDensExpComp(object_R);
+            diffDensExp += diffLogDensExpComp(object_R);
         }
     }
+
+    int isInvalid = (!R_finite(diffDensSelf)
+		     && !R_finite(diffDensExp)
+		     && ((diffDensSelf > diffDensExp) || (diffDensSelf < diffDensExp)));
+    if (isInvalid) {
+      ans = R_NegInf;
+    }
+    else {
+      ans = diffDensPopn + diffDensSelf + diffDensExp;
+    }
+    
     return ans;
 }
 
