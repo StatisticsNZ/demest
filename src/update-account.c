@@ -680,7 +680,6 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
     SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
     SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, i_comp + 1);
     double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
-    double tol = *REAL(GET_SLOT(thisSystemModel_R, tolerance_sym));
     int * strucZeroArray = INTEGER(GET_SLOT(thisSystemModel_R, strucZeroArray_sym));
 
     int i_cell_up_r = 0;
@@ -731,7 +730,6 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
 	val_acc_dest = accession[i_acc_dest];
 
         int val_up_curr = component[i_cell_up];
-        int val_low_curr = component[i_cell_low];
 
         double val_up_expected = theta[i_cell_up];
         double val_low_expected = theta[i_cell_low];
@@ -759,27 +757,22 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
 	  val_popn_dest = population[i_popn_dest_r - 1];
 	}
 
-	double denom = val_up_expected + val_low_expected;
-        double prob = 0.5;
-        if (denom > tol) {
-            prob = val_up_expected/denom;
-        }
+	double val_mean_expected = 0.5 * val_up_expected + 0.5 * val_low_expected;
 
-        int size = val_up_curr + val_low_curr;
         int val_up_prop = 0;
 
 	int lower = val_up_curr - val_acc_dest;
 	int upper = val_up_curr + val_acc_orig;
 	if (is_final_age_group) {
-	  if (val_popn_dest < val_acc_dest) {
-	    lower = val_up_curr - val_popn_dest;
+	  if (val_acc_dest < val_popn_orig - val_acc_orig) {
+	    lower = val_up_curr - val_acc_dest;
 	  }
-	  if (val_popn_orig < val_acc_orig) {
-	    upper = val_up_curr + val_popn_orig;
+	  if (val_popn_dest - val_acc_dest < val_acc_orig) {
+	    upper = val_up_curr + val_popn_dest - val_acc_dest;
 	  }
 	}
 	
-	val_up_prop = rbinomTrunc1(size, prob, lower, upper, maxAttempt);
+	val_up_prop = rpoisTrunc1(val_mean_expected, lower, upper, maxAttempt);
 
         int foundValue = !(val_up_prop == NA_INTEGER);
 
@@ -1521,12 +1514,12 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
 	if (isIncrement) {
 	  lower = val_up_curr - val_acc;
 	  if (is_final_age_group) {
-            upper = val_up_curr + val_popn;
+            upper = val_up_curr + val_popn - val_acc;
 	  }
         }
         else {
 	  if (is_final_age_group) {
-            lower = val_up_curr - val_popn;
+            lower = val_up_curr - val_popn + val_acc;
 	  }
 	  upper = val_up_curr + val_acc;
 	}
@@ -2603,8 +2596,14 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
     if (exposureProp < tolExposure) {
       if (exposureProp > -1 * tolExposure)
 	exposureProp = 0;
-      else
-	error("negative value for 'exposureProp' : %f", exposureProp);
+      else {
+	if (exposureCurr < 0) {
+	  ans = R_NegInf;
+	  keepGoing = 0;
+	}
+	else
+	  error("negative value for 'exposureProp' : %f", exposureProp);
+      }
     }
     int j = 0;
     while (j < lengthVec && keepGoing) {
@@ -2628,8 +2627,8 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
       }
       ++j;
     }
-    isFirstCell = 0;
     if (keepGoing) {
+      isFirstCell = 0;
       int finishedComp = *finishedComp_ptr;
       if (finishedComp) {
 	keepGoing = 0;
@@ -2757,14 +2756,20 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
       if (exposureProp < tolExposure) {
 	if (exposureProp > -1 * tolExposure)
 	  exposureProp = 0;
-	else
-	  error("negative value for 'exposureProp' : %f", exposureProp);
+	else {
+	  if (exposureCurr < 0) {
+	    ans = R_NegInf;
+	    keepGoing = 0;
+	  }
+	  else
+	    error("negative value for 'exposureProp' : %f", exposureProp);
+	}
       }
       if ( (compCurr > 0) && !(exposureProp > 0) ) {
 	ans = R_NegInf;
 	keepGoing = 0;
       }
-      else {
+      if (keepGoing) {
 	double thetaCurr = theta[iComp];
 	double lambdaProp = thetaCurr * exposureProp;
 	double lambdaCurr = thetaCurr * exposureCurr;
@@ -2774,8 +2779,8 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
 	ans += diffLogLik;
       }
     }
-    isFirstCell = 0;
     if (keepGoing) {
+      isFirstCell = 0;
       int finishedComp = *finishedComp_ptr;
       if (finishedComp) {
 	keepGoing = 0;
@@ -2819,6 +2824,7 @@ diffLogDensJumpOrigDest(SEXP combined_R)
   double exposureCellCurr = exposure[iExposure];
   double exposureCellJump = expectedExposure[iExposure];
   double exposureCellProp = exposureCellCurr;
+  int keepGoing = 1;
   double ans = 0;
   if (hasAge) {
     resetCC(iterator_R, iCell_r);
@@ -2846,21 +2852,29 @@ diffLogDensJumpOrigDest(SEXP combined_R)
   if (exposureCellProp < tolExposure) {
     if (exposureCellProp > -1 * tolExposure)
       exposureCellProp = 0;
-    else
-      error("negative value for 'exposureCellProp' : %f", exposureCellProp);
+    else {
+      if (exposureCellCurr < 0) {
+	ans = R_NegInf;
+	keepGoing = 0;
+      }
+      else
+	error("negative value for 'exposureCellProp' : %f", exposureCellProp);
+    }
   }
-  int valCurr = component[iCell];
-  int valProp = valCurr + diff;
-  if ((valProp > 0) && !(exposureCellProp > 0))
-    ans = R_NegInf;
-  else {
-    double lambdaDensProp = thetaCell * exposureCellProp;
-    double lambdaJump = thetaCell * exposureCellJump;
-    double diffLogDens = dpois(valProp, lambdaDensProp, USE_LOG) -
-      dpois(valCurr, lambdaDensProp, USE_LOG);
-    double diffLogJump = dpois(valCurr, lambdaJump, USE_LOG) -
-      dpois(valProp, lambdaJump, USE_LOG);
-    ans = diffLogDens + diffLogJump;
+  if (keepGoing) {
+    int valCurr = component[iCell];
+    int valProp = valCurr + diff;
+    if ((valProp > 0) && !(exposureCellProp > 0))
+      ans = R_NegInf;
+    else {
+      double lambdaDensProp = thetaCell * exposureCellProp;
+      double lambdaJump = thetaCell * exposureCellJump;
+      double diffLogDens = dpois(valProp, lambdaDensProp, USE_LOG) -
+	dpois(valCurr, lambdaDensProp, USE_LOG);
+      double diffLogJump = dpois(valCurr, lambdaJump, USE_LOG) -
+	dpois(valProp, lambdaJump, USE_LOG);
+      ans = diffLogDens + diffLogJump;
+    }
   }
   return ans;
 }
@@ -3162,6 +3176,7 @@ diffLogDensJumpPoolWithExpose(SEXP combined_R)
 
     double incrExpose = 0;
 
+    int keepGoing = 1;
     double ans = 0;
 
     if (hasAge) {
@@ -3194,38 +3209,52 @@ diffLogDensJumpPoolWithExpose(SEXP combined_R)
     if (exposureOutProp < tolExposure) {
       if (exposureOutProp > -1 * tolExposure)
 	exposureOutProp = 0;
-      else
-	error("negative value for 'exposureOutProp' : %f", exposureOutProp);
+      else {
+	if (exposureOutCurr < 0) {
+	  ans = R_NegInf;
+	  keepGoing = 0;
+	}
+	else
+	  error("negative value for 'exposureOutProp' : %f", exposureOutProp);
+      }
     }
     if (exposureInProp < tolExposure) {
       if (exposureInProp > -1 * tolExposure)
 	exposureInProp = 0;
-      else
-	error("negative value for 'exposureInProp' : %f", exposureInProp);
+      else {
+        if (exposureInCurr < 0) {
+	  ans = R_NegInf;
+	  keepGoing = 0;
+	}
+	else
+	  error("negative value for 'exposureInProp' : %f", exposureInProp);
+      }
     }
 
-    int valOutCurr = component[iCellOut];
-    int valInCurr = component[iCellIn];
-    int valOutProp = valOutCurr + diff;
-    int valInProp = valInCurr + diff;
-
-    if (((valOutProp > 0) && !(exposureOutProp > 0))
-	|| ((valInProp > 0) && !(exposureInProp > 0)))
-      ans = R_NegInf;
-    else {
-      double lambdaDensOutProp = thetaOut * exposureOutProp;
-      double lambdaDensInProp = thetaIn * exposureInProp;
-      double lambdaDensOutCurr = thetaOut * exposureOutCurr;
-      double lambdaDensInCurr = thetaIn * exposureInCurr;
-      double lambdaJump = thetaOut * exposureOutJump;
-      double diffLogDens = dpois(valOutProp, lambdaDensOutProp, USE_LOG)
-	- dpois(valOutCurr, lambdaDensOutCurr, USE_LOG)
-	+ dpois(valInProp, lambdaDensInProp, USE_LOG)
-	- dpois(valInCurr, lambdaDensInCurr, USE_LOG);
-      double diffLogJump = dpois(valOutCurr, lambdaJump, USE_LOG)
-	- dpois(valOutProp, lambdaJump, USE_LOG);
-      ans = diffLogDens + diffLogJump;
+    if (keepGoing) {
+      int valOutCurr = component[iCellOut];
+      int valInCurr = component[iCellIn];
+      int valOutProp = valOutCurr + diff;
+      int valInProp = valInCurr + diff;
+      if (((valOutProp > 0) && !(exposureOutProp > 0))
+	  || ((valInProp > 0) && !(exposureInProp > 0)))
+	ans = R_NegInf;
+      else {
+	double lambdaDensOutProp = thetaOut * exposureOutProp;
+	double lambdaDensInProp = thetaIn * exposureInProp;
+	double lambdaDensOutCurr = thetaOut * exposureOutCurr;
+	double lambdaDensInCurr = thetaIn * exposureInCurr;
+	double lambdaJump = thetaOut * exposureOutJump;
+	double diffLogDens = dpois(valOutProp, lambdaDensOutProp, USE_LOG)
+	  - dpois(valOutCurr, lambdaDensOutCurr, USE_LOG)
+	  + dpois(valInProp, lambdaDensInProp, USE_LOG)
+	  - dpois(valInCurr, lambdaDensInCurr, USE_LOG);
+	double diffLogJump = dpois(valOutCurr, lambdaJump, USE_LOG)
+	  - dpois(valOutProp, lambdaJump, USE_LOG);
+	ans = diffLogDens + diffLogJump;
+      }
     }
+    
     return ans;
 }
 
@@ -3347,6 +3376,8 @@ diffLogDensJumpComp(SEXP combined_R)
     double incrExp = 0;
     int expChanges = 1;
 
+    int keepGoing = 1;
+
     double ans = 0;
 
     if (isBirths)
@@ -3386,24 +3417,33 @@ diffLogDensJumpComp(SEXP combined_R)
     if (exposureCellProp < tolExposure) {
       if (exposureCellProp > -1 * tolExposure)
 	exposureCellProp = 0;
-      else
-	error("negative value for 'exposureCellProp' : %f", exposureCellProp);
+      else {
+	if (exposureCellCurr < 0) {
+	  ans = R_NegInf;
+	  keepGoing = 0;
+	}
+	else 
+	  error("negative value for 'exposureCellProp' : %f", exposureCellProp);
+      }
     }
 
-    int valCurr = component[iCell];
-    int valProp = valCurr + diff;
-    if ((valProp > 0) && !(exposureCellProp > 0)) {
-      ans = R_NegInf;
+    if (keepGoing) {
+      int valCurr = component[iCell];
+      int valProp = valCurr + diff;
+      if ((valProp > 0) && !(exposureCellProp > 0)) {
+	ans = R_NegInf;
+      }
+      else  {
+	double lambdaDensProp = thetaCell * exposureCellProp;
+	double lambdaJump = thetaCell * exposureCellJump;
+	double diffLogDens = dpois(valProp, lambdaDensProp, USE_LOG)
+	  - dpois(valCurr, lambdaDensProp, USE_LOG);
+	double diffLogJump = dpois(valCurr, lambdaJump, USE_LOG)
+	  - dpois(valProp, lambdaJump, USE_LOG);
+	ans = diffLogDens + diffLogJump;
+      }
     }
-    else  {
-      double lambdaDensProp = thetaCell * exposureCellProp;
-      double lambdaJump = thetaCell * exposureCellJump;
-      double diffLogDens = dpois(valProp, lambdaDensProp, USE_LOG)
-	- dpois(valCurr, lambdaDensProp, USE_LOG);
-      double diffLogJump = dpois(valCurr, lambdaJump, USE_LOG)
-	- dpois(valProp, lambdaJump, USE_LOG);
-      ans = diffLogDens + diffLogJump;
-    }
+
     return ans;
 }
 
@@ -3610,6 +3650,7 @@ diffLogDensJumpCompSmall(SEXP combined_R)
   double val_low_expect_prop = val_low_expect_curr;
   int val_prop_invalid = 0;
   int val_curr_invalid = 0;
+  int keepGoing = 1;
   double ans = 0;
   if (usesExposure) {
     double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
@@ -3637,45 +3678,59 @@ diffLogDensJumpCompSmall(SEXP combined_R)
       if (expose_up_prop < tolExposure) {
 	if (expose_up_prop > -1 * tolExposure)
 	  expose_up_prop = 0;
-	else
-	  error("negative value for 'expose_up_prop' : %f", expose_up_prop);
+	else {
+	  if (expose_up_curr < 0) {
+	    ans = R_NegInf;
+	    keepGoing = 0;
+	  }
+	  else
+	    error("negative value for 'expose_up_prop' : %f", expose_up_prop);
+	}
       }
       if (expose_low_prop < tolExposure) {
 	if (expose_low_prop > -1 * tolExposure)
 	  expose_low_prop = 0;
-	else
-	  error("negative value for 'expose_low_prop' : %f", expose_low_prop);
+	else {
+	  if (expose_low_curr < 0) {
+	    ans = R_NegInf;
+	    keepGoing = 0;
+	  }
+	  else
+	    error("negative value for 'expose_low_prop' : %f", expose_low_prop);
+	}
+	val_prop_invalid = (((val_up_prop > 0) && !(expose_up_prop > 0))
+			    || ((val_low_prop > 0) && !(expose_low_prop > 0)));
+	val_curr_invalid = (((val_up_curr > 0) && !(expose_up_curr > 0))
+			    || ((val_low_curr > 0) && !(expose_low_curr > 0)));
       }
-      val_prop_invalid = (((val_up_prop > 0) && !(expose_up_prop > 0))
-			  || ((val_low_prop > 0) && !(expose_low_prop > 0)));
-      val_curr_invalid = (((val_up_curr > 0) && !(expose_up_curr > 0))
-			  || ((val_low_curr > 0) && !(expose_low_curr > 0)));
+      val_up_expect_curr *= expose_up_curr;
+      val_low_expect_curr *= expose_low_curr;
+      val_up_expect_prop *= expose_up_prop;
+      val_low_expect_prop *= expose_low_prop;
     }
-    val_up_expect_curr *= expose_up_curr;
-    val_low_expect_curr *= expose_low_curr;
-    val_up_expect_prop *= expose_up_prop;
-    val_low_expect_prop *= expose_low_prop;
   }
-  double denom = val_up_expect_curr + val_low_expect_curr;
-  double prob = 0.5;
-  if (denom > tol) {
-    prob = val_up_expect_curr/denom;
-  }
-  if (val_prop_invalid) {
-    ans = R_NegInf;
-  }
-  else if (val_curr_invalid) {
-    ans = R_PosInf;
-  }
-  else {
-    int size = val_up_curr + val_low_curr;
-    double ans_dens_prop = dpois(val_up_prop, val_up_expect_prop, USE_LOG) +
-      dpois(val_low_prop, val_low_expect_prop, USE_LOG);
-    double ans_dens_curr = dpois(val_up_curr, val_up_expect_curr, USE_LOG) +
-      dpois(val_low_curr, val_low_expect_curr, USE_LOG);
-    double ans_jump = dbinom(val_up_curr, size, prob, USE_LOG) -
-      dbinom(val_up_prop, size, prob, USE_LOG);
-    ans = ans_dens_prop - ans_dens_curr + ans_jump;
+  if (keepGoing) {
+    double denom = val_up_expect_curr + val_low_expect_curr;
+    double prob = 0.5;
+    if (denom > tol) {
+      prob = val_up_expect_curr/denom;
+    }
+    if (val_prop_invalid) {
+      ans = R_NegInf;
+    }
+    else if (val_curr_invalid) {
+      ans = R_PosInf;
+    }
+    else {
+      int size = val_up_curr + val_low_curr;
+      double ans_dens_prop = dpois(val_up_prop, val_up_expect_prop, USE_LOG) +
+	dpois(val_low_prop, val_low_expect_prop, USE_LOG);
+      double ans_dens_curr = dpois(val_up_curr, val_up_expect_curr, USE_LOG) +
+	dpois(val_low_curr, val_low_expect_curr, USE_LOG);
+      double ans_jump = dbinom(val_up_curr, size, prob, USE_LOG) -
+	dbinom(val_up_prop, size, prob, USE_LOG);
+      ans = ans_dens_prop - ans_dens_curr + ans_jump;
+    }
   }
   UNPROTECT(1);
   return ans;

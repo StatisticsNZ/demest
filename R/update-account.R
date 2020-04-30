@@ -708,25 +708,19 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
                 val.popn.orig <- population[i.popn.orig]
                 val.popn.dest <- population[i.popn.dest]
             }
-            denom <- val.up.expected + val.low.expected
-            if (denom > tol)
-                prob <- val.up.expected / denom
-            else
-                prob <- 0.5
-            size <- val.up.curr + val.low.curr
+            val.mean.expected <- 0.5 * val.up.expected + 0.5 * val.low.expected
             lower <- val.up.curr - val.acc.dest
             upper <- val.up.curr + val.acc.orig
             if (is.final.age.group) {
-                if (val.popn.dest < val.acc.dest)
-                    lower <- val.up.curr - val.popn.dest
-                if (val.popn.orig < val.acc.orig)
-                    upper <- val.up.curr + val.popn.orig
+                if (val.acc.dest < val.popn.orig - val.acc.orig)
+                    lower <- val.up.curr - val.acc.dest
+                if (val.popn.dest - val.acc.dest < val.acc.orig)
+                    upper <- val.up.curr + val.popn.dest - val.acc.dest
             }
-            val.up.prop <- rbinomTrunc1(size = size,
-                                        prob = prob,
-                                        lower = lower,
-                                        upper = upper,
-                                        maxAttempt = max.attempt)
+            val.up.prop <- rpoisTrunc1(lambda = val.mean.expected,
+                                       lower = lower,
+                                       upper = upper,
+                                       maxAttempt = max.attempt)
             found.value <- !is.na(val.up.prop)
             if (found.value) {
                 diff.prop <- unname(val.up.prop - val.up.curr)
@@ -1349,18 +1343,18 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
                 prob <- 0.5
             size <- val.up.curr + val.low.curr
             if (is.increment) {
-                lower <- val.up.curr - val.acc ## from accession
+                lower <- val.up.curr - val.acc
                 if (is.final.age.group)
-                    upper <- val.up.curr + val.popn ## from population
+                    upper <- val.up.curr + val.popn - val.acc
                 else
                     upper <- NA_integer_
             }
             else {
                 if (is.final.age.group)
-                    lower <- val.up.curr - val.popn ## from population
+                    lower <- val.up.curr - val.popn + val.acc
                 else
                     lower <- NA_integer_
-                upper <- val.up.curr + val.acc ## from accession
+                upper <- val.up.curr + val.acc
             }
             val.up.prop <- rbinomTrunc1(size = size,
                                         prob = prob,
@@ -2666,8 +2660,11 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
             if (exposure.prop < tol.exposure) {
                 if (exposure.prop > -1 * tol.exposure)
                     exposure.prop <- 0
-                else
+                else {
+                    if (exposure.curr < 0)
+                        return(-Inf)
                     stop(sprintf("negative value for 'exposure.prop' : %f", exposure.prop))
+                }
             }
             for (j in seq_len(length.vec)) {
                 i.c <- i.c.vec[j]
@@ -2849,8 +2846,11 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
                 if (exposure.prop < tol.exposure) {
                     if (exposure.prop > -1 * tol.exposure)
                         exposure.prop <- 0
-                    else
+                    else {
+                        if (exposure.curr < 0)
+                            return(-Inf)
                         stop(sprintf("negative value for 'exposure.prop' : %f", exposure.prop))
+                    }
                 }
                 if ((comp.curr > 0L) && !(exposure.prop > 0))
                     return(-Inf)
@@ -2925,8 +2925,11 @@ diffLogDensJumpOrigDest <- function(combined, useC = FALSE) {
         if (exposure.cell.prop < tol.exposure) {
             if (exposure.cell.prop > -1 * tol.exposure)
                 exposure.cell.prop <- 0
-            else
+            else {
+                if (exposure.cell.cur < 0)
+                    return(-Inf)
                 stop(sprintf("negative value for 'exposure.cell.prop' : %f", exposure.cell.prop))
+            }
         }
         val.curr <- component[i.cell]
         val.prop <- val.curr + diff
@@ -3223,14 +3226,20 @@ diffLogDensJumpPoolWithExpose <- function(combined, useC = FALSE) {
         if (exposure.out.prop < tol.exposure) {
             if (exposure.out.prop > -1 * tol.exposure)
                 exposure.out.prop <- 0
-            else
+            else {
+                if (exposure.out.curr < 0)
+                    return(-Inf)
                 stop(sprintf("negative value for 'exposure.out.prop' : %f", exposure.out.prop))
+            }
         }
         if (exposure.in.prop < tol.exposure) {
             if (exposure.in.prop > -1 * tol.exposure)
                 exposure.in.prop <- 0
-            else
+            else {
+                if (exposure.in.curr < 0)
+                    return(-Inf)
                 stop(sprintf("negative value for 'exposure.in.prop' : %f", exposure.in.prop))
+            }
         }
         val.out.curr <- component[i.cell.out]
         val.in.curr <- component[i.cell.in]
@@ -3384,8 +3393,11 @@ diffLogDensJumpComp <- function(combined, useC = FALSE) {
         if (exposure.cell.prop < tol.exposure) {
             if (exposure.cell.prop > -1 * tol.exposure)
                 exposure.cell.prop <- 0
-            else
+            else {
+                if (exposure.cell.curr < 0)
+                    return(-Inf)
                 stop(sprintf("negative value for 'exposure.cell.prop' : %f", exposure.cell.prop))
+            }
         }
         val.curr <- component[i.cell]
         val.prop <- val.curr + diff
@@ -3542,7 +3554,7 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
     }
 }
 
-
+## NEED NEW METHOD FOR ORIG-DEST - THIS ONE WON'T WORK
 ## EXPOSURE
 ## TRANSLATED
 ## HAS_TESTS
@@ -3601,14 +3613,20 @@ diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
                 if (expose.up.prop < tol.exposure) {
                     if (expose.up.prop > -1 * tol.expose)
                         expose.up.prop <- 0
-                    else
+                    else {
+                        if (expose.up.curr < 0)
+                            return(-Inf)
                         stop(sprintf("negative value for 'expose.up.prop' : %f", expose.up.prop))
+                    }
                 }
                 if (expose.low.prop < tol.exposure) {
                     if (expose.low.prop > -1 * tol.exposure)
                         expose.low.prop <- 0
-                    else
+                    else {
+                        if (expose.low.curr < 0)
+                            return(-Inf)
                         stop(sprintf("negative value for 'expose.low.prop' : %f", expose.low.prop))
+                    }
                 }
             }
             else {

@@ -255,6 +255,11 @@ setClass("ExposureMixin",
                  return(gettextf("'%s' and '%s' inconsistent",
                                  "exposure", "population"))
              }
+             if (any(exposure < 0)) {
+                 brower()
+                 return(gettextf("'%s' has negative values",
+                                 "exposure"))
+             }
              TRUE
          })
 
