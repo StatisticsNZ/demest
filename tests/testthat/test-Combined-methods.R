@@ -1981,6 +1981,9 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
 test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
     diffLogDensAccount <- demest:::diffLogDensAccount
     updateProposalAccount <- demest:::updateProposalAccount
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+    updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     set.seed(1)
@@ -2093,7 +2096,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
-        x1 <- updateProposalAccount(x1)
+        x1 <- updateProposalAccountMoveBirthsSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2104,7 +2107,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
         }
         x1 <- x0
         x1@iComp <- 2L # internal
-        x1 <- updateProposalAccount(x1)
+        x1 <- updateProposalAccountMoveOrigDestSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2115,7 +2118,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
         }
         x1 <- x0
         x1@iComp <- 3L # deaths
-        x1 <- updateProposalAccount(x1)
+        x1 <- updateProposalAccountMoveCompSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2972,6 +2975,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
     updateProposalAccount <- demest:::updateProposalAccount
     updateCellMove <- demest:::updateCellMove
     updateAccSmall <- demest:::updateAccSmall
+    updateExpSmall <- demest:::updateExpSmall
     updateSubsequentExpMove <- demest:::updateSubsequentExpMove
     updateSubsequentAccMove <- demest:::updateSubsequentAccMove
     updateSubsequentPopnMove <- demest:::updateSubsequentPopnMove
@@ -3091,6 +3095,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
         ans.expected <- x1
         ans.expected <- updateCellMove(ans.expected)
         ans.expected <- updateAccSmall(ans.expected)
+        ans.expected <- updateExpSmall(ans.expected)
         expect_identical(ans.obtained, ans.expected)
     }
 })
@@ -3173,6 +3178,7 @@ test_that("updateValuesAccount works with CombinedAccountMovementsHasAge", {
     updateSubsequentExpMove <- demest:::updateSubsequentExpMove
     updateSubsequentAccMove <- demest:::updateSubsequentAccMove
     updateAccSmall <- demest:::updateAccSmall
+    updateExpSmall <- demest:::updateExpSmall
     set.seed(1)
     popn <- Counts(array(rpois(n = 90, lambda = 500),
                          dim = c(3, 2, 5, 3),
@@ -3287,6 +3293,7 @@ test_that("updateValuesAccount works with CombinedAccountMovementsHasAge", {
         ans.expected <- x1
         ans.expected <- updateCellMove(x1)
         ans.expected <- updateAccSmall(ans.expected)
+        ans.expected <- updateExpSmall(ans.expected)
         expect_identical(ans.obtained, ans.expected)
         x1 <- x0
         x1@iComp <- 2L # internal
@@ -3296,6 +3303,7 @@ test_that("updateValuesAccount works with CombinedAccountMovementsHasAge", {
         ans.expected <- x1
         ans.expected <- updateCellMove(x1)
         ans.expected <- updateAccSmall(ans.expected)
+        ans.expected <- updateExpSmall(ans.expected)
         expect_identical(ans.obtained, ans.expected)
         x1 <- x0
         x1@iComp <- 3L # death
@@ -3305,6 +3313,7 @@ test_that("updateValuesAccount works with CombinedAccountMovementsHasAge", {
         ans.expected <- x1
         ans.expected <- updateCellMove(x1)
         ans.expected <- updateAccSmall(ans.expected)
+        ans.expected <- updateExpSmall(ans.expected)
         expect_identical(ans.obtained, ans.expected)
     }
 })

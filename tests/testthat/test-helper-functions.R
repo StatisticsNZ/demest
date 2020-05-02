@@ -11156,6 +11156,27 @@ test_that("makeIteratorCODPCP creates objects from valid inputs", {
                         lastAgeGroupOpen = FALSE,
                         finished = FALSE)
     expect_identical(ans.obtained, ans.expected)
+    ## dim = 4:2, iTime = 1, iAge = 2, iTriangle = 3
+    ans.obtained <- makeIteratorCODPCP(dim = 4:2, iTime = 1L, iAge = 2L,
+                                       iTriangle = 3L, iMult = integer(),
+                                       lastAgeGroupOpen = TRUE)
+    ans.expected <- new("CohortIteratorOrigDestParChPool",
+                        i = 1L,
+                        nTime = 4L,
+                        stepTime = 1L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 3L,
+                        stepAge = 4L,
+                        iAge = 1L,
+                        stepTriangle = 12L,
+                        iTriangle = 1L,
+                        iVec = 1L,
+                        lengthVec = 1L,
+                        increment = 0L,
+                        lastAgeGroupOpen = TRUE,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)    
 })
 
 

@@ -672,6 +672,8 @@ getICellCompFromExp <- function(i, mapping, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
+## Do not include sex dimension when calculating iCell,
+## so implicitly set to first value
 getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
@@ -696,11 +698,9 @@ getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
         if (has.sex) {
             i.sex.dominant <- mapping@iSexDominant
             step.sex.exp <- mapping@stepSexCurrent
-            step.sex.births <- mapping@stepSexTarget
-            i.sex <- ((i - 1L) %/% step.sex.exp) %% 2L
-            if (i.sex != i.sex.dominant)
+            i.sex.exp <- ((i - 1L) %/% step.sex.exp) %% 2L ## sex of parent
+            if (i.sex.exp != i.sex.dominant)
                 return(0L)
-            i.births <- i.births + i.sex * step.sex.births
         }
         i.time.exp <- ((i - 1L) %/% step.time.exp) %% n.time
         if (has.age) {

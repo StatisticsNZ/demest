@@ -1398,7 +1398,7 @@ test_that("resetCC works", {
     expect_identical(iterator@iTime, 2L)
     expect_identical(iterator@iAge, 3L)
     expect_identical(iterator@iTriangle, 2L)
-    expect_false(iterator@finished)
+    expect_true(iterator@finished)
     ## with age - last age group closed
     entries <- Counts(array(1:36,
                             dim = c(3, 3, 2, 2),
@@ -1668,7 +1668,7 @@ test_that("resetCODPCP works", {
     expect_identical(iterator@iTime, 2L)
     expect_identical(iterator@iAge, 3L)
     expect_identical(iterator@iTriangle, 2L)
-    expect_false(iterator@finished)
+    expect_true(iterator@finished)
     ## without age
     internal <- Counts(array(1:72,
                              dim = c(3, 3, 2, 2, 2),

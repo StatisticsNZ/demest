@@ -2116,6 +2116,8 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpPoolNoExpose);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpNet);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpComp);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpComp);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpBirthsSmall);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpOrigDestSmall);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpCompSmall);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateCellMove);
@@ -2707,6 +2709,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensJumpNet_R, 1),
   CALLDEF(diffLogDensJumpComp_R, 1),
   CALLDEF(diffLogDensExpComp_R, 1),
+  CALLDEF(diffLogDensJumpBirthsSmall_R, 1),
+  CALLDEF(diffLogDensJumpOrigDestSmall_R, 1),
   CALLDEF(diffLogDensJumpCompSmall_R, 1),
 
   CALLDEF(updateAccSmall_R, 1),

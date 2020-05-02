@@ -387,7 +387,7 @@ test_that("R and C versions of drawAlphaLN2 give same answer", {
     spec <- Model(y ~ LN2(constraint = constraint))
     x <- initialModel(spec, y = y, exposure = exposure)
     has.non.zero <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(2 * n.test)) {
         set.seed(seed)
         ans.R <- drawAlphaLN2(x, useC = FALSE)
         set.seed(seed)

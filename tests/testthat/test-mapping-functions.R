@@ -4565,11 +4565,43 @@ test_that("getICellBirthsFromExp works with BirthsNoParentChild - with sex", {
         ans.expected <- ans.exp[i]
         expect_identical(ans.obtained, ans.expected)
     }
+    BirthsMovements <- dembase:::BirthsMovements
+    Population <- dembase:::Population
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("10-19", "20-29"),
+                                           sex = c("Male", "Female"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 5, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"),
+                                               sex = c("Male", "Female"))))
+    population <- Population(population)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(rep(0L, 10),
+                 2L, 0L, 1:4, rep(0L, 4),
+                 rep(0L, 10),
+                 1L, 2L, 9:12, rep(0L, 4))
+    for (i in 1:40) {
+        ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
+        ans.expected <- ans.exp[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
 })
 
 
-
-test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsNoParentChild - no sex", {
+test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsNoParentChild - with sex", {
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     BirthsMovements <- dembase:::BirthsMovements
     Population <- dembase:::Population
@@ -4582,12 +4614,12 @@ test_that("R and C versions of getICellBirthsFromExp give same answer with Birth
                            dimnames = list(time = c("2001-2010", "2011-2020"),
                                            triangle = c("Lower", "Upper"),
                                            age = c("10-19", "20-29"),
-                                           sex = c("Female", "Male"))))
+                                           sex = c("Male", "Female"))))
     population <- Counts(array(1:15,
                                dim = c(3, 5, 2),
                                dimnames = list(time = c(2000, 2010, 2020),
                                                age = c("0-9", "10-19", "20-29", "30-39", "40+"),
-                                               sex = c("Female", "Male"))))
+                                               sex = c("Male", "Female"))))
     population <- Population(population)
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
@@ -4596,8 +4628,6 @@ test_that("R and C versions of getICellBirthsFromExp give same answer with Birth
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = exposure,
                        target = births)
-    ans.exp <- c(2L, 0L, 1:4, rep(0L, 4),
-                 1L, 2L, 5:8, rep(0L, 4))
     for (i in 1:20) {
         ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
@@ -4648,8 +4678,6 @@ test_that("R and C versions of getICellBirthsFromExp give same answer with Birth
                               template = template)
     mapping <- Mapping(current = exposure,
                        target = births)
-    ans.exp <- c(4:6, rep(0L, 3), 1:12, rep(0L, 6),
-                 1:6, 13:24, rep(0L, 6))
     for (i in 1:48) {
         ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)

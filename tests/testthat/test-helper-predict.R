@@ -454,7 +454,7 @@ test_that("R and C versions of predictAlphaLN2 give same answer", {
                              lower = NULL,
                              upper = NULL)
     has.non.zero <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(2 * n.test)) {
         set.seed(seed)
         ans.R <- predictAlphaLN2(x, useC = FALSE)
         set.seed(seed)

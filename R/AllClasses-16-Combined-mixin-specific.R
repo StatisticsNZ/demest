@@ -680,11 +680,11 @@ setClass("IteratorsAccountMixin",
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "iteratorsComp", "components"))
              ## elements have class "CohortIteratorOrigDestParChPool" iff
-             ## they have class "InternalMovements" or "HasParentChild",
+             ## they have class "InternalMovements" or "BirthsMovements",
              for (i in seq_along(iteratorsComp)) {
                  is.iter.odpcp <- methods::is(iteratorsComp[[i]], "CohortIteratorOrigDestParChPool")
                  is.odpcp <- ((i == iOrigDest)
-                     || methods::is(components[[i]], "HasParentChild")
+                     || methods::is(components[[i]], "BirthsMovements")
                      || (i == iPool))
                  if (is.iter.odpcp && !is.odpcp)
                      return(gettextf("element %d of '%s' has class \"%s\" but element %d of '%s' has class \"%s\"",

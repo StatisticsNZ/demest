@@ -4246,16 +4246,21 @@ makeIteratorCODPCP <- function(dim, iTime, iAge, iTriangle, iMultiple, lastAgeGr
         step.triangle <- as.integer(NA)
         i.triangle <- as.integer(NA)
     }
-    increment <- vector(mode = "list", length = length(iMultiple))
-    for (j in seq_along(iMultiple)) {
-        i.m <- iMultiple[j]
-        step <- 1L
-        for (d in seq_len(i.m - 1L))
-            step <- step * dim[d]
-        increment[[j]] <- seq.int(from = 0L, by = step, length.out = dim[i.m])
+    n.mult <- length(iMultiple)
+    if (n.mult > 0L) {
+        increment <- vector(mode = "list", length = length(iMultiple))
+        for (j in seq_along(iMultiple)) {
+            i.m <- iMultiple[j]
+            step <- 1L
+            for (d in seq_len(i.m - 1L))
+                step <- step * dim[d]
+            increment[[j]] <- seq.int(from = 0L, by = step, length.out = dim[i.m])
+        }
+        increment <- expand.grid(increment)
+        increment <- Reduce(f = "+", x = increment)
     }
-    increment <- expand.grid(increment)
-    increment <- Reduce(f = "+", x = increment)
+    else
+        increment <- 0L
     i <- 1L
     length.vec <- length(increment)
     i.vec <- i + increment

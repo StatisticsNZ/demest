@@ -803,12 +803,14 @@ setMethod("diffLogDensAccount",
               }
               else {
                   i.comp <- combined@iComp
+                  i.births <- combined@iBirths
                   i.orig.dest <- combined@iOrigDest
                   i.pool <- combined@iPool
                   i.int.net <- combined@iIntNet
                   is.small.update <- combined@isSmallUpdate@.Data 
                   model.uses.exposure <- combined@modelUsesExposure
                   is.popn <- i.comp == 0L
+                  is.births <- i.comp == i.births
                   is.orig.dest <- i.comp == i.orig.dest
                   is.pool <- i.comp == i.pool
                   is.int.net <- i.comp == i.int.net
@@ -821,9 +823,22 @@ setMethod("diffLogDensAccount",
                       diff.dens.self <- 0
                       diff.dens.exp <- diffLogDensExpPopn(combined)
                   }
+                  else if (is.births) {
+                      if (is.small.update) {
+                          diff.dens.self <- diffLogDensJumpBirthsSmall(combined)
+                          diff.dens.exp <- 0
+                      }
+                      else { 
+                          if (model.uses.exposure[i.comp])
+                              diff.dens.self <- diffLogDensJumpComp(combined)
+                          else
+                              diff.dens.self <- 0
+                          diff.dens.exp <- diffLogDensExpComp(combined)
+                      } 
+                  }
                   else if (is.orig.dest) {
                       if (is.small.update)  {
-                          diff.dens.self <- diffLogDensJumpCompSmall(combined)
+                          diff.dens.self <- diffLogDensJumpOrigDestSmall(combined)
                           diff.dens.exp <- 0
                       }
                       else { 
@@ -845,7 +860,7 @@ setMethod("diffLogDensAccount",
                       diff.dens.self <- diffLogDensJumpNet(combined)
                       diff.dens.exp <- diffLogDensExpOrigDestPoolNet(combined)
                   }
-                  else {
+                  else { 
                       if (is.small.update) {
                           diff.dens.self <- diffLogDensJumpCompSmall(combined)
                           diff.dens.exp <- 0
