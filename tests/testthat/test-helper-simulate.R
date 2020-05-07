@@ -385,6 +385,7 @@ test_that("R and C versions of drawAlphaLN2 give same answer", {
                                         time = c("2000", "2010", "2020")))))
     exposure <- 2L * y
     spec <- Model(y ~ LN2(constraint = constraint))
+    set.seed(0)
     x <- initialModel(spec, y = y, exposure = exposure)
     has.non.zero <- FALSE
     for (seed in seq_len(2 * n.test)) {

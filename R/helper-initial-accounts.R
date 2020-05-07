@@ -118,7 +118,10 @@ checkAndTidyUpdateSystemModel <- function(updateSystemModel, systemModels,
     uses.ag <- any(sapply(systemModels, methods::is, "Aggregate"))
     n <- length(systemModels)
     if (is.null(updateSystemModel)) {
-        ans <- if (uses.ag) rep(TRUE, times = n) else rep(FALSE, times = n)
+        if (uses.ag)
+            ans <- rep(TRUE, times = n)
+        else
+            ans  <- c(TRUE, rep(FALSE, times = n - 1L))
         return(ans)
     }
     if (!is.character(updateSystemModel))

@@ -444,6 +444,7 @@ test_that("R and C versions of predictAlphaLN2 give same answer", {
     exposure <- 2L * y
     spec <- Model(y ~ LN2(constraint = constraint))
     mod.est <- initialModel(spec, y = y, exposure = exposure)
+    set.seed(1)
     x <- initialModelPredict(mod.est,
                              along = 3L,
                              labels = NULL,

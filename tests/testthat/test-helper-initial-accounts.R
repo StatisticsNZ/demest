@@ -206,12 +206,12 @@ test_that("checkAndTidyUpdateSystemModel works - no aggregate values", {
     ans.obtained <- checkAndTidyUpdateSystemModel(updateSystemModel = NULL,
                                                   systemModels = systemModels,
                                                   componentNames = "inmigration")
-    ans.expected <- c(FALSE, FALSE)
+    ans.expected <- c(TRUE, FALSE)
     expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- checkAndTidyUpdateSystemModel(updateSystemModel = "population",
+    ans.obtained <- checkAndTidyUpdateSystemModel(updateSystemModel = "inmigration",
                                                   systemModels = systemModels,
                                                   componentNames = "inmigration")
-    ans.expected <- c(TRUE, FALSE)
+    ans.expected <- c(FALSE, TRUE)
     expect_identical(ans.obtained, ans.expected)
     expect_error(checkAndTidyUpdateSystemModel(updateSystemModel = FALSE,
                                                systemModels = systemModels,
