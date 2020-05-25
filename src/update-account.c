@@ -678,7 +678,9 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
     int i_cell_low = 0;
     int isLowerTriangleValue = 0;
     int i_expose_up_r = 0;
-    int i_expose_low_r = NA_INTEGER;
+    int i_expose_low_r = 0;
+    int i_expose_up_oth_r = 0;
+    int i_expose_low_oth_r = 0;
 
     int pairArray[2]; /* use for all the pairs */
 
@@ -708,8 +710,12 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
 	int val_low_curr = component[i_cell_low];
 
         if(usesExposure) {
-            i_expose_up_r = getIExposureFromOrigDest(i_cell_up_r, mappingToExp_R);
-            i_expose_low_r = getIExposureFromOrigDest(i_cell_low_r, mappingToExp_R);
+	  getIExpFirstPairFromOrigDestInternal(pairArray, i_cell_up_r, mappingToExp_R);
+	  i_expose_up_r = pairArray[0];
+	  i_expose_up_oth_r = pairArray[1];	  
+	  getIExpFirstPairFromOrigDestInternal(pairArray, i_cell_low_r, mappingToExp_R);
+	  i_expose_low_r = pairArray[0];
+	  i_expose_low_oth_r = pairArray[1];
         }
 
 	int val_popn_orig = 0;
@@ -755,8 +761,6 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
 
     SET_INTSCALE_SLOT(combined_R, iPopnNext_sym, NA_INTEGER);
     SET_INTSCALE_SLOT(combined_R, iPopnNextOther_sym, NA_INTEGER);
-    SET_INTSCALE_SLOT(combined_R, iExpFirst_sym, NA_INTEGER);
-    SET_INTSCALE_SLOT(combined_R, iExpFirstOther_sym, NA_INTEGER);
 
     if (!generatedNewProposal) {
          i_cell_up_r = NA_INTEGER;
@@ -767,6 +771,8 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
          isLowerTriangleValue = NA_LOGICAL;
          i_expose_up_r = NA_INTEGER;
          i_expose_low_r = NA_INTEGER;
+         i_expose_up_oth_r = NA_INTEGER;
+         i_expose_low_oth_r = NA_INTEGER;
          diff_prop = NA_INTEGER;
     }
 
@@ -779,6 +785,8 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
 
     SET_INTSCALE_SLOT(combined_R, iExposure_sym, i_expose_up_r);
     SET_INTSCALE_SLOT(combined_R, iExposureOther_sym, i_expose_low_r);
+    SET_INTSCALE_SLOT(combined_R, iExpFirst_sym, i_expose_up_oth_r);
+    SET_INTSCALE_SLOT(combined_R, iExpFirstOther_sym, i_expose_low_oth_r);
     SET_INTSCALE_SLOT(combined_R, diffProp_sym, diff_prop);
 }
 
@@ -3856,6 +3864,26 @@ updateExpSmall(SEXP combined_R)
     }
     exposure[i_exp_up_r - 1] = expose_new_up;
     exposure[i_exp_low_r - 1] = expose_new_low;
+    if (is_orig_dest) { 
+      int i_exp_up_oth_r = *INTEGER(GET_SLOT(combined_R, iExpFirst_sym));
+      int i_exp_low_oth_r = *INTEGER(GET_SLOT(combined_R, iExpFirstOther_sym));
+      double expose_new_up_oth = exposure[i_exp_up_oth_r - 1] - incr_exp_up;
+      double expose_new_low_oth = exposure[i_exp_low_oth_r - 1] - incr_exp_low;
+      if (expose_new_up_oth < tolExposure) {
+	if (expose_new_up_oth > -1 * tolExposure)
+	  expose_new_up_oth = 0;
+	else
+	  error("negative value for 'expose_new_up_oth' : %f", expose_new_up_oth);
+      }
+      if (expose_new_low_oth < tolExposure) {
+	if (expose_new_low_oth > -1 * tolExposure)
+	  expose_new_low_oth = 0;
+	else
+	  error("negative value for 'expose_new_low_oth' : %f", expose_new_low_oth);
+      }
+      exposure[i_exp_up_oth_r - 1] = expose_new_up_oth;
+      exposure[i_exp_low_oth_r - 1] = expose_new_low_oth;
+    }
     UNPROTECT(1);
   }
 }

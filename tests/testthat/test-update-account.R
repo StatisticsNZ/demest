@@ -9853,6 +9853,12 @@ test_that("updateExpSmall works", {
                 expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
                              x1@exposure[ans.obtained@iExposureOther] +
                              (1/3) * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExpFirst],
+                             x1@exposure[ans.obtained@iExpFirst] +
+                             0.5 * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExpFirstOther],
+                             x1@exposure[ans.obtained@iExpFirstOther] -
+                             (1/3) * 5 * ans.obtained@diffProp)
             }
             else {
                 expect_equal(ans.obtained@exposure[ans.obtained@iExposure],
@@ -9861,7 +9867,14 @@ test_that("updateExpSmall works", {
                 expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
                              x1@exposure[ans.obtained@iExposureOther] -
                              (1/6) * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExpFirst],
+                             x1@exposure[ans.obtained@iExpFirst] +
+                             (1/6)  * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExpFirstOther],
+                             x1@exposure[ans.obtained@iExpFirstOther] +
+                             (1/6) * 5 * ans.obtained@diffProp)
             }
+            expect_equal(sum(ans.obtained@exposure), sum(x1@exposure))
         }   
         ## updating component
         x0 <- x
@@ -10010,6 +10023,7 @@ test_that("R and C versions of updateExpSmall give same answer", {
             ans.R <- updateExpSmall(x1, useC = FALSE)
             ans.C <- updateExpSmall(x1, useC = TRUE)
             expect_identical(ans.R, ans.C)
+            expect_equal(sum(ans.C@exposure), sum(x1@exposure))
         }
         ## updating component
         x0 <- x

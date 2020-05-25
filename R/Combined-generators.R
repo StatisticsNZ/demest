@@ -674,6 +674,8 @@ setMethod("initialCombinedAccount",
               i.pool <- if (any(is.pool)) which(is.pool) else -1L
               i.int.net <- if (any(is.int.net)) which(is.int.net) else -1L
               is.net <- is.int.net | is.net.move
+              ## Calculate here to use for initial values for system models.
+              ## Recalculate later to take account of structural zeros.
               if (has.age)
                   exposure <- dembase::exposureHMD(account)
               else
@@ -767,7 +769,6 @@ setMethod("initialCombinedAccount",
               struc.zero.array <- systemModels[[1L]]@strucZeroArray@.Data
               if (any(struc.zero.array == 0L)) {
                   population@.Data[struc.zero.array == 0L] <- 0L
-                  exposure@.Data <- dembase::exposure(population, triangles = has.age)@.Data
                   account@population <- population
               }
               for (i in seq_along(components)) {
@@ -779,6 +780,14 @@ setMethod("initialCombinedAccount",
                           account@components[[i]]@.Data[struc.zero.array == 0L] <- 0L
                   }
               }
+              if (has.age)
+                  exposure <- dembase::exposureHMD(account)
+              else
+                  exposure <- dembase::exposure(account@population,
+                                                triangles = FALSE)
+              exposure <- methods::new("Exposure",
+                                       .Data = exposure@.Data,
+                                       metadata = exposure@metadata)
               .Data.theta.popn <- array(systemModels[[1L]]@theta,
                                         dim = dim(population),
                                         dimnames = dimnames(population))

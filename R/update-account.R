@@ -675,10 +675,14 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
             val.up.curr <- component[i.cell.up]
             val.low.curr <- component[i.cell.low]
             if (uses.exposure) {
-                i.expose.up <- getIExposureFromOrigDest(i = i.cell.up,
-                                                        mapping = mapping.to.exp)
-                i.expose.low <- getIExposureFromOrigDest(i = i.cell.low,
-                                                        mapping = mapping.to.exp)
+                i.expose.up.pair <- getIExpFirstPairFromOrigDest(i = i.cell.up,
+                                                                 mapping = mapping.to.exp)
+                i.expose.low.pair <- getIExpFirstPairFromOrigDest(i = i.cell.low,
+                                                                  mapping = mapping.to.exp)
+                i.expose.up <- i.expose.up.pair[1L]
+                i.expose.up.oth <- i.expose.up.pair[2L]
+                i.expose.low <- i.expose.low.pair[1L]
+                i.expose.low.oth <- i.expose.low.pair[2L]
             }
             if (is.final.age.group) {
                 pair.popn <- getIPopnNextFromOrigDest(i = i.cell.low,
@@ -724,13 +728,16 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
             if (uses.exposure) {
                 combined@iExposure <- i.expose.up
                 combined@iExposureOther <- i.expose.low
+                ## not using 'iExpFirst' for its normal purpose
+                combined@iExpFirst <- i.expose.up.oth
+                combined@iExpFirstOther <- i.expose.low.oth
             }
             else {
                 combined@iExposure <- 0L
                 combined@iExposureOther <- NA_integer_
+                combined@iExpFirst <- NA_integer_
+                combined@iExpFirstOther <- NA_integer_
             }
-            combined@iExpFirst <- NA_integer_
-            combined@iExpFirstOther <- NA_integer_
             combined@diffProp <- diff.prop
         }
         else {
@@ -3798,6 +3805,28 @@ updateExpSmall <- function(combined, useC = FALSE) {
             }
             combined@exposure[i.exp.up] <- expose.new.up
             combined@exposure[i.exp.low] <- expose.new.low
+            if (is.orig.dest) {
+                i.exp.up.oth <- combined@iExpFirst
+                i.exp.low.oth <- combined@iExpFirstOther
+                expose.new.up.oth <- combined@exposure[i.exp.up.oth] - incr.exp.up
+                expose.new.low.oth <- combined@exposure[i.exp.low.oth] - incr.exp.low
+                if (expose.new.up.oth < tol.exposure) {
+                    if (expose.new.up.oth > -1 * tol.exposure)
+                        expose.new.up.oth <- 0
+                    else
+                        stop(sprintf("negative value for 'expose.new.up.oth' : %f",
+                                     expose.new.up.oth))
+                }
+                if (expose.new.low.oth < tol.exposure) {
+                    if (expose.new.low.oth > -1 * tol.exposure)
+                        expose.new.low.oth <- 0
+                    else
+                        stop(sprintf("negative value for 'expose.new.low.oth' : %f",
+                                     expose.new.low.oth))
+                }
+                combined@exposure[i.exp.up.oth] <- expose.new.up.oth
+                combined@exposure[i.exp.low.oth] <- expose.new.low.oth
+            }
         }
         combined
     }
