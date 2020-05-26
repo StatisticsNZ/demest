@@ -92,6 +92,7 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
     updateValuesAccount <- demest:::updateValuesAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(2)
     population <- CountsOne(values = seq(100, 200, 10),
                             labels = seq(2000, 2100, 10),
                             name = "time")
@@ -135,7 +136,6 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
     expect_true(validObject(x0))
-    set.seed(1)
     updated <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -144,6 +144,8 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
             updated <- TRUE
         set.seed(seed)
         ans.C <- updateAccount(x0, useC = TRUE)
+        if (!identical(ans.R, ans.C))
+            stop(seed)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else

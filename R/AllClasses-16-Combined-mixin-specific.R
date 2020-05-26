@@ -252,7 +252,6 @@ setClass("ExposureMixin",
                                            .Data = exposure.calc@.Data,
                                            metadata = exposure.calc@metadata)
              if (!isTRUE(all.equal(exposure, exposure.calc))) {
-                 browser()
                  return(gettextf("'%s' and '%s' inconsistent",
                                  "exposure", "population"))
              }

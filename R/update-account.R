@@ -2618,7 +2618,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                     is.first.cell <- FALSE
                 }
                 else {
-                    incr.exp <- 0.5 * ageTimeStep * diff
+                    incr.exp <- ageTimeStep * diff
                 }
             }
             exposure.curr <- exposure[i.e]
@@ -2629,7 +2629,6 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                 else {
                     if (exposure.curr < 0)
                         return(-Inf)
-                    browser()
                     stop(sprintf("negative value for 'exposure.prop' : %f", exposure.prop))
                 }
             }

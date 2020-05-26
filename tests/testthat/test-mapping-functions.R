@@ -688,7 +688,7 @@ test_that("getIPopnNextFromOrigDest works with InternalMovementsOrigDest", {
                        target = population)
     i <- seq_len(length(component))
     i <- i[slice.index(component, 2) != slice.index(component, 3)]
-    d <- as.data.frame(component, direction = "long")
+    d <- as.data.frame(component, direction = "long", stringsAsFactors = TRUE)
     d <- subset(d, reg_orig != reg_dest)
     d <- lapply(d[1:5], as.integer)
     i.orig <- with(d, time + 1L + 3L * (reg_orig-1L) + 9L * (age-1L) + 9L * (triangle == 2L & age == 1L))
@@ -782,7 +782,7 @@ test_that("R and C versions of getIPopnNextFromOrigDest give same answer Interna
                        target = population)
     i <- seq_len(length(component))
     i <- i[slice.index(component, 2) != slice.index(component, 3)]
-    d <- as.data.frame(component, direction = "long")
+    d <- as.data.frame(component, direction = "long", stringsAsFactors = TRUE)
     d <- subset(d, reg_orig != reg_dest)
     d <- lapply(d[1:5], as.integer)
     i.orig <- with(d, time + 1L + 3L * (reg_orig-1L) + 9L * (age-1L) + 9L * (triangle == 2L & age == 1L))

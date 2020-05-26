@@ -374,6 +374,7 @@ test_that("R and C versions of drawAlphaLN2 give same answer", {
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
     drawAlphaLN2 <- demest:::drawAlphaLN2
+    set.seed(1)
     constraint <- Values(array(c(NA, -1L, 0L, 1L),
                                dim = c(2, 2),
                                dimnames = list(age = c("0-39", "40+"),
@@ -388,7 +389,7 @@ test_that("R and C versions of drawAlphaLN2 give same answer", {
     set.seed(0)
     x <- initialModel(spec, y = y, exposure = exposure)
     has.non.zero <- FALSE
-    for (seed in seq_len(2 * n.test)) {
+    for (seed in seq_len(3 * n.test)) {
         set.seed(seed)
         ans.R <- drawAlphaLN2(x, useC = FALSE)
         set.seed(seed)
