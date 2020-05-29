@@ -79,7 +79,7 @@ setMethod("CohortIterator",
 
 ## HAS_TESTS
 setMethod("CohortIterator",
-          signature(object = "BirthsMovementsHasParentChild"),
+          signature(object = "BirthsMovementsNoParentChild"),
           function(object) {
               dim <- dim(object)
               dimtypes <- dembase::dimtypes(object, use.names = FALSE)
@@ -87,7 +87,7 @@ setMethod("CohortIterator",
               i.time <- match("time", dimtypes)
               i.age <- match("age", dimtypes, nomatch = 0L)
               i.triangle <- match("triangle", dimtypes, nomatch = 0L)
-              i.dest <- grep("child", dimtypes)
+              i.mult <- grep("sex", dimtypes)
               if (i.age > 0L) {
                   DimScale.age <- DimScales[[i.age]]
                   dimvalues.age <- DimScale.age@dimvalues
@@ -100,7 +100,36 @@ setMethod("CohortIterator",
                                  iTime = i.time,
                                  iAge = i.age,
                                  iTriangle = i.triangle,
-                                 iMultiple = i.dest,
+                                 iMultiple = i.mult,
+                                 lastAgeGroupOpen = last.age.group.open)
+          })
+
+## HAS_TESTS
+setMethod("CohortIterator",
+          signature(object = "BirthsMovementsHasParentChild"),
+          function(object) {
+              dim <- dim(object)
+              dimtypes <- dembase::dimtypes(object, use.names = FALSE)
+              DimScales <- dembase::DimScales(object, use.names = FALSE)
+              i.time <- match("time", dimtypes)
+              i.age <- match("age", dimtypes, nomatch = 0L)
+              i.triangle <- match("triangle", dimtypes, nomatch = 0L)
+              i.mult <- grep("child", dimtypes)
+              i.sex <- grep("sex", dimtypes)
+              i.mult <- c(i.mult, i.sex)
+              if (i.age > 0L) {
+                  DimScale.age <- DimScales[[i.age]]
+                  dimvalues.age <- DimScale.age@dimvalues
+                  n.age <- length(dimvalues.age)
+                  last.age.group.open <- is.infinite(dimvalues.age[n.age])
+              }
+              else
+                  last.age.group.open <- NA
+              makeIteratorCODPCP(dim = dim,
+                                 iTime = i.time,
+                                 iAge = i.age,
+                                 iTriangle = i.triangle,
+                                 iMultiple = i.mult,
                                  lastAgeGroupOpen = last.age.group.open)
           })
 

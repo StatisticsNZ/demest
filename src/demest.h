@@ -393,12 +393,18 @@ SEXP
   iExposure_sym,
   iExposureOther_sym,
   isLowerTriangle_sym,
+  isOldestAgeGroup_sym,
   generatedNewProposal_sym,
   probSmallUpdate_sym,
   isSmallUpdate_sym,
   probPopn_sym,
   cumProbComp_sym,
-  nCellAccount_sym;
+  nCellAccount_sym,
+  /* LN@ */
+  alphaLN2_sym,
+  transformLN2_sym,
+  constraintLN2_sym,
+  nCellBeforeLN2_sym;
 
 
 /* Priors-methods */
@@ -569,6 +575,7 @@ double safeLogProp_Poisson(double log_th_new,
 
 void predictAlphaDLMNoTrend(SEXP prior_R);
 void predictAlphaDeltaDLMWithTrend(SEXP prior_R);
+void predictAlphaLN2(SEXP prior_R);
 void predictBeta(double* beta, SEXP prior_R, int J);
 void predictBetas(SEXP object_R);
 void predictComponentWeightMix(SEXP prior_R);
@@ -602,6 +609,7 @@ SEXP diff_R(SEXP vec_R, SEXP order_R);
 int makeIOther(int i, SEXP transform_R);
 
 /* helper-simulate */
+void drawAlphaLN2(SEXP object_R);
 void drawBetas(SEXP object_R);
 void drawDataModelsAccount(SEXP combined_R);
 void drawDelta0(SEXP prior_R);
@@ -635,6 +643,8 @@ double logLikelihood_Round3(SEXP model_R, int count,
 double logLikelihood_NormalFixedUseExp(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
 double logLikelihood_TFixedUseExp(SEXP model_R, int count,
+                                SEXP dataset_R, int i);
+double logLikelihood_LN2(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
 double logLikelihood(SEXP model_R, int count,
                                 SEXP dataset_R, int i);
@@ -785,6 +795,7 @@ void
 updateSeason(SEXP prior_R, double *betaTilde, int J);
 
 void updateSigma_Varying(SEXP object);
+void updateSigmaLN2(SEXP object_R);
 
 void updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateTheta_BinomialVaryingAgCertain(SEXP object, SEXP y_R, SEXP exposure_R);
@@ -809,6 +820,7 @@ void updateThetaAndNu_CMPVaryingNotUseExp(SEXP object_R, SEXP y_R);
 void updateThetaAndNu_CMPVaryingUseExp(SEXP object_R, SEXP y_R, SEXP exposure_R);
 
 void updateVarsigma(SEXP object, SEXP y_R);
+void updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R);
 
 /* update counts */
 void updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R,
@@ -850,6 +862,8 @@ void transferParamModel_TFixedNotUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
 void transferParamModel_TFixedUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
+void transferParamModel_LN2Predict(SEXP model_R,
+        const char *filename, int lengthIter, int iteration);
 
 
 /* predict models not using exposure*/
@@ -866,6 +880,7 @@ void predictModelUseExp_PoissonBinomialMixturePredict(SEXP object, SEXP y_R, SEX
 void predictModelUseExp_Round3Predict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_NormalFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_TFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
+void predictModelUseExp_LN2Predict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 
@@ -915,8 +930,9 @@ void updateModelUseExp_NormalFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_TFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
+void updateModelUseExp_LN2(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
-
+void updateAlphaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R);
 void updatePriorsBetas(SEXP object_R);
 
 /* update models not using exposure*/
@@ -931,6 +947,7 @@ void drawModelUseExp_PoissonBinomialMixture
                                 (SEXP object, SEXP y_R, SEXP exposure_R);
 void drawModelUseExp_NormalFixedUseExp
                             (SEXP object, SEXP y_R, SEXP exposure_R);
+void drawModelUseExp_LN2(SEXP object, SEXP y_R, SEXP exposure_R);
 void drawModelUseExp(SEXP object, SEXP y_R, SEXP exposure_R);
 
 
@@ -1023,11 +1040,14 @@ SEXP chooseICellSubAddNet(SEXP description_R);
 int getICellLowerTriFromComp(int i_cell_up_r, SEXP description_R);
 int getICellLowerTriNextFromComp(int i_cell_up_r, SEXP description_R);
 int isLowerTriangle(int i, SEXP description_R);
+int isOldestAgeGroup(int i, SEXP description_R);
 int getIAccNextFromPopn(int i, SEXP description_R);
 int getIPopnNextFromPopn(int i, SEXP description_R);
 int getIExpFirstFromPopn(int i, SEXP description_R);
 int getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R);
-int getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R);
+int getMinValCohortPopulationHasAge(int i, SEXP population_R, SEXP accession_R,
+				    SEXP iterator_R);
+int getMinValCohortPopulationNoAge(int i, SEXP series_R, SEXP iterator_R);
 
 /* mapping functions */
 int getIPopnNextFromComp(int i, SEXP mapping_R);
@@ -1079,7 +1099,8 @@ double diffLogLikCellComp(int diff, int iComp_r, int iCell_r,
                         SEXP transforms_R);
 double diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R,
                         SEXP model_R, SEXP dataset_R, SEXP transform_R);
-double diffLogLikPopnPair(int diff, int iPopnOrig_r, int iPopnDest_r,
+double diffLogLikPopnPair(int diffOrig, int diffDest,
+			  int iPopnOrig_r, int iPopnDest_r,
                         SEXP iterator_R,
                         SEXP population_R, SEXP dataModels_R,
                         SEXP datasets_R, SEXP seriesIndices_R,
@@ -1103,7 +1124,7 @@ double diffLogDensPopnOneCohort (int diff, SEXP population_R, int i_r,
                  SEXP iterator_R, double * theta, int * strucZeroArray);
 double diffLogDensExpPopn(SEXP combined_R);
 double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
-                        double ageTimeStep, int updatedPopn,
+					  double ageTimeStep, int updatedPopn, int updatedBirths,
                         SEXP component_R, double * theta,
                         int * strucZeroArray,
                         SEXP iteratorComp_R,
@@ -1111,7 +1132,7 @@ double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
                         SEXP iteratorExposure_R,
                         int diff);
 double diffLogDensExpOneComp(int iCell_r, int hasAge,
-                        double ageTimeStep, int updatedPopn,
+			     double ageTimeStep, int updatedPopn, int updatedBirths,
                         SEXP component_R, double * theta, int * strucZeroArray,
                         SEXP iteratorComp_R,
                         int iExpFirst_r, double * exposure,
@@ -1124,13 +1145,17 @@ double diffLogDensJumpPoolNoExpose(SEXP combined_R);
 double diffLogDensJumpNet(SEXP combined_R);
 double diffLogDensJumpComp(SEXP combined_R);
 double diffLogDensExpComp(SEXP combined_R);
-double diffLogDensCompSmall(SEXP combined_R);
+double diffLogDensJumpBirthsSmall(SEXP combined_R);
+double diffLogDensJumpOrigDestSmall(SEXP combined_R);
+double diffLogDensJumpCompSmall(SEXP combined_R);
 
 void updateAccSmall(SEXP combined_R);
+void updateExpSmall(SEXP combined_R);
 void updateCellMove(SEXP combined_R);
 void updateSubsequentPopnMove(SEXP combined_R);
 void updateSubsequentAccMove(SEXP combined_R);
 void updateSubsequentExpMove(SEXP combined_R);
+void updateSubsequentExpMoveOneCohortNoAge(SEXP combined_R);
 
 
 /* pointers for routines from dembase package

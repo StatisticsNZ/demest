@@ -794,11 +794,16 @@ setMethod("initialCombinedAccount",
               i.pool <- if (any(is.pool)) which(is.pool) else -1L
               i.int.net <- if (any(is.int.net)) which(is.int.net) else -1L
               is.net <- is.int.net | is.net.move
-              exposure <- dembase::exposure(population,
-                                            triangles = has.age)
+              ## Calculate here to use for initial values for system models.
+              ## Recalculate later to take account of structural zeros.
+              if (has.age)
+                  exposure <- dembase::exposureHMD(account)
+              else
+                  exposure <- dembase::exposure(population,
+                                                triangles = FALSE)
               exposure <- methods::new("Exposure",
-                              .Data = exposure@.Data,
-                              metadata = exposure@metadata)
+                                       .Data = exposure@.Data,
+                                       metadata = exposure@metadata)
               population <- methods::new("Population",
                                          .Data = population@.Data,
                                          metadata = population@metadata)
@@ -884,7 +889,6 @@ setMethod("initialCombinedAccount",
               struc.zero.array <- systemModels[[1L]]@strucZeroArray@.Data
               if (any(struc.zero.array == 0L)) {
                   population@.Data[struc.zero.array == 0L] <- 0L
-                  exposure@.Data <- dembase::exposure(population, triangles = has.age)@.Data
                   account@population <- population
               }
               for (i in seq_along(components)) {
@@ -896,6 +900,14 @@ setMethod("initialCombinedAccount",
                           account@components[[i]]@.Data[struc.zero.array == 0L] <- 0L
                   }
               }
+              if (has.age)
+                  exposure <- dembase::exposureHMD(account)
+              else
+                  exposure <- dembase::exposure(account@population,
+                                                triangles = FALSE)
+              exposure <- methods::new("Exposure",
+                                       .Data = exposure@.Data,
+                                       metadata = exposure@metadata)
               .Data.theta.popn <- array(systemModels[[1L]]@theta,
                                         dim = dim(population),
                                         dimnames = dimnames(population))
@@ -917,8 +929,8 @@ setMethod("initialCombinedAccount",
                                                               transform = transforms[[i]])
                   dimnames(.Data.series.collapsed) <- dimnames(metadata.series.collapsed)
                   series.collapsed <- methods::new("Counts",
-                                          .Data = .Data.series.collapsed,
-                                          metadata = metadata.series.collapsed)
+                                                   .Data = .Data.series.collapsed,
+                                                   metadata = metadata.series.collapsed)
                   model <- dataModels[[i]]
                   if (methods::is(model, "Poisson") || methods::is(model, "CMP"))
                       series.collapsed <- dembase::toDouble(series.collapsed)
@@ -942,10 +954,11 @@ setMethod("initialCombinedAccount",
               update.component <- rep(TRUE, times = length(components))
               if (has.age) {
                   accession <- dembase::accession(account,
-                                                  births = FALSE)
+                                                  births = FALSE,
+                                                  openAge = TRUE)
                   accession <- methods::new("Accession",
-                                   .Data = accession@.Data,
-                                   metadata = accession@metadata)
+                                            .Data = accession@.Data,
+                                            metadata = accession@metadata)
                   iterator.acc <- CohortIterator(accession)
                   mappings.to.acc <- lapply(components, function(x) Mapping(x, accession))
                   methods::new("CombinedAccountMovementsHasAge",

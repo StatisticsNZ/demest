@@ -688,7 +688,7 @@ test_that("getIPopnNextFromOrigDest works with InternalMovementsOrigDest", {
                        target = population)
     i <- seq_len(length(component))
     i <- i[slice.index(component, 2) != slice.index(component, 3)]
-    d <- as.data.frame(component, direction = "long")
+    d <- as.data.frame(component, direction = "long", stringsAsFactors = TRUE)
     d <- subset(d, reg_orig != reg_dest)
     d <- lapply(d[1:5], as.integer)
     i.orig <- with(d, time + 1L + 3L * (reg_orig-1L) + 9L * (age-1L) + 9L * (triangle == 2L & age == 1L))
@@ -782,7 +782,7 @@ test_that("R and C versions of getIPopnNextFromOrigDest give same answer Interna
                        target = population)
     i <- seq_len(length(component))
     i <- i[slice.index(component, 2) != slice.index(component, 3)]
-    d <- as.data.frame(component, direction = "long")
+    d <- as.data.frame(component, direction = "long", stringsAsFactors = TRUE)
     d <- subset(d, reg_orig != reg_dest)
     d <- lapply(d[1:5], as.integer)
     i.orig <- with(d, time + 1L + 3L * (reg_orig-1L) + 9L * (age-1L) + 9L * (triangle == 2L & age == 1L))
@@ -1220,32 +1220,28 @@ test_that("getIAccNextFromComp works with ordinary component", {
                                               sex = c("Female", "Male"),
                                               triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10-19", "20+"))))
-    accession <- Counts(array(1:8,
-                              dim = c(2, 2, 2),
+    accession <- Counts(array(1:12,
+                              dim = c(2, 2, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               sex = c("Female", "Male"),
-                                              age = c("10", "20"))))
+                                              age = c("10", "20", "30"))))
     accession <- Accession(accession)
     component <- ExitsMovements(exits = component,
                                 template = component,
                                 name = "exits")
     mapping <- Mapping(current = component,
                        target = accession)
-    ans.obtained <- getIAccNextFromComp(i = 1L, mapping = mapping)
-    ans.expected <- 2L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 5L, mapping = mapping)
-    ans.expected <- 1L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 3L, mapping = mapping)
-    ans.expected <- 4L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 10L, mapping = mapping)
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 21L, mapping = mapping)
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
+    vec.ans.expected <- c(2L, 0L, 4L, 0L,
+                          1:4,
+                          6L, 0L, 8L, 0L,
+                          5:8,
+                          10L, 0L, 12L, 0L,
+                          9:12)
+    for (i in seq_along(component)) {
+        ans.obtained <- getIAccNextFromComp(i, mapping = mapping)
+        ans.expected <- vec.ans.expected[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
     ## time is second dimension of three
     component <- Counts(array(1:36,
                               dim = c(3, 2, 2, 2),
@@ -1253,11 +1249,11 @@ test_that("getIAccNextFromComp works with ordinary component", {
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("0-9", "10+"),
                                   triangle = c("Lower", "Upper"))))
-    accession <- Counts(array(1:18,
-                              dim = c(3, 2, 1),
+    accession <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
                               dimnames = list(reg = c("a", "b", "c"),
                                               time = c("2001-2010", "2011-2020"),
-                                              age = "10")),
+                                              age = c("10", "20"))),
                         dimscales = c(age = "Points"))
     accession <- Accession(accession)
     component <- ExitsMovements(exits = component,
@@ -1265,18 +1261,16 @@ test_that("getIAccNextFromComp works with ordinary component", {
                                 name = "exits")
     mapping <- Mapping(current = component,
                        target = accession)
-    ans.obtained <- getIAccNextFromComp(i = 1L, mapping = mapping)
-    ans.expected <- 4L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 4L, mapping = mapping)
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 8L, mapping = mapping)
-    ans.expected <- 0L
-    expect_identical(ans.obtained, ans.expected)
-    ans.obtained <- getIAccNextFromComp(i = 13L, mapping = mapping)
-    ans.expected <- 1L
-    expect_identical(ans.obtained, ans.expected)
+    vec.ans.expected <- c(4:6,
+                          rep(0L, 3),
+                          10:12,
+                          rep(0L, 3),
+                          1:12)
+    for (i in seq_along(component)) {
+        ans.obtained <- getIAccNextFromComp(i, mapping = mapping)
+        ans.expected <- vec.ans.expected[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
 })
 
 test_that("R and C versions of getIAccNextFromComp give same answer with ordinary component", {
@@ -1292,11 +1286,11 @@ test_that("R and C versions of getIAccNextFromComp give same answer with ordinar
                                               sex = c("Female", "Male"),
                                               triangle = c("Lower", "Upper"),
                                               age = c("0-9", "10-19", "20+"))))
-    accession <- Counts(array(1:8,
-                              dim = c(2, 2, 2),
+    accession <- Counts(array(1:12,
+                              dim = c(2, 2, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               sex = c("Female", "Male"),
-                                              age = c("10", "20"))))
+                                              age = c("10", "20", "30"))))
     accession <- Accession(accession)
     component <- ExitsMovements(exits = component,
                                 template = component,
@@ -1315,11 +1309,11 @@ test_that("R and C versions of getIAccNextFromComp give same answer with ordinar
                                   time = c("2001-2010", "2011-2020"),
                                   age = c("0-9", "10+"),
                                   triangle = c("Lower", "Upper"))))
-    accession <- Counts(array(1:18,
-                              dim = c(3, 2, 1),
+    accession <- Counts(array(1:12,
+                              dim = c(3, 2, 2),
                               dimnames = list(reg = c("a", "b", "c"),
                                               time = c("2001-2010", "2011-2020"),
-                                              age = "10")),
+                                              age = c("10", "20"))),
                         dimscales = c(age = "Points"))
     accession <- Accession(accession)
     component <- ExitsMovements(exits = component,
@@ -1357,10 +1351,10 @@ test_that("getIAccNextFromComp works with BirthsMovementNoParentChild", {
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
-    accession <- Counts(array(1:8,
-                              dim = c(2, 4),
+    accession <- Counts(array(1:10,
+                              dim = c(2, 5),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                              age = c("10", "20", "30", "40"))))
+                                              age = c("10", "20", "30", "40", "50"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = births,
                        target = accession)
@@ -1385,11 +1379,11 @@ test_that("getIAccNextFromComp works with BirthsMovementNoParentChild", {
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
-    accession <- Counts(array(1:36,
-                               dim = c(3, 2, 4),
-                               dimnames = list(reg = c("a", "b", "c"),
-                                               time = c("2001-2010", "2011-2020"),
-                                               age = c("10", "20", "30", "40"))))
+    accession <- Counts(array(1:30,
+                              dim = c(3, 2, 5),
+                              dimnames = list(reg = c("a", "b", "c"),
+                                              time = c("2001-2010", "2011-2020"),
+                                              age = c("10", "20", "30", "40", "50"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = births,
                        target = accession)
@@ -1421,10 +1415,10 @@ test_that("R and C versions of getIAccNextFromComp give same answer with BirthsM
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
-    accession <- Counts(array(1:8,
-                              dim = c(2, 4),
+    accession <- Counts(array(1:10,
+                              dim = c(2, 5),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
-                                              age = c("10", "20", "30", "40"))))
+                                              age = c("10", "20", "30", "40", "50"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = births,
                        target = accession)
@@ -1449,11 +1443,11 @@ test_that("R and C versions of getIAccNextFromComp give same answer with BirthsM
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births = births,
                               template = template)
-    accession <- Counts(array(1:36,
-                               dim = c(3, 2, 4),
-                               dimnames = list(reg = c("a", "b", "c"),
-                                               time = c("2001-2010", "2011-2020"),
-                                               age = c("10", "20", "30", "40"))))
+    accession <- Counts(array(1:30,
+                              dim = c(3, 2, 5),
+                              dimnames = list(reg = c("a", "b", "c"),
+                                              time = c("2001-2010", "2011-2020"),
+                                              age = c("10", "20", "30", "40", "50"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = births,
                        target = accession)
@@ -1640,23 +1634,25 @@ test_that("getIAccNextFromOrigDest works with InternalMovementsOrigDest", {
     template <- makeTemplateComponent(population)
     component <- InternalMovements(internal = component,
                                    template = template)
-    accession <- Counts(array(1:6,
-                              dim = c(2, 3, 1),
+    accession <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg = 1:3,
-                                              age = "10")),
+                                              age = c("10", "20"))),
                         dimscales = c(age = "Points"))
     accession <- Accession(accession)
     mapping <- Mapping(current = component,
                        target = accession)
     i <- seq_len(length(component))
     i <- i[slice.index(component, 2) != slice.index(component, 3)]
-    ans.exp <- c(list(c(4L, 2L), c(0L, 0L), c(6L, 2L), c(0L, 0L), c(2L, 4L), c(0L, 0L),
-                      c(6L, 4L), c(0L, 0L), c(2L, 6L), c(0L, 0L), c(4L, 6L), c(0L, 0L)),
-                 rep(list(c(0L, 0L)), times = 12),
-                 list(c(3L, 1L), c(4L, 2L), c(5L, 1L), c(6L, 2L), c(1L, 3L), c(2L, 4L),
-                      c(5L, 3L), c(6L, 4L), c(1L, 5L), c(2L, 6L), c(3L, 5L), c(4L, 6L)),
-                 rep(list(c(0L, 0L)), times = 12))
+    ans.exp <- list(c(4L, 2L), c(0L, 0L), c(6L, 2L), c(0L, 0L), c(2L, 4L), c(0L, 0L),
+                    c(6L, 4L), c(0L, 0L), c(2L, 6L), c(0L, 0L), c(4L, 6L), c(0L, 0L),
+                    c(10L, 8L), c(0L, 0L), c(12L, 8L), c(0L, 0L), c(8L, 10L), c(0L, 0L),
+                    c(12L, 10L), c(0L, 0L), c(8L, 12L), c(0L, 0L), c(10L, 12L), c(0L, 0L),
+                    c(3L, 1L), c(4L, 2L), c(5L, 1L), c(6L, 2L), c(1L, 3L), c(2L, 4L),
+                    c(5L, 3L), c(6L, 4L), c(1L, 5L), c(2L, 6L), c(3L, 5L), c(4L, 6L),
+                    c(9L, 7L), c(10L, 8L), c(11L, 7L), c(12L, 8L), c(7L, 9L), c(8L, 10L),
+                    c(11L, 9L), c(12L, 10L), c(7L, 11L), c(8L, 12L), c(9L, 11L), c(10L, 12L))
     for (j in seq_along(i)) {
         ans.obtained <- getIAccNextFromOrigDest(i = i[j], mapping = mapping, useC = FALSE)
         ans.expected <- ans.exp[[j]]
@@ -1686,11 +1682,11 @@ test_that("R and C versions of getIAccNextFromOrigDest give same answer with Int
     template <- makeTemplateComponent(population)
     component <- InternalMovements(internal = component,
                                    template = template)
-    accession <- Counts(array(1:6,
-                              dim = c(2, 3, 1),
+    accession <- Counts(array(1:12,
+                              dim = c(2, 3, 2),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg = 1:3,
-                                              age = "10")),
+                                              age = c("10", "20"))),
                         dimscales = c(age = "Points"))
     accession <- Accession(accession)
     mapping <- Mapping(current = component,
@@ -1728,19 +1724,17 @@ test_that("getIAccNextFromComp works with InternalMovementsPool", {
     internal <- InternalMovements(internal = internal,
                                   template = template)
     accession <- Counts(array(1:18,
-                              dim = c(2, 3, 2),
+                              dim = c(2, 3, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg = 1:3,
-                                              age = c("10", "20"))))
+                                              age = c("10", "20", "30"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = internal,
                        target = accession)
     ans.exp <- rep(c(2L, 0L, 4L, 0L, 6L, 0L,
-                     c(8L, 0L, 10L, 0L, 12L, 0L),
-                     rep(0L, 6),
-                     1:6,
-                     7:12,
-                     rep(0L, 6)),
+                     8L, 0L, 10L, 0L, 12L, 0L,
+                     14L, 0L, 16L, 0L, 18L, 0L,
+                     1:18),
                    times = 2)
     for (i in seq_along(internal)) {
         ans.obtained <- getIAccNextFromComp(i = i, mapping = mapping)
@@ -1773,20 +1767,13 @@ test_that("R and C versions of getIAccNextFromComp give same answer with Interna
     internal <- InternalMovements(internal = internal,
                                   template = template)
     accession <- Counts(array(1:18,
-                              dim = c(2, 3, 2),
+                              dim = c(2, 3, 3),
                               dimnames = list(time = c("2001-2010", "2011-2020"),
                                               reg = 1:3,
-                                              age = c("10", "20"))))
+                                              age = c("10", "20", "30"))))
     accession <- Accession(accession)
     mapping <- Mapping(current = internal,
                        target = accession)
-    ans.exp <- rep(c(2L, 0L, 4L, 0L, 6L, 0L,
-                     c(8L, 0L, 10L, 0L, 12L, 0L),
-                     rep(0L, 6),
-                     1:6,
-                     7:12,
-                     rep(0L, 6)),
-                   times = 2)
     for (i in seq_along(internal)) {
         ans.R <- getIAccNextFromComp(i = i, mapping = mapping, useC = FALSE)
         ans.C <- getIAccNextFromComp(i = i, mapping = mapping, useC = TRUE)
@@ -2887,10 +2874,9 @@ test_that("getIExpFirstFromComp works with ordinary component", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = component,
                        target = exposure)
-    ans.exp <- c(1:4, 3L, 4L, 3L, 4L)
     for (i in 1:8) {
         ans.obtained <- getIExpFirstFromComp(i = i, mapping = mapping)
-        ans.expected <- ans.exp[i]
+        ans.expected <- i
         expect_identical(ans.obtained, ans.expected)
     }
     ## time is second dimension of two
@@ -2935,10 +2921,9 @@ test_that("getIExpFirstFromComp works with ordinary component", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = component,
                        target = exposure)
-    ans.exp <- c(1:12, 7:12, 7:12)
     for (i in 1:24) {
         ans.obtained <- getIExpFirstFromComp(i = i, mapping = mapping)
-        ans.expected <- ans.exp[i]
+        ans.expected <- i
         expect_identical(ans.obtained, ans.expected)
     }
     ## only has time dimension
@@ -2988,7 +2973,7 @@ test_that("getIExpFirstFromComp works with ordinary component", {
     ans.exp <- c(1:18, 7:18, 13:18)
     for (i in seq_along(ans.expected)) {
         ans.obtained <- getIExpFirstFromComp(i = i, mapping = mapping)
-        ans.expected <- ans.exp[i]
+        ans.expected <- i
         expect_identical(ans.obtained, ans.expected)
     }
 })
@@ -3571,12 +3556,12 @@ test_that("getIExpFirstPairFromOrigDest works with InternalMovementsOrigDest", {
                     c(7L, 7L), c(8L, 8L), c(9L, 7L), c(10L, 8L), c(11L, 7L), c(12L, 8L),
                     c(7L, 9L), c(8L, 10L), c(9L, 9L), c(10L, 10L), c(11L, 9L), c(12L, 10L),
                     c(7L, 11L), c(8L, 12L), c(9L, 11L), c(10L, 12L), c(11L, 11L), c(12L, 12L),
-                    c(7L, 7L), c(8L, 8L), c(9L, 7L), c(10L, 8L), c(11L, 7L), c(12L, 8L),
-                    c(7L, 9L), c(8L, 10L), c(9L, 9L), c(10L, 10L), c(11L, 9L), c(12L, 10L),
-                    c(7L, 11L), c(8L, 12L), c(9L, 11L), c(10L, 12L), c(11L, 11L), c(12L, 12L),
-                    c(7L, 7L), c(8L, 8L), c(9L, 7L), c(10L, 8L), c(11L, 7L), c(12L, 8L),
-                    c(7L, 9L), c(8L, 10L), c(9L, 9L), c(10L, 10L), c(11L, 9L), c(12L, 10L),
-                    c(7L, 11L), c(8L, 12L), c(9L, 11L), c(10L, 12L), c(11L, 11L), c(12L, 12L))
+                    c(13L, 13L), c(14L, 14L), c(15L, 13L), c(16L, 14L), c(17L, 13L), c(18L, 14L),
+                    c(13L, 15L), c(14L, 16L), c(15L, 15L), c(16L, 16L), c(17L, 15L), c(18L, 16L),
+                    c(13L, 17L), c(14L, 18L), c(15L, 17L), c(16L, 18L), c(17L, 17L), c(18L, 18L),
+                    c(19L, 19L), c(20L, 20L), c(21L, 19L), c(22L, 20L), c(23L, 19L), c(24L, 20L),
+                    c(19L, 21L), c(20L, 22L), c(21L, 21L), c(22L, 22L), c(23L, 21L), c(24L, 22L),
+                    c(19L, 23L), c(20L, 24L), c(21L, 23L), c(22L, 24L), c(23L, 23L), c(24L, 24L))
     for (i in 1:72) {
         ans.obtained <- getIExpFirstPairFromOrigDest(i = i, mapping = mapping, useC = FALSE)
         ans.expected <- ans.exp[[i]]
@@ -3760,12 +3745,7 @@ test_that("getIExpFirstFromComp works with InternalMovementsPool", {
     exposure <- Exposure(exposure)
     mapping <- Mapping(current = component,
                        target = exposure)
-    ans.exp <- c(1:12,
-                 7:12,
-                 7:12,
-                 1:12,
-                 7:12,
-                 7:12)
+    ans.exp <- c(1:24, 1:24)
     for (i in 1:48) {
         ans.obtained <- getIExpFirstFromComp(i = i, mapping = mapping, useC = FALSE)
         ans.expected <- ans.exp[[i]]
@@ -4340,7 +4320,7 @@ test_that("R and C versions of getICellCompFromExp work with InternalMovementsPo
 })
 
 
-test_that("getICellBirthsFromExp works with BirthsNoParentChild", {
+test_that("getICellBirthsFromExp works with BirthsNoParentChild - no sex", {
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     BirthsMovements <- dembase:::BirthsMovements
     Population <- dembase:::Population
@@ -4445,7 +4425,7 @@ test_that("getICellBirthsFromExp works with BirthsNoParentChild", {
     }
 })
 
-test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsNoParentChild", {
+test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsNoParentChild - no sex", {
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     BirthsMovements <- dembase:::BirthsMovements
     Population <- dembase:::Population
@@ -4550,8 +4530,188 @@ test_that("R and C versions of getICellBirthsFromExp give same answer with Birth
     }
 })
 
+test_that("getICellBirthsFromExp works with BirthsNoParentChild - with sex", {
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    BirthsMovements <- dembase:::BirthsMovements
+    Population <- dembase:::Population
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("10-19", "20-29"),
+                                           sex = c("Female", "Male"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 5, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    population <- Population(population)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(2L, 0L, 1:4, rep(0L, 4),
+                 rep(0L, 10),
+                 1L, 2L, 9:12, rep(0L, 4),
+                 rep(0L, 10))
+    for (i in 1:40) {
+        ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
+        ans.expected <- ans.exp[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
+    BirthsMovements <- dembase:::BirthsMovements
+    Population <- dembase:::Population
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("10-19", "20-29"),
+                                           sex = c("Male", "Female"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 5, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"),
+                                               sex = c("Male", "Female"))))
+    population <- Population(population)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(rep(0L, 10),
+                 2L, 0L, 1:4, rep(0L, 4),
+                 rep(0L, 10),
+                 1L, 2L, 9:12, rep(0L, 4))
+    for (i in 1:40) {
+        ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
+        ans.expected <- ans.exp[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
 
-test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
+
+test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsNoParentChild - with sex", {
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    BirthsMovements <- dembase:::BirthsMovements
+    Population <- dembase:::Population
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    ## time is first dimension of two
+    births <- Counts(array(1:8,
+                           dim = c(2, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("10-19", "20-29"),
+                                           sex = c("Male", "Female"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 5, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"),
+                                               sex = c("Male", "Female"))))
+    population <- Population(population)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:20) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## time is second dimension of two
+    births <- Counts(array(1:3,
+                           dim = c(3, 2, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           sex = c("Male", "Female"),
+                                           time = "2001-2010")))
+    population <- Counts(array(1:6,
+                               dim = c(3, 2, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               sex = c("Male", "Female"),
+                                               time = c(2000, 2010))))
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    population <- Population(population)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:3) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## time is second dimension of three
+    births <- Counts(array(1:36,
+                           dim = c(3, 2, 2, 2, 2),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           sex = c("Male", "Female"),
+                                           time = c("2001-2010", "2011-2020"),
+                                           age = c("10-19", "20-29"),
+                                           triangle = c("Lower", "Upper"))))
+    population <- Counts(array(1:36,
+                               dim = c(3, 2, 3, 4),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               sex = c("Male", "Female"),
+                                               time = c(2000, 2010, 2020),
+                                               age = c("0-9", "10-19", "20-29", "30+"))))
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:48) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## only has time dimension
+    births <- Counts(array(1:11,
+                           dim = c(11, 2),
+                           dimnames = list(time = paste(seq(2001, by = 5, len = 11),
+                                                        seq(2005, by = 5, len = 11),
+                                                        sep = "-"),
+                                           sex = c("Male", "Female"))))
+    population <- Counts(array(1:12,
+                               dim = c(12, 2),
+                               dimnames = list(time = seq(from = 2000,
+                                                          by = 5,
+                                                          length = 12),
+                                               sex = c("Male", "Female"))))
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:11) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
+
+
+test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild - no sex", {
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     BirthsMovements <- dembase:::BirthsMovements
     Exposure <- dembase:::Exposure
@@ -4683,7 +4843,7 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
 })
 
 
-test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
+test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsMovementHasParentChild - no sex", {
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     BirthsMovements <- dembase:::BirthsMovements
     Exposure <- dembase:::Exposure
@@ -4792,4 +4952,167 @@ test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild", {
     }
 })
 
+
+
+test_that("getICellBirthsFromExp works with BirthsMovementHasParentChild - with sex", {
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    BirthsMovements <- dembase:::BirthsMovements
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    births <- Counts(array(1:72,
+                           dim = c(2, 3, 3, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                               eth_parent = 1:3,
+                               eth_child = 1:3,
+                               triangle = c("Lower", "Upper"),
+                               age = c("10-19", "20-29"),
+                               sex = c("Female", "Male"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 3, 5, 2),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                   eth = 1:3,
+                                   age = c("0-9", "10-19", "20-29", "30-39", "40+"),
+                                   sex = c("Female", "Male"))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(2L, 0L, 4L, 0L, 6L, 0L,
+                 1:6,
+                 19:24,
+                 rep(0L, 12),
+                 rep(0L, 30),
+                 1:6,
+                 73:78,
+                 91:96,
+                 rep(0L, 12),
+                 rep(0L, 30))
+    for (i in 1:72) {
+        ans.obtained <- getICellBirthsFromExp(i = i, mapping = mapping)
+        ans.expected <- ans.exp[i]
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+
+test_that("R and C versions of getICellBirthsFromExp give same answer with BirthsMovementHasParentChild - with sex", {
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    BirthsMovements <- dembase:::BirthsMovements
+    Exposure <- dembase:::Exposure
+    makeTemplateComponent <- dembase:::makeTemplateComponent
+    Mapping <- demest:::Mapping
+    ## one parent-child, has age
+    births <- Counts(array(1:72,
+                           dim = c(2, 3, 3, 2, 2, 2),
+                           dimnames = list(time = c("2001-2010", "2011-2020"),
+                                           eth_parent = 1:3,
+                                           eth_child = 1:3,
+                                           sex = c("Female", "Male"),
+                                           triangle = c("Lower", "Upper"),
+                                           age = c("10-19", "20-29"))))
+    population <- Counts(array(1:15,
+                               dim = c(3, 3, 2, 5),
+                               dimnames = list(time = c(2000, 2010, 2020),
+                                               eth = 1:3,
+                                               sex = c("Female", "Male"),
+                                               age = c("0-9", "10-19", "20-29", "30-39", "40+"))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:60) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    births <- Counts(array(1:36,
+                           dim = c(3, 3, 2, 2, 2, 1),
+                           dimnames = list(reg_parent = c("a", "b", "c"),
+                                           reg_child = c("a", "b", "c"),
+                                           eth_parent = 1:2,
+                                           eth_child = 1:2,
+                                           sex = c("Female", "Male"),
+                                           time = "2001-2010")))
+    population <- Counts(array(1:12,
+                               dim = c(3, 2, 2, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               eth = 1:2,
+                                               sex = c("Female", "Male"),
+                                               time = c(2000, 2010))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:6) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## one parent-child, has age
+    births <- Counts(array(1:72,
+                           dim = c(3, 3, 2, 2, 2, 2),
+                           dimnames = list(reg_parent = c("a", "b", "c"),
+                                           reg_child = c("a", "b", "c"),
+                                           sex = c("Female", "Male"),
+                                           time = c("2001-2010", "2011-2020"),
+                                           age = c("10-19", "20-29"),
+                                           triangle = c("Lower", "Upper"))))
+    population <- Counts(array(1:36,
+                               dim = c(3, 3, 2, 4),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               time = c(2000, 2010, 2020),
+                                               sex = c("Female", "Male"),
+                                               age = c("0-9", "10-19", "20-29", "30+"))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    for (i in 1:48) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+    ## time dimension plus parent-child
+    births <- Counts(array(1:44,
+                           dim = c(11, 2, 2, 2),
+                           dimnames = list(time = paste(seq(2001, by = 5, len = 11),
+                                                        seq(2005, by = 5, len = 11),
+                                                        sep = "-"),
+                                           sex = c("Female", "Male"),
+                                           eth_parent = 1:2,
+                                           eth_child = 1:2)))
+    population <- Counts(array(1:24,
+                               dim = c(12, 2, 2),
+                               dimnames = list(time = seq(from = 2000,
+                                                          by = 5,
+                                                          length = 12),
+                                               sex = c("Female", "Male"),
+                                               eth = 1:2)))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births = births,
+                              template = template)
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    mapping <- Mapping(current = exposure,
+                       target = births)
+    ans.exp <- c(1:11, 23:33)
+    for (i in 1:22) {
+        ans.R <- getICellBirthsFromExp(i = i, mapping = mapping, useC = FALSE)
+        ans.C <- getICellBirthsFromExp(i = i, mapping = mapping, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
 

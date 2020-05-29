@@ -42,14 +42,25 @@ setClass("AccessionMixin",
                  else if (dimtypes.acc[i] == "age") {
                      dv.acc <- DS.acc@dimvalues
                      dv.popn <- DS.popn@dimvalues
+                     n.dv.acc <- length(dv.acc)
                      n.dv.popn <- length(dv.popn)
-                     valid <- isTRUE(all.equal(dv.acc, dv.popn[-c(1L, n.dv.popn)]))
+                     valid <- ((n.dv.acc == n.dv.popn - 1L)
+                         && isTRUE(all.equal(dv.acc[-n.dv.acc], dv.popn[-c(1L, n.dv.popn)])))
                  }
                  else
                      valid <- isTRUE(all.equal(DS.acc, DS.popn))
                  if (!valid)
                      return(gettextf("'%s' and '%s' have inconsistent %s for dimension \"%s\" with %s \"%s\"",
                                      "accession", "population", "dimscales", names.acc[i], "dimtype", dimtypes.acc[i]))
+             }
+             ## 'accession' object equals result of calling 'accession'
+             ## function on 'object'
+             accession.calc <- dembase::accession(object@account,
+                                                  births = FALSE,
+                                                  openAge = TRUE)
+             if (!isTRUE(all.equal(as(accession, "Counts"), accession.calc))) {
+                 return(gettextf("'%s' inconsistent with '%s' and '%s'",
+                                 "accession", "population", "components"))
              }
              TRUE
          })
@@ -227,18 +238,27 @@ setClass("ExposureMixin",
          contains = "VIRTUAL",
          validity = function(object) {
              exposure <- object@exposure
-             population <- object@account@population
+             account <- object@account
+             population <- account@population
              hasAge <- object@hasAge@.Data
              ## 'exposure' object equals result of calling 'exposure'
              ## function on 'population'
-             exposure.calc <- dembase::exposure(population,
-                                                triangles = hasAge)
+             if (hasAge)
+                 exposure.calc <- dembase::exposureHMD(account)
+             else
+                 exposure.calc <- dembase::exposure(population,
+                                                    triangles = FALSE)
              exposure.calc <- methods::new("Exposure",
-                                  .Data = exposure.calc@.Data,
-                                  metadata = exposure.calc@metadata)
+                                           .Data = exposure.calc@.Data,
+                                           metadata = exposure.calc@metadata)
              if (!isTRUE(all.equal(exposure, exposure.calc))) {
                  return(gettextf("'%s' and '%s' inconsistent",
                                  "exposure", "population"))
+             }
+             if (any(exposure < 0)) {
+                 brower()
+                 return(gettextf("'%s' has negative values",
+                                 "exposure"))
              }
              TRUE
          })
@@ -660,11 +680,11 @@ setClass("IteratorsAccountMixin",
                  return(gettextf("'%s' and '%s' have different lengths",
                                  "iteratorsComp", "components"))
              ## elements have class "CohortIteratorOrigDestParChPool" iff
-             ## they have class "InternalMovements" or "HasParentChild",
+             ## they have class "InternalMovements" or "BirthsMovements",
              for (i in seq_along(iteratorsComp)) {
                  is.iter.odpcp <- methods::is(iteratorsComp[[i]], "CohortIteratorOrigDestParChPool")
                  is.odpcp <- ((i == iOrigDest)
-                     || methods::is(components[[i]], "HasParentChild")
+                     || methods::is(components[[i]], "BirthsMovements")
                      || (i == iPool))
                  if (is.iter.odpcp && !is.odpcp)
                      return(gettextf("element %d of '%s' has class \"%s\" but element %d of '%s' has class \"%s\"",

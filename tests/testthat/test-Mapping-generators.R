@@ -1707,7 +1707,11 @@ test_that("Mapping creates object of class MappingExpToBirths from objects of cl
                         stepAgeCurrent = 1L,
                         stepAgeTarget = 1L,
                         stepTriangleCurrent = 12L,
-                        stepTriangleTarget = 6L)
+                        stepTriangleTarget = 6L,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
+                        stepSexTarget = NA_integer_)                        
     expect_identical(ans.obtained, ans.expected)
     ## has age; shared dimensions
     births <- Counts(array(1:36,
@@ -1742,7 +1746,11 @@ test_that("Mapping creates object of class MappingExpToBirths from objects of cl
                         stepAgeCurrent = 3L,
                         stepAgeTarget = 3L,
                         stepTriangleCurrent = 36L,
-                        stepTriangleTarget = 18L)
+                        stepTriangleTarget = 18L,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
+                        stepSexTarget = NA_integer_)                        
     expect_identical(ans.obtained, ans.expected)
     ## no age; shared dimensions
     births <- Counts(array(1:36,
@@ -1776,7 +1784,51 @@ test_that("Mapping creates object of class MappingExpToBirths from objects of cl
                         stepAgeCurrent = NA_integer_,
                         stepAgeTarget = NA_integer_,
                         stepTriangleCurrent = NA_integer_,
-                        stepTriangleTarget = NA_integer_)
+                        stepTriangleTarget = NA_integer_,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
+                        stepSexTarget = NA_integer_)                        
+    expect_identical(ans.obtained, ans.expected)
+    ## no age; has sex; shared dimensions
+    births <- Counts(array(1:36,
+                          dim = c(3, 2, 4, 3),
+                          dimnames = list(reg = 1:3,
+                                          sex = c("Female", "Male"),
+                                          eth = 1:4,
+                                          time = c("2001-2005", "2006-2010", "2011-2015"))))
+    population <- Counts(array(1:48,
+                               dim = c(3, 2, 4, 4),
+                               dimnames = list(reg = 1:3,
+                                               sex = c("Female", "Male"),
+                                               eth = 1:4,
+                                               time = c(2000, 2005, 2010, 2015))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births, template = template)
+    exposure <- exposure(population)
+    exposure <- Exposure(exposure)
+    ans.obtained <- Mapping(current = exposure,
+                            target = births)
+    ans.expected <- new("MappingExpToBirths",
+                        isOneToOne = FALSE,
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 24L,
+                        stepTimeTarget = 24L,
+                        nSharedVec = 3:4,
+                        stepSharedCurrentVec = c(1L, 6L),
+                        stepSharedTargetVec = c(1L, 6L),
+                        hasAge = FALSE,
+                        iMinAge = NA_integer_,
+                        nAgeCurrent = NA_integer_,
+                        nAgeTarget = NA_integer_,
+                        stepAgeCurrent = NA_integer_,
+                        stepAgeTarget = NA_integer_,
+                        stepTriangleCurrent = NA_integer_,
+                        stepTriangleTarget = NA_integer_,
+                        hasSex = TRUE,
+                        iSexDominant = 0L,
+                        stepSexCurrent = 3L,
+                        stepSexTarget = 3L)                        
     expect_identical(ans.obtained, ans.expected)
 })
 
@@ -1792,15 +1844,15 @@ test_that("Mapping creates object of class MappingExpToBirths from object of cla
     births <- Counts(array(1:108,
                            dim = c(2, 3, 3, 3, 2),
                            dimnames = list(age = c("5-9", "10-14"),
-                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                               eth_parent = 1:3,
-                               eth_child = 1:3,
-                               triangle = c("Lower", "Upper"))))
+                                           time = c("2001-2005", "2006-2010", "2011-2015"),
+                                           eth_parent = 1:3,
+                                           eth_child = 1:3,
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:24,
                                dim = c(4, 4, 3),
                                dimnames = list(age = c("0-4", "5-9", "10-14", "15+"),
-                                   time = c(2000, 2005, 2010, 2015),
-                                   eth = 1:3)))
+                                               time = c(2000, 2005, 2010, 2015),
+                                               eth = 1:3)))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births, template = template)
     exposure <- exposure(population, triangles = TRUE)
@@ -1822,26 +1874,30 @@ test_that("Mapping creates object of class MappingExpToBirths from object of cla
                         stepAgeCurrent = 1L,
                         stepAgeTarget = 1L,
                         stepTriangleCurrent = 36L,
-                        stepTriangleTarget = 54L)
+                        stepTriangleTarget = 54L,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
+                        stepSexTarget = NA_integer_)                        
     expect_identical(ans.obtained, ans.expected)
     ## has age; shared dimensions
     births <- Counts(array(1:1296,
                            dim = c(3, 2, 2, 3, 3, 2, 3, 2),
                            dimnames = list(reg = 1:3,
-                               eth_parent = 1:2,
-                               eth_child = 1:2,
-                               occ_parent = 1:3,
-                               occ_child = 1:3,
-                               age = c("5-9", "10-14"),
-                               time = c("2001-2005", "2006-2010", "2011-2015"),
-                               triangle = c("Lower", "Upper"))))
+                                           eth_parent = 1:2,
+                                           eth_child = 1:2,
+                                           occ_parent = 1:3,
+                                           occ_child = 1:3,
+                                           age = c("5-9", "10-14"),
+                                           time = c("2001-2005", "2006-2010", "2011-2015"),
+                                           triangle = c("Lower", "Upper"))))
     population <- Counts(array(1:288,
                                dim = c(3, 2, 3, 4, 4),
                                dimnames = list(reg = 1:3,
-                                   eth = 1:2,
-                                   occ = 1:3,
-                                   age = c("0-4", "5-9", "10-14", "15+"),
-                                   time = c(2000, 2005, 2010, 2015))))
+                                               eth = 1:2,
+                                               occ = 1:3,
+                                               age = c("0-4", "5-9", "10-14", "15+"),
+                                               time = c(2000, 2005, 2010, 2015))))
     template <- makeTemplateComponent(population)
     births <- BirthsMovements(births, template = template)
     exposure <- exposure(population, triangles = TRUE)
@@ -1863,7 +1919,59 @@ test_that("Mapping creates object of class MappingExpToBirths from object of cla
                         stepAgeCurrent = 18L,
                         stepAgeTarget = 108L,
                         stepTriangleCurrent = 216L, 
-                        stepTriangleTarget = 648L)
+                        stepTriangleTarget = 648L,
+                        hasSex = FALSE,
+                        iSexDominant = NA_integer_,
+                        stepSexCurrent = NA_integer_,
+                        stepSexTarget = NA_integer_)                        
+    expect_identical(ans.obtained, ans.expected)
+    ## has age; has sex; shared dimensions
+    births <- Counts(array(1:2592,
+                           dim = c(3, 2, 2, 3, 3, 2, 3, 2, 2),
+                           dimnames = list(reg = 1:3,
+                                           eth_parent = 1:2,
+                                           eth_child = 1:2,
+                                           occ_parent = 1:3,
+                                           occ_child = 1:3,
+                                           age = c("5-9", "10-14"),
+                                           time = c("2001-2005", "2006-2010", "2011-2015"),
+                                           triangle = c("Lower", "Upper"),
+                                           sex = c("Female", "Male"))))
+    population <- Counts(array(1:864,
+                               dim = c(3, 2, 3, 4, 4, 2),
+                               dimnames = list(reg = 1:3,
+                                               eth = 1:2,
+                                               occ = 1:3,
+                                               age = c("0-4", "5-9", "10-14", "15+"),
+                                               time = c(2000, 2005, 2010, 2015),
+                                               sex = c("Female", "Male"))))
+    template <- makeTemplateComponent(population)
+    births <- BirthsMovements(births, template = template)
+    exposure <- exposure(population, triangles = TRUE)
+    exposure <- Exposure(exposure)
+    ans.obtained <- Mapping(current = exposure,
+                            target = births,
+                            dominant = "Male")
+    ans.expected <- new("MappingExpToBirths",
+                        isOneToOne = FALSE,
+                        nTimeCurrent = 3L,
+                        stepTimeCurrent = 72L,
+                        stepTimeTarget = 216L,
+                        nSharedVec = c(3L, 2L, 3L),
+                        stepSharedCurrentVec = c(1L, 3L, 6L),
+                        stepSharedTargetVec = c(1L, 3L, 12L),
+                        hasAge = TRUE,
+                        nAgeCurrent = 4L,
+                        nAgeTarget = 2L,
+                        iMinAge = 2L,
+                        stepAgeCurrent = 18L,
+                        stepAgeTarget = 108L,
+                        stepTriangleCurrent = 432L, 
+                        stepTriangleTarget = 1296L,
+                        hasSex = TRUE,
+                        iSexDominant = 1L,
+                        stepSexCurrent = 216L,
+                        stepSexTarget = 648L)                     
     expect_identical(ans.obtained, ans.expected)
 })
 

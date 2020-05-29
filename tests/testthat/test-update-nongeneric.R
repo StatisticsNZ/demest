@@ -728,7 +728,7 @@ test_that("updateAlphaMix gives valid answer", {
     alpha <- makeAlphaMix(prodVectorsMix = prior@prodVectorsMix,
                           indexClassMix = prior@indexClassMix,
                           indexClassMaxMix = prior@indexClassMaxMix,
-                          nBetaNoAlongMix = prior@nBetaNoAlongMix, 
+                          nBetaNoAlongMix = prior@nBetaNoAlongMix,
                           posProdVectors1Mix = prior@posProdVectors1Mix,
                           posProdVectors2Mix = prior@posProdVectors2Mix)
     ans.expected <- prior
@@ -1061,13 +1061,13 @@ if (test.extended) {
                 alpha.expected[i,,sim] <- sapply(ans, function(x) x[1])
                 delta.expected[i,,sim] <- sapply(ans, function(x) x[2])
             }
-        }        
+        }
         alpha.obtained.mean <- apply(alpha.obtained, 1:2, sum)/n.sim
         delta.obtained.mean <- apply(delta.obtained, 1:2, sum)/n.sim
         alpha.expected.mean <- apply(alpha.expected, 1:2, sum)/n.sim
         delta.expected.mean <- apply(delta.expected, 1:2, sum)/n.sim
         expect_equal(alpha.obtained.mean[-1,-1], alpha.expected.mean[-1,-1], tol = 0.02)
-        expect_equal(delta.obtained.mean[-1,-1], delta.expected.mean[-1,-1], tol = 0.02)        
+        expect_equal(delta.obtained.mean[-1,-1], delta.expected.mean[-1,-1], tol = 0.02)
     })
 }
 
@@ -2720,7 +2720,7 @@ test_that("updateOmegaAlpha works", {
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)        
+            expect_equal(ans.obtained, ans.expected)
         ## withTrend = TRUE, hasLevel = FALSE
         spec <- DLM(level = NULL)
         beta <- rnorm(10)
@@ -2784,7 +2784,7 @@ test_that("updateOmegaAlpha works", {
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)        
+            expect_equal(ans.obtained, ans.expected)
     }
 })
 
@@ -2822,7 +2822,7 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
-            expect_equal(ans.R, ans.C)        
+            expect_equal(ans.R, ans.C)
         ## withTrend = TRUE, hasLevel = FALSE
         spec <- DLM(level = NULL)
         beta <- rnorm(10)
@@ -2873,7 +2873,7 @@ test_that("R and C versions of updateOmegaAlpha give same answer", {
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
-            expect_equal(ans.R, ans.C)        
+            expect_equal(ans.R, ans.C)
     }
 })
 
@@ -3019,7 +3019,7 @@ test_that("updateOmegaDelta works", {
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)        
+            expect_equal(ans.obtained, ans.expected)
     }
 })
 
@@ -3208,7 +3208,7 @@ test_that("updateOmegaSeason works", {
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)        
+            expect_equal(ans.obtained, ans.expected)
     }
 })
 
@@ -3513,7 +3513,7 @@ test_that("R and C versions of updatePhi give same answer", {
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
-            expect_equal(ans.R, ans.C)        
+            expect_equal(ans.R, ans.C)
         if (!updated.with.trend && ans.C@phi != prior@phi)
             updated.with.trend <- TRUE
         ## withTrend = FALSE, phi = 1
@@ -3545,7 +3545,7 @@ test_that("R and C versions of updatePhi give same answer", {
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
-            expect_equal(ans.R, ans.C)        
+            expect_equal(ans.R, ans.C)
         ## trend = NULL, damp(shape1 = 3, shape2 = 4, min = 0.6, max = 0.9)
         spec <- DLM(trend = NULL, damp = Damp(shape1 = 3, shape2 = 4, min = 0.6, max = 0.9))
         beta <- rnorm(10)
@@ -3571,7 +3571,7 @@ test_that("R and C versions of updatePhi give same answer", {
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
-            expect_equal(ans.R, ans.C)        
+            expect_equal(ans.R, ans.C)
         if (!updated.no.trend && ans.C@phi != prior@phi)
             updated.no.trend <- TRUE
     }
@@ -4596,7 +4596,7 @@ test_that("updateWSqrt works", {
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)        
+            expect_equal(ans.obtained, ans.expected)
     }
 })
 
@@ -4630,7 +4630,7 @@ test_that("R and C versions of updateWSqrt give same answer", {
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
-            expect_equal(ans.R, ans.C)        
+            expect_equal(ans.R, ans.C)
     }
 })
 
@@ -4666,7 +4666,7 @@ test_that("updateWSqrtInvG works", {
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)        
+            expect_equal(ans.obtained, ans.expected)
     }
 })
 
@@ -4700,7 +4700,7 @@ test_that("R and C versions of updateWSqrtInvG give same answer", {
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
-            expect_equal(ans.R, ans.C)        
+            expect_equal(ans.R, ans.C)
     }
 })
 
@@ -5321,53 +5321,6 @@ test_that("R and C versions of updateSigma_Varying give same answer - with Box-C
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
-    }
-})
-
-
-test_that("updateSigmaLN2 gives valid answer", {
-    ## updateSigmaLN2 <- demest:::updateSigmaLN2
-    initialModel <- demest:::initialModel
-    updateSDNorm <- demest:::updateSDNorm
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
-                                   dim = c(2, 2),
-                                   dimnames = list(age = c("0-39", "40+"),
-                                                   sex = c("Female", "Male"))))
-        y <- Counts(array(rpois(n = 24, lambda = 10),
-                          dim = c(2, 4, 3),
-                          dimnames = c(list(sex = c("Female", "Male"),
-                                            age = c("0-19", "20-39", "40-59", "60+"),
-                                            time = c("2000", "2010", "2020")))))
-        exposure <- y + rpois(n = 24, lambda = 5)
-        spec <- Model(y ~ LN2(constraint = constraint))
-        model <- initialModel(spec,
-                              y = y,
-                              exposure = exposure)
-        set.seed(seed + 1)
-        ans.obtained <- updateSigmaLN2(model)
-        set.seed(seed + 1)
-        ans.expected <- model
-        constr <- ans.expected@constraintLN2@.Data
-        include <- is.na(constr) | (constr != 0L)
-        if (sum(include) > 0L) {
-            V <- sum((ans.expected@alphaLN2@.Data[include])^2)
-            proposed <- updateSDNorm(sigma = ans.expected@sigma@.Data,
-                                     A = ans.expected@ASigma@.Data,
-                                     nu = ans.expected@nuSigma@.Data,
-                                     V = V,
-                                     n = sum(include),
-                                     max = ans.expected@sigmaMax@.Data)
-            if (proposed > 0)
-                ans.expected@sigma@.Data <- proposed
-        }
-        else
-            ans.expected@sigma@.Data <- 0
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
     }
 })
 
@@ -6192,7 +6145,7 @@ test_that("updateThetaAndNu_CMPVaryingNotUseExp gives valid answer", {
         expect_true(any(ans.obtained@thetaTransformed != model@thetaTransformed))
         expect_true(any(ans.obtained@theta != model@theta))
         expect_true(any(ans.obtained@nuCMP != model@nuCMP))
-        ## boxcox 
+        ## boxcox
         exposure <- Counts(array(10 * rbeta(n = 20, shape1 = 20, shape2 = 5),
                                  dim = c(5, 4),
                                  dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
@@ -7739,7 +7692,7 @@ test_that("updateTheta_PoissonVaryingNotUseExp gives valid answer", {
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)        
+            expect_equal(ans.obtained, ans.expected)
         ## has structural zeros
         y <- Counts(array(as.integer(rpois(n = 20, lambda = 30)),
                           dim = c(2, 10),
@@ -8597,7 +8550,7 @@ test_that("R and C versions of updateTheta_PoissonVaryingNotUseExpAgCertain same
 })
 
 
-## updateTheta_PoissonVaryingUseExpAgCertain 
+## updateTheta_PoissonVaryingUseExpAgCertain
 
 test_that("updateTheta_PoissonVaryingUseExpAgCertain gives valid answer - single aggregate value", {
     updateTheta_PoissonVaryingUseExpAgCertain <- demest:::updateTheta_PoissonVaryingUseExpAgCertain

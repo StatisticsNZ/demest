@@ -139,7 +139,9 @@ getIPopnNextFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## TRANSLATED
 ## HAS_TESTS
 ## Assume that 'accession' does not contain age 0,
-## so has one less age group than 'component'
+## but does include pseudo-accession for oldest
+## cohort, so therefore has the same number of
+## age groups as 'component'.
 ## The only way that 'hasAge' in 'component' is FALSE, but the account
 ## has accession (and therefore has an age dimension) is if
 ## 'component' is births.
@@ -186,9 +188,7 @@ getIAccNextFromComp <- function(i, mapping, useC = FALSE) {
             else
                 i.time.acc <- i.time.comp
             i.age.comp <- ((i - 1L) %/% step.age.comp) %% n.age.comp # C-style
-            if (i.age.comp == (n.age.comp - 1L)) # C-style
-                return(0L)
-            i.acc.next <- i.acc.next + i.age.comp * step.age.acc    
+            i.acc.next <- i.acc.next + i.age.comp * step.age.acc
         }
         i.acc.next <- i.acc.next + i.time.acc * step.time.acc
         n.dim.shared <- length(n.shared.vec)
@@ -244,8 +244,6 @@ getIAccNextFromOrigDest <- function(i, mapping, useC = FALSE) {
             i.time.acc <- i.time.comp
         i.acc.next <- 1L + i.time.acc * step.time.acc
         i.age <- ((i - 1L) %/% step.age.comp) %% n.age # C-style
-        if (i.age == (n.age - 1L))
-            return(c(0L, 0L))
         i.acc.next <- i.acc.next + i.age * step.age.acc
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {
@@ -463,6 +461,9 @@ getIExposureFromOrigDest <- function(i, mapping, useC = FALSE) {
 ## iExpFirst is the index of the first cell in 'exposure' that
 ## will change if the cell being updated is changed
 
+## These functions are overly complicated,
+## because of the way that they have developed.
+
 ## component - getIExpFirstFromComp DONE
 ## births no parent - getIExpFirstFromBirths DONE
 ## births with parent - getIExpFirstFromBirths DONE
@@ -499,19 +500,10 @@ getIExpFirstFromComp <- function(i, mapping, useC = FALSE) {
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
+            step.triangle.exp <- mapping@stepTriangleTarget
             i.age.comp <- ((i - 1L) %/% step.age.comp) %% n.age
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
-            is.lower <- i.triangle.comp == 0L
-            if (is.lower) {
-                i.age.exp <- i.age.comp
-            }
-            else {
-                if (i.age.comp == (n.age - 1L))
-                    i.age.exp <- i.age.comp
-                else
-                    i.age.exp <- i.age.comp + 1L
-            }
-            i.exp <- i.exp + i.age.exp * step.age.exp
+            i.exp <- i.exp + i.age.comp * step.age.exp + i.triangle.comp * step.triangle.exp
         }
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {
@@ -602,19 +594,10 @@ getIExpFirstPairFromOrigDest <- function(i, mapping, useC = FALSE) {
             step.age.comp <- mapping@stepAgeCurrent
             step.age.exp <- mapping@stepAgeTarget
             step.triangle.comp <- mapping@stepTriangleCurrent
+            step.triangle.exp <- mapping@stepTriangleTarget
             i.age.comp <- ((i - 1L) %/% step.age.comp) %% n.age
             i.triangle.comp <- ((i - 1L) %/% step.triangle.comp) %% 2L
-            is.lower <- i.triangle.comp == 0L
-            if (is.lower) {
-                i.age.exp <- i.age.comp
-            }
-            else {
-                if (i.age.comp == (n.age - 1L))
-                    i.age.exp <- i.age.comp
-                else
-                    i.age.exp <- i.age.comp + 1L
-            }
-            i.exp <- i.exp + i.age.exp * step.age.exp
+            i.exp <- i.exp + i.age.comp * step.age.exp + i.triangle.comp * step.triangle.exp
         }
         n.dim.shared <- length(n.shared.vec)
         for (d in seq_len(n.dim.shared)) {
@@ -689,6 +672,8 @@ getICellCompFromExp <- function(i, mapping, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
+## Do not include sex dimension when calculating iCell,
+## so implicitly set to first value
 getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
@@ -708,7 +693,15 @@ getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
         step.time.exp <- mapping@stepTimeCurrent
         step.time.births <- mapping@stepTimeTarget
         has.age <- mapping@hasAge
+        has.sex <- mapping@hasSex
         i.births <- 1L
+        if (has.sex) {
+            i.sex.dominant <- mapping@iSexDominant
+            step.sex.exp <- mapping@stepSexCurrent
+            i.sex.exp <- ((i - 1L) %/% step.sex.exp) %% 2L ## sex of parent
+            if (i.sex.exp != i.sex.dominant)
+                return(0L)
+        }
         i.time.exp <- ((i - 1L) %/% step.time.exp) %% n.time
         if (has.age) {
             n.age.exp <- mapping@nAgeCurrent

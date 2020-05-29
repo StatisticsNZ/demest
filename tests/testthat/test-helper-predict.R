@@ -432,6 +432,7 @@ test_that("R and C versions of predictAlphaLN2 give same answer", {
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
     predictAlphaLN2 <- demest:::predictAlphaLN2
+    set.seed(0)
     constraint <- Values(array(c(NA, -1L, 0L, 1L),
                                dim = c(2, 2),
                                dimnames = list(age = c("0-39", "40+"),
@@ -444,6 +445,7 @@ test_that("R and C versions of predictAlphaLN2 give same answer", {
     exposure <- 2L * y
     spec <- Model(y ~ LN2(constraint = constraint))
     mod.est <- initialModel(spec, y = y, exposure = exposure)
+    set.seed(1)
     x <- initialModelPredict(mod.est,
                              along = 3L,
                              labels = NULL,
@@ -454,7 +456,7 @@ test_that("R and C versions of predictAlphaLN2 give same answer", {
                              lower = NULL,
                              upper = NULL)
     has.non.zero <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(3 * n.test)) {
         set.seed(seed)
         ans.R <- predictAlphaLN2(x, useC = FALSE)
         set.seed(seed)

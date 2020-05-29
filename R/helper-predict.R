@@ -99,7 +99,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                                      name = names.betas[i],
                                                      along = along.margin,
                                                      margin = margin,
-                                                     strucZeroArray = struc.zero.array.pred)            
+                                                     strucZeroArray = struc.zero.array.pred)
         }
         else {
             J <- length(betas[[i]])
@@ -148,8 +148,8 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
          offsetsBetas = offsets.betas,
          offsetsPriorsBetas = offsets.priors.betas,
          offsetsSigma = offsets.sigma,
-         iMethodModel = i.method.model)         
-}    
+         iMethodModel = i.method.model)
+}
 
 
 ## HAS_TESTS
@@ -399,7 +399,7 @@ predictAlphaDeltaDLMWithTrend <- function(prior, useC = FALSE) {
 }
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED (in helper-functions.c)
 ## HAS_TESTS
 predictAlphaLN2 <- function(object, useC = FALSE) {
     ## object
@@ -453,7 +453,7 @@ predictBeta <- function(prior, useC = FALSE) {
         is.exch.fixed <- methods::is(prior, "ExchFixed")
         is.known.certain <- methods::is(prior, "KnownCertain")
         is.known.uncertain <- methods::is(prior, "KnownUncertain")
-        is.zero <- methods::is(prior, "Zero") 
+        is.zero <- methods::is(prior, "Zero")
         if (is.exch.fixed) {
             sd <- prior@tau@.Data
             stats::rnorm(n = J, mean = 0, sd = sd)
@@ -508,7 +508,7 @@ predictComponentWeightMix <- function(prior, useC = FALSE) {
     if (useC) {
         .Call(predictComponentWeightMix_R, prior)
     }
-    else {    
+    else {
         comp <- prior@componentWeightMix@.Data # W; n.along * index.class.max
         level <- prior@levelComponentWeightMix@.Data # alpha; n.along * index.class.max
         index.class.max <- prior@indexClassMaxMix@.Data
@@ -537,7 +537,7 @@ predictIndexClassMix <- function(prior, useC = FALSE) {
     if (useC) {
         .Call(predictIndexClassMix_R, prior)
     }
-    else {    
+    else {
         index.class <- prior@indexClassMix
         index.class.max <- prior@indexClassMaxMix@.Data
         weight <- prior@weightMix
@@ -585,7 +585,7 @@ predictLevelComponentWeightMix <- function(prior, useC = FALSE) {
     if (useC) {
         .Call(predictLevelComponentWeightMix_R, prior)
     }
-    else {        
+    else {
         level <- prior@levelComponentWeightMix@.Data # alpha; n.along * index.class.max
         level.old <- prior@levelComponentWeightOldMix # final values of alpha; index.class.max
         mean.level <- prior@meanLevelComponentWeightMix@.Data # 'mu'; 1
@@ -741,11 +741,11 @@ predictUBeta <- function(prior, useC = FALSE) {
 ##             if (sum.not.spec.redist == 0L)
 ##         }
 ##     }
-## }    
-              
-    
+## }
 
-    
+
+
+
 
 
 ## HAS_TESTS
@@ -794,7 +794,7 @@ transferAlphaDelta0 <- function(state, values, offset, iteratorNew, iteratorOld,
     if (useC) {
         .Call(transferAlphaDelta0_R, state, values, offset, iteratorNew, iteratorOld)
     }
-    else {    
+    else {
         iterator.values <- resetA(iteratorOld)
         iterator.state <- resetA(iteratorNew)
         n <- iterator.values@nWithin * iterator.values@nBetween
@@ -1040,7 +1040,7 @@ transferSeason0 <- function(s, nSeason, values, offset, iteratorNew, iteratorOld
     if (useC) {
         .Call(transferSeason0_R, s, nSeason, values, offset, iteratorNew, iteratorOld)
     }
-    else {    
+    else {
         iterator.values <- resetA(iteratorOld)
         iterator.s <- resetA(iteratorNew)
         n <- iterator.values@nWithin * iterator.values@nBetween

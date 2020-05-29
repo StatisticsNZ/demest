@@ -397,7 +397,7 @@ setMethod("drawModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("drawModelUseExp",
           signature(object = "LN2"),
@@ -538,7 +538,7 @@ setMethod("getTransform",
           function(object) {
               log
           })
-          
+
 
 ## logLikelihood ################################################################
 
@@ -858,43 +858,6 @@ setMethod("logLikelihood",
                                     i = i)
               }
           })
-
-
-## READY_TO_TRANSLATE
-## HAS_TESTS
-setMethod("logLikelihood",
-          signature(model = "LN2",
-                    count = "integer",
-                    dataset = "Counts",
-                    i = "integer"),
-          function(model, count, dataset, i, useC = FALSE, useSpecific = FALSE) {
-              ## count
-              stopifnot(identical(length(count), 1L))
-              stopifnot(!is.na(count))
-              ## dataset
-              stopifnot(is.integer(dataset))
-              ## i
-              stopifnot(identical(length(i), 1L))
-              stopifnot(!is.na(i))
-              stopifnot(i >= 1L)
-              ## dataset and i
-              stopifnot(i <= length(dataset))
-              stopifnot(!is.na(dataset@.Data[i]))
-              if (useC) {
-                  if (useSpecific)
-                      .Call(logLikelihood_NormalFixedUseExp_R, model, count, dataset, i)
-                  else
-                      .Call(logLikelihood_R, model, count, dataset, i)
-              }
-              else {
-                  logLikelihood_LN2(model = model,
-                                    count = count,
-                                    dataset = dataset,
-                                    i = i)
-              }
-          })
-
-
 
 
 ## makeCellInLik ################################################################
@@ -2152,7 +2115,7 @@ setMethod("predictModelUseExp",
           })
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelUseExp",
           signature(object = "LN2Predict"),
@@ -2195,7 +2158,7 @@ setMethod("printAgAccuracyEqns",
               else
                   cat("           value = aggregate\n")
           })
-          
+
 setMethod("printAgAccuracyEqns",
           signature(object = "AgNormal"),
           function(object) {
@@ -2336,7 +2299,7 @@ setMethod("printAgValEqns",
 
 
 ## showModelHelper #############################################################################
-    
+
 
 setMethod("showModelHelper",
           signature(object = "BinomialVarying"),
@@ -2708,7 +2671,7 @@ setMethod("transferParamModel",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("transferParamModel",
           signature(model = "LN2Predict"),
@@ -3463,7 +3426,7 @@ setMethod("updateModelUseExp",
                   else
                       .Call(updateModelUseExp_R, object, y, exposure)
               }
-              else { 
+              else {
                   object <- updateTheta_BinomialVaryingAgCertain(object, y = y, exposure = exposure)
                   object <- updateThetaAndValueAgNormal_Binomial(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
@@ -3502,7 +3465,7 @@ setMethod("updateModelUseExp",
                       .Call(updateModelUseExp_R, object, y, exposure)
               }
               else {
-                  logit <- function(x) log(x / (1 - x)) 
+                  logit <- function(x) log(x / (1 - x))
                   object <- updateThetaAndValueAgFun_Binomial(object, y = y, exposure = exposure)
                   object <- updateSigma_Varying(object)
                   object <- updateBetas(object)
@@ -3740,7 +3703,7 @@ setMethod("updateModelUseExp",
               }
           })
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
           signature(object = "LN2"),
@@ -3851,7 +3814,7 @@ setMethod("whereAcceptance",
           signature(object = "NormalVaryingVarsigmaUnknownAgNormal"),
           function(object) list(c("likelihood", "acceptMean"),
                                 c("aggregate", "accept")))
-          
+
 ## HAS_TESTS
 setMethod("whereAcceptance",
           signature(object = "BinomialVarying"),
@@ -3955,7 +3918,7 @@ setMethod("whereAutocorr",
 setMethod("whereAutocorr",
           signature(object = "NormalVaryingVarsigmaKnownAgCertain"),
           function(object) list(c("likelihood", "mean")))
-          
+
 ## HAS_TESTS
 setMethod("whereAutocorr",
           signature(object = "NormalVaryingVarsigmaUnknownAgCertain"),
@@ -3966,7 +3929,7 @@ setMethod("whereAutocorr",
           signature(object = "NormalVaryingVarsigmaKnownAgNormal"),
           function(object) list(c("likelihood", "mean"),
                                 c("aggregate", "value")))
-          
+
 ## HAS_TESTS
 setMethod("whereAutocorr",
           signature(object = "NormalVaryingVarsigmaUnknownAgNormal"),
@@ -4076,7 +4039,7 @@ setMethod("whereJump",
 setMethod("whereJump",
           signature(object = "NormalVaryingVarsigmaKnownAgCertain"),
           function(object) list(c("likelihood", "jumpMean")))
-          
+
 ## HAS_TESTS
 setMethod("whereJump",
           signature(object = "NormalVaryingVarsigmaUnknownAgCertain"),
@@ -4087,7 +4050,7 @@ setMethod("whereJump",
           signature(object = "NormalVaryingVarsigmaKnownAgNormal"),
           function(object) list(c("likelihood", "jumpMean"),
                                 c("aggregate", "jump")))
-          
+
 ## HAS_TESTS
 setMethod("whereJump",
           signature(object = "NormalVaryingVarsigmaUnknownAgNormal"),

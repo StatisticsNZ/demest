@@ -243,7 +243,7 @@ extractResponse <- function(formula, separateNames = FALSE) {
     ans <- formula[[2L]]
     ans <- deparse(ans)
     if (separateNames) {
-        ans <- stats::as.formula(paste("~", ans))
+        ans <- stats::as.formula(paste("~", ans, collapse = " "))
         ans <- rownames(attr(stats::terms(ans), "factor"))
     }
     ans

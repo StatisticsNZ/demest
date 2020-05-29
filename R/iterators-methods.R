@@ -124,9 +124,11 @@ advanceCA <- function(object, useC = FALSE) {
         i.age <- object@iAge
         i.time <- i.time + 1L
         i <- i + step.time
-        i.age <- i.age + 1L
-        i <- i + step.age
-        finished <- (i.time >= n.time) || (i.age >= n.age)
+        if (i.age < n.age) {
+            i.age <- i.age + 1L
+            i <- i + step.age
+        }
+        finished <- i.time >= n.time
         object@i <- i
         object@iTime <- i.time
         object@iAge <- i.age
@@ -178,6 +180,9 @@ advanceCP <- function(object, useC = FALSE) {
 ## HAS_TESTS
 ## It is the caller's responsibility to make
 ## sure that the iterator has not finished
+## When last age group is open, iterator jumps
+## from upper triange to upper triangle after
+## once it reaches the last age group.
 advanceCC <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "CohortIteratorComponent"))
     if (useC) {
@@ -196,21 +201,30 @@ advanceCC <- function(object, useC = FALSE) {
             step.triangle <- object@stepTriangle
             i.age <- object@iAge
             i.triangle <- object@iTriangle
-            if (i.triangle == 1L) {
+            is.lower.before <- i.triangle == 1L
+            is.oldest.age.before <- i.age == n.age
+            if (is.lower.before) {
                 i.time <- i.time + 1L
                 i <- i + step.time
                 i.triangle <- i.triangle + 1L
-                i <- i + step.triangle
-                finished <- !last.age.group.open && (i.age == n.age) # new triangle is 'upper'
+                i <- i + step.triangle                 
+                if (last.age.group.open)
+                    finished  <- (i.time == n.time) && is.oldest.age.before
+                else
+                    finished <- is.oldest.age.before
             }
-            else {
-                i.triangle <- i.triangle - 1L
-                i <- i  - step.triangle
-                if (i.age < n.age) {
+            else { ## is upper before
+                if (is.oldest.age.before) { ## oldest age group open; otherwise would have finished
+                    i.time <- i.time + 1L
+                    i <- i + step.time
+                }
+                else {
                     i.age <- i.age + 1L
                     i <- i + step.age
+                    i.triangle <- i.triangle - 1L
+                    i <- i  - step.triangle
                 }
-                finished <- i.time == n.time # new triangle is 'lower'
+                finished <- i.time == n.time
             }
         }
         else {
@@ -273,7 +287,7 @@ resetCA <- function(object, i, useC = FALSE) {
         has.age <- object@hasAge
         i.time <- (((i - 1L) %/% step.time) %% n.time) + 1L # R-style
         i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
-        finished <- (i.time >= n.time) | (i.age >= n.age)
+        finished <- i.time >= n.time
         object@i <- i
         object@iTime <- i.time
         object@iAge <- i.age
@@ -342,10 +356,15 @@ resetCC <- function(object, i, useC = FALSE) {
             step.triangle <- object@stepTriangle
             i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L # R-style
             i.triangle <- (((i - 1L) %/% step.triangle) %% 2L) + 1L # R-style
-            if (i.triangle == 1L)
+            is.lower <- i.triangle == 1L
+            if (is.lower)
                 finished <- i.time == n.time
-            else
-                finished <- !last.age.group.open && (i.age == n.age)
+            else {
+                if (last.age.group.open)
+                    finished <- (i.time == n.time) && (i.age == n.age)
+                else
+                    finished <- i.age == n.age
+            }
         }
         else
             finished <- i.time == n.time

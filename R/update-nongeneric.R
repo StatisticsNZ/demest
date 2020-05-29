@@ -82,7 +82,7 @@ updateSDNorm <- function(sigma, A, nu, V, n, max, useC = FALSE) {
                 if (root.less.than.max) {
                     sigma0.right <- 1.5 * sigma.star
                     if (sigma0.right > max)
-                        sigma0.right <- 0.5 * sigma.star + 0.5 * max                    
+                        sigma0.right <- 0.5 * sigma.star + 0.5 * max
                 }
             }
             else {
@@ -303,7 +303,7 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
     if (useC) {
         .Call(updateAlphaDeltaDLMWithTrend_R, prior, betaTilde)
     }
-    else {    
+    else {
         K <- prior@K@.Data
         L <- prior@L@.Data
         alpha <- prior@alphaDLM@.Data  # numeric length (K+1)L
@@ -320,7 +320,7 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
         DC.inv <- prior@DCInv@.Data # list length K+1
         UR <- prior@UR@.Data  # list length K
         DR.inv <- prior@DRInv@.Data
-        has.level <- prior@hasLevel@.Data 
+        has.level <- prior@hasLevel@.Data
         phi <- prior@phi ## scalar
         omega.alpha <- prior@omegaAlpha@.Data ## scalar
         omega.delta <- prior@omegaDelta@.Data ## scalar
@@ -407,7 +407,7 @@ updateAlphaDeltaDLMWithTrend <- function(prior, betaTilde, useC = FALSE) {
                     }
                     else {
                         if ((i == 0L) && is.infinite(DC.inv[[1L]][1L])) {
-                            prec.delta.0 <- DC.inv[[1L]][4L] 
+                            prec.delta.0 <- DC.inv[[1L]][4L]
                             prec.alpha <- 1 / omega.alpha^2
                             prec.delta.1 <- phi^2 / omega.delta^2
                             var.delta.curr <- 1 / (prec.delta.0 + prec.alpha + prec.delta.1)
@@ -462,7 +462,7 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
     if (useC) {
         .Call(updateAlphaDLMNoTrend_R, prior, betaTilde)
     }
-    else {    
+    else {
         K <- prior@K@.Data
         L <- prior@L@.Data
         alpha <- prior@alphaDLM@.Data # numeric vector length (K+1)L
@@ -499,7 +499,7 @@ updateAlphaDLMNoTrend <- function(prior, betaTilde, useC = FALSE) {
                 }
                 ## draw gamma_K
                 alpha[indices.a[K + 1L]] <- stats::rnorm(n = 1L,
-                                                         mean = m[[K + 1L]], 
+                                                         mean = m[[K + 1L]],
                                                          sd = sqrt(C[[K + 1L]]))
                 ## backward sample
                 for (i in seq.int(from = K - 1L, to = 0L)) {
@@ -529,7 +529,7 @@ updateComponentWeightMix <- function(prior, useC = FALSE) {
     if (useC) {
         .Call(updateComponentWeightMix_R, prior)
     }
-    else {    
+    else {
         comp.weight <- prior@componentWeightMix@.Data # 'W'; n.along * indexClassMaxMix
         latent.comp.weight <- prior@latentComponentWeightMix@.Data # 'z'; J
         level.comp.weight <- prior@levelComponentWeightMix@.Data # 'alpha'; n.along * indexClassMaxMix
@@ -548,7 +548,7 @@ updateComponentWeightMix <- function(prior, useC = FALSE) {
         iterator.beta <- resetS(iterator.beta)
         for (i.along in seq_len(n.along)) {
             indices.beta <- iterator.beta@indices
-            for (i.class in seq_len(index.class.max)) { 
+            for (i.class in seq_len(index.class.max)) {
                 i.w <- i.along + (i.class - 1L) * n.along
                 sum.is.comp <- 0
                 sum.latent.comp.weight <- 0
@@ -609,7 +609,7 @@ updateEta <- function(prior, beta, useC = FALSE) {
         eta.hat <- drop(eta.hat)
         eta.hat[-1L] <- eta.hat[-1L] + mean.eta.coef / U.eta.coef
         g <- stats::rnorm(n = P)
-        R <- chol(var.inv) 
+        R <- chol(var.inv)
         epsilon <- backsolve(R, g)
         prior@eta@.Data <- eta.hat + epsilon
         prior
@@ -798,7 +798,7 @@ updateLatentComponentWeightMix <- function(prior, useC = FALSE) {
     if (useC) {
         .Call(updateLatentComponentWeightMix_R, prior)
     }
-    else {    
+    else {
         latent.comp.weight <- prior@latentComponentWeightMix@.Data # z; J * index.class.max
         comp.weight <- prior@componentWeightMix@.Data # W; n.along * index.class.max
         index.class <- prior@indexClassMix@.Data # k; J
@@ -889,7 +889,7 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
         iAlong <- prior@iAlong
         n.along <- dimBeta[iAlong]
         index.class.max <- prior@indexClassMaxMix@.Data
-        index.class.max.poss <- prior@indexClassMaxPossibleMix@.Data 
+        index.class.max.poss <- prior@indexClassMaxPossibleMix@.Data
         comp <- prior@componentWeightMix@.Data # 'W'; n.along * index.class.max
         level <- prior@levelComponentWeightMix@.Data # 'alpha'; n.along * index.class.max
         mean.level <- prior@meanLevelComponentWeightMix@.Data # 'mu'; 1
@@ -903,12 +903,12 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
         omega.comp.sq <- omega.comp^2
         omega.level <- prior@omegaLevelComponentWeightMix@.Data # 'sigma_eta'; 1
         omega.level.sq <- omega.level^2
-        prior.mean.first <- mean.level / (1 - phi) 
-        prior.var.first <- omega.level.sq / (1 - phi.sq) 
-        prior.sd.first <- sqrt(prior.var.first) 
-        for (i.class in seq_len(index.class.max.poss)) { 
-            m[1L] <- prior.mean.first 
-            C[1L] <- prior.var.first 
+        prior.mean.first <- mean.level / (1 - phi)
+        prior.var.first <- omega.level.sq / (1 - phi.sq)
+        prior.sd.first <- sqrt(prior.var.first)
+        for (i.class in seq_len(index.class.max.poss)) {
+            m[1L] <- prior.mean.first
+            C[1L] <- prior.var.first
             ## forward filter
             for (i.along in seq_len(n.along - 1L)) {
                 i.wt <- (i.class - 1L) * n.along + i.along + 1L
@@ -923,7 +923,7 @@ updateLevelComponentWeightMix <- function(prior, useC = FALSE) {
             ## draw final values
             i.wt <- i.class * n.along
             level[i.wt] <- stats::rnorm(n = 1L,
-                                        mean = m[n.along], 
+                                        mean = m[n.along],
                                         sd = sqrt(C[n.along]))
             ## backward smooth
             for (i.along in seq.int(from = n.along - 1L, to = 1L)) {
@@ -1023,11 +1023,11 @@ updateOmegaAlpha <- function(prior, withTrend, useC = FALSE) {
         .Call(updateOmegaAlpha_R, prior, withTrend)
     }
     else {
-        if (withTrend) {                          
-            has.level <- prior@hasLevel@.Data     
-            if (!has.level)                       
-                return(prior)                     
-        }                                         
+        if (withTrend) {
+            has.level <- prior@hasLevel@.Data
+            if (!has.level)
+                return(prior)
+        }
         J <- prior@J@.Data
         K <- prior@K@.Data
         L <- prior@L@.Data
@@ -1083,7 +1083,7 @@ updateOmegaComponentWeightMix <- function(prior, useC = FALSE) {
     if (useC) {
         .Call(updateOmegaComponentWeightMix_R, prior)
     }
-    else {    
+    else {
         omega <- prior@omegaComponentWeightMix@.Data
         omega.max <- prior@omegaComponentWeightMaxMix@.Data
         A <- prior@AComponentWeightMix@.Data
@@ -1172,7 +1172,7 @@ updateOmegaLevelComponentWeightMix <- function(prior, useC = FALSE) {
     if (useC) {
         .Call(updateOmegaLevelComponentWeightMix_R, prior)
     }
-    else {    
+    else {
         omega <- prior@omegaLevelComponentWeightMix@.Data
         omega.max <- prior@omegaLevelComponentWeightMaxMix@.Data
         A <- prior@ALevelComponentWeightMix@.Data
@@ -1267,7 +1267,7 @@ updateOmegaVectorsMix <- function(prior, useC = FALSE) {
     if (useC) {
         .Call(updateOmegaVectorsMix_R, prior)
     }
-    else {    
+    else {
         omega <- prior@omegaVectorsMix@.Data
         omega.max <- prior@omegaVectorsMaxMix@.Data
         A <- prior@AVectorsMix@.Data
@@ -1483,11 +1483,11 @@ updateSeason <- function(prior, betaTilde, useC = FALSE) {
     if (useC) {
         .Call(updateSeason_R, prior, betaTilde)
     }
-    else {    
+    else {
         K <- prior@K@.Data
         L <- prior@L@.Data
         along.all.struc.zero <- prior@alongAllStrucZero
-        n.season <- prior@nSeason@.Data 
+        n.season <- prior@nSeason@.Data
         s <- prior@s@.Data       # length (K+1)L list of vectors of length nSeason
         m <- prior@mSeason@.Data # length K+1 list of vectors of length nSeason
         m0 <- prior@m0Season@.Data # length L list of vectors of length nSeason
@@ -1522,8 +1522,8 @@ updateSeason <- function(prior, betaTilde, useC = FALSE) {
                     m[[i + 1L]][1L] <- m[[i + 1L]][1L] + Ae1
                     AAq1 <- (R[[i]][1L])^2 / q
                     C[[i + 1L]] <- R[[i]]
-                    C[[i + 1L]][1L] <- C[[i + 1L]][1L] - AAq1 
-                }                
+                    C[[i + 1L]][1L] <- C[[i + 1L]][1L] - AAq1
+                }
                 ## draw final value for 's'
                 for (i.n in seq_len(n.season)) {
                     i.curr <- indices.s[K + 1L]
@@ -1708,7 +1708,7 @@ updateVectorsMixAndProdVectorsMix <- function(prior, betaTilde, useC = FALSE) {
     if (useC) {
         .Call(updateVectorsMixAndProdVectorsMix_R, prior, betaTilde)
     }
-    else {    
+    else {
         vectors <- prior@vectorsMix
         omega.vectors <- prior@omegaVectorsMix@.Data
         iterators.dims <- prior@iteratorsDimsMix
@@ -1853,7 +1853,7 @@ updateWeightMix <- function(prior, useC = FALSE) {
     if (useC) {
         .Call(updateWeightMix_R, prior)
     }
-    else {    
+    else {
         weight <- prior@weightMix@.Data # 'v'; n.along * classIndexMax
         comp.weight <- prior@componentWeightMix@.Data # 'W'; J
         iAlong <- prior@iAlong
@@ -1883,7 +1883,7 @@ updateWeightMix <- function(prior, useC = FALSE) {
 
 
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateAlphaLN2 <- function(object, y, exposure, useC = FALSE) {
     ## object
@@ -1902,7 +1902,7 @@ updateAlphaLN2 <- function(object, y, exposure, useC = FALSE) {
     if (useC) {
         .Call(updateAlphaLN2_R, object, y, exposure)
     }
-    else {            
+    else {
         alpha <- object@alphaLN2@.Data
         cell.in.lik <- object@cellInLik
         n.cell.vec <- object@nCellBeforeLN2
@@ -1992,7 +1992,7 @@ updateBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
     if (useC) {
-        .Call(updateBetas_R, object) 
+        .Call(updateBetas_R, object)
     }
     else {
         ## work with 'object@betas', since betas
@@ -2046,7 +2046,7 @@ updateLogPostBetas <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "Varying"))
     stopifnot(methods::validObject(object))
     if (useC) {
-        .Call(updateLogPostBetas_R, object) 
+        .Call(updateLogPostBetas_R, object)
     }
     else {
         theta.transformed <- object@thetaTransformed
@@ -2109,7 +2109,7 @@ updateMu <- function(object, useC = FALSE) {
     }
     else {
         mu <- object@mu
-        cell.in.lik <- object@cellInLik 
+        cell.in.lik <- object@cellInLik
         betas <- object@betas
         iterator <- object@iteratorBetas
         n <- length(mu)
@@ -2143,7 +2143,7 @@ updateSigma_Varying <- function(object, useC = FALSE) {
         theta <- object@theta
         theta.transformed <- object@thetaTransformed
         mu <- object@mu
-        cell.in.lik <- object@cellInLik 
+        cell.in.lik <- object@cellInLik
         V <- 0
         n <- 0L
         for (i in seq_along(theta)) {
@@ -2165,7 +2165,7 @@ updateSigma_Varying <- function(object, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateSigmaLN2 <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "LN2"))
@@ -2200,7 +2200,7 @@ updateSigmaLN2 <- function(object, useC = FALSE) {
                 object@sigma@.Data <- sigma
         }
         else
-            object@sigma@.Data <- 0   
+            object@sigma@.Data <- 0
         object
     }
 }
@@ -2268,7 +2268,7 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
                     theta[i] <- th.prop
                     theta.transformed[i] <- logit.th.prop
                 }
-                else {                 
+                else {
                     log.lik.prop <- stats::dbinom(x = y[i], size = exposure[i], prob = th.prop, log = TRUE)
                     log.lik.curr <- stats::dbinom(x = y[i], size = exposure[i], prob = th.curr, log = TRUE)
                     ## The Jacobians from the transformation of variables cancel,
@@ -2378,7 +2378,7 @@ updateTheta_BinomialVaryingAgCertain <- function(object, y, exposure, useC = FAL
                         ## This test a bit awkward, but is required when expressing 'lower'
                         ## 'upper' on a logit scale. Using the logit scale makes sense in
                         ## a model without aggregate values, which is the typical case.
-                        valid <- (0 < th.other.prop) && (th.other.prop < 1) 
+                        valid <- (0 < th.other.prop) && (th.other.prop < 1)
                         if (valid) {
                             logit.th.other.prop <- log(th.other.prop / (1 - th.other.prop))
                             found.prop <- ((logit.th.other.prop > lower + tolerance)
@@ -2791,7 +2791,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
         for (i in seq_along(theta)) {
             is.struc.zero <- !cell.in.lik[i] && !is.na(y[i]) && (y[i] == 0L)
             if (!is.struc.zero) {
-                y.is.missing <- is.na(y[i]) 
+                y.is.missing <- is.na(y[i])
                 if (y.is.missing) {
                     mean <- mu[i]
                     sd <- sigma
@@ -2826,7 +2826,7 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                                                sdlog = sd.log.nu)
                     }
                     else {
-                        nu.curr <- nu[i] 
+                        nu.curr <- nu[i]
                         log.nu.curr <- log(nu.curr)
                         log.nu.prop <- stats::rnorm(n = 1L,
                                                     mean = log.nu.curr,
@@ -2841,11 +2841,11 @@ updateThetaAndNu_CMPVaryingNotUseExp <- function(object, y, useC = FALSE) {
                             log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = th.prop, nu = nu.prop)
                             log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.curr, nu = nu.curr)
                             log.lik.prop.star <- logDensCMPUnnormalised1(x = y.star, gamma = th.prop, nu = nu.prop)
-                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu[i], sd = sigma, log = TRUE) 
+                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu[i], sd = sigma, log = TRUE)
                             log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu[i], sd = sigma, log = TRUE)
-                            log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
+                            log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
                             log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
-                            log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
+                            log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star
                                 + log.dens.th.prop - log.dens.th.curr + log.dens.nu.prop - log.dens.nu.curr)
                             accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
                             if (accept) {
@@ -2919,7 +2919,7 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
         for (i in seq_along(theta)) {
             is.struc.zero <- !cell.in.lik[i] && !is.na(y[i]) && (y[i] == 0L)
             if (!is.struc.zero) {
-                y.is.missing <- is.na(y[i]) 
+                y.is.missing <- is.na(y[i])
                 if (y.is.missing) {
                     mean <- mu[i]
                     sd <- sigma
@@ -2968,11 +2968,11 @@ updateThetaAndNu_CMPVaryingUseExp <- function(object, y, exposure, useC = FALSE)
                             log.lik.prop <- logDensCMPUnnormalised1(x = y[i], gamma = gamma.prop, nu = nu.prop)
                             log.lik.curr.star <- logDensCMPUnnormalised1(x = y.star, gamma = gamma.curr, nu = nu.curr)
                             log.lik.prop.star <- logDensCMPUnnormalised1(x = y.star, gamma = gamma.prop, nu = nu.prop)
-                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu[i], sd = sigma, log = TRUE) 
+                            log.dens.th.curr <- stats::dnorm(x = tr.th.curr, mean = mu[i], sd = sigma, log = TRUE)
                             log.dens.th.prop <- stats::dnorm(x = tr.th.prop, mean = mu[i], sd = sigma, log = TRUE)
-                            log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE) 
+                            log.dens.nu.curr <- stats::dnorm(x = log.nu.curr, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
                             log.dens.nu.prop <- stats::dnorm(x = log.nu.prop, mean = mean.log.nu, sd = sd.log.nu, log = TRUE)
-                            log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star 
+                            log.diff <- (log.lik.prop - log.lik.curr + log.lik.curr.star - log.lik.prop.star
                                 + log.dens.th.prop - log.dens.th.curr + log.dens.nu.prop - log.dens.nu.curr)
                             accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
                             if (accept) {
@@ -3326,7 +3326,7 @@ updateThetaAndValueAgNormal_Normal <- function(object, y, useC = FALSE) {
                                    mean = vec.mu,
                                    sd = sigma,
                                    log = TRUE)))
-            log.diff.ag <- (stats::dnorm(x = mean.k, 
+            log.diff.ag <- (stats::dnorm(x = mean.k,
                                          mean = ag.prop,
                                          sd = sd.k,
                                          log = TRUE)
@@ -3553,11 +3553,11 @@ updateTheta_PoissonVaryingNotUseExp <- function(object, y, useC = FALSE) {
                         if (use.subtotal) {
                             subtotal <- subtotals[i.after]
                             i.shared <- dembase::getIShared(i = i, transform = transform)
-                            lambda.curr <- 0 
-                            for (i.s in i.shared) { 
-                                if (is.na(y[i.s])) 
-                                    lambda.curr <- lambda.curr + theta[i.s]  
-                            } 
+                            lambda.curr <- 0
+                            for (i.s in i.shared) {
+                                if (is.na(y[i.s]))
+                                    lambda.curr <- lambda.curr + theta[i.s]
+                            }
                             lambda.prop <- lambda.curr + th.prop - th.curr
                             log.lik.prop <- stats::dpois(x = subtotal, lambda = lambda.prop, log = TRUE)
                             log.lik.curr <- stats::dpois(x = subtotal, lambda = lambda.curr, log = TRUE)
@@ -4179,11 +4179,11 @@ updateThetaAndValueAgNormal_PoissonNotUseExp <- function(object, y, useC = FALSE
                                    mean = vec.mu,
                                    sd = sigma,
                                    log = TRUE)))
-            log.diff.ag <- (stats::dnorm(x = mean.k, 
+            log.diff.ag <- (stats::dnorm(x = mean.k,
                                          mean = ag.prop,
                                          sd = sd.k,
                                          log = TRUE)
-                - stats::dnorm(x = mean.k, 
+                - stats::dnorm(x = mean.k,
                                mean = ag.curr,
                                sd = sd.k,
                                log = TRUE))
@@ -4308,11 +4308,11 @@ updateThetaAndValueAgNormal_PoissonUseExp <- function(object, y, exposure, useC 
                                            mean = vec.mu,
                                            sd = sigma,
                                            log = TRUE)))
-            log.diff.ag <- (stats::dnorm(x = mean.k, 
+            log.diff.ag <- (stats::dnorm(x = mean.k,
                                   mean = ag.prop,
                                   sd = sd.k,
                                   log = TRUE)
-                            - stats::dnorm(x = mean.k, 
+                            - stats::dnorm(x = mean.k,
                                     mean = ag.curr,
                                     sd = sd.k,
                                     log = TRUE))
@@ -4960,7 +4960,7 @@ updateVariancesBetas <- function(object, useC = FALSE) {
         variances <- object@variancesBetas
         priors <- object@priorsBetas
         for (i in seq_along(variances)) {
-            variances[[i]] <- getV(priors[[i]]) 
+            variances[[i]] <- getV(priors[[i]])
         }
         object@variancesBetas <- variances
         object
@@ -5011,7 +5011,7 @@ updateVarsigma <- function(object, y, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
     ## object
@@ -5028,7 +5028,7 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
     ## y and exposure
     stopifnot(identical(length(exposure), length(y)))
     if (useC) {
-        .Call(updateSigmaLN2_R, object, y, exposure)
+        .Call(updateVarsigmaLN2_R, object, y, exposure)
     }
     else {
         varsigma <- object@varsigma@.Data
@@ -5048,15 +5048,20 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
                 n <- n + 1L
             }
         }
-        varsigma <- updateSDNorm(sigma = varsigma,
+        ##changed JAH 26/1/2020 after emails with John
+        if (n > 0L) {
+            varsigma <- updateSDNorm(sigma = varsigma,
                                  A = A,
                                  nu = nu,
                                  V = V,
                                  n = n,
                                  max = varsigma.max)
-        successfully.updated <- varsigma > 0
-        if (successfully.updated)
-            object@varsigma@.Data <- varsigma
+            successfully.updated <- varsigma > 0
+            if (successfully.updated)
+                object@varsigma@.Data <- varsigma
+        }
+        else
+            object@varsigma@.Data <- 0
         object
     }
 }
@@ -5310,7 +5315,7 @@ updateCountsBinomial <- function(y, model, exposure, dataModels, datasets,
         }
         y
     }
-    
+
 }
 
 ## TODO - modify this to use 'updateDataModel' slot

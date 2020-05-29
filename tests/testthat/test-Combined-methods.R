@@ -2154,6 +2154,9 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
 test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
     diffLogDensAccount <- demest:::diffLogDensAccount
     updateProposalAccount <- demest:::updateProposalAccount
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+    updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     set.seed(1)
@@ -2266,7 +2269,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
-        x1 <- updateProposalAccount(x1)
+        x1 <- updateProposalAccountMoveBirthsSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2277,7 +2280,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
         }
         x1 <- x0
         x1@iComp <- 2L # internal
-        x1 <- updateProposalAccount(x1)
+        x1 <- updateProposalAccountMoveOrigDestSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2288,7 +2291,7 @@ test_that("diffLogDensAccount works with CombinedAccountMovementsHasAge", {
         }
         x1 <- x0
         x1@iComp <- 3L # deaths
-        x1 <- updateProposalAccount(x1)
+        x1 <- updateProposalAccountMoveCompSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2311,6 +2314,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
     updateProposalAccount <- demest:::updateProposalAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(1)
     popn <- Counts(array(rpois(n = 90, lambda = 500),
                          dim = c(3, 2, 5, 3),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2391,7 +2395,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
-    for (seed in seq_len(n.test * 3)) {
+    for (seed in seq_len(n.test * 7)) {
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
@@ -2418,7 +2422,7 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
-                is.small.deaths <- TRUE
+                is.small.internal <- TRUE
             set.seed(seed)
             ans.R <- diffLogDensAccount(x1, useC = FALSE)
             set.seed(seed)
@@ -2467,6 +2471,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
     updateProposalAccount <- demest:::updateProposalAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(1)
     popn <- Counts(array(rpois(n = 90, lambda = 500),
                          dim = c(3, 2, 5, 3),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2591,7 +2596,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
-                is.small.deaths <- TRUE
+                is.small.internal <- TRUE
             ans.obtained <- diffLogLikAccount(x1)
             expect_true(is.numeric(ans.obtained))
             expect_true(!is.na(ans.obtained))
@@ -2621,6 +2626,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
     updateProposalAccount <- demest:::updateProposalAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(21)
     popn <- Counts(array(rpois(n = 90, lambda = 500),
                          dim = c(3, 2, 5, 3),
                          dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2762,7 +2768,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
-                is.small.deaths <- TRUE
+                is.small.internal <- TRUE
             set.seed(seed)
             ans.R <- diffLogLikAccount(x1, useC = FALSE)
             set.seed(seed)
@@ -3142,6 +3148,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
     updateProposalAccount <- demest:::updateProposalAccount
     updateCellMove <- demest:::updateCellMove
     updateAccSmall <- demest:::updateAccSmall
+    updateExpSmall <- demest:::updateExpSmall
     updateSubsequentExpMove <- demest:::updateSubsequentExpMove
     updateSubsequentAccMove <- demest:::updateSubsequentAccMove
     updateSubsequentPopnMove <- demest:::updateSubsequentPopnMove
@@ -3261,6 +3268,7 @@ test_that("updateValuesAccount works with CombinedAccountMovements", {
         ans.expected <- x1
         ans.expected <- updateCellMove(ans.expected)
         ans.expected <- updateAccSmall(ans.expected)
+        ans.expected <- updateExpSmall(ans.expected)
         expect_identical(ans.obtained, ans.expected)
     }
 })
@@ -3343,6 +3351,7 @@ test_that("updateValuesAccount works with CombinedAccountMovementsHasAge", {
     updateSubsequentExpMove <- demest:::updateSubsequentExpMove
     updateSubsequentAccMove <- demest:::updateSubsequentAccMove
     updateAccSmall <- demest:::updateAccSmall
+    updateExpSmall <- demest:::updateExpSmall
     set.seed(1)
     popn <- Counts(array(rpois(n = 90, lambda = 500),
                          dim = c(3, 2, 5, 3),
@@ -3457,6 +3466,7 @@ test_that("updateValuesAccount works with CombinedAccountMovementsHasAge", {
         ans.expected <- x1
         ans.expected <- updateCellMove(x1)
         ans.expected <- updateAccSmall(ans.expected)
+        ans.expected <- updateExpSmall(ans.expected)
         expect_identical(ans.obtained, ans.expected)
         x1 <- x0
         x1@iComp <- 2L # internal
@@ -3466,6 +3476,7 @@ test_that("updateValuesAccount works with CombinedAccountMovementsHasAge", {
         ans.expected <- x1
         ans.expected <- updateCellMove(x1)
         ans.expected <- updateAccSmall(ans.expected)
+        ans.expected <- updateExpSmall(ans.expected)
         expect_identical(ans.obtained, ans.expected)
         x1 <- x0
         x1@iComp <- 3L # death
@@ -3475,6 +3486,7 @@ test_that("updateValuesAccount works with CombinedAccountMovementsHasAge", {
         ans.expected <- x1
         ans.expected <- updateCellMove(x1)
         ans.expected <- updateAccSmall(ans.expected)
+        ans.expected <- updateExpSmall(ans.expected)
         expect_identical(ans.obtained, ans.expected)
     }
 })
@@ -3635,7 +3647,6 @@ test_that("updateValuesAccount works with CombinedAccountMovementsHasAge", {
     }
 })
 
-
 test_that("updatedExpectedExposure works with CombinedAccountMovements - no age", {
     updateExpectedExposure <- demest:::updateExpectedExposure
     initialCombinedAccount <- demest:::initialCombinedAccount
@@ -3669,15 +3680,15 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
                                 updateInitialPopn = new("LogicalFlag", TRUE),
                                 usePriorPopn = new("LogicalFlag", TRUE),
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
     expect_true(validObject(x))
     ans.obtained <- updateExpectedExposure(x)@expectedExposure@.Data
     theta.popn <- Counts(array(x@systemModels[[1]]@theta,
@@ -3714,15 +3725,15 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
                                 updateInitialPopn = new("LogicalFlag", TRUE),
                                 usePriorPopn = new("LogicalFlag", TRUE),
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
     expect_true(validObject(x))
     ans.obtained <- updateExpectedExposure(x)@expectedExposure@.Data
     theta.popn <- Counts(array(x@systemModels[[1]]@theta,
@@ -3759,15 +3770,15 @@ test_that("updatedExpectedExposure works with CombinedAccountMovements - no age"
     transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
                                 updateInitialPopn = new("LogicalFlag", TRUE),
                                 usePriorPopn = new("LogicalFlag", TRUE),
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
     expect_true(validObject(x))
     ans.obtained <- updateExpectedExposure(x)@expectedExposure@.Data
     theta.popn <- Counts(array(x@systemModels[[1]]@theta,
@@ -3916,7 +3927,7 @@ test_that("R and C versions of updatedExpectedExposure give same answer with Com
         expect_equal(ans.R, ans.C)
 })
 
-test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
+test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge - with age", {
     updateExpectedExposure <- demest:::updateExpectedExposure
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -3945,115 +3956,115 @@ test_that("updatedExpectedExposure works with CombinedAccountMovementsHasAge", {
     transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
                                 updateInitialPopn = new("LogicalFlag", TRUE),
                                 usePriorPopn = new("LogicalFlag", TRUE),
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
     expect_true(validObject(x))
     ans.obtained <- updateExpectedExposure(x)@expectedExposure@.Data
     theta.popn <- Counts(array(x@systemModels[[1]]@theta,
                                dim = dim(population),
                                dimnames = dimnames(population)))
-    ans.expected <- exposure(theta.popn, triangles = TRUE)@.Data
+    ans.expected <- exposure(theta.popn, triangles = TRUE, openTriangles = "weighted")@.Data
     if (test.identity)
         expect_identical(ans.obtained, ans.expected)
     else
         expect_equal(ans.obtained, ans.expected)
-    ## time second of 3 dimensions
-    population <- Counts(array(101:112,
-                               dim = c(3, 2, 2),
-                               dimnames = list(time = c(2000, 2010, 2020),
-                                               age = c("0-9", "10+"),
-                                               sex = c("f", "m"))))
-    arrivals <- Counts(array(1:8,
-                             dim = c(2, 2, 2),
-                             dimnames = list(time = c("2001-2010", "2011-2020"),
-                                             age = c("0-9", "10+"),
-                                             sex = c("f", "m"))))
-    population <- aperm(population, aperm =  c(2, 1, 3))
-    arrivals <- aperm(arrivals, aperm = c(2, 1, 3))
-    account <- Movements(population = population,
-                         entries = list(arrivals = arrivals))
-    account <- makeConsistent(account)
-    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
-                         Model(arrivals ~ Poisson(mean ~ 1)))
-    systemWeights <- rep(list(NULL), 2)
-    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- 0L
-    datasets <- list(population + 1L)
-    namesDatasets <- "census"
-    transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
-    expect_true(validObject(x))
-    ans.obtained <- updateExpectedExposure(x)@expectedExposure@.Data
-    theta.popn <- Counts(array(x@systemModels[[1]]@theta,
-                               dim = dim(population),
-                               dimnames = dimnames(population)))
-    ans.expected <- exposure(theta.popn, triangles = TRUE)@.Data
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else
-        expect_equal(ans.obtained, ans.expected)
-    ## time third of 3 dimensions
-    population <- Counts(array(101:112,
-                               dim = c(3, 2, 2),
-                               dimnames = list(time = c(2000, 2010, 2020),
-                                             age = c("0-9", "10+"),
-                                               sex = c("f", "m"))))
-    arrivals <- Counts(array(1:8,
-                             dim = c(2, 2, 2),
-                             dimnames = list(time = c("2001-2010", "2011-2020"),
-                                             age = c("0-9", "10+"),
-                                             sex = c("f", "m"))))
-    population <- aperm(population, aperm =  3:1)
-    arrivals <- aperm(arrivals, aperm = 3:1)
-    account <- Movements(population = population,
-                         entries = list(arrivals = arrivals))
-    account <- makeConsistent(account)
-    systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
-                         Model(arrivals ~ Poisson(mean ~ 1)))
-    systemWeights <- rep(list(NULL), 2)
-    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- 0L
-    datasets <- list(population + 1L)
-    namesDatasets <- "census"
-    transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
-    expect_true(validObject(x))
-    ans.obtained <- updateExpectedExposure(x)@expectedExposure@.Data
-    theta.popn <- Counts(array(x@systemModels[[1]]@theta,
-                               dim = dim(population),
-                               dimnames = dimnames(population)))
-    ans.expected <- exposure(theta.popn, triangles = TRUE)@.Data
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else
-        expect_equal(ans.obtained, ans.expected)
+        ## time second of 3 dimensions
+        population <- Counts(array(101:112,
+                                   dim = c(3, 2, 2),
+                                   dimnames = list(time = c(2000, 2010, 2020),
+                                                   age = c("0-9", "10+"),
+                                                   sex = c("f", "m"))))
+        arrivals <- Counts(array(1:8,
+                                 dim = c(2, 2, 2),
+                                 dimnames = list(time = c("2001-2010", "2011-2020"),
+                                                 age = c("0-9", "10+"),
+                                                 sex = c("f", "m"))))
+        population <- aperm(population, aperm =  c(2, 1, 3))
+        arrivals <- aperm(arrivals, aperm = c(2, 1, 3))
+        account <- Movements(population = population,
+                             entries = list(arrivals = arrivals))
+        account <- makeConsistent(account)
+        systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                             Model(arrivals ~ Poisson(mean ~ 1)))
+        systemWeights <- rep(list(NULL), 2)
+        data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+        seriesIndices <- 0L
+        datasets <- list(population + 1L)
+        namesDatasets <- "census"
+        transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
+        transforms <- lapply(transforms, makeCollapseTransformExtra)
+        x <- initialCombinedAccount(account = account,
+                                    systemModels = systemModels,
+                                    systemWeights = systemWeights,
+                                    dataModels = data.models,
+                                    seriesIndices = seriesIndices,
+                                    updateInitialPopn = new("LogicalFlag", TRUE),
+                                    usePriorPopn = new("LogicalFlag", TRUE),
+                                    datasets = datasets,
+                                    namesDatasets = namesDatasets,
+                                    transforms = transforms)
+        expect_true(validObject(x))
+        ans.obtained <- updateExpectedExposure(x)@expectedExposure@.Data
+        theta.popn <- Counts(array(x@systemModels[[1]]@theta,
+                                   dim = dim(population),
+                                   dimnames = dimnames(population)))
+        ans.expected <- exposure(theta.popn, triangles = TRUE, openTriangles = "weighted")@.Data
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+            ## time third of 3 dimensions
+            population <- Counts(array(101:112,
+                                       dim = c(3, 2, 2),
+                                       dimnames = list(time = c(2000, 2010, 2020),
+                                                       age = c("0-9", "10+"),
+                                                       sex = c("f", "m"))))
+            arrivals <- Counts(array(1:8,
+                                     dim = c(2, 2, 2),
+                                     dimnames = list(time = c("2001-2010", "2011-2020"),
+                                                     age = c("0-9", "10+"),
+                                                     sex = c("f", "m"))))
+            population <- aperm(population, aperm =  3:1)
+            arrivals <- aperm(arrivals, aperm = 3:1)
+            account <- Movements(population = population,
+                                 entries = list(arrivals = arrivals))
+            account <- makeConsistent(account)
+            systemModels <- list(Model(population ~ Poisson(mean ~ time, useExpose = FALSE)),
+                                 Model(arrivals ~ Poisson(mean ~ 1)))
+            systemWeights <- rep(list(NULL), 2)
+            data.models <- list(Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+            seriesIndices <- 0L
+            datasets <- list(population + 1L)
+            namesDatasets <- "census"
+            transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
+            transforms <- lapply(transforms, makeCollapseTransformExtra)
+            x <- initialCombinedAccount(account = account,
+                                        systemModels = systemModels,
+                                        systemWeights = systemWeights,
+                                        dataModels = data.models,
+                                        seriesIndices = seriesIndices,
+                                        updateInitialPopn = new("LogicalFlag", TRUE),
+                                        usePriorPopn = new("LogicalFlag", TRUE),
+                                        datasets = datasets,
+                                        namesDatasets = namesDatasets,
+                                        transforms = transforms)
+            expect_true(validObject(x))
+            ans.obtained <- updateExpectedExposure(x)@expectedExposure@.Data
+            theta.popn <- Counts(array(x@systemModels[[1]]@theta,
+                                       dim = dim(population),
+                                       dimnames = dimnames(population)))
+            ans.expected <- exposure(theta.popn, triangles = TRUE, openTriangles = "weighted")@.Data
+            if (test.identity)
+                expect_identical(ans.obtained, ans.expected)
+            else
+                expect_equal(ans.obtained, ans.expected)
 })
 
 test_that("R and C give same answer for updatedExpectedExposure with CombinedAccountMovementsHasAge", {
@@ -4085,15 +4096,15 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
                                 updateInitialPopn = new("LogicalFlag", TRUE),
                                 usePriorPopn = new("LogicalFlag", TRUE),
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
     ans.R <- updateExpectedExposure(x, useC = FALSE)
     ans.C <- updateExpectedExposure(x, useC = TRUE)
     if (test.identity)
@@ -4126,15 +4137,15 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
                                 updateInitialPopn = new("LogicalFlag", TRUE),
                                 usePriorPopn = new("LogicalFlag", TRUE),
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
     ans.R <- updateExpectedExposure(x, useC = FALSE)
     ans.C <- updateExpectedExposure(x, useC = TRUE)
     if (test.identity)
@@ -4145,7 +4156,7 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     population <- Counts(array(101:112,
                                dim = c(3, 2, 2),
                                dimnames = list(time = c(2000, 2010, 2020),
-                                             age = c("0-9", "10+"),
+                                               age = c("0-9", "10+"),
                                                sex = c("f", "m"))))
     arrivals <- Counts(array(1:8,
                              dim = c(2, 2, 2),
@@ -4167,15 +4178,15 @@ test_that("R and C give same answer for updatedExpectedExposure with CombinedAcc
     transforms <- list(makeTransform(x = population, y = datasets[[1]], subset = TRUE))
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     x <- initialCombinedAccount(account = account,
-                                 systemModels = systemModels,
-                                 systemWeights = systemWeights,
-                                 dataModels = data.models,
-                                 seriesIndices = seriesIndices,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
                                 updateInitialPopn = new("LogicalFlag", TRUE),
                                 usePriorPopn = new("LogicalFlag", TRUE),
-                                 datasets = datasets,
-                                 namesDatasets = namesDatasets,
-                                 transforms = transforms)
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
     ans.R <- updateExpectedExposure(x, useC = FALSE)
     ans.C.specific <- updateExpectedExposure(x, useC = TRUE, useSpecific = TRUE)
     ans.C.generic <- updateExpectedExposure(x, useC = TRUE, useSpecific = FALSE)
@@ -4321,8 +4332,8 @@ test_that("updateSystemModels works with CombinedAccountMovements", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)

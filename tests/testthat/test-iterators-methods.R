@@ -359,6 +359,40 @@ test_that("advanceCA gives valid answer", {
     advanceCA <- demest:::advanceCA
     ## dim = 3:4, iAge = 2L, iTime = 1L
     x <- new("CohortIteratorAccession",
+             i = 10L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 4L,
+             finished = FALSE)
+    ans.obtained <- advanceCA(x)
+    x <- new("CohortIteratorAccession",
+             i = 11L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 2L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 4L,
+             finished = FALSE)
+    expect_identical(ans.obtained, x)
+    ans.obtained <- advanceCA(x)
+    x <- new("CohortIteratorAccession",
+             i = 12L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 3L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 4L,
+             finished = TRUE)
+    expect_identical(ans.obtained, x)
+    x <- new("CohortIteratorAccession",
              i = 4L,
              nTime = 3L,
              stepTime = 1L,
@@ -432,47 +466,56 @@ test_that("advanceCA gives valid answer", {
 test_that("R and C versions of advanceCA give same answer", {
     advanceCA <- demest:::advanceCA
     ## dim = 3:4, iAge = 2L, iTime = 1L
-    x <- new("CohortIteratorAccession",
-             i = 4L,
-             nTime = 3L,
-             stepTime = 1L,
-             iTime = 1L,
-             hasAge = TRUE,
-             nAge = 4L,
-             stepAge = 3L,
-             iAge = 2L,
-             finished = FALSE)
-    ans.R <- advanceCA(x, useC = FALSE)
-    ans.C <- advanceCA(x, useC = TRUE)
-    expect_identical(ans.R, ans.C)
+    x.R <- new("CohortIteratorAccession",
+               i = 4L,
+               nTime = 3L,
+               stepTime = 1L,
+               iTime = 1L,
+               hasAge = TRUE,
+               nAge = 4L,
+               stepAge = 3L,
+               iAge = 2L,
+               finished = FALSE)
+    x.C <- x.R
+    while (!x.R@finished) {
+        x.R <- advanceCA(x.R, useC = FALSE)
+        x.C <- advanceCA(x.C, useC = TRUE)
+        expect_identical(x.R, x.C)
+    }
     ## dim = 3:4, iAge = 3L, iTime = 3L
-    x <- new("CohortIteratorAccession",
-             i = 8L,
-             nTime = 4L,
-             stepTime = 3L,
-             iTime = 3L,
-             hasAge = TRUE,
-             nAge = 3L,
-             stepAge = 1L,
-             iAge = 2L,
-             finished = FALSE)
-    ans.R <- advanceCA(x, useC = FALSE)
-    ans.C <- advanceCA(x, useC = TRUE)
-    expect_identical(ans.R, ans.C)
+    x.R <- new("CohortIteratorAccession",
+               i = 8L,
+               nTime = 4L,
+               stepTime = 3L,
+               iTime = 3L,
+               hasAge = TRUE,
+               nAge = 3L,
+               stepAge = 1L,
+               iAge = 2L,
+               finished = FALSE)
+    x.C <- x.R
+    while (!x.R@finished) {
+        x.R <- advanceCA(x.R, useC = FALSE)
+        x.C <- advanceCA(x.C, useC = TRUE)
+        expect_identical(x.R, x.C)
+    }
     ## dim = 2:5, iAge = 3L, iTime = 4L
-    x <- new("CohortIteratorAccession",
-             i = 85L,
-             nTime = 5L,
-             stepTime = 24L,
-             iTime = 4L,
-             hasAge = TRUE,
-             nAge = 4L,
-             stepAge = 6L,
-             iAge = 3L,
-             finished = FALSE)
-    ans.R <- advanceCA(x, useC = FALSE)
-    ans.C <- advanceCA(x, useC = TRUE)
-    expect_identical(ans.R, ans.C)
+    x.R <- new("CohortIteratorAccession",
+               i = 85L,
+               nTime = 5L,
+               stepTime = 24L,
+               iTime = 4L,
+               hasAge = TRUE,
+               nAge = 4L,
+               stepAge = 6L,
+               iAge = 3L,
+               finished = FALSE)
+    x.C <- x.R
+    while (!x.R@finished) {
+        x.R <- advanceCA(x.R, useC = FALSE)
+        x.C <- advanceCA(x.C, useC = TRUE)
+        expect_identical(x.R, x.C)
+    }
 })
 
 test_that("advanceCP gives valid answer", {
@@ -631,6 +674,112 @@ test_that("R and C versions of advanceCP give same answer", {
     expect_identical(ans.R, ans.C)
 })
 
+
+test_that("advanceCC works with time, age, triangle dimensions, last age group open", {
+    advanceCC <- demest:::advanceCC
+    resetCC <- demest:::resetCC
+    CohortIterator <- demest:::CohortIterator
+    EntriesMovements <- dembase:::EntriesMovements
+    entries <- Counts(array(1:24,
+                            dim = c(3, 4, 2),
+                            dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            time = c("2001-2005", "2006-2010", "2011-2015",
+                                                     "2016-2020"),
+                                            triangle = c("Lower", "Upper"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 4, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            time = c("2001-2005", "2006-2010", "2011-2015",
+                                                     "2016-2020"),
+                                             triangle = c("Lower", "Upper"))))
+    component <- EntriesMovements(entries = entries,
+                                  template = template,
+                                  name = "immigration")
+    iterator <- CohortIterator(component)
+    ## start at 1
+    iterator <- resetCC(i = 1L, iterator)
+    expect_identical(iterator@i, 1L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 16L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 5L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 20L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 9L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 24L)
+    expect_true(iterator@finished)
+    ## start at 14
+    iterator <- resetCC(i = 14L, iterator)
+    expect_identical(iterator@i, 14L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 3L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 18L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 21L)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 24L)
+    expect_true(iterator@finished)
+    ## starts at 22
+    iterator <- resetCC(i = 22L, iterator)
+    expect_identical(iterator@i, 22L)
+    expect_false(iterator@finished)
+    iterator <- advanceCC(iterator)
+    expect_identical(iterator@i, 11L)
+    expect_true(iterator@finished)
+})
+    
+
+test_that("R and C versions of advanceCC give same answer with time, age, triangle dimensions, last age group open", {
+    advanceCC <- demest:::advanceCC
+    resetCC <- demest:::resetCC
+    CohortIterator <- demest:::CohortIterator
+    EntriesMovements <- dembase:::EntriesMovements
+    entries <- Counts(array(1:24,
+                            dim = c(3, 4, 2),
+                            dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            time = c("2001-2005", "2006-2010", "2011-2015",
+                                                     "2016-2020"),
+                                            triangle = c("Lower", "Upper"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 4, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                            time = c("2001-2005", "2006-2010", "2011-2015",
+                                                     "2016-2020"),
+                                             triangle = c("Lower", "Upper"))))
+    component <- EntriesMovements(entries = entries,
+                                  template = template,
+                                  name = "immigration")
+    iterator <- CohortIterator(component)
+    ## start at 1
+    iterator.R <- resetCC(i = 1L, iterator)
+    iterator.C <- resetCC(i = 1L, iterator)
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCC(iterator.R, useC = FALSE)
+        iterator.C <- advanceCC(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+    ## start at 14
+    iterator.R <- resetCC(i = 14L, iterator)
+    iterator.C <- resetCC(i = 14L, iterator)
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCC(iterator.R, useC = FALSE)
+        iterator.C <- advanceCC(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+    ## starts at 22
+    iterator.R <- resetCC(i = 22L, iterator)
+    iterator.C <- resetCC(i = 22L, iterator)
+    while (!iterator.R@finished) {
+        iterator.R <- advanceCC(iterator.R, useC = FALSE)
+        iterator.C <- advanceCC(iterator.C, useC = TRUE)
+        expect_identical(iterator.R, iterator.C)
+    }
+})
+
+
 test_that("advanceCC works", {
     advanceCC <- demest:::advanceCC
     resetCC <- demest:::resetCC
@@ -654,6 +803,7 @@ test_that("advanceCC works", {
                                   template = template,
                                   name = "immigration")
     iterator <- CohortIterator(component)
+    ## start at 19
     iterator <- resetCC(iterator, i = 19L)
     iterator <- advanceCC(iterator)
     expect_identical(iterator@i, 2L)
@@ -663,14 +813,11 @@ test_that("advanceCC works", {
     iterator <- advanceCC(iterator)
     expect_identical(iterator@i, 12L)
     expect_true(iterator@finished)
+    ## start at 21
     iterator <- resetCC(iterator, i = 21L)
     expect_false(iterator@finished)
     iterator <- advanceCC(iterator)
-    expect_identical(iterator@i, 3L)
-    iterator <- advanceCC(iterator)
     expect_identical(iterator@i, 30L)
-    iterator <- advanceCC(iterator)
-    expect_identical(iterator@i, 12L)
     expect_true(iterator@finished)
     ## with age - last age group closed
     entries <- Counts(array(1:36,
@@ -834,7 +981,29 @@ test_that("R and C versions of advanceCC give same answer", {
 
 test_that("resetCA gives valid answer", {
     resetCA <- demest:::resetCA
-    ## dim = 3:4, iAge = 2, iTime = 1
+    ## dim = 3:4
+    x <- new("CohortIteratorAccession",
+             i = 4L,
+             nTime = 3L,
+             stepTime = 1L,
+             iTime = 1L,
+             hasAge = TRUE,
+             nAge = 4L,
+             stepAge = 3L,
+             iAge = 1L,
+             finished = FALSE)
+    ans.obtained <- resetCA(x, i = 10L)
+    ans.expected <- new("CohortIteratorAccession",
+                        i = 10L,
+                        nTime = 3L,
+                        stepTime = 1L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 4L,
+                        stepAge = 3L,
+                        iAge = 4L,
+                        finished = FALSE)
+    expect_identical(ans.obtained, ans.expected)
     x <- new("CohortIteratorAccession",
              i = 4L,
              nTime = 3L,
@@ -947,6 +1116,9 @@ test_that("R and C versions of resetCA give same answer", {
     expect_identical(ans.R, ans.C)
     ans.R <- resetCA(x, i = 12L, useC = FALSE)
     ans.C <- resetCA(x, i = 12L, useC = TRUE)
+    expect_identical(ans.R, ans.C)
+    ans.R <- resetCA(x, i = 10L, useC = FALSE)
+    ans.C <- resetCA(x, i = 10L, useC = TRUE)
     expect_identical(ans.R, ans.C)
     ## dim = 3:4, iAge = 2L, iTime = 1L 
     x <- new("CohortIteratorAccession",
@@ -1226,7 +1398,7 @@ test_that("resetCC works", {
     expect_identical(iterator@iTime, 2L)
     expect_identical(iterator@iAge, 3L)
     expect_identical(iterator@iTriangle, 2L)
-    expect_false(iterator@finished)
+    expect_true(iterator@finished)
     ## with age - last age group closed
     entries <- Counts(array(1:36,
                             dim = c(3, 3, 2, 2),
@@ -1496,7 +1668,7 @@ test_that("resetCODPCP works", {
     expect_identical(iterator@iTime, 2L)
     expect_identical(iterator@iAge, 3L)
     expect_identical(iterator@iTriangle, 2L)
-    expect_false(iterator@finished)
+    expect_true(iterator@finished)
     ## without age
     internal <- Counts(array(1:72,
                              dim = c(3, 3, 2, 2, 2),

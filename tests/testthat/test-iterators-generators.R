@@ -83,6 +83,155 @@ test_that("CohortIterator works with Accession", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+test_that("CohortIterator works with BirthsMovementsNoParentChild", {
+    CohortIterator <- demest:::CohortIterator
+    BirthsMovements <- dembase:::BirthsMovements
+    births <- Counts(array(1L,
+                           dim = c(2, 2, 3, 2),
+                           dimnames = list(sex = c("m", "f"),
+                               age = c("5-9", "10+"),
+                               region = 1:3,
+                               time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(0L,
+                             dim = c(2, 3, 3, 2, 2),
+                             dimnames = list(sex = c("f", "m"),
+                                 age = c("0-4", "5-9", "10+"),
+                                 region = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("Lower", "Upper"))))
+    set.seed(1)
+    births <- BirthsMovements(births = births, template = template)
+    ans.obtained <- CohortIterator(births)
+    ans.expected <- new("CohortIteratorOrigDestParChPool",
+                        i = 1L,
+                        nTime = 2L,
+                        stepTime = 12L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 2L,
+                        stepAge = 2L,
+                        iAge = 1L,
+                        stepTriangle = 24L,
+                        iTriangle = 1L,
+                        iVec = c(1L, 2L),
+                        lengthVec = 2L,
+                        increment = c(0L, 1L),
+                        finished = FALSE,
+                        lastAgeGroupOpen = TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    CohortIterator <- demest:::CohortIterator
+    BirthsMovements <- dembase:::BirthsMovements
+    births <- Counts(array(1L,
+                           dim = c(3, 2, 2, 2),
+                           dimnames = list(eth = 1:3,
+                               age = c("5-9", "10+"),
+                               sex = c("f", "m"),
+                               time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 3, 2, 2, 2),
+                             dimnames = list(eth = 1:3,
+                                 age = c("0-4", "5-9", "10+"),
+                                 sex = c("f", "m"),
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("Lower", "Upper"))))
+    set.seed(1)
+    births <- BirthsMovements(births = births, template = template)
+    ans.obtained <- CohortIterator(births)
+    ans.expected <- new("CohortIteratorOrigDestParChPool",
+                        i = 1L,
+                        nTime = 2L,
+                        stepTime = 12L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 2L,
+                        stepAge = 3L,
+                        iAge = 1L,
+                        stepTriangle = 24L,
+                        iTriangle = 1L,
+                        iVec = c(1L, 7L),
+                        lengthVec = 2L,
+                        increment = c(0L, 6L),
+                        finished = FALSE,
+                        lastAgeGroupOpen = TRUE)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+test_that("CohortIterator works with BirthsMovementsHaasParentChild", {
+    CohortIterator <- demest:::CohortIterator
+    BirthsMovements <- dembase:::BirthsMovements
+    births <- Counts(array(1L,
+                           dim = c(3, 3, 2, 3, 2),
+                           dimnames = list(eth_parent = 1:3,
+                               eth_child = 1:3,
+                               age = c("5-9", "10+"),
+                               region = 1:3,
+                               time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 3, 3, 2, 2),
+                             dimnames = list(eth = 1:3,
+                                 age = c("0-4", "5-9", "10+"),
+                                 region = 1:3,
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("Lower", "Upper"))))
+    set.seed(1)
+    births <- BirthsMovements(births = births, template = template)
+    ans.obtained <- CohortIterator(births)
+    ans.expected <- new("CohortIteratorOrigDestParChPool",
+                        i = 1L,
+                        nTime = 2L,
+                        stepTime = 54L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 2L,
+                        stepAge = 9L,
+                        iAge = 1L,
+                        stepTriangle = 108L,
+                        iTriangle = 1L,
+                        iVec = c(1L, 4L, 7L),
+                        lengthVec = 3L,
+                        increment = c(0L, 3L, 6L),
+                        finished = FALSE,
+                        lastAgeGroupOpen = TRUE)
+    expect_identical(ans.obtained, ans.expected)
+    CohortIterator <- demest:::CohortIterator
+    BirthsMovements <- dembase:::BirthsMovements
+    births <- Counts(array(1L,
+                           dim = c(3, 3, 2, 2, 2),
+                           dimnames = list(eth_parent = 1:3,
+                               eth_child = 1:3,
+                               age = c("5-9", "10+"),
+                               sex = c("f", "m"),
+                               time = c("2001-2005", "2006-2010"))))
+    template <- Counts(array(0L,
+                             dim = c(3, 3, 2, 2, 2),
+                             dimnames = list(eth = 1:3,
+                                 age = c("0-4", "5-9", "10+"),
+                                 sex = c("f", "m"),
+                                 time = c("2001-2005", "2006-2010"),
+                                 triangle = c("Lower", "Upper"))))
+    set.seed(1)
+    births <- BirthsMovements(births = births, template = template)
+    ans.obtained <- CohortIterator(births)
+    ans.expected <- new("CohortIteratorOrigDestParChPool",
+                        i = 1L,
+                        nTime = 2L,
+                        stepTime = 36L,
+                        iTime = 1L,
+                        hasAge = TRUE,
+                        nAge = 2L,
+                        stepAge = 9L,
+                        iAge = 1L,
+                        stepTriangle = 72L,
+                        iTriangle = 1L,
+                        iVec = c(1L, 4L, 7L, 19L, 22L, 25L),
+                        lengthVec = 6L,
+                        increment = c(0L, 3L, 6L, 18L, 21L, 24L),
+                        finished = FALSE,
+                        lastAgeGroupOpen = TRUE)
+    expect_identical(ans.obtained, ans.expected)
+})
+
+
 test_that("CohortIterator works with BirthsMovementsHasParentChild", {
     CohortIterator <- demest:::CohortIterator
     BirthsMovements <- dembase:::BirthsMovements
@@ -121,6 +270,7 @@ test_that("CohortIterator works with BirthsMovementsHasParentChild", {
                         lastAgeGroupOpen = TRUE)
     expect_identical(ans.obtained, ans.expected)
 })
+
 
 test_that("ComponentIterator works with InternalMovementsOrigDest", {
     CohortIterator <- demest:::CohortIterator

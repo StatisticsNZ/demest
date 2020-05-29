@@ -1812,6 +1812,39 @@ predictAlphaDeltaDLMWithTrend(SEXP prior_R)
 
 
 void
+predictAlphaLN2(SEXP object_R)
+{
+    SEXP alpha_R = GET_SLOT(object_R, alphaLN2_sym);
+    double * alpha = REAL(alpha_R);
+    int n_alphas = LENGTH(alpha_R);
+
+    int * constraint = INTEGER(GET_SLOT(object_R, constraintLN2_sym));
+    double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
+
+    for (int j = 0; j < n_alphas; ++j) {
+
+        int constraint_j = constraint[j];
+
+        if ((constraint_j == NA_INTEGER) ||(constraint_j != 0)) {
+            double x = rnorm(0, sigma);
+
+            if (constraint_j == NA_INTEGER) {
+                alpha[j] = x;
+            }
+            else if (constraint_j == -1) {
+                alpha[j] = (-1) * fabs(x);
+            }
+            else if (constraint_j == 1) {
+                alpha[j] = fabs(x);
+            }
+            else {
+                error("invalid value for 'constraint'");
+            }
+        }
+    }
+}
+
+void
 predictBeta(double* beta, SEXP prior_R, int J)
 {
     int i_method_prior = *(INTEGER(GET_SLOT(prior_R, iMethodPrior_sym)));
@@ -2622,6 +2655,23 @@ logLikelihood_TFixedUseExp(SEXP model_R, int count,
     double x_rescaled = (x - thisMean)/thisSd;
 
     return dt(x_rescaled, nu, USE_LOG) - log(thisSd);
+}
+
+
+double
+logLikelihood_LN2(SEXP model_R, int count,
+                                SEXP dataset_R, int i)
+{
+    double *alpha = REAL(GET_SLOT(model_R, alphaLN2_sym));
+    SEXP transform_R = GET_SLOT(model_R, transformLN2_sym);
+    double sd = *REAL(GET_SLOT(model_R, varsigma_sym));
+    int *dataset = INTEGER(dataset_R);
+    int i_c = i - 1;
+    double x = log1p(dataset[i_c]);
+    int j_r = dembase_getIAfter(i, transform_R);
+    double mean = log1p(count) + alpha[j_r - 1];
+
+    return dnorm(x, mean, sd, USE_LOG);
 }
 
 
@@ -3601,37 +3651,35 @@ isLowerTriangle(int i, SEXP description_R)
     return (iTriangle == 0);
 }
 
+int
+isOldestAgeGroup(int i, SEXP description_R)
+{
+    int nAge = *INTEGER(GET_SLOT(description_R, nAge_sym));
+    int stepAge = *INTEGER(GET_SLOT(description_R, stepAge_sym));
+    int iAge_r = (((i - 1) / stepAge) % nAge) + 1;
+    return (iAge_r == nAge);
+}
+
 
 int
 getIAccNextFromPopn(int i, SEXP description_R)
 {
     int nTimePopn = *INTEGER(GET_SLOT(description_R, nTime_sym));
-    int nAgePopn = *INTEGER(GET_SLOT(description_R, nAge_sym));
     int stepTimePopn = *INTEGER(GET_SLOT(description_R, stepTime_sym));
-    int stepAgePopn = *INTEGER(GET_SLOT(description_R, stepAge_sym));
     int nTimeAcc = nTimePopn - 1;
-    int nAgeAcc = nAgePopn - 1;
 
     int iTime_r = (((i - 1) / stepTimePopn) % nTimePopn) + 1; /* R-style */
-    int iAge_r = (((i - 1) / stepAgePopn) % nAgePopn) + 1; /* R-style */
     int iAcc = 0;
 
-    if ((iTime_r < nTimePopn) && (iAge_r < nAgePopn)) {
-        iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
+    if (iTime_r < nTimePopn) {
+      iAcc = (((i - 1) / (stepTimePopn * nTimePopn)) * (stepTimePopn * nTimeAcc)
             + ((i - 1) % (stepTimePopn * nTimePopn))) + 1;
-    int stepAgeAcc;
-    if (stepTimePopn > stepAgePopn) {
-        stepAgeAcc = stepAgePopn;
-    }
-    else {
-        stepAgeAcc = (stepAgePopn / nTimePopn) * nTimeAcc;
-    }
-    iAcc = (((iAcc - 1) / (stepAgeAcc * nAgePopn)) * (stepAgeAcc * nAgeAcc)
-        + ((iAcc - 1) % (stepAgeAcc * nAgePopn))) + 1;
     }
 
     return iAcc;
 }
+
+
 
 int
 getIExpFirstFromPopn(int i, SEXP description_R)
@@ -3708,8 +3756,59 @@ getMinValCohortAccession(int i, SEXP series_R, SEXP iterator_R)
     return ans;
 }
 
+
 int
-getMinValCohortPopulation(int i, SEXP series_R, SEXP iterator_R)
+getMinValCohortPopulationHasAge(int i, SEXP population_R, SEXP accession_R, SEXP iterator_R)
+{
+    int *population = INTEGER(population_R);
+    int *accession = INTEGER(accession_R);
+
+    int nAge = *INTEGER(GET_SLOT(iterator_R, nAge_sym));
+    int stepTime = *INTEGER(GET_SLOT(iterator_R, stepTime_sym));
+    int nTimePopn = *INTEGER(GET_SLOT(iterator_R, nTime_sym));
+    int nTimeAcc = nTimePopn - 1;
+
+    int processedOldestAge = 0;
+    int firstIter = 1;
+    int keepGoing = 1;
+    int ans;
+
+    while (keepGoing) {
+
+      if (firstIter)
+	resetCP(iterator_R, i);
+      else
+	advanceCP(iterator_R);
+      i = *INTEGER(GET_SLOT(iterator_R, i_sym));
+      int populationCurrent = population[i - 1];
+      int iAge = *INTEGER(GET_SLOT(iterator_R, iAge_sym));
+      if (iAge == nAge) {
+	int iAcc = ((i - 1) % (stepTime * nTimePopn)
+		    - stepTime
+		    + ((i - 1) / (stepTime * nTimePopn) * (stepTime * nTimeAcc))); /* C-style */
+	populationCurrent -= accession[iAcc];
+	processedOldestAge = 1;
+      }
+      if (firstIter) {
+	ans = populationCurrent;
+	firstIter = 0;
+      }
+      else {
+	if (populationCurrent < ans) {
+	  ans = populationCurrent;
+	}
+      }
+      int finished = *INTEGER(GET_SLOT(iterator_R, finished_sym));
+      keepGoing = !processedOldestAge && !finished;
+    }
+
+    return ans;
+}
+
+
+
+int
+getMinValCohortPopulationNoAge(int i, SEXP series_R, SEXP iterator_R)
 {
     int *series = INTEGER(series_R);
 

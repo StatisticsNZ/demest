@@ -92,6 +92,7 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
     updateValuesAccount <- demest:::updateValuesAccount
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    set.seed(2)
     population <- CountsOne(values = seq(100, 200, 10),
                             labels = seq(2000, 2100, 10),
                             name = "time")
@@ -135,7 +136,6 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
     expect_true(validObject(x0))
-    set.seed(1)
     updated <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -144,6 +144,8 @@ test_that("R and C versions of updateAccount give same answer with CombinedAccou
             updated <- TRUE
         set.seed(seed)
         ans.C <- updateAccount(x0, useC = TRUE)
+        if (!identical(ans.R, ans.C))
+            stop(seed)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -4992,7 +4994,8 @@ test_that("diffLogLikPopnPair works with CombinedAccountMovements", {
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     iterator <- CohortIterator(population)
     diff <- -4L
-    ans.obtained <- diffLogLikPopnPair(diff = diff,
+    ans.obtained <- diffLogLikPopnPair(diffOrig = -diff,
+                                       diffDest = diff,
                                        iPopnOrig = 6L,
                                        iPopnDest = 5L,
                                        iterator = iterator,
@@ -5057,7 +5060,8 @@ test_that("R and C versions of diffLogLikPopnPair give same answer", {
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     iterator <- CohortIterator(population)
     diff <- -4L
-    ans.R <- diffLogLikPopnPair(diff = diff,
+    ans.R <- diffLogLikPopnPair(diffOrig = -diff,
+                                diffDest = diff,
                                 iPopnOrig = 6L,
                                 iPopnDest = 5L,
                                 iterator = iterator,
@@ -5067,7 +5071,8 @@ test_that("R and C versions of diffLogLikPopnPair give same answer", {
                                 seriesIndices = seriesIndices,
                                 transforms = transforms,
                                 useC = FALSE)
-    ans.C <- diffLogLikPopnPair(diff = diff,
+    ans.C <- diffLogLikPopnPair(diffOrig = -diff,
+                                diffDest = diff,
                                 iPopnOrig = 6L,
                                 iPopnDest = 5L,
                                 iterator = iterator,
@@ -5259,7 +5264,8 @@ test_that("diffLogLikAccountMovePool works with CombinedAccountMovements", {
                                         datasets = x@datasets,
                                         seriesIndices = x@seriesIndices,
                                         transforms = x@transforms) +
-        diffLogLikPopnPair(diff = x@diffProp,
+        diffLogLikPopnPair(diffOrig = -x@diffProp,
+                           diffDest = x@diffProp,
                            iPopnOrig = x@iPopnNext,
                            iPopnDest = x@iPopnNextOther,
                            iterator = x@iteratorPopn,
@@ -5553,7 +5559,8 @@ test_that("diffLogLikAccountMoveNet works with CombinedAccountMovements", {
                                        datasets = x@datasets,
                                        seriesIndices = x@seriesIndices,
                                        transforms = x@transforms) +
-        diffLogLikPopnPair(diff = -x@diffProp,
+        diffLogLikPopnPair(diffOrig = x@diffProp,
+                           diffDest = -x@diffProp,
                            iPopnOrig = x@iPopnNext,
                            iPopnDest = x@iPopnNextOther,
                            iterator = x@iteratorPopn,
@@ -6523,6 +6530,7 @@ test_that("diffLogDensExpPopn works", {
     updateProposalAccountMovePopn <- demest:::updateProposalAccountMovePopn
     initialCombinedAccount <- demest:::initialCombinedAccount
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    getIExposureFromBirths <- demest:::getIExposureFromBirths
     getICellCompFromExp <- demest:::getICellCompFromExp
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     popn <- Counts(array(rpois(n = 90, lambda = 100),
@@ -6613,23 +6621,28 @@ test_that("diffLogDensExpPopn works", {
             ans.obtained <- diffLogDensExpPopn(x)
             ans.expected <- 0
             i.cell.births <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
-            if (i.cell.births > 0L)
-                ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.births,
+            if (i.cell.births > 0L) {
+                i.exp.first.births <- getIExposureFromBirths(i = i.cell.births,
+                                                             mapping = x@mappingsToExp[[1]])
+                ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell= i.cell.births,
                                                                      hasAge = TRUE,
                                                                      updatedPopn = TRUE,
+                                                                     updatedBirths = FALSE,
                                                                      ageTimeStep = x@ageTimeStep,
                                                                      component = x@account@components[[1]],
                                                                      theta = x@systemModels[[2]]@theta,
                                                                      strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                                      iteratorComp = x@iteratorsComp[[1]],
-                                                                     iExpFirst = x@iExpFirst,
+                                                                     iExpFirst = i.exp.first.births,
                                                                      exposure = x@exposure,
                                                                      iteratorExposure = x@iteratorExposure,
                                                                      diff = x@diffProp)
+            }
             i.cell.internal <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[2]])
             ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell = i.cell.internal,
                                                                               hasAge = TRUE,
                                                                               updatedPopn = TRUE,
+                                                                              updatedBirths = FALSE,
                                                                               ageTimeStep = x@ageTimeStep,
                                                                               component = x@account@components[[2]],
                                                                               theta = x@systemModels[[3]]@theta,
@@ -6642,7 +6655,8 @@ test_that("diffLogDensExpPopn works", {
             i.cell.deaths <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[3]])
                 ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
                                                                      hasAge = TRUE,
-                                                                     updatedPopn = FALSE,
+                                                                     updatedPopn = TRUE,
+                                                                     updatedBirths = FALSE,
                                                                      ageTimeStep = x@ageTimeStep,
                                                                      component = x@account@components[[3]],
                                                                      theta = x@systemModels[[4]]@theta,
@@ -6752,7 +6766,6 @@ test_that("R and C versions of diffLogDensExpPopn give same answer", {
         x <- updateProposalAccountMovePopn(x)
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
-            ans.obtained <- diffLogDensExpPopn(x)
             ans.R <- diffLogDensExpPopn(x, useC = FALSE)
             ans.C <- diffLogDensExpPopn(x, useC = TRUE)
             if (test.identity)
@@ -6904,136 +6917,6 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - no age
         warning("not updated")
 })
 
-
-test_that("diffLogDensJumpOrigDest works - with age", {
-    diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
-    updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
-    initialCombinedAccount <- demest:::initialCombinedAccount
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    popn <- Counts(array(rpois(n = 90, lambda = 100),
-                         dim = c(3, 2, 5, 3),
-                         dimnames = list(age = c("0-4", "5-9", "10+"),
-                                         sex = c("f", "m"),
-                                         reg = 1:5,
-                                         time = c(2000, 2005, 2010))))
-    births <- Counts(array(rpois(n = 90, lambda = 5),
-                           dim = c(1, 2, 5, 2, 2),
-                           dimnames = list(age = "5-9",
-                                           sex = c("m", "f"),
-                                           reg = 1:5,
-                                           time = c("2001-2005", "2006-2010"),
-                                           triangle = c("Lower", "Upper"))))
-    internal <- Counts(array(rpois(n = 300, lambda = 10),
-                             dim = c(3, 2, 5, 5, 2, 2),
-                             dimnames = list(age = c("0-4", "5-9", "10+"),
-                                             sex = c("m", "f"),
-                                             reg_orig = 1:5,
-                                             reg_dest = 1:5,
-                                             time = c("2001-2005", "2006-2010"),
-                                             triangle = c("Lower", "Upper"))))
-    deaths <- Counts(array(rpois(n = 72, lambda = 10),
-                           dim = c(3, 2, 5, 2, 2),
-                           dimnames = list(age = c("0-4", "5-9", "10+"),
-                                           sex = c("m", "f"),
-                                           reg = 5:1,
-                                           time = c("2001-2005", "2006-2010"),
-                                           triangle = c("Lower", "Upper"))))
-    account <- Movements(population = popn,
-                         births = births,
-                         internal = internal,
-                         exits = list(deaths = deaths))
-    account <- makeConsistent(account)
-    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
-                         Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
-                         Model(deaths ~ Poisson(mean ~ 1)))
-    systemWeights <- list(NULL, NULL, NULL, NULL)
-    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
-    register <- Counts(array(rpois(n = 90, lambda = popn),
-                             dim = dim(popn),
-                             dimnames = dimnames(popn)))
-    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
-                               dim = dim(births),
-                               dimnames = dimnames(births)))
-    address.change <- Counts(array(rpois(n = 300, lambda = internal),
-                                   dim = dim(internal),
-                                   dimnames = dimnames(internal)))
-    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
-                               dim = dim(deaths),
-                               dimnames = dimnames(deaths))) + 1L
-    datasets <- list(census, register, reg.births, address.change, reg.deaths)
-    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
-    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
-    updateInitialPopn <- new("LogicalFlag", TRUE)
-    usePriorPopn <- new("LogicalFlag", TRUE)
-    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
-                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
-                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
-                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
-                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    x <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                dataModels = data.models,
-                                seriesIndices = seriesIndices,
-                                updateInitialPopn = updateInitialPopn,
-                                usePriorPopn = usePriorPopn,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
-    x@iComp <- 2L
-    updated <- FALSE
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        x <- updateProposalAccountMoveOrigDest(x)
-        if (x@generatedNewProposal@.Data) {
-            updated <- TRUE
-            ans.obtained <- diffLogDensJumpOrigDest(x)
-            if (x@isLowerTriangle) {
-                ans.expected <- (dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                                       lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[3]]@theta[x@iCell],
-                                       log = TRUE)
-                    - dpois(x@account@components[[2]][x@iCell],
-                            lambda = (x@exposure[x@iExposure] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[3]]@theta[x@iCell],
-                            log = TRUE)
-                    + dpois(x@account@components[[2]][x@iCell],
-                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
-                            log = TRUE)
-                    - dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
-                            log = TRUE))
-            }
-            else {
-                ans.expected <- (dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                                       lambda = (x@exposure[x@iExposure]) * x@systemModels[[3]]@theta[x@iCell],
-                                       log = TRUE)
-                    - dpois(x@account@components[[2]][x@iCell],
-                            lambda = (x@exposure[x@iExposure]) * x@systemModels[[3]]@theta[x@iCell],
-                            log = TRUE)
-                    + dpois(x@account@components[[2]][x@iCell],
-                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
-                            log = TRUE)
-                    - dpois(x@account@components[[2]][x@iCell] + x@diffProp,
-                            lambda = x@expectedExposure[x@iExposure] * x@systemModels[[3]]@theta[x@iCell],
-                            log = TRUE))
-            }
-            expect_equal(ans.obtained, ans.expected)
-            if (test.identity)
-                expect_identical(ans.obtained, ans.expected)
-            else
-                expect_equal(ans.obtained, ans.expected)
-        }
-    }
-    if (!updated)
-        warning("not updated")
-})
-
 test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with age", {
     diffLogDensJumpOrigDest <- demest:::diffLogDensJumpOrigDest
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
@@ -7118,7 +7001,7 @@ test_that("R and C versions of diffLogDensJumpOrigDest give same answer - with a
                                 transforms = transforms)
     x@iComp <- 2L
     updated <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(5 * n.test)) {
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x)
         if (x@generatedNewProposal@.Data) {
@@ -7141,13 +7024,20 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
     diffLogDensExpOrigDestPoolNet <- demest:::diffLogDensExpOrigDestPoolNet
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
     diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
+    diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     getICellCompFromExp <- demest:::getICellCompFromExp
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    getIExposureFromBirths <- demest:::getIExposureFromBirths
     population <- Counts(array(seq(1000L, 1500L, 100L),
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
                                                time = c(2000, 2005))))
+    births <- Counts(array(2L,
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = "2001-2005")))
     internal <- Counts(array(c(0L, 50L, 40L,
                                20L, 0L, 30L,
                                60L, 20L, 0L),
@@ -7160,19 +7050,21 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                             dimnames = list(reg = c("a", "b", "c"),
                                             time = "2001-2005")))
     account <- Movements(population = population,
+                         births = births,
                          internal = internal,
                          net = list(net.mig = net.mig))
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
                          Model(internal ~ Poisson(mean ~ 1, structuralZeros = "diag")),
                          Model(net.mig ~ Normal(mean ~ 1)))
-    systemWeights <- list(NULL, NULL, Counts(array(1,
-                                                   dim = c(3, 1),
-                                                   dimnames = list(reg = c("a", "b", "c"),
-                                                                   time = "2001-2005"))))
+    systemWeights <- list(NULL, NULL, NULL, Counts(array(1,
+                                                         dim = c(3, 1),
+                                                         dimnames = list(reg = c("a", "b", "c"),
+                                                                         time = "2001-2005"))))
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                         Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- c(1L, 0L)
+    seriesIndices <- c(2L, 0L)
     updateInitialPopn <- new("LogicalFlag", TRUE)
     usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
@@ -7192,39 +7084,75 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
     updated <- FALSE
-    x0@iComp <- 1L
+    x0@iComp <- 2L
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x0)
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
             ans.obtained <- diffLogDensExpOrigDestPoolNet(x)
-            no.exposure.affected <- (x@iExpFirst == 0L) || (x@iExpFirst == x@iExpFirstOther)
-            if (no.exposure.affected)
-                ans.expected <- 0
-            else {
-                i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
-                i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
-                ans.expected <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
-                                                                   hasAge = FALSE,
-                                                                   updatedPopn = FALSE,
-                                                                   ageTimeStep = x@ageTimeStep,
-                                                                   component = x@account@components[[1]],
-                                                                   theta = x@systemModels[[2]]@theta,
-                                                                   strucZeroArray = x@systemModels[[2]]@strucZeroArray,
-                                                                   iteratorComp = x@iteratorsComp[[1]],
-                                                                   iExpFirst = x@iExpFirst,
-                                                                   exposure = x@exposure,
-                                                                   iteratorExposure = x@iteratorExposure,
-                                                                   diff = -x@diffProp) +
+            ans.expected <- 0
+            i.cell.orig <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
+            if (i.cell.orig > 0) {
+                i.cell.dest <- getICellBirthsFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
+                i.exp.first.orig.births <- getIExposureFromBirths(i = i.cell.orig,
+                                                             mapping = x@mappingsToExp[[1]])
+                i.exp.first.dest.births <- getIExposureFromBirths(i = i.cell.dest,
+                                                                  mapping = x@mappingsToExp[[1]])
+                ans.expected <- ans.expected +
+                    diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
+                                          hasAge = FALSE,
+                                          updatedPopn = FALSE,
+                                          updatedBirths = FALSE,
+                                          ageTimeStep = x@ageTimeStep,
+                                          component = x@account@components[[1]],
+                                          theta = x@systemModels[[2]]@theta,
+                                          strucZeroArray = x@systemModels[[2]]@strucZeroArray,
+                                          iteratorComp = x@iteratorsComp[[1]],
+                                          iExpFirst = i.exp.first.orig.births,
+                                          exposure = x@exposure,
+                                          iteratorExposure = x@iteratorExposure, 
+                                          diff = -x@diffProp) +
+                    diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
+                                          hasAge = FALSE,
+                                          updatedPopn = FALSE,
+                                          updatedBirths = FALSE,
+                                          ageTimeStep = x@ageTimeStep,
+                                          component = x@account@components[[1]],
+                                          theta = x@systemModels[[2]]@theta,
+                                          strucZeroArray = x@systemModels[[2]]@strucZeroArray,
+                                          iteratorComp = x@iteratorsComp[[1]],
+                                          iExpFirst = i.exp.first.dest.births,
+                                          exposure = x@exposure,
+                                          iteratorExposure = x@iteratorExposure,
+                                          diff = x@diffProp)
+            }
+            i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[2]])
+            if (i.cell.orig > 0L) {
+                i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[2]])
+                ans.expected <- ans.expected +
+                    diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
+                                                       hasAge = FALSE,
+                                                       updatedPopn = FALSE,
+                                                       updatedBirths = FALSE,
+                                                       ageTimeStep = x@ageTimeStep,
+                                                       component = x@account@components[[2]],
+                                                       theta = x@systemModels[[3]]@theta,
+                                                       strucZeroArray = x@systemModels[[3]]@strucZeroArray,
+                                                       iteratorComp = x@iteratorsComp[[2]],
+                                                       iExpFirst = x@iExpFirst,
+                                                       exposure = x@exposure,
+                                                       iteratorExposure = x@iteratorExposure,
+                                                       diff = -x@diffProp) +
                     diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                                        hasAge = FALSE,
                                                        updatedPopn = FALSE,
+                                                       updatedBirths = FALSE,
                                                        ageTimeStep = x@ageTimeStep,
-                                                       component = x@account@components[[1]],
-                                                       theta = x@systemModels[[2]]@theta,
-                                                       strucZeroArray = x@systemModels[[2]]@strucZeroArray,
-                                                       iteratorComp = x@iteratorsComp[[1]],
+                                                       component = x@account@components[[2]],
+                                                       theta = x@systemModels[[3]]@theta,
+                                                       strucZeroArray = x@systemModels[[3]]@strucZeroArray,
+                                                       iteratorComp = x@iteratorsComp[[2]],
                                                        iExpFirst = x@iExpFirstOther,
                                                        exposure = x@exposure,
                                                        iteratorExposure = x@iteratorExposure,
@@ -7250,6 +7178,10 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
                                dim = c(3, 2),
                                dimnames = list(reg = c("a", "b", "c"),
                                                time = c(2000, 2005))))
+    births <- Counts(array(2L,
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("a", "b", "c"),
+                                           time = "2001-2005")))
     internal <- Counts(array(c(0L, 50L, 40L,
                                20L, 0L, 30L,
                                60L, 20L, 0L),
@@ -7262,19 +7194,21 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
                              dimnames = list(reg = c("a", "b", "c"),
                                              time = "2001-2005")))
     account <- Movements(population = population,
+                         births = births,
                          internal = internal,
                          net = list(net.mig = net.mig))
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
                          Model(internal ~ Poisson(mean ~ 1)),
                          Model(net.mig ~ Normal(mean ~ 1)))
-    systemWeights <- list(NULL, NULL, Counts(array(1,
+    systemWeights <- list(NULL, NULL, NULL, Counts(array(1,
                                                    dim = c(3, 1),
                                                    dimnames = list(reg = c("a", "b", "c"),
                                                                    time = "2001-2005"))))
     data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
                               Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
-    seriesIndices <- c(1L, 0L)
+    seriesIndices <- c(2L, 0L)
     updateInitialPopn <- new("LogicalFlag", TRUE)
     usePriorPopn <- new("LogicalFlag", TRUE)
     datasets <- list(internal + 10L,
@@ -7294,7 +7228,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
                                  namesDatasets = namesDatasets,
                                  transforms = transforms)
     updated <- FALSE
-    x0@iComp <- 1L
+    x0@iComp <- 2L
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x0)
@@ -7312,7 +7246,6 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer wi
         warning("not updated")
 })
 
-
 test_that("diffLogDensExpOrigDestPoolNet works - with age", {
     diffLogDensExpOrigDestPoolNet <- demest:::diffLogDensExpOrigDestPoolNet
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
@@ -7320,6 +7253,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     getICellCompFromExp <- demest:::getICellCompFromExp
+    getIExposureFromBirths <- demest:::getIExposureFromBirths
     diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
     diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     set.seed(1)
@@ -7329,7 +7263,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                          sex = c("f", "m"),
                                          reg = 1:5,
                                          time = c(2000, 2005, 2010))))
-    births <- Counts(array(rpois(n = 90, lambda = 5),
+    births <- Counts(array(rpois(n = 90, lambda = 2.5),
                            dim = c(1, 2, 5, 2, 2),
                            dimnames = list(age = "5-9",
                                            sex = c("m", "f"),
@@ -7403,7 +7337,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                 transforms = transforms)
     x0@iComp <- 2L
     updated <- FALSE
-    for (seed in seq_len(n.test)) {
+    for (seed in seq_len(n.test * 10)) {
         set.seed(seed)
         x <- updateProposalAccountMoveOrigDest(x0)
         if (x@generatedNewProposal@.Data && (x@iExpFirst != x@iExpFirstOther)) {
@@ -7412,27 +7346,33 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
             i.cell.orig <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
             i.cell.dest <- getICellBirthsFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
             if (i.cell.orig > 0L) {
-                log.diff.births <- diffLogDensExpOneComp(iCell = i.cell.orig,
+                i.exp.first.orig.births <- getIExposureFromBirths(i = i.cell.orig,
+                                                                  mapping = x@mappingsToExp[[1L]])
+                i.exp.first.dest.births <- getIExposureFromBirths(i = i.cell.dest,
+                                                                  mapping = x@mappingsToExp[[1L]])
+                log.diff.births <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
                                                          hasAge = TRUE,
                                                          updatedPopn = FALSE,
+                                                         updatedBirths = FALSE,
                                                          ageTimeStep = x@ageTimeStep,
                                                          component = x@account@components[[1]],
                                                          theta = x@systemModels[[2]]@theta,
                                                          strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                          iteratorComp = x@iteratorsComp[[1]],
-                                                         iExpFirst = x@iExpFirst,
+                                                         iExpFirst = i.exp.first.orig.births,
                                                          exposure = x@exposure,
                                                          iteratorExposure = x@iteratorExposure,
                                                          diff = -x@diffProp) +
-                    diffLogDensExpOneComp(iCell = i.cell.dest,
+                    diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                           hasAge = TRUE,
                                           updatedPopn = FALSE,
+                                          updatedBirths = FALSE,
                                           ageTimeStep = x@ageTimeStep,
                                           component = x@account@components[[1]],
                                           theta = x@systemModels[[2]]@theta,
                                           strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                           iteratorComp = x@iteratorsComp[[1]],
-                                          iExpFirst = x@iExpFirstOther,
+                                          iExpFirst = i.exp.first.dest.births,
                                           exposure = x@exposure,
                                           iteratorExposure = x@iteratorExposure,
                                           diff = x@diffProp)
@@ -7444,6 +7384,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
             log.diff.internal <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.orig,
                                                                     hasAge = TRUE,
                                                                     updatedPopn = FALSE,
+                                                                    updatedBirths = FALSE,
                                                                     ageTimeStep = x@ageTimeStep,
                                                                     component = x@account@components[[2]],
                                                                     theta = x@systemModels[[3]]@theta,
@@ -7456,6 +7397,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                 diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                                    hasAge = TRUE,
                                                    updatedPopn = FALSE,
+                                                   updatedBirths = FALSE,
                                                    ageTimeStep = x@ageTimeStep,
                                                    component = x@account@components[[2]],
                                                    theta = x@systemModels[[3]]@theta,
@@ -7470,6 +7412,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
             log.diff.deaths <- diffLogDensExpOneComp(iCell = i.cell.orig,
                                                      hasAge = TRUE,
                                                      updatedPopn = FALSE,
+                                                     updatedBirths = FALSE,
                                                      ageTimeStep = x@ageTimeStep,
                                                      component = x@account@components[[3]],
                                                      theta = x@systemModels[[4]]@theta,
@@ -7482,6 +7425,7 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                 diffLogDensExpOneComp(iCell = i.cell.dest,
                                       hasAge = TRUE,
                                       updatedPopn = FALSE,
+                                      updatedBirths = FALSE,
                                       ageTimeStep = x@ageTimeStep,
                                       component = x@account@components[[3]],
                                       theta = x@systemModels[[4]]@theta,
@@ -7611,7 +7555,7 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
 
 ## diffLogDensExpOneOrigDestParChPool
 
-test_that("diffLogDensExpOneOrigDestParChPool works", {
+test_that("diffLogDensExpOneOrigDestParChPool works - no age", {
     diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
     getICellCompFromExp <- demest:::getICellCompFromExp
@@ -7667,6 +7611,7 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
                                                                hasAge = FALSE,
                                                                ageTimeStep = x@ageTimeStep,
                                                                updatedPopn = FALSE,
+                                                               updatedBirths = FALSE,
                                                                component = x@account@components[[1L]],
                                                                theta = x@systemModels[[2]]@theta,
                                                                strucZeroArray = x@systemModels[[2]]@strucZeroArray@.Data,
@@ -7694,7 +7639,7 @@ test_that("diffLogDensExpOneOrigDestParChPool works", {
 })
 
 
-test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answer", {
+test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answer - no age", {
     diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
     getICellCompFromExp <- demest:::getICellCompFromExp
     updateProposalAccountMoveOrigDest <- demest:::updateProposalAccountMoveOrigDest
@@ -7749,6 +7694,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                                                     mapping = x@mappingsFromExp[[1]]),
                                                         hasAge = FALSE,
                                                         updatedPopn = FALSE,
+                                                        updatedBirths = FALSE,
                                                         ageTimeStep = x@ageTimeStep,
                                                         component = x@account@components[[1L]],
                                                         theta = x@systemModels[[2]]@theta,
@@ -7763,6 +7709,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                                                     mapping = x@mappingsFromExp[[1]]),
                                                         hasAge = FALSE,
                                                         updatedPopn = FALSE,
+                                                        updatedBirths = FALSE,
                                                         ageTimeStep = x@ageTimeStep,
                                                         component = x@account@components[[1L]],
                                                         theta = x@systemModels[[2]]@theta,
@@ -7783,9 +7730,111 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
     }
 })
 
+
+test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answer - with age", {
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
+    getICellCompFromExp <- demest:::getICellCompFromExp
+    updateProposalAccount <- demest:::updateProposalAccount
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               age = c("0-4", "5-9", "10+"),
+                                               time = c(2000, 2005))))
+    births <- Counts(array(20,
+                             dim = c(3, 1, 1),
+                             dimnames = list(reg = c("a", "b", "c"),
+                                             age = "5-9",
+                                             time = "2001-2005")))
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 3, 1),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = "2001-2005")))
+    account <- Movements(population = population,
+                         births = births,
+                         internal = internal)
+    set.seed(0)
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ 1, structuralZeros = "diag")))
+    systemWeights <- list(NULL, NULL, NULL)
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
+    datasets <- list(account@components[[2]] + 10L,
+                     population - 5L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = account@components[[2]], y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    updated <- FALSE
+    for (seed in seq_len(5 * n.test)) {
+        set.seed(seed)
+        x <- updateProposalAccount(x)
+        if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
+            ans.R <- diffLogDensExpOneOrigDestParChPool(iCell = getICellCompFromExp(i = x@iExpFirst,
+                                                                                    mapping = x@mappingsFromExp[[2]]),
+                                                        hasAge = TRUE,
+                                                        updatedPopn = FALSE,
+                                                        updatedBirths = FALSE,
+                                                        ageTimeStep = x@ageTimeStep,
+                                                        component = x@account@components[[2L]],
+                                                        theta = x@systemModels[[3]]@theta,
+                                                        strucZeroArray = x@systemModels[[3]]@strucZeroArray,
+                                                        iteratorComp = x@iteratorsComp[[2L]],
+                                                        iExpFirst = x@iExpFirst,
+                                                        exposure = x@exposure,
+                                                        iteratorExposure = x@iteratorExposure,
+                                                        diff = x@diffProp,
+                                                        useC = FALSE)
+            ans.C <- diffLogDensExpOneOrigDestParChPool(iCell = getICellCompFromExp(i = x@iExpFirst,
+                                                                                    mapping = x@mappingsFromExp[[2]]),
+                                                        hasAge = TRUE,
+                                                        updatedPopn = FALSE,
+                                                        updatedBirths = FALSE,
+                                                        ageTimeStep = x@ageTimeStep,
+                                                        component = x@account@components[[2L]],
+                                                        theta = x@systemModels[[3]]@theta,
+                                                        strucZeroArray = x@systemModels[[3]]@strucZeroArray,
+                                                        iteratorComp = x@iteratorsComp[[2L]],
+                                                        iExpFirst = x@iExpFirst,
+                                                        exposure = x@exposure,
+                                                        iteratorExposure = x@iteratorExposure,
+                                                        diff = x@diffProp,
+                                                        useC = TRUE)
+            if (test.identity)
+                expect_identical(ans.R, ans.C)
+            else
+                expect_equal(ans.R, ans.C)
+        }
+        if (!updated)
+            warning("not updated")
+    }
+})
+
+
 ## diffLogDensExpOneComp
 
-test_that("diffLogDensExpOneComp works", {
+test_that("diffLogDensExpOneComp works with no age", {
     diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
     CohortIterator <- demest:::CohortIterator
     population <- CountsOne(values = seq(100, 200, 10),
@@ -7814,6 +7863,7 @@ test_that("diffLogDensExpOneComp works", {
     ans.obtained <- diffLogDensExpOneComp(iCell = iCell,
                                           hasAge = hasAge,
                                           updatedPopn = FALSE,
+                                          updatedBirths = FALSE,
                                           ageTimeStep = 10,
                                           component = deaths,
                                           theta = theta,
@@ -7833,7 +7883,7 @@ test_that("diffLogDensExpOneComp works", {
         expect_equal(ans.obtained, ans.expected)
 })
 
-test_that("R and C versions of diffLogDensExpOneComp give same answer", {
+test_that("R and C versions of diffLogDensExpOneComp give same answer with no age", {
     diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
     CohortIterator <- demest:::CohortIterator
     population <- CountsOne(values = seq(100, 200, 10),
@@ -7862,6 +7912,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer", {
     ans.R <- diffLogDensExpOneComp(iCell = iCell,
                                    hasAge = hasAge,
                                    updatedPopn = FALSE,
+                                   updatedBirths = FALSE,
                                    ageTimeStep = 10,
                                    component = deaths,
                                    theta = theta,
@@ -7875,6 +7926,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer", {
     ans.C <- diffLogDensExpOneComp(iCell = iCell,
                                    hasAge = hasAge,
                                    updatedPopn = FALSE,
+                                   updatedBirths = FALSE,
                                    ageTimeStep = 10,
                                    component = deaths,
                                    theta = theta,
@@ -7890,6 +7942,80 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer", {
     else
         expect_equal(ans.R, ans.C)
 })
+
+test_that("R and C versions of diffLogDensExpOneComp give same answer with age", {
+    diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
+    CohortIterator <- demest:::CohortIterator
+    set.seed(0)
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    deaths <- Counts(array(rpois(n = 72, lambda = 100) + 20L,
+                           dim = c(3, 2, 5, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"),
+                                           reg = 5:1,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    deaths <- new("ExitsMovements",
+                  .Data = deaths@.Data,
+                  metadata = deaths@metadata)
+    strucZeroArray <- deaths
+    strucZeroArray[] <- 1L
+    strucZeroArray[3] <- 0L
+    iteratorComp <- CohortIterator(deaths)
+    expose <- exposure(popn,
+                       triangles = TRUE)
+    expose <- new("Exposure",
+                  .Data = expose@.Data,
+                  metadata = expose@metadata)
+    iteratorExposure <- CohortIterator(expose)
+    hasAge <- TRUE
+    theta <- (deaths / expose) + 0.1
+    for (i in seq_len(n.test * 50)) {
+        iCell <- sample(length(deaths), 1)
+        iExpFirst <- iCell
+        updated.popn  <- runif(1) > 0.7
+        updated.births <- !updated.popn && runif(1) > 0.7
+        diff <- as.integer(runif(1, -5, 5))
+        ans.R <- diffLogDensExpOneComp(iCell = iCell,
+                                       hasAge = hasAge,
+                                       updatedPopn = updated.popn,
+                                       updatedBirths = updated.births,
+                                       ageTimeStep = 5,
+                                       component = deaths,
+                                       theta = theta,
+                                       strucZeroArray = strucZeroArray,
+                                       iteratorComp = iteratorComp,
+                                       iExpFirst = iExpFirst,
+                                       exposure = expose,
+                                       iteratorExposure = iteratorExposure,
+                                       diff = diff,
+                                       useC = FALSE)
+        ans.C <- diffLogDensExpOneComp(iCell = iCell,
+                                       hasAge = hasAge,
+                                       updatedPopn = updated.popn,
+                                       updatedBirths = updated.births,
+                                       ageTimeStep = 5,
+                                       component = deaths,
+                                       theta = theta,
+                                       strucZeroArray = strucZeroArray,
+                                       iteratorComp = iteratorComp,
+                                       iExpFirst = iExpFirst,
+                                       exposure = expose,
+                                       iteratorExposure = iteratorExposure,
+                                       diff = diff,
+                                       useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 
 test_that("diffLogDensJumpPoolWithExpose works with CombinedAccountMovements", {
     diffLogDensJumpPoolWithExpose <- demest:::diffLogDensJumpPoolWithExpose
@@ -7964,7 +8090,7 @@ test_that("diffLogDensJumpPoolWithExpose works with CombinedAccountMovements", {
         expect_equal(ans.obtained, ans.expected)
 })
 
-test_that("R and C versions of diffLogDensJumpPoolWithExpose give same answer with CombinedAccountMovements", {
+test_that("R and C versions of diffLogDensJumpPoolWithExpose give same answer with CombinedAccountMovements - no age", {
     diffLogDensJumpPoolWithExpose <- demest:::diffLogDensJumpPoolWithExpose
     updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
     initialCombinedAccount <- demest:::initialCombinedAccount
@@ -8019,6 +8145,78 @@ test_that("R and C versions of diffLogDensJumpPoolWithExpose give same answer wi
     else
         expect_equal(ans.R, ans.C)
 })
+
+
+test_that("R and C versions of diffLogDensJumpPoolWithExpose give same answer - with age", {
+    diffLogDensJumpPoolWithExpose <- demest:::diffLogDensJumpPoolWithExpose
+    getICellCompFromExp <- demest:::getICellCompFromExp
+    updateProposalAccountMovePool <- demest:::updateProposalAccountMovePool
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    population <- Counts(array(seq(1000L, 1500L, 100L),
+                               dim = c(3, 3, 2),
+                               dimnames = list(reg = c("a", "b", "c"),
+                                               age = c("0-4", "5-9", "10+"),
+                                               time = c(2000, 2005))))
+    births <- Counts(array(20,
+                             dim = c(3, 1, 1),
+                             dimnames = list(reg = c("a", "b", "c"),
+                                             age = "5-9",
+                                             time = "2001-2005")))
+    internal <- Counts(array(c(0L, 50L, 40L,
+                               20L, 0L, 30L,
+                               60L, 20L, 0L),
+                             dim = c(3, 3, 3, 1, 2),
+                             dimnames = list(reg_orig = c("a", "b", "c"),
+                                             reg_dest = c("a", "b", "c"),
+                                             age = c("0-4", "5-9", "10+"),
+                                             time = "2001-2005",
+                                             triangle = c("Lower", "Upper"))))
+    internal <- collapseOrigDest(internal, to = "pool")
+    account <- Movements(population = population,
+                         births = births,
+                         internal = internal)
+    set.seed(0)
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ reg, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL, NULL, NULL)
+    data.models <- list(Model(tax ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(census ~ PoissonBinomial(prob = 0.9), series = "population"))
+    seriesIndices <- c(2L, 0L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
+    datasets <- list(account@components[[2]] + 10L,
+                     population - 5L)
+    namesDatasets <- c("tax", "census")
+    transforms <- list(makeTransform(x = account@components[[2]], y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population, y = datasets[[2]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms)
+    x@iComp <- 2L
+    for (seed in seq_len(5 * n.test)) {
+        set.seed(seed)
+        while (!x@generatedNewProposal@.Data)
+            x <- updateProposalAccountMovePool(x)
+        ans.R <- diffLogDensJumpPoolWithExpose(x, useC = FALSE)
+        ans.C <- diffLogDensJumpPoolWithExpose(x, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
 
 test_that("diffLogDensJumpPoolNoExpose works with CombinedAccountMovements", {
     diffLogDensJumpPoolNoExpose <- demest:::diffLogDensJumpPoolNoExpose
@@ -8416,135 +8614,6 @@ test_that("R and C versions of diffLogDensJumpComp give same answer - no age", {
         warning("not updated")
 })
 
-test_that("diffLogDensJumpComp works - with age", {
-    diffLogDensJumpComp <- demest:::diffLogDensJumpComp
-    updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
-    initialCombinedAccount <- demest:::initialCombinedAccount
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    popn <- Counts(array(rpois(n = 90, lambda = 100),
-                         dim = c(3, 2, 5, 3),
-                         dimnames = list(age = c("0-4", "5-9", "10+"),
-                                         sex = c("f", "m"),
-                                         reg = 1:5,
-                                         time = c(2000, 2005, 2010))))
-    births <- Counts(array(rpois(n = 90, lambda = 5),
-                           dim = c(1, 2, 5, 2, 2),
-                           dimnames = list(age = "5-9",
-                                           sex = c("m", "f"),
-                                           reg = 1:5,
-                                           time = c("2001-2005", "2006-2010"),
-                                           triangle = c("Lower", "Upper"))))
-    internal <- Counts(array(rpois(n = 300, lambda = 10),
-                             dim = c(3, 2, 5, 5, 2, 2),
-                             dimnames = list(age = c("0-4", "5-9", "10+"),
-                                             sex = c("m", "f"),
-                                             reg_orig = 1:5,
-                                             reg_dest = 1:5,
-                                             time = c("2001-2005", "2006-2010"),
-                                             triangle = c("Lower", "Upper"))))
-    deaths <- Counts(array(rpois(n = 72, lambda = 10),
-                           dim = c(3, 2, 5, 2, 2),
-                           dimnames = list(age = c("0-4", "5-9", "10+"),
-                                           sex = c("m", "f"),
-                                           reg = 5:1,
-                                           time = c("2001-2005", "2006-2010"),
-                                           triangle = c("Lower", "Upper"))))
-    account <- Movements(population = popn,
-                         births = births,
-                         internal = internal,
-                         exits = list(deaths = deaths))
-    account <- makeConsistent(account)
-    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
-                         Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
-                         Model(deaths ~ Poisson(mean ~ 1)))
-    systemWeights <- list(NULL, NULL, NULL, NULL)
-    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
-    register <- Counts(array(rpois(n = 90, lambda = popn),
-                             dim = dim(popn),
-                             dimnames = dimnames(popn)))
-    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
-                               dim = dim(births),
-                               dimnames = dimnames(births)))
-    address.change <- Counts(array(rpois(n = 300, lambda = internal),
-                                   dim = dim(internal),
-                                   dimnames = dimnames(internal)))
-    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
-                               dim = dim(deaths),
-                               dimnames = dimnames(deaths))) + 1L
-    datasets <- list(census, register, reg.births, address.change, reg.deaths)
-    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
-    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
-    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
-    updateInitialPopn <- new("LogicalFlag", TRUE)
-    usePriorPopn <- new("LogicalFlag", TRUE)
-    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
-                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
-                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
-                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
-                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    x <- initialCombinedAccount(account = account,
-                                systemModels = systemModels,
-                                systemWeights = systemWeights,
-                                dataModels = data.models,
-                                seriesIndices = seriesIndices,
-                                updateInitialPopn = updateInitialPopn,
-                                usePriorPopn = usePriorPopn,
-                                datasets = datasets,
-                                namesDatasets = namesDatasets,
-                                transforms = transforms)
-    x@iComp <- 3L
-    updated <- FALSE
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        x <- updateProposalAccountMoveComp(x)
-        if (x@generatedNewProposal@.Data) {
-            updated <- TRUE
-            ans.obtained <- diffLogDensJumpComp(x)
-            if (x@isLowerTriangle) {
-                ans.expected <- (dpois(x@account@components[[3]][x@iCell] + x@diffProp,
-                                       lambda = (x@exposure[x@iCell] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[4]]@theta[x@iCell],
-                                       log = TRUE)
-                    - dpois(x@account@components[[3]][x@iCell],
-                            lambda = (x@exposure[x@iCell] - 0.5 * x@diffProp * x@ageTimeStep) * x@systemModels[[4]]@theta[x@iCell],
-                            log = TRUE)
-                    + dpois(x@account@components[[3]][x@iCell],
-                            lambda = x@expectedExposure[x@iCell] * x@systemModels[[4]]@theta[x@iCell],
-                            log = TRUE)
-                    - dpois(x@account@components[[3]][x@iCell] + x@diffProp,
-                            lambda = x@expectedExposure[x@iCell] * x@systemModels[[4]]@theta[x@iCell],
-                            log = TRUE))
-            }
-            else {
-                ans.expected <- (dpois(x@account@components[[3]][x@iCell] + x@diffProp,
-                                       lambda = (x@exposure[x@iCell]) * x@systemModels[[4]]@theta[x@iCell],
-                                       log = TRUE)
-                    - dpois(x@account@components[[3]][x@iCell],
-                            lambda = (x@exposure[x@iCell]) * x@systemModels[[4]]@theta[x@iCell],
-                            log = TRUE)
-                    + dpois(x@account@components[[3]][x@iCell],
-                            lambda = x@expectedExposure[x@iCell] * x@systemModels[[4]]@theta[x@iCell],
-                            log = TRUE)
-                    - dpois(x@account@components[[3]][x@iCell] + x@diffProp,
-                            lambda = x@expectedExposure[x@iCell] * x@systemModels[[4]]@theta[x@iCell],
-                            log = TRUE))
-            }
-            expect_equal(ans.obtained, ans.expected)
-            if (test.identity)
-                expect_identical(ans.obtained, ans.expected)
-            else
-                expect_equal(ans.obtained, ans.expected)
-        }
-    }
-    if (!updated)
-        warning("not updated")
-})
-
 test_that("R and C versions of diffLogDensJumpComp give same answer - with age", {
     diffLogDensJumpComp <- demest:::diffLogDensJumpComp
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
@@ -8653,6 +8722,7 @@ test_that("diffLogDensExpComp works", {
     diffLogDensExpComp <- demest:::diffLogDensExpComp
     getICellBirthsFromExp <- demest:::getICellBirthsFromExp
     getICellCompFromExp <- demest:::getICellCompFromExp
+    getIExposureFromBirths <- demest:::getIExposureFromBirths
     updateProposalAccountMoveComp <- demest:::updateProposalAccountMoveComp
     diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
     diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
@@ -8746,23 +8816,28 @@ test_that("diffLogDensExpComp works", {
             ans.obtained <- diffLogDensExpComp(x)
             ans.expected <- 0
             i.cell.births <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
-            if (i.cell.births > 0L)
-                ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.births,
+            if (i.cell.births > 0L) {
+                i.cell.exp.first <- getIExposureFromBirths(i = i.cell.births,
+                                                           mapping = x@mappingsToExp[[1L]])
+                ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell= i.cell.births,
                                                                      hasAge = TRUE,
                                                                      updatedPopn = FALSE,
+                                                                     updatedBirths = FALSE,
                                                                      ageTimeStep = x@ageTimeStep,
                                                                      component = x@account@components[[1]],
                                                                      theta = x@systemModels[[2]]@theta,
                                                                      strucZeroArray = x@systemModels[[2]]@strucZeroArray,
                                                                      iteratorComp = x@iteratorsComp[[1]],
-                                                                     iExpFirst = x@iExpFirst,
+                                                                     iExpFirst = i.cell.exp.first,
                                                                      exposure = x@exposure,
                                                                      iteratorExposure = x@iteratorExposure,
                                                                      diff = -x@diffProp)
+            }
             i.cell.internal <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[2]])
             ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell = i.cell.internal,
                                                                               hasAge = TRUE,
                                                                               updatedPopn = FALSE,
+                                                                              updatedBirths = FALSE,
                                                                               ageTimeStep = x@ageTimeStep,
                                                                               component = x@account@components[[2]],
                                                                               theta = x@systemModels[[3]]@theta,
@@ -8776,6 +8851,7 @@ test_that("diffLogDensExpComp works", {
             ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
                                                                  hasAge = TRUE,
                                                                  updatedPopn = FALSE,
+                                                                 updatedBirths = FALSE,
                                                                  ageTimeStep = x@ageTimeStep,
                                                                  component = x@account@components[[3]],
                                                                  theta = x@systemModels[[4]]@theta,
@@ -8971,6 +9047,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
                 ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell= i.cell.births,
                                                                                   hasAge = FALSE,
                                                                                   updatedPopn = FALSE,
+                                                                                  updatedBirths = TRUE,
                                                                                   ageTimeStep = x@ageTimeStep,
                                                                                   component = x@account@components[[1]],
                                                                                   theta = x@systemModels[[2]]@theta,
@@ -8984,6 +9061,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
             ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
                                                                  hasAge = FALSE,
                                                                  updatedPopn = FALSE,
+                                                                 updatedBirths = TRUE,
                                                                  ageTimeStep = x@ageTimeStep,
                                                                  component = x@account@components[[2]],
                                                                  theta = x@systemModels[[3]]@theta,
@@ -9077,11 +9155,13 @@ test_that("R and C versions of diffLogDensExpComp give same answer with Combined
         warning("not updated")
 })
 
-test_that("diffLogDensCompSmall works", {
+
+
+test_that("R and C versions of diffLogDensJumpBirthsSmall give same answer", {
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        diffLogDensCompSmall <- demest:::diffLogDensCompSmall
-        updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+        diffLogDensJumpBirthsSmall <- demest:::diffLogDensJumpBirthsSmall
+        updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
         initialCombinedAccount <- demest:::initialCombinedAccount
         makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
         popn <- Counts(array(rpois(n = 90, lambda = 100),
@@ -9164,24 +9244,133 @@ test_that("diffLogDensCompSmall works", {
                                      probSmallUpdate = 0.3)
         expect_true(validObject(x0))
         expect_is(x0, "CombinedAccountMovementsHasAge")
-        x0@iComp <- 3L
+        x0@iComp <- 1L
         updated <- FALSE
         while (!updated) {
-            x1 <- updateProposalAccountMoveCompSmall(x0)
+            x1 <- updateProposalAccountMoveBirthsSmall(x0)
             updated <- x1@generatedNewProposal@.Data
         }
         expect_is(x1, "CombinedAccountMovementsHasAge")
         expect_true(validObject(x1))
-        ans <- diffLogDensCompSmall(x1)
-        expect_true(is.numeric(ans))
-        expect_identical(length(ans), 1L)
+        ans.R <- diffLogDensJumpBirthsSmall(x1, useC = FALSE)
+        ans.C <- diffLogDensJumpBirthsSmall(x1, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
     }
 })
 
-test_that("R and C versions of diffLogDensCompSmall give same answer", {
+
+test_that("R and C versions of diffLogDensJumpOrigDestSmall give same answer", {
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        diffLogDensCompSmall <- demest:::diffLogDensCompSmall
+        diffLogDensJumpOrigDestSmall <- demest:::diffLogDensJumpOrigDestSmall
+        updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+        initialCombinedAccount <- demest:::initialCombinedAccount
+        makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+        popn <- Counts(array(rpois(n = 90, lambda = 100),
+                             dim = c(3, 2, 5, 3),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("f", "m"),
+                                             reg = 1:5,
+                                             time = c(2000, 2005, 2010))))
+        births <- Counts(array(rpois(n = 90, lambda = 5),
+                               dim = c(1, 2, 5, 2, 2),
+                               dimnames = list(age = "5-9",
+                                               sex = c("m", "f"),
+                                               reg = 1:5,
+                                               time = c("2001-2005", "2006-2010"),
+                                               triangle = c("Lower", "Upper"))))
+        internal <- Counts(array(rpois(n = 300, lambda = 10),
+                                 dim = c(3, 2, 5, 5, 2, 2),
+                                 dimnames = list(age = c("0-4", "5-9", "10+"),
+                                                 sex = c("m", "f"),
+                                                 reg_orig = 1:5,
+                                                 reg_dest = 1:5,
+                                                 time = c("2001-2005", "2006-2010"),
+                                                 triangle = c("Lower", "Upper"))))
+        deaths <- Counts(array(rpois(n = 72, lambda = 10),
+                               dim = c(3, 2, 5, 2, 2),
+                               dimnames = list(age = c("0-4", "5-9", "10+"),
+                                               sex = c("m", "f"),
+                                               reg = 5:1,
+                                               time = c("2001-2005", "2006-2010"),
+                                               triangle = c("Lower", "Upper"))))
+        account <- Movements(population = popn,
+                             births = births,
+                             internal = internal,
+                             exits = list(deaths = deaths))
+        account <- makeConsistent(account)
+        systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
+                             Model(births ~ Poisson(mean ~ 1)),
+                             Model(internal ~ Poisson(mean ~ reg_orig + reg_dest)),
+                             Model(deaths ~ Poisson(mean ~ 1)))
+        systemWeights <- list(NULL, NULL, NULL, NULL)
+        census <- subarray(popn, time == "2000", drop = FALSE) + 2L
+        register <- Counts(array(rpois(n = 90, lambda = popn),
+                                 dim = dim(popn),
+                                 dimnames = dimnames(popn)))
+        reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
+                                   dim = dim(births),
+                                   dimnames = dimnames(births)))
+        address.change <- Counts(array(rpois(n = 300, lambda = internal),
+                                       dim = dim(internal),
+                                       dimnames = dimnames(internal)))
+        reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
+                                   dim = dim(deaths),
+                                   dimnames = dimnames(deaths))) + 1L
+        datasets <- list(census, register, reg.births, address.change, reg.deaths)
+        namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
+        data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+                            Model(register ~ Poisson(mean ~ 1), series = "population"),
+                            Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                            Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                            Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+        seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+        updateInitialPopn <- new("LogicalFlag", TRUE)
+        usePriorPopn <- new("LogicalFlag", TRUE)
+        transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
+                           makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
+                           makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
+                           makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
+                           makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
+        transforms <- lapply(transforms, makeCollapseTransformExtra)
+        x0 <- initialCombinedAccount(account = account,
+                                     systemModels = systemModels,
+                                     systemWeights = systemWeights,
+                                     dataModels = data.models,
+                                     seriesIndices = seriesIndices,
+                                     updateInitialPopn = updateInitialPopn,
+                                     usePriorPopn = usePriorPopn,
+                                     datasets = datasets,
+                                     namesDatasets = namesDatasets,
+                                     transforms = transforms,
+                                     probSmallUpdate = 0.3)
+        expect_true(validObject(x0))
+        expect_is(x0, "CombinedAccountMovementsHasAge")
+        x0@iComp <- 2L
+        updated <- FALSE
+        while (!updated) {
+            x1 <- updateProposalAccountMoveOrigDestSmall(x0)
+            updated <- x1@generatedNewProposal@.Data
+        }
+        expect_is(x1, "CombinedAccountMovementsHasAge")
+        expect_true(validObject(x1))
+        ans.R <- diffLogDensJumpOrigDestSmall(x1, useC = FALSE)
+        ans.C <- diffLogDensJumpOrigDestSmall(x1, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
+test_that("R and C versions of diffLogDensJumpCompSmall give same answer", {
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        diffLogDensJumpCompSmall <- demest:::diffLogDensJumpCompSmall
         updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
         initialCombinedAccount <- demest:::initialCombinedAccount
         makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -9273,8 +9462,8 @@ test_that("R and C versions of diffLogDensCompSmall give same answer", {
         }
         expect_is(x1, "CombinedAccountMovementsHasAge")
         expect_true(validObject(x1))
-        ans.R <- diffLogDensCompSmall(x1, useC = FALSE)
-        ans.C <- diffLogDensCompSmall(x1, useC = TRUE)
+        ans.R <- diffLogDensJumpCompSmall(x1, useC = FALSE)
+        ans.C <- diffLogDensJumpCompSmall(x1, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -9289,6 +9478,7 @@ test_that("R and C versions of diffLogDensCompSmall give same answer", {
 test_that("updateAccSmall works", {
     updateAccSmall <- demest:::updateAccSmall
     updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
     updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -9370,11 +9560,24 @@ test_that("updateAccSmall works", {
                                 namesDatasets = namesDatasets,
                                 transforms = transforms,
                                 probSmallUpdate = 1)
-    tested.comp <- FALSE
+    tested.births <- FALSE
     tested.orig.dest <- FALSE
+    tested.comp <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        ## updating 
+        ## updating births
+        x0 <- x
+        x0@iComp <- 1L
+        x1 <- updateProposalAccountMoveBirthsSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.births <- TRUE
+            ans.obtained <- updateAccSmall(x1)
+            expect_equal(sum(ans.obtained@account@components[[2]]),
+                         sum(x1@account@components[[2]]))
+            expect_equal(ans.obtained@accession,
+                         x1@accession)
+        }
+        ## updating internal
         x0 <- x
         x0@iComp <- 2L
         x1 <- updateProposalAccountMoveOrigDestSmall(x0)
@@ -9384,7 +9587,10 @@ test_that("updateAccSmall works", {
             expect_equal(sum(ans.obtained@account@components[[2]]),
                          sum(x1@account@components[[2]]))
             expect_equal(ans.obtained@accession[ans.obtained@iAccNext],
-                         x1@accession[ans.obtained@iAccNext] +
+                         x1@accession[ans.obtained@iAccNext] -
+                         ans.obtained@diffProp)
+            expect_equal(ans.obtained@accession[ans.obtained@iAccNextOther],
+                         x1@accession[ans.obtained@iAccNextOther] +
                          ans.obtained@diffProp)
         }
         ## updating component
@@ -9401,6 +9607,10 @@ test_that("updateAccSmall works", {
                          ans.obtained@diffProp)
         }
     }
+    if (!tested.births)
+        warning("births not updated")
+    if (!tested.orig.dest)
+        warning("orig-dest not updated")
     if (!tested.comp)
         warning("deaths not updated")
 })
@@ -9408,6 +9618,7 @@ test_that("updateAccSmall works", {
 test_that("R and C versions of updateAccSmall give same answer", {
     updateAccSmall <- demest:::updateAccSmall
     updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
     updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
@@ -9489,15 +9700,27 @@ test_that("R and C versions of updateAccSmall give same answer", {
                                 namesDatasets = namesDatasets,
                                 transforms = transforms,
                                 probSmallUpdate = 1)
+    tested.births <- FALSE
+    tested.orig.dest <- FALSE
     tested.comp <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
+        ## updating births
+        x0 <- x
+        x0@iComp <- 1L
+        x1 <- updateProposalAccountMoveBirthsSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.births <- TRUE
+            ans.R <- updateAccSmall(x1, useC = FALSE)
+            ans.C <- updateAccSmall(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
+        }
         ## updating orig-dest
         x0 <- x
         x0@iComp <- 2L
         x1 <- updateProposalAccountMoveOrigDestSmall(x0)
         if (x1@generatedNewProposal@.Data) {
-            tested.comp <- TRUE
+            tested.orig.dest <- TRUE
             ans.R <- updateAccSmall(x1, useC = FALSE)
             ans.C <- updateAccSmall(x1, useC = TRUE)
             expect_identical(ans.R, ans.C)
@@ -9513,9 +9736,326 @@ test_that("R and C versions of updateAccSmall give same answer", {
             expect_identical(ans.R, ans.C)
         }
     }
+    if (!tested.births)
+        warning("births not updated")
+    if (!tested.orig.dest)
+        warning("orig-dest not updated")
     if (!tested.comp)
         warning("deaths not updated")
 })
+
+test_that("updateExpSmall works", {
+    updateExpSmall <- demest:::updateExpSmall
+    updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    births <- Counts(array(rpois(n = 90, lambda = 5),
+                           dim = c(1, 2, 5, 2, 2),
+                           dimnames = list(age = "5-9",
+                                           sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    internal <- Counts(array(rpois(n = 300, lambda = 2),
+                             dim = c(3, 2, 5, 5, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("m", "f"),
+                                             reg_orig = 1:5,
+                                             reg_dest = 1:5,
+                                             time = c("2001-2005", "2006-2010"),
+                                             triangle = c("Lower", "Upper"))))
+    deaths <- Counts(array(rpois(n = 72, lambda = 10),
+                           dim = c(3, 2, 5, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"),
+                                           reg = 5:1,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    account <- Movements(population = popn,
+                         births = births,
+                         internal = internal,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ reg_orig)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL, NULL, NULL, NULL)
+    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
+    register <- Counts(array(rpois(n = 90, lambda = popn),
+                             dim = dim(popn),
+                             dimnames = dimnames(popn)))
+    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
+                               dim = dim(births),
+                               dimnames = dimnames(births)))
+    address.change <- Counts(array(rpois(n = 300, lambda = internal),
+                                   dim = dim(internal),
+                                   dimnames = dimnames(internal)))
+    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
+                               dim = dim(deaths),
+                               dimnames = dimnames(deaths))) + 1L
+    datasets <- list(census, register, reg.births, address.change, reg.deaths)
+    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
+    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
+                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
+                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
+                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms,
+                                probSmallUpdate = 1)
+    tested.births <- FALSE
+    tested.orig.dest <- FALSE
+    tested.comp <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ## updating births
+        x0 <- x
+        x0@iComp <- 1L
+        x1 <- updateProposalAccountMoveBirthsSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.births <- TRUE
+            ans.obtained <- updateExpSmall(x1)
+            expect_equal(sum(ans.obtained@account@components[[1]]),
+                         sum(x1@account@components[[1]]))
+            expect_equal(ans.obtained@exposure,
+                         x1@exposure)
+        }
+        ## updating internal
+        x0 <- x
+        x0@iComp <- 2L
+        x1 <- updateProposalAccountMoveOrigDestSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.orig.dest <- TRUE
+            ans.obtained <- updateExpSmall(x1)
+            expect_equal(sum(ans.obtained@account@components[[2]]),
+                         sum(x1@account@components[[2]]))
+            is.final <- (x1@iCell-1L) %% 3L == 2L
+            if (is.final) {
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposure],
+                             x1@exposure[ans.obtained@iExposure] -
+                             0.5 * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
+                             x1@exposure[ans.obtained@iExposureOther] +
+                             (1/3) * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExpFirst],
+                             x1@exposure[ans.obtained@iExpFirst] +
+                             0.5 * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExpFirstOther],
+                             x1@exposure[ans.obtained@iExpFirstOther] -
+                             (1/3) * 5 * ans.obtained@diffProp)
+            }
+            else {
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposure],
+                             x1@exposure[ans.obtained@iExposure] -
+                             (1/6)  * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
+                             x1@exposure[ans.obtained@iExposureOther] -
+                             (1/6) * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExpFirst],
+                             x1@exposure[ans.obtained@iExpFirst] +
+                             (1/6)  * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExpFirstOther],
+                             x1@exposure[ans.obtained@iExpFirstOther] +
+                             (1/6) * 5 * ans.obtained@diffProp)
+            }
+            expect_equal(sum(ans.obtained@exposure), sum(x1@exposure))
+        }   
+        ## updating component
+        x0 <- x
+        x0@iComp <- 3L
+        x1 <- updateProposalAccountMoveCompSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.comp <- TRUE
+            ans.obtained <- updateExpSmall(x1)
+            expect_equal(sum(ans.obtained@account@components[[3]]),
+                         sum(x1@account@components[[3]]))
+            is.final <- (x1@iCell-1L) %% 3L == 2L
+            if (is.final) {
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposure],
+                             x1@exposure[ans.obtained@iExposure] -
+                             0.5 * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
+                             x1@exposure[ans.obtained@iExposureOther] +
+                             (1/3) * 5 * ans.obtained@diffProp)
+            }
+            else {
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposure],
+                             x1@exposure[ans.obtained@iExposure] -
+                             (1/6) * 5 * ans.obtained@diffProp)
+                expect_equal(ans.obtained@exposure[ans.obtained@iExposureOther],
+                             x1@exposure[ans.obtained@iExposureOther] -
+                             (1/6) * 5 * ans.obtained@diffProp)
+            }
+        }
+    }
+    if (!tested.births)
+        warning("births not updated")
+    if (!tested.orig.dest)
+        warning("orig-dest not updated")
+    if (!tested.comp)
+        warning("deaths not updated")
+})
+
+
+
+test_that("R and C versions of updateExpSmall give same answer", {
+    updateExpSmall <- demest:::updateExpSmall
+    updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    births <- Counts(array(rpois(n = 90, lambda = 5),
+                           dim = c(1, 2, 5, 2, 2),
+                           dimnames = list(age = "5-9",
+                                           sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    internal <- Counts(array(rpois(n = 300, lambda = 2),
+                             dim = c(3, 2, 5, 5, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("m", "f"),
+                                             reg_orig = 1:5,
+                                             reg_dest = 1:5,
+                                             time = c("2001-2005", "2006-2010"),
+                                             triangle = c("Lower", "Upper"))))
+    deaths <- Counts(array(rpois(n = 72, lambda = 10),
+                           dim = c(3, 2, 5, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"),
+                                           reg = 5:1,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    account <- Movements(population = popn,
+                         births = births,
+                         internal = internal,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ reg_orig)),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL, NULL, NULL, NULL)
+    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
+    register <- Counts(array(rpois(n = 90, lambda = popn),
+                             dim = dim(popn),
+                             dimnames = dimnames(popn)))
+    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
+                               dim = dim(births),
+                               dimnames = dimnames(births)))
+    address.change <- Counts(array(rpois(n = 300, lambda = internal),
+                                   dim = dim(internal),
+                                   dimnames = dimnames(internal)))
+    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
+                               dim = dim(deaths),
+                               dimnames = dimnames(deaths))) + 1L
+    datasets <- list(census, register, reg.births, address.change, reg.deaths)
+    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+                              Model(register ~ Poisson(mean ~ 1), series = "population"),
+                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
+    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
+                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
+                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
+                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x <- initialCombinedAccount(account = account,
+                                systemModels = systemModels,
+                                systemWeights = systemWeights,
+                                dataModels = data.models,
+                                seriesIndices = seriesIndices,
+                                updateInitialPopn = updateInitialPopn,
+                                usePriorPopn = usePriorPopn,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms,
+                                probSmallUpdate = 1)
+    tested.births <- FALSE
+    tested.orig.dest <- FALSE
+    tested.comp <- FALSE
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        ## updating births
+        x0 <- x
+        x0@iComp <- 1L
+        x1 <- updateProposalAccountMoveBirthsSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.births <- TRUE
+            ans.R <- updateExpSmall(x1, useC = FALSE)
+            ans.C <- updateExpSmall(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
+        }
+        ## updating orig-dest
+        x0 <- x
+        x0@iComp <- 2L
+        x1 <- updateProposalAccountMoveOrigDestSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.orig.dest <- TRUE
+            ans.R <- updateExpSmall(x1, useC = FALSE)
+            ans.C <- updateExpSmall(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
+            expect_equal(sum(ans.C@exposure), sum(x1@exposure))
+        }
+        ## updating component
+        x0 <- x
+        x0@iComp <- 3L
+        x1 <- updateProposalAccountMoveCompSmall(x0)
+        if (x1@generatedNewProposal@.Data) {
+            tested.comp <- TRUE
+            ans.R <- updateExpSmall(x1, useC = FALSE)
+            ans.C <- updateExpSmall(x1, useC = TRUE)
+            expect_identical(ans.R, ans.C)
+        }
+    }
+    if (!tested.births)
+        warning("births not updated")
+    if (!tested.orig.dest)
+        warning("orig-dest not updated")
+    if (!tested.comp)
+        warning("deaths not updated")
+})
+
+
+
 
 test_that("updateCellMove works", {
     updateCellMove <- demest:::updateCellMove
@@ -10207,16 +10747,12 @@ test_that("updateSubsequentAccMove works", {
         if (x1@generatedNewProposal@.Data) {
             tested.popn <- TRUE
             ans.obtained <- updateSubsequentAccMove(x1)
-            age <- as.data.frame(x1@account@population, direction = "long")[x1@iCell, "age"]
-            if (age == "0-4")
-                expect_equal(sum(ans.obtained@accession),
+            if (any(is.na(ans.obtained@accession))) {
+                print(ans.obtained@accession)
+                print(x1@iCell)
+            }
+            expect_equal(sum(ans.obtained@accession),
                              sum(x1@accession) + 2 * x1@diffProp)
-            else if (age == "5-9")
-                expect_equal(sum(ans.obtained@accession),
-                             sum(x1@accession) + x1@diffProp)
-            else
-                expect_equal(sum(ans.obtained@accession),
-                             sum(x1@accession))
         }
         ## updating orig-dest
         x0 <- x
@@ -10228,44 +10764,33 @@ test_that("updateSubsequentAccMove works", {
             expect_equal(sum(ans.obtained@accession),
                          sum(x1@accession))
         }
-        ## updating component
+        ## updating deaths
         x0 <- x
         x0@iComp <- 3L
         x1 <- updateProposalAccountMoveComp(x0)
         if (x1@generatedNewProposal@.Data) {
             tested.comp <- TRUE
             ans.obtained <- updateSubsequentAccMove(x1)
-            age <- as.data.frame(x1@account@components[[3]], direction = "long")[x1@iCell, "age"]
             time <- as.data.frame(x1@account@components[[3]], direction = "long")[x1@iCell, "time"]
             is.lower <- x1@isLowerTriangle@.Data
-            if (age == "10+") {
-                expect_equal(sum(ans.obtained@accession),
-                             sum(x1@accession))
-            }
-            else if (age == "5-9") {
-                if (time == "2006-2010" && is.lower)
-                    expect_equal(sum(ans.obtained@accession),
-                                 sum(x1@accession))
-                else
+            if (time == "2001-2005") {
+                if (is.lower) {
                     expect_equal(sum(ans.obtained@accession),
                                  sum(x1@accession) - x1@diffProp)
-            }
-            else {
-                if (time == "2001-2005") {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@accession),
-                                     sum(x1@accession) - x1@diffProp)
-                    else
-                        expect_equal(sum(ans.obtained@accession),
-                                     sum(x1@accession) - 2 * x1@diffProp)
                 }
                 else {
-                    if (is.lower)
-                        expect_equal(sum(ans.obtained@accession),
-                                     sum(x1@accession))
-                    else
-                        expect_equal(sum(ans.obtained@accession),
-                                     sum(x1@accession) - 1 * x1@diffProp)
+                    expect_equal(sum(ans.obtained@accession),
+                                 sum(x1@accession) - 2 * x1@diffProp)
+                }
+            }
+            else {
+                if (is.lower) {
+                    expect_equal(sum(ans.obtained@accession),
+                                 sum(x1@accession))
+                }
+                else {
+                    expect_equal(sum(ans.obtained@accession),
+                                 sum(x1@accession) - x1@diffProp)
                 }
             }
         }
@@ -10467,10 +10992,10 @@ test_that("updateSubsequentExpMove works", {
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
     data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
     updateInitialPopn <- new("LogicalFlag", TRUE)
     usePriorPopn <- new("LogicalFlag", TRUE)
@@ -10505,13 +11030,17 @@ test_that("updateSubsequentExpMove works", {
             age <- as.data.frame(x1@account@population, direction = "long")[x1@iCell, "age"]
             if (age == "10+")
                 expect_equal(sum(ans.obtained@exposure),
-                             sum(x1@exposure) + 2 * x@ageTimeStep * x1@diffProp)
+                             sum(x1@exposure)
+                             + 2 * x@ageTimeStep * x1@diffProp)
             else if (age == "5-9")
                 expect_equal(sum(ans.obtained@exposure),
-                             sum(x1@exposure) + 2 * x@ageTimeStep * x1@diffProp)
+                             sum(x1@exposure) +
+                             2 * (1/2) * x@ageTimeStep * x1@diffProp
+                             + x@ageTimeStep * x1@diffProp)
             else
                 expect_equal(sum(ans.obtained@exposure),
-                             sum(x1@exposure) + 2 * x@ageTimeStep * x1@diffProp)
+                             sum(x1@exposure)
+                             + 4 * (1/2) * x@ageTimeStep * x1@diffProp)
         }
         ## updating orig-dest
         x0 <- x
@@ -10535,32 +11064,81 @@ test_that("updateSubsequentExpMove works", {
             is.lower <- x1@isLowerTriangle@.Data
             if (age == "10+") {
                 if (time == "2001-2005") {
-                    expect_equal(sum(ans.obtained@exposure),
-                                 sum(x1@exposure) - 1.5 * x@ageTimeStep * x1@diffProp)
+                    if (is.lower)
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     + (1/6) * x@ageTimeStep * x1@diffProp
+                                     - (1/2) * x@ageTimeStep * x1@diffProp
+                                     - x@ageTimeStep * x1@diffProp)
+                    else
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     - (1/2) * x@ageTimeStep * x1@diffProp
+                                     - x@ageTimeStep * x1@diffProp)
                 }
                 else {
-                    expect_equal(sum(ans.obtained@exposure),
-                                 sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
+                    if (is.lower)
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     + (1/6) * x@ageTimeStep * x1@diffProp
+                                     - (1/2) * x@ageTimeStep * x1@diffProp)
+                    else
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     - (1/2) * x@ageTimeStep * x1@diffProp)
                 }
             }
             else if (age == "5-9") {
                 if (time == "2001-2005") {
-                    expect_equal(sum(ans.obtained@exposure),
-                                 sum(x1@exposure) - 1.5 * x@ageTimeStep * x1@diffProp)
+                    if (is.lower)
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     + (1/6) * x@ageTimeStep * x1@diffProp -
+                                     3 * (1/2) * x@ageTimeStep * x1@diffProp)
+                    else
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     - (1/6) * x@ageTimeStep * x1@diffProp
+                                     - (1/2) * x@ageTimeStep * x1@diffProp
+                                     - x@ageTimeStep * x1@diffProp)
                 }
                 else {
-                    expect_equal(sum(ans.obtained@exposure),
-                                 sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
+                    if (is.lower)
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     + (1/6) * x@ageTimeStep * x1@diffProp
+                                     - (1/2) * x@ageTimeStep * x1@diffProp)
+                    else
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     - (1/6) * x@ageTimeStep * x1@diffProp
+                                     - (1/2) * x@ageTimeStep * x1@diffProp)
                 }
             }
             else {
                 if (time == "2001-2005") {
-                    expect_equal(sum(ans.obtained@exposure),
-                                 sum(x1@exposure) - 1.5 * x@ageTimeStep * x1@diffProp)
+                    if (is.lower)
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     + (1/6) * x@ageTimeStep * x1@diffProp
+                                     - 3 * (1/2) * x@ageTimeStep * x1@diffProp)
+                    else
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     - (1/6) * x@ageTimeStep * x1@diffProp
+                                     - 3 * (1/2) * x@ageTimeStep * x1@diffProp)
                 }
                 else {
-                    expect_equal(sum(ans.obtained@exposure),
-                                 sum(x1@exposure) - 0.5 * x@ageTimeStep * x1@diffProp)
+                    if (is.lower)
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     + (1/6) * x@ageTimeStep * x1@diffProp
+                                     - (1/2) * x@ageTimeStep * x1@diffProp)
+                    else
+                        expect_equal(sum(ans.obtained@exposure),
+                                     sum(x1@exposure)
+                                     - (1/6) * x@ageTimeStep * x1@diffProp
+                                     - (1/2) * x@ageTimeStep * x1@diffProp)
                 }
             }
         }
@@ -10635,10 +11213,10 @@ test_that("R and C versions of updateSubsequentExpMove give same answer", {
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
     data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
     updateInitialPopn <- new("LogicalFlag", TRUE)
     usePriorPopn <- new("LogicalFlag", TRUE)

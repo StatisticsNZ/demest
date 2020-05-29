@@ -12,6 +12,38 @@
 /* File "helper-simulate.c" contains C versions of
  * functions from "helper-simulate.R".   */
 
+void
+drawAlphaLN2(SEXP object_R)
+{
+    SEXP alpha_R = GET_SLOT(object_R, alphaLN2_sym);
+    double * alpha = REAL(alpha_R);
+    int n_alphas = LENGTH(alpha_R);
+
+    int * constraint = INTEGER(GET_SLOT(object_R, constraintLN2_sym));
+    double sigma = *REAL(GET_SLOT(object_R, sigma_sym));
+
+    for (int j = 0; j < n_alphas; ++j) {
+
+        int constraint_j = constraint[j];
+
+        if ((constraint_j == NA_INTEGER) ||(constraint_j != 0)) {
+            double x = rnorm(0, sigma);
+
+            if (constraint_j == NA_INTEGER) {
+                alpha[j] = x;
+            }
+            else if (constraint_j == -1) {
+                alpha[j] = (-1) * fabs(x);
+            }
+            else if (constraint_j == 1) {
+                alpha[j] = fabs(x);
+            }
+            else {
+                error("invalid value for 'constraint'");
+            }
+        }
+    }
+}
 
 void
 drawBetas(SEXP object_R)

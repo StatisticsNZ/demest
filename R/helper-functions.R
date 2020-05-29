@@ -2248,7 +2248,7 @@ logLikelihood_Round3 <- function(model, count, dataset, i, useC = FALSE) {
     }
 }
 
-## TRANSLATEd
+## TRANSLATED
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
 logLikelihood_TFixedUseExp <- function(model, count, dataset, i, useC = FALSE) {
@@ -2283,7 +2283,7 @@ logLikelihood_TFixedUseExp <- function(model, count, dataset, i, useC = FALSE) {
     }
 }
 
-## READY_TO_TRANSLATE
+## TRANSLATED
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
 logLikelihood_LN2 <- function(model, count, dataset, i, useC = FALSE) {
@@ -3847,9 +3847,24 @@ isLowerTriangle <- function(i, description, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
+isOldestAgeGroup <- function(i, description, useC = FALSE) {
+    stopifnot(methods::is(description, "Description"))
+    stopifnot(description@hasAge)
+    if (useC) {
+        .Call(isOldestAgeGroup_R, i, description)
+    }
+    else {
+        n.age <- description@nAge
+        step.age <- description@stepAge
+        i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L
+        i.age == n.age
+    }
+}
+
+## TRANSLATED
+## HAS_TESTS
 ## Assumes that population and accession have identical dimensions,
-## except that time dimension for accession is one shorter than
-## time dimension for population
+## except for time dimensions
 getIAccNextFromPopn <- function(i, description, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
@@ -3866,34 +3881,19 @@ getIAccNextFromPopn <- function(i, description, useC = FALSE) {
     }
     else {
         n.time.popn <- description@nTime
-        n.age.popn <- description@nAge
         step.time.popn <- description@stepTime
-        step.age.popn <- description@stepAge
         n.time.acc <- n.time.popn - 1L
-        n.age.acc <- n.age.popn - 1L
         i.time.popn <- (((i - 1L) %/% step.time.popn) %% n.time.popn) + 1L ## R-style
         if (i.time.popn < n.time.popn) {
-            i.age.popn <- (((i - 1L) %/% step.age.popn) %% n.age.popn) + 1L ## R-style
-            if (i.age.popn < n.age.popn) {
-                ## adjust for loss of one time period
-                i.acc <- (((i - 1L) %/% (step.time.popn * n.time.popn)) * (step.time.popn * n.time.acc)
-                    + ((i - 1L) %% (step.time.popn * n.time.popn))) + 1L
-                ## adjust for loss of one age group
-                if (step.time.popn > step.age.popn)
-                    step.age.acc <- step.age.popn
-                else
-                    step.age.acc <- (step.age.popn %/% n.time.popn) * n.time.acc
-                i.acc <- (((i.acc - 1L) %/% (step.age.acc * n.age.popn)) * (step.age.acc * n.age.acc)
-                    + ((i.acc - 1L) %% (step.age.acc * n.age.popn))) + 1L
-                i.acc
-            }
-            else
-                0L
+            ## adjust for loss of one time period
+            (((i - 1L) %/% (step.time.popn * n.time.popn)) * (step.time.popn * n.time.acc)
+                + ((i - 1L) %% (step.time.popn * n.time.popn))) + 1L
         }
         else
             0L
     }
 }
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -3999,10 +3999,83 @@ getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {
     }
 }
 
+## TRANSLATED
+## HAS_TESTS
+## 'i' should always be 'i.popn.next',
+## implying that i.time >= 2.
+## Function should not be called if the cell
+## that has been updated is the initial population
+## of the oldest age group, or the upper Lexis
+## triangle for the oldest age group.
+## Constraint for oldest age group is for *new*
+## members of that age group, so we subtract
+## accession. After that point, there are no
+## more population constraints, only accession.
+getMinValCohortPopulationHasAge <- function(i, population, accession, iterator,
+                                            useC = FALSE) {
+    ## 'i'
+    stopifnot(is.integer(i))
+    stopifnot(identical(length(i), 1L))
+    stopifnot(!is.na(i))
+    stopifnot(i >= 1L)
+    ## 'population'
+    stopifnot(is.integer(population))
+    stopifnot(!any(is.na(population)))
+    ## 'accession'
+    stopifnot(is.integer(accession))
+    stopifnot(!any(is.na(accession)))
+    ## 'iterator'
+    stopifnot(methods::is(iterator, "CohortIteratorPopulation"))
+    ## 'i' and 'population'
+    stopifnot(i <= length(population))
+    ## 'population' and 'accession'
+    stopifnot(length(population) %/% iterator@nTime == length(accession) %/% (iterator@nTime - 1L))
+    if (useC) {
+        .Call(getMinValCohortPopulationHasAge_R, i, population, accession, iterator)
+    }
+    else {
+        n.age <- iterator@nAge
+        step.time <- iterator@stepTime
+        n.time.popn <- iterator@nTime
+        n.time.acc <- n.time.popn - 1L
+        processed.oldest.age <- FALSE
+        first.iter <- TRUE
+        keep.going <- TRUE
+        while (keep.going) {
+            if (first.iter)
+                iterator <- resetCP(iterator, i = i)
+            else
+                iterator <- advanceCP(iterator)                
+            i <- iterator@i
+            i.age <- iterator@iAge
+            if (i.age == n.age) {
+                i.acc <- ((i - 1L) %% (step.time * n.time.popn)
+                    - step.time
+                    + ((i - 1L) %/% (step.time * n.time.popn) * (step.time * n.time.acc))
+                    + 1L)
+                population.current <- population[i] - accession[i.acc]
+                processed.oldest.age <- TRUE
+            }
+            else
+                population.current <- population[i]
+            if (first.iter) {
+                ans <- population.current
+                first.iter <- FALSE
+            }
+            else
+                ans <- min(population.current, ans)
+            keep.going <- !processed.oldest.age && !iterator@finished
+        }
+        ans
+    }
+}
+
 
 ## TRANSLATED
 ## HAS_TESTS
-getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
+## 'i' should always be 'i.popn.next',
+## implying that i.time >= 2.
+getMinValCohortPopulationNoAge <- function(i, series, iterator, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
@@ -4016,7 +4089,7 @@ getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
     ## 'i' and 'series'
     stopifnot(i <= length(series))
     if (useC) {
-        .Call(getMinValCohortPopulation_R, i, series, iterator)
+        .Call(getMinValCohortPopulationNoAge_R, i, series, iterator)
     }
     else {
         ans <- series[i]
@@ -4029,6 +4102,7 @@ getMinValCohortPopulation <- function(i, series, iterator, useC = FALSE) {
         ans
     }
 }
+
 
 ## HAS_TESTS
 makeTransformExpToBirths <- function(exposure, births,
@@ -4175,16 +4249,21 @@ makeIteratorCODPCP <- function(dim, iTime, iAge, iTriangle, iMultiple, lastAgeGr
         step.triangle <- as.integer(NA)
         i.triangle <- as.integer(NA)
     }
-    increment <- vector(mode = "list", length = length(iMultiple))
-    for (j in seq_along(iMultiple)) {
-        i.m <- iMultiple[j]
-        step <- 1L
-        for (d in seq_len(i.m - 1L))
-            step <- step * dim[d]
-        increment[[j]] <- seq.int(from = 0L, by = step, length.out = dim[i.m])
+    n.mult <- length(iMultiple)
+    if (n.mult > 0L) {
+        increment <- vector(mode = "list", length = length(iMultiple))
+        for (j in seq_along(iMultiple)) {
+            i.m <- iMultiple[j]
+            step <- 1L
+            for (d in seq_len(i.m - 1L))
+                step <- step * dim[d]
+            increment[[j]] <- seq.int(from = 0L, by = step, length.out = dim[i.m])
+        }
+        increment <- expand.grid(increment)
+        increment <- Reduce(f = "+", x = increment)
     }
-    increment <- expand.grid(increment)
-    increment <- Reduce(f = "+", x = increment)
+    else
+        increment <- 0L
     i <- 1L
     length.vec <- length(increment)
     i.vec <- i + increment

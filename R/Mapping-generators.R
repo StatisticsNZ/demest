@@ -1127,11 +1127,13 @@ setMethod("Mapping",
           signature(current = "Exposure",
                     target = "BirthsMovements"),
           function(current, target, dominant = c("Female", "Male")) {
+              dominant <- match.arg(dominant)
               i.min.age <- target@iMinAge
               dim.exp <- dim(current)
               dim.births <- dim(target)
               dimtypes.exp <- dembase::dimtypes(current, use.names = FALSE)
               dimtypes.births <- dembase::dimtypes(target, use.names = FALSE)
+              DimScales.births <- dembase::DimScales(target, use.names = FALSE)
               i.time.exp <- match("time", dimtypes.exp)
               i.time.births <- match("time", dimtypes.births)
               i.age.exp <- match("age", dimtypes.exp, nomatch = 0L)
@@ -1180,6 +1182,35 @@ setMethod("Mapping",
                   step.triangle.exp <- NA_integer_
                   step.triangle.births <- NA_integer_
               }
+              ## sex
+              i.sex.births <- match("sex", dimtypes.births, nomatch = 0L)
+              has.sex <- i.sex.births > 0L
+              if (has.sex) {
+                  i.sex.exp <- match("sex", dimtypes.exp)
+                  DimScale.sex <- DimScales.births[[i.sex.births]]
+                  if (identical(dominant, "Female"))
+                      i.sex.dominant <- dembase::iFemale(DimScale.sex)
+                  else if (identical(dominant, "Male"))
+                      i.sex.dominant <- dembase::iMale(DimScale.sex)
+                  else {
+                      stop(gettextf("'%s' equals \"%s\" : must be one of \"%s\" or \"%s\"",
+                                    "dominant", dominant, "Female", "Male"))
+                  }
+                  i.sex.dominant <- i.sex.dominant - 1L # C style
+                  step.sex.births <- 1L
+                  for (d in seq_len(i.sex.births - 1L))
+                      step.sex.births <- step.sex.births * dim.births[d]
+                  step.sex.exp <- 1L
+                  for (d in seq_len(i.sex.exp - 1L))
+                      step.sex.exp <- step.sex.exp * dim.exp[d]
+                  i.shared.exp <- setdiff(i.shared.exp, i.sex.exp)
+                  i.shared.births <- setdiff(i.shared.births, i.sex.births)
+              }
+              else {
+                  i.sex.dominant <- NA_integer_
+                  step.sex.births <- NA_integer_
+                  step.sex.exp <- NA_integer_
+              }
               n.shared.vec <- dim.exp[i.shared.exp]
               length.shared <- length(i.shared.exp)
               step.shared.exp.vec <- integer(length = length.shared)
@@ -1209,7 +1240,11 @@ setMethod("Mapping",
                            stepAgeCurrent = step.age.exp,
                            stepAgeTarget = step.age.births,
                            stepTriangleCurrent = step.triangle.exp,
-                           stepTriangleTarget = step.triangle.births)
+                           stepTriangleTarget = step.triangle.births,
+                           hasSex = has.sex,
+                           iSexDominant = i.sex.dominant,
+                           stepSexCurrent = step.sex.exp,
+                           stepSexTarget = step.sex.births)
           })              
 
 ## HAS_TESTS

@@ -880,6 +880,14 @@ SEXP isLowerTriangle_R(SEXP i_R, SEXP description_R)
     return ScalarLogical(ans);
 }
 
+/* one off wrapper for isOldestAgeGroup */
+SEXP isOldestAgeGroup_R(SEXP i_R, SEXP description_R)
+{
+    int i = *INTEGER(i_R);
+    int ans = isOldestAgeGroup(i, description_R);
+    return ScalarLogical(ans);
+}
+
 /* wrap getIMappingFunctions */
 MAPPING_GET_I_WRAPPER(getIAccNextFromPopn);
 MAPPING_GET_I_WRAPPER(getIPopnNextFromPopn);
@@ -912,15 +920,29 @@ SEXP getMinValCohortAccession_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
     return ScalarInteger(ans);
 }
 
-/* one off wrapper for getMinValCohortPopulation */
-SEXP getMinValCohortPopulation_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
+/* one off wrapper for getMinValCohortPopulationHasAge */
+SEXP getMinValCohortPopulationHasAge_R(SEXP i_R, SEXP population_R, SEXP accession_R,
+				       SEXP iterator_R)
 {
     int i = *INTEGER(i_R);
 
-    SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortPopulation */
+    SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortPopulationHasAge */
     PROTECT(dup_R = duplicate(iterator_R));
 
-    int ans = getMinValCohortPopulation(i, series_R, dup_R);
+    int ans = getMinValCohortPopulationHasAge(i, population_R, accession_R, dup_R);
+    UNPROTECT(1);
+    return ScalarInteger(ans);
+}
+
+/* one off wrapper for getMinValCohortPopulationNoAge */
+SEXP getMinValCohortPopulationNoAge_R(SEXP i_R, SEXP series_R, SEXP iterator_R)
+{
+    int i = *INTEGER(i_R);
+
+    SEXP dup_R; /* iter_R is reset and advanced in getMinValCohortPopulationNoAge */
+    PROTECT(dup_R = duplicate(iterator_R));
+
+    int ans = getMinValCohortPopulationNoAge(i, series_R, dup_R);
     UNPROTECT(1);
     return ScalarInteger(ans);
 }
@@ -978,6 +1000,7 @@ SEXP resetCODPCP_R(SEXP iterator_R, SEXP i_R)
 /* predict */
 PREDICTOBJECT_WRAPPER_R(predictAlphaDLMNoTrend);
 PREDICTOBJECT_WRAPPER_R(predictAlphaDeltaDLMWithTrend);
+PREDICTOBJECT_WRAPPER_R(predictAlphaLN2);
 
 /* update betas */
 SEXP
@@ -1234,9 +1257,11 @@ UPDATEOBJECT_WRAPPER_R(updatePriorsBetas);
 
 /* wrap update sigma generic functions */
 UPDATEOBJECT_WRAPPER_R(updateSigma_Varying);
+UPDATEOBJECT_WRAPPER_R(updateSigmaLN2);
 
-/* wrap update theta generic functions */
+/* wrap update varsigma and theta generic functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(updateVarsigma);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateVarsigmaLN2);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateTheta_BinomialVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateTheta_BinomialVaryingAgCertain);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndValueAgFun_Binomial);
@@ -1277,6 +1302,7 @@ TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedNotUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_TFixedNotUseExpPredict);
 TRANSFERPARAM_WRAPPER_R(transferParamModel_TFixedUseExpPredict);
+TRANSFERPARAM_WRAPPER_R(transferParamModel_LN2Predict);
 
 /* wrap predict model functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict);
@@ -1291,6 +1317,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_PoissonBinomialMixturePredict)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_Round3Predict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_NormalFixedUseExpPredict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_TFixedUseExpPredict);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_LN2Predict);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp);
 
 
@@ -1327,7 +1354,10 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgPoisson);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVaryingUseExpAgLife);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_NormalFixedUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_TFixedUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_LN2);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateAlphaLN2);
+
 
 /* wrap draw model functions */
 UPDATEOBJECT_NOEXP_WRAPPER_R(drawModelNotUseExp_NormalVaryingVarsigmaKnown);
@@ -1338,6 +1368,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_BinomialVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonVarying);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_PoissonBinomialMixture);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_NormalFixedUseExp);
+UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp_LN2);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(drawModelUseExp);
 
 /* wrap draw combined model functions */
@@ -1642,6 +1673,7 @@ LOGLIKELIHOOD_WRAPPER_R(logLikelihood_PoissonBinomialMixture);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_Round3);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_NormalFixedUseExp);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood_TFixedUseExp);
+LOGLIKELIHOOD_WRAPPER_R(logLikelihood_LN2);
 LOGLIKELIHOOD_WRAPPER_R(logLikelihood);
 
 /* wrap predict prior functions */
@@ -1912,18 +1944,20 @@ diffLogLikCellOneDataset_R(SEXP diff_R, SEXP iCell_R, SEXP component_R,
 
 /* one-off wrapper for diffLogLikPopnPair */
 SEXP
-diffLogLikPopnPair_R(SEXP diff_R, SEXP iPopnOrig_R, SEXP iPopnDest_R,
+diffLogLikPopnPair_R(SEXP diffOrig_R, SEXP diffDest_R,
+		     SEXP iPopnOrig_R, SEXP iPopnDest_R,
                             SEXP iterator_R,
                             SEXP population_R, SEXP dataModels_R,
                             SEXP datasets_R, SEXP seriesIndices_R,
                             SEXP transforms_R)
 {
-    int diff = *INTEGER(diff_R);
+    int diffOrig = *INTEGER(diffOrig_R);
+    int diffDest = *INTEGER(diffDest_R);
     int iPopnOrig_r = *INTEGER(iPopnOrig_R);
     int iPopnDest_r = *INTEGER(iPopnDest_R);
     SEXP iteratornew_R;
     PROTECT(iteratornew_R = duplicate(iterator_R));
-    double ans = diffLogLikPopnPair(diff, iPopnOrig_r, iPopnDest_r,
+    double ans = diffLogLikPopnPair(diffOrig, diffDest, iPopnOrig_r, iPopnDest_r,
                                     iteratornew_R,
                                     population_R, dataModels_R,
                                     datasets_R, seriesIndices_R,
@@ -2009,6 +2043,7 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpPopn);
 /* diffLogDensExpOneOrigDestParChPool */
 SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
                         SEXP ageTimeStep_R, SEXP updatedPopn_R,
+					  SEXP updatedBirths_R,
                         SEXP component_R, SEXP theta_R,
                         SEXP strucZeroArray_R,
                         SEXP iteratorComp_R,
@@ -2021,6 +2056,7 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
     int hasAge = *LOGICAL(hasAge_R);
     double ageTimeStep = *REAL(ageTimeStep_R);
     int updatedPopn = *LOGICAL(updatedPopn_R);
+    int updatedBirths = *LOGICAL(updatedBirths_R);
     double * theta = REAL(theta_R);
     int * strucZeroArray = INTEGER(strucZeroArray_R);
     double * exposure = REAL(exposure_R);
@@ -2030,7 +2066,7 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
     SEXP iteratorExpNew_R;
     PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
     double ans = diffLogDensExpOneOrigDestParChPool(iCell_r, hasAge,
-                        ageTimeStep, updatedPopn,
+						    ageTimeStep, updatedPopn, updatedBirths,
                         component_R, theta, strucZeroArray,
                         iteratorCompNew_R,
                         iExpFirst_r, exposure,
@@ -2039,14 +2075,11 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
     UNPROTECT(2);
     return ScalarReal(ans);
 }
-/*.Call(diffLogDensExpOneComp_R,
-              iCell, hasAge, ageTimeStep, updatedPopn,
-              component, theta, strucZeroArray, iteratorComp,
-              iExpFirst, exposure, iteratorExposure, diff)*/
 
 /* diffLogDensExpOneComp */
 SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
                         SEXP ageTimeStep_R, SEXP updatedPopn_R,
+			     SEXP updatedBirths_R,
                         SEXP component_R, SEXP theta_R,
                         SEXP strucZeroArray_R,
                         SEXP iteratorComp_R,
@@ -2059,6 +2092,7 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
     int hasAge = *LOGICAL(hasAge_R);
     double ageTimeStep = *REAL(ageTimeStep_R);
     int updatedPopn = *LOGICAL(updatedPopn_R);
+    int updatedBirths = *LOGICAL(updatedBirths_R);
     double * theta = REAL(theta_R);
     int * strucZeroArray = INTEGER(strucZeroArray_R);
     double * exposure = REAL(exposure_R);
@@ -2068,7 +2102,7 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
     SEXP iteratorExpNew_R;
     PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
     double ans = diffLogDensExpOneComp(iCell_r, hasAge,
-                        ageTimeStep, updatedPopn,
+				       ageTimeStep, updatedPopn, updatedBirths,
                         component_R, theta, strucZeroArray,
                         iteratorCompNew_R,
                         iExpFirst_r, exposure,
@@ -2085,10 +2119,14 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpPoolNoExpose);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpNet);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpComp);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpComp);
-DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensCompSmall);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpBirthsSmall);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpOrigDestSmall);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpCompSmall);
 
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateCellMove);
 UPDATEOBJECT_NOPRNG_WRAPPER_R(updateAccSmall);
+UPDATEOBJECT_NOPRNG_WRAPPER_R(updateExpSmall);
+
 
 /* duplicates the iterator and replaces the unused iterator when finished
  * used when calling the code directly from R */
@@ -2108,6 +2146,7 @@ updateSubsequentPopnMove_R(SEXP combined_R)
     UNPROTECT(2);
     return ans_R;
 }
+
 
 
 /* duplicates the iterator and replaces the unused iterator when finished
@@ -2150,6 +2189,7 @@ updateSubsequentExpMove_R(SEXP combined_R)
 
 
 /* helper_simulate */
+UPDATEOBJECT_WRAPPER_R(drawAlphaLN2);
 UPDATEOBJECT_WRAPPER_R(drawBetas);
 UPDATEOBJECT_WRAPPER_R(drawDataModelsAccount);
 UPDATEOBJECT_WRAPPER_R(drawDelta0);
@@ -2266,6 +2306,7 @@ R_CallMethodDef callMethods[] = {
 
   CALLDEF(predictAlphaDLMNoTrend_R, 1),
   CALLDEF(predictAlphaDeltaDLMWithTrend_R, 1),
+  CALLDEF(predictAlphaLN2_R, 1),
   CALLDEF(predictBeta_R, 1),
   CALLDEF(transferAlphaDelta0_R, 5),
   CALLDEF(transferSeason0_R, 6),
@@ -2295,6 +2336,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(logLikelihood_Round3_R,4),
   CALLDEF(logLikelihood_NormalFixedUseExp_R, 4),
   CALLDEF(logLikelihood_TFixedUseExp_R, 4),
+  CALLDEF(logLikelihood_LN2_R, 4),
   CALLDEF(diffLogLik_R,6),
   CALLDEF(makeIOther_R,2),
 
@@ -2338,6 +2380,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateMu_R, 1),
 
   CALLDEF(updateSigma_Varying_R, 1),
+  CALLDEF(updateSigmaLN2_R, 1),
 
   CALLDEF(updateTheta_BinomialVarying_R, 3),
   CALLDEF(updateTheta_BinomialVaryingAgCertain_R, 3),
@@ -2361,8 +2404,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateThetaAndNu_CMPVaryingNotUseExp_R, 2),
   CALLDEF(updateThetaAndNu_CMPVaryingUseExp_R, 3),
 
-
   CALLDEF(updateVarsigma_R, 2),
+  CALLDEF(updateVarsigmaLN2_R, 3),
 
   /* update counts */
   CALLDEF(updateCountsPoissonNotUseExp_R, 5),
@@ -2388,6 +2431,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamModel_NormalFixedUseExpPredict_R, 4),
   CALLDEF(transferParamModel_TFixedNotUseExpPredict_R, 4),
   CALLDEF(transferParamModel_TFixedUseExpPredict_R, 4),
+  CALLDEF(transferParamModel_LN2Predict_R, 4),
 
   CALLDEF(predictModelNotUseExp_NormalVaryingVarsigmaKnownPredict_R, 2),
   CALLDEF(predictModelNotUseExp_NormalVaryingVarsigmaUnknownPredict_R, 2),
@@ -2402,6 +2446,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictModelUseExp_Round3Predict_R, 3),
   CALLDEF(predictModelUseExp_NormalFixedUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_TFixedUseExpPredict_R, 3),
+  CALLDEF(predictModelUseExp_LN2Predict_R, 3),
   CALLDEF(predictModelUseExp_R, 3),
 
   CALLDEF(updateModelNotUseExp_CMPVaryingNotUseExp_R, 2),
@@ -2437,7 +2482,10 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_PoissonVaryingUseExpAgLife_R, 3),
   CALLDEF(updateModelUseExp_NormalFixedUseExp_R, 3),
   CALLDEF(updateModelUseExp_TFixedUseExp_R, 3),
+  CALLDEF(updateModelUseExp_LN2_R, 3),
   CALLDEF(updateModelUseExp_R, 3),
+
+  CALLDEF(updateAlphaLN2_R, 3),
 
   CALLDEF(updatePriorsBetas_R, 1),
 
@@ -2450,6 +2498,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(drawModelUseExp_PoissonVarying_R, 3),
   CALLDEF(drawModelUseExp_PoissonBinomialMixture_R, 3),
   CALLDEF(drawModelUseExp_NormalFixedUseExp_R, 3),
+  CALLDEF(drawModelUseExp_LN2_R, 3),
   CALLDEF(drawModelUseExp_R, 3),
 
   /* draw combined */
@@ -2515,11 +2564,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(chooseICellPopn_R, 1),
   CALLDEF(chooseICellSubAddNet_R, 1),
   CALLDEF(isLowerTriangle_R, 2),
+  CALLDEF(isOldestAgeGroup_R, 2),
   CALLDEF(getIAccNextFromPopn_R, 2),
   CALLDEF(getIPopnNextFromPopn_R, 2),
   CALLDEF(getIExpFirstFromPopn_R, 2),
   CALLDEF(getMinValCohortAccession_R, 3),
-  CALLDEF(getMinValCohortPopulation_R, 3),
+  CALLDEF(getMinValCohortPopulationHasAge_R, 4),
+  CALLDEF(getMinValCohortPopulationNoAge_R, 3),
 
   /* mapping functions */
   CALLDEF(getIPopnNextFromComp_R, 2),
@@ -2642,7 +2693,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikAccountMoveOrigDest_R, 1),
   CALLDEF(diffLogLikCellComp_R, 8),
   CALLDEF(diffLogLikCellOneDataset_R,6),
-  CALLDEF(diffLogLikPopnPair_R, 9),
+  CALLDEF(diffLogLikPopnPair_R, 10),
   CALLDEF(diffLogLikAccountMovePool_R, 1),
   CALLDEF(diffLogLikCellsPool_R, 9),
   CALLDEF(diffLogLikAccountMoveNet_R, 1),
@@ -2653,8 +2704,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensPopn_R, 1),
   CALLDEF(diffLogDensPopnOneCohort_R, 6),
   CALLDEF(diffLogDensExpPopn_R, 1),
-  CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 12),
-  CALLDEF(diffLogDensExpOneComp_R, 12),
+  CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 13),
+  CALLDEF(diffLogDensExpOneComp_R, 13),
   CALLDEF(diffLogDensJumpOrigDest_R, 1),
   CALLDEF(diffLogDensExpOrigDestPoolNet_R, 1),
   CALLDEF(diffLogDensJumpPoolWithExpose_R, 1),
@@ -2662,15 +2713,19 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensJumpNet_R, 1),
   CALLDEF(diffLogDensJumpComp_R, 1),
   CALLDEF(diffLogDensExpComp_R, 1),
-  CALLDEF(diffLogDensCompSmall_R, 1),
+  CALLDEF(diffLogDensJumpBirthsSmall_R, 1),
+  CALLDEF(diffLogDensJumpOrigDestSmall_R, 1),
+  CALLDEF(diffLogDensJumpCompSmall_R, 1),
 
   CALLDEF(updateAccSmall_R, 1),
+  CALLDEF(updateExpSmall_R, 1),
   CALLDEF(updateCellMove_R, 1),
   CALLDEF(updateSubsequentPopnMove_R, 1),
   CALLDEF(updateSubsequentAccMove_R, 1),
   CALLDEF(updateSubsequentExpMove_R, 1),
 
   /* helper-simulate */
+  CALLDEF(drawAlphaLN2_R, 1),
   CALLDEF(drawBetas_R, 1),
   CALLDEF(drawDataModelsAccount_R, 1),
   CALLDEF(drawDelta0_R, 1),
@@ -3086,6 +3141,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(iExposure);
   ADD_SYM(iExposureOther);
   ADD_SYM(isLowerTriangle);
+  ADD_SYM(isOldestAgeGroup);
   ADD_SYM(generatedNewProposal);
   ADD_SYM(probSmallUpdate);
   ADD_SYM(isSmallUpdate);
@@ -3093,6 +3149,10 @@ R_init_demest(DllInfo *info)
   ADD_SYM(cumProbComp);
   ADD_SYM(scaleNoise);
   ADD_SYM(nCellAccount);
+  ADD_SYM(alphaLN2);
+  ADD_SYM(transformLN2);
+  ADD_SYM(constraintLN2);
+  ADD_SYM(nCellBeforeLN2);
 
 
 #undef ADD_SYM
