@@ -1674,6 +1674,8 @@ diffLogLikAccountMoveOrigDest(SEXP combined_R)
     int iPopnOrig_r = *INTEGER(GET_SLOT(combined_R, iPopnNext_sym));
     int iPopnDest_r = *INTEGER(GET_SLOT(combined_R, iPopnNextOther_sym));
     int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+    int diffOrig = -1 * diff;
+    int diffDest = diff;
 
     double ans = 0;
 
@@ -1685,7 +1687,7 @@ diffLogLikAccountMoveOrigDest(SEXP combined_R)
 
         ans += diffLogLikCell;
 
-        double diffLogLikPopn = diffLogLikPopnPair( diff,
+        double diffLogLikPopn = diffLogLikPopnPair(diffOrig, diffDest,
                                 iPopnOrig_r, iPopnDest_r,
                                 iterator_R, population_R,
                                 dataModels_R, datasets_R,
@@ -1803,67 +1805,90 @@ diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R,
 
 
 double
-diffLogLikPopnPair(int diff, int iPopnOrig_r, int iPopnDest_r,
-                        SEXP iterator_R,
-                        SEXP population_R, SEXP dataModels_R,
-                        SEXP datasets_R, SEXP seriesIndices_R,
-                        SEXP transforms_R)
+diffLogLikPopnPair(int diffOrig, int diffDest,
+		   int iPopnOrig_r, int iPopnDest_r,
+		   SEXP iterator_R,
+		   SEXP population_R, SEXP dataModels_R,
+		   SEXP datasets_R, SEXP seriesIndices_R,
+		   SEXP transforms_R)
 {
-    double ans = 0;
-
-    if (iPopnOrig_r != iPopnDest_r) {
-
-        int nDatasets = LENGTH(datasets_R);
-        int * seriesIndices = INTEGER(seriesIndices_R);
-
-        for(int iDataset = 0; iDataset < nDatasets; ++iDataset) {
-
-            int assocWithPopn = ( seriesIndices[iDataset] == 0 );
-
-            if (assocWithPopn) {
-
-                SEXP transform_R = VECTOR_ELT(transforms_R, iDataset);
-
-                int iAfterOrig_r = dembase_getIAfter(iPopnOrig_r, transform_R);
-                int iAfterDest_r = dembase_getIAfter(iPopnDest_r, transform_R);
-
-                if(iAfterOrig_r != iAfterDest_r) {
-
-                    SEXP model_R = VECTOR_ELT(dataModels_R, iDataset);
-                    SEXP dataset_R = VECTOR_ELT(datasets_R, iDataset);
-
-                    double diffOrig = diffLogLikPopnOneDataset( -diff,
-                                            iPopnOrig_r,
-                                            iterator_R, population_R,
-                                            model_R, dataset_R, transform_R);
-                    if (R_finite(diffOrig) ) {
-
-                        ans += diffOrig;
-
-                        double diffDest = diffLogLikPopnOneDataset( diff,
-                                                iPopnDest_r,
-                                                iterator_R, population_R,
-                                                model_R, dataset_R, transform_R);
-                        if (R_finite(diffDest) ) {
-                            ans += diffDest;
-
-                        }
-                        else { /* infinite */
-                            ans = diffDest;
-                            break; /* break out of for loop */
-                        }
-                    }
-                    else { /* infinite */
-                        ans = diffOrig;
-                        break; /* break out of for loop */
-                    }
-                }
-            }
-        }
-    }
-
-    return ans;
+  resetCP(iterator_R, iPopnOrig_r);
+  SEXP iteratorDest_R = NULL;
+  PROTECT(iteratorDest_R = duplicate(iterator_R));
+  resetCP(iteratorDest_R, iPopnDest_r);
+  int * iPopnOrig_ptr = INTEGER(GET_SLOT(iterator_R, i_sym));
+  int * iPopnDest_ptr = INTEGER(GET_SLOT(iteratorDest_R, i_sym));
+  int * finished_ptr = LOGICAL(GET_SLOT(iterator_R, finished_sym));
+  int finished = *finished_ptr;
+  double ans = 0;
+  if (iPopnOrig_r != iPopnDest_r) {
+    int nDatasets = LENGTH(datasets_R);
+    int * seriesIndices = INTEGER(seriesIndices_R);
+    for (int iDataset = 0; iDataset < nDatasets; ++iDataset) {
+      int assocWithPopn = ( seriesIndices[iDataset] == 0 );
+      if (assocWithPopn) {
+	SEXP transform_R = VECTOR_ELT(transforms_R, iDataset);
+	SEXP model_R = VECTOR_ELT(dataModels_R, iDataset);
+	SEXP dataset_R = VECTOR_ELT(datasets_R, iDataset);
+	int iAfterOrig_r = dembase_getIAfter(iPopnOrig_r, transform_R);
+	int iAfterDest_r = dembase_getIAfter(iPopnDest_r, transform_R);
+	if (iAfterOrig_r != iAfterDest_r) {
+	  if (iAfterOrig_r > 0) {
+	    double diffLogLikOrig = diffLogLikPopnOneCell(iAfterOrig_r,
+							  diffOrig,
+							  population_R,  
+							  model_R,
+							  dataset_R,
+							  transform_R);
+	    ans += diffLogLikOrig;
+	  }
+	  if (iAfterDest_r > 0) {
+	    double diffLogLikDest = diffLogLikPopnOneCell(iAfterDest_r,
+							  diffDest,
+							  population_R,  
+							  model_R,
+							  dataset_R,
+							  transform_R);
+	    ans += diffLogLikDest;
+	  }
+	}
+	while (!finished) {
+	  advanceCP(iterator_R);
+	  advanceCP(iteratorDest_R);
+	  iPopnOrig_r = *iPopnOrig_ptr;
+	  iPopnDest_r = *iPopnDest_ptr;
+	  int iAfterOrig_r = dembase_getIAfter(iPopnOrig_r, transform_R);
+	  int iAfterDest_r = dembase_getIAfter(iPopnDest_r, transform_R);
+	  if (iAfterOrig_r != iAfterDest_r) {
+	    if (iAfterOrig_r > 0) {
+	      double diffLogLikOrig = diffLogLikPopnOneCell(iAfterOrig_r,
+							    diffOrig,
+							    population_R,  
+							    model_R,
+							    dataset_R,
+							    transform_R);
+	      ans += diffLogLikOrig;
+	    }
+	    if (iAfterDest_r > 0) {
+	      double diffLogLikDest = diffLogLikPopnOneCell(iAfterDest_r,
+							    diffDest,
+							    population_R,  
+							    model_R,
+							    dataset_R,
+							    transform_R);
+	      ans += diffLogLikDest;
+	    }
+	  }
+	  finished = *finished_ptr;
+	}
+      }	/* assocWithPopn */
+    }	/* for (int iDataset = 0; iDataset < nDatasets; ++iDataset) */
+  }     /* iPopnOrig_r != iPopnDest_r */
+  UNPROTECT(1); 		/* iteratorDest_R */
+  return ans;
 }
+
+
 
 double
 diffLogLikAccountMovePool(SEXP combined_R)
@@ -1884,6 +1909,8 @@ diffLogLikAccountMovePool(SEXP combined_R)
     int iPopnOut_r = *INTEGER(GET_SLOT(combined_R, iPopnNext_sym));
     int iPopnIn_r = *INTEGER(GET_SLOT(combined_R, iPopnNextOther_sym));
     int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+    int diffOrig = -1 * diff;
+    int diffDest = diff;
 
     double ans = 0;
 
@@ -1896,7 +1923,7 @@ diffLogLikAccountMovePool(SEXP combined_R)
 
         ans += diffLogLikCells;
 
-        double diffLogLikPopn = diffLogLikPopnPair( diff,
+        double diffLogLikPopn = diffLogLikPopnPair( diffOrig, diffDest,
                                 iPopnOut_r, iPopnIn_r,
                                 iterator_R, population_R,
                                 dataModels_R, datasets_R,
@@ -1990,6 +2017,8 @@ diffLogLikAccountMoveNet(SEXP combined_R)
     int iPopnAdd_r = *INTEGER(GET_SLOT(combined_R, iPopnNext_sym));
     int iPopnSub_r = *INTEGER(GET_SLOT(combined_R, iPopnNextOther_sym));
     int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+    int diffAdd = diff;
+    int diffSub = -1 * diff;
 
     double ans = 0;
 
@@ -2002,10 +2031,7 @@ diffLogLikAccountMoveNet(SEXP combined_R)
 
         ans += diffLogLikCells;
 
-        /*'diffLogLikPopnPair assumes 'diff' is subtracted from first cohort
-         and added to second, which is what happens with orig-dest and pool.
-         To instead add and subtract, we use -diff.         */
-        double diffLogLikPopn = diffLogLikPopnPair( -diff,
+        double diffLogLikPopn = diffLogLikPopnPair(diffAdd, diffSub,
                                 iPopnAdd_r, iPopnSub_r,
                                 iterator_R, population_R,
                                 dataModels_R, datasets_R,
@@ -3795,20 +3821,26 @@ updateAccSmall(SEXP combined_R)
     int i_acc_r = *INTEGER(GET_SLOT(combined_R, iAccNext_sym));
     int has_accession = (i_acc_r > 0);
     if (has_accession) {
-      int i_orig_dest_r = *INTEGER(GET_SLOT(combined_R, iOrigDest_sym));
-      int is_orig_dest = i_comp_r == i_orig_dest_r;
-      int * isIncrementVec = LOGICAL(GET_SLOT(combined_R, isIncrement_sym));
-      int is_increment = isIncrementVec[i_comp_r - 1];
       int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
       int * accession = INTEGER(GET_SLOT(combined_R, accession_sym));
-      if (is_orig_dest || !is_increment)
+      int i_orig_dest_r = *INTEGER(GET_SLOT(combined_R, iOrigDest_sym));
+      int is_orig_dest = i_comp_r == i_orig_dest_r;
+      if (is_orig_dest) {
+	int i_acc_dest_r = *INTEGER(GET_SLOT(combined_R, iAccNextOther_sym));
 	accession[i_acc_r - 1] -= diff;
-      else
-	accession[i_acc_r - 1] += diff;
+	accession[i_acc_dest_r - 1] += diff;
+      }
+      else {
+	int * isIncrementVec = LOGICAL(GET_SLOT(combined_R, isIncrement_sym));
+	int is_increment = isIncrementVec[i_comp_r - 1];
+	if (is_increment)
+	  accession[i_acc_r - 1] += diff;
+	else
+	  accession[i_acc_r - 1] -= diff;
+      }
     }
   }
 }
-
 
 void
 updateExpSmall(SEXP combined_R)

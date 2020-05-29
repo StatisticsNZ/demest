@@ -1943,18 +1943,20 @@ diffLogLikCellOneDataset_R(SEXP diff_R, SEXP iCell_R, SEXP component_R,
 
 /* one-off wrapper for diffLogLikPopnPair */
 SEXP
-diffLogLikPopnPair_R(SEXP diff_R, SEXP iPopnOrig_R, SEXP iPopnDest_R,
+diffLogLikPopnPair_R(SEXP diffOrig_R, SEXP diffDest_R,
+		     SEXP iPopnOrig_R, SEXP iPopnDest_R,
                             SEXP iterator_R,
                             SEXP population_R, SEXP dataModels_R,
                             SEXP datasets_R, SEXP seriesIndices_R,
                             SEXP transforms_R)
 {
-    int diff = *INTEGER(diff_R);
+    int diffOrig = *INTEGER(diffOrig_R);
+    int diffDest = *INTEGER(diffDest_R);
     int iPopnOrig_r = *INTEGER(iPopnOrig_R);
     int iPopnDest_r = *INTEGER(iPopnDest_R);
     SEXP iteratornew_R;
     PROTECT(iteratornew_R = duplicate(iterator_R));
-    double ans = diffLogLikPopnPair(diff, iPopnOrig_r, iPopnDest_r,
+    double ans = diffLogLikPopnPair(diffOrig, diffDest, iPopnOrig_r, iPopnDest_r,
                                     iteratornew_R,
                                     population_R, dataModels_R,
                                     datasets_R, seriesIndices_R,
@@ -2689,7 +2691,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogLikAccountMoveOrigDest_R, 1),
   CALLDEF(diffLogLikCellComp_R, 8),
   CALLDEF(diffLogLikCellOneDataset_R,6),
-  CALLDEF(diffLogLikPopnPair_R, 9),
+  CALLDEF(diffLogLikPopnPair_R, 10),
   CALLDEF(diffLogLikAccountMovePool_R, 1),
   CALLDEF(diffLogLikCellsPool_R, 9),
   CALLDEF(diffLogLikAccountMoveNet_R, 1),

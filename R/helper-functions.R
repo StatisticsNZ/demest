@@ -4007,6 +4007,10 @@ getMinValCohortAccession <- function(i, series, iterator, useC = FALSE) {
 ## that has been updated is the initial population
 ## of the oldest age group, or the upper Lexis
 ## triangle for the oldest age group.
+## Constraint for oldest age group is for *new*
+## members of that age group, so we subtract
+## accession. After that point, there are no
+## more population constraints, only accession.
 getMinValCohortPopulationHasAge <- function(i, population, accession, iterator,
                                             useC = FALSE) {
     ## 'i'
@@ -4037,7 +4041,6 @@ getMinValCohortPopulationHasAge <- function(i, population, accession, iterator,
         processed.oldest.age <- FALSE
         first.iter <- TRUE
         keep.going <- TRUE
-        ## subsequent values
         while (keep.going) {
             if (first.iter)
                 iterator <- resetCP(iterator, i = i)

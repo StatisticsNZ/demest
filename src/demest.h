@@ -1097,7 +1097,8 @@ double diffLogLikCellComp(int diff, int iComp_r, int iCell_r,
                         SEXP transforms_R);
 double diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R,
                         SEXP model_R, SEXP dataset_R, SEXP transform_R);
-double diffLogLikPopnPair(int diff, int iPopnOrig_r, int iPopnDest_r,
+double diffLogLikPopnPair(int diffOrig, int diffDest,
+			  int iPopnOrig_r, int iPopnDest_r,
                         SEXP iterator_R,
                         SEXP population_R, SEXP dataModels_R,
                         SEXP datasets_R, SEXP seriesIndices_R,

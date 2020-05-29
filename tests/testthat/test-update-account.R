@@ -4994,7 +4994,8 @@ test_that("diffLogLikPopnPair works with CombinedAccountMovements", {
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     iterator <- CohortIterator(population)
     diff <- -4L
-    ans.obtained <- diffLogLikPopnPair(diff = diff,
+    ans.obtained <- diffLogLikPopnPair(diffOrig = -diff,
+                                       diffDest = diff,
                                        iPopnOrig = 6L,
                                        iPopnDest = 5L,
                                        iterator = iterator,
@@ -5059,7 +5060,8 @@ test_that("R and C versions of diffLogLikPopnPair give same answer", {
     transforms <- lapply(transforms, makeCollapseTransformExtra)
     iterator <- CohortIterator(population)
     diff <- -4L
-    ans.R <- diffLogLikPopnPair(diff = diff,
+    ans.R <- diffLogLikPopnPair(diffOrig = -diff,
+                                diffDest = diff,
                                 iPopnOrig = 6L,
                                 iPopnDest = 5L,
                                 iterator = iterator,
@@ -5069,7 +5071,8 @@ test_that("R and C versions of diffLogLikPopnPair give same answer", {
                                 seriesIndices = seriesIndices,
                                 transforms = transforms,
                                 useC = FALSE)
-    ans.C <- diffLogLikPopnPair(diff = diff,
+    ans.C <- diffLogLikPopnPair(diffOrig = -diff,
+                                diffDest = diff,
                                 iPopnOrig = 6L,
                                 iPopnDest = 5L,
                                 iterator = iterator,
@@ -5261,7 +5264,8 @@ test_that("diffLogLikAccountMovePool works with CombinedAccountMovements", {
                                         datasets = x@datasets,
                                         seriesIndices = x@seriesIndices,
                                         transforms = x@transforms) +
-        diffLogLikPopnPair(diff = x@diffProp,
+        diffLogLikPopnPair(diffOrig = -x@diffProp,
+                           diffDest = x@diffProp,
                            iPopnOrig = x@iPopnNext,
                            iPopnDest = x@iPopnNextOther,
                            iterator = x@iteratorPopn,
@@ -5555,7 +5559,8 @@ test_that("diffLogLikAccountMoveNet works with CombinedAccountMovements", {
                                        datasets = x@datasets,
                                        seriesIndices = x@seriesIndices,
                                        transforms = x@transforms) +
-        diffLogLikPopnPair(diff = -x@diffProp,
+        diffLogLikPopnPair(diffOrig = x@diffProp,
+                           diffDest = -x@diffProp,
                            iPopnOrig = x@iPopnNext,
                            iPopnDest = x@iPopnNextOther,
                            iterator = x@iteratorPopn,
@@ -9583,6 +9588,9 @@ test_that("updateAccSmall works", {
                          sum(x1@account@components[[2]]))
             expect_equal(ans.obtained@accession[ans.obtained@iAccNext],
                          x1@accession[ans.obtained@iAccNext] -
+                         ans.obtained@diffProp)
+            expect_equal(ans.obtained@accession[ans.obtained@iAccNextOther],
+                         x1@accession[ans.obtained@iAccNextOther] +
                          ans.obtained@diffProp)
         }
         ## updating component

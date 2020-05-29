@@ -668,7 +668,7 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
             i.acc.dest <- pair.acc[2L]
             n.age <- mapping.to.exp@nAgeCurrent
             step.age <- mapping.to.exp@stepAgeCurrent
-            i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L
+            i.age <- (((i.cell.up - 1L) %/% step.age) %% n.age) + 1L;
             is.final.age.group <- i.age == n.age
             val.acc.orig <- accession[i.acc.orig]
             val.acc.dest <- accession[i.acc.dest]
@@ -1299,7 +1299,7 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
                                          mapping = mapping.to.acc)
             n.age <- mapping.to.exp@nAgeCurrent
             step.age <- mapping.to.exp@stepAgeCurrent
-            i.age <- (((i - 1L) %/% step.age) %% n.age) + 1L
+            i.age <- (((i.cell.up - 1L) %/% step.age) %% n.age) + 1L
             is.final.age.group <- i.age == n.age
             val.acc <- accession[i.acc]
             val.up.curr <- component[i.cell.up]
@@ -1627,6 +1627,8 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
         i.popn.orig <- combined@iPopnNext
         i.popn.dest <- combined@iPopnNextOther
         diff <- combined@diffProp
+        diff.orig <- -1L * diff
+        diff.dest <- diff
         diff.log.lik.cell <- diffLogLikCellComp(diff = diff,
                                                 iComp = i.comp,
                                                 iCell = i.cell,
@@ -1637,7 +1639,8 @@ diffLogLikAccountMoveOrigDest <- function(combined, useC = FALSE) {
                                                 transforms = transforms)
         if (is.infinite(diff.log.lik.cell))
             return(diff.log.lik.cell)
-        diff.log.lik.popn <- diffLogLikPopnPair(diff = diff,
+        diff.log.lik.popn <- diffLogLikPopnPair(diffOrig = diff.orig,
+                                                diffDest = diff.dest,
                                                 iPopnOrig = i.popn.orig,
                                                 iPopnDest = i.popn.dest,
                                                 iterator = iterator,
@@ -1782,16 +1785,21 @@ diffLogLikCellOneDataset <- function(diff, iCell, component,
 
 ## TRANSLATED
 ## HAS_TESTS
-diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
+diffLogLikPopnPair <- function(diffOrig, diffDest, iPopnOrig, iPopnDest,
                                iterator, population,
                                dataModels, datasets,
                                seriesIndices, transforms,
                                useC = FALSE) {
-    ## diff
-    stopifnot(identical(length(diff), 1L))
-    stopifnot(is.integer(diff))
-    stopifnot(!is.na(diff))
-    stopifnot(diff != 0L)
+    ## diffOrig
+    stopifnot(identical(length(diffOrig), 1L))
+    stopifnot(is.integer(diffOrig))
+    stopifnot(!is.na(diffOrig))
+    stopifnot(diffOrig != 0L)
+    ## diffDest
+    stopifnot(identical(length(diffDest), 1L))
+    stopifnot(is.integer(diffDest))
+    stopifnot(!is.na(diffDest))
+    stopifnot(diffDest != 0L)
     ## iPopnOrig
     stopifnot(identical(length(iPopnOrig), 1L))
     stopifnot(is.integer(iPopnOrig))
@@ -1819,6 +1827,8 @@ diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
     ## transforms
     stopifnot(is.list(transforms))
     stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
+    ## diffOrig and diffDest
+    stopifnot(identical(abs(diffOrig), abs(diffDest)))
     ## dataModels and datasets
     stopifnot(identical(length(dataModels), length(datasets)))
     ## dataModels and seriesIndices
@@ -1827,7 +1837,7 @@ diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
     stopifnot(identical(length(dataModels), length(transforms)))
     if (useC) {
         .Call(diffLogLikPopnPair_R,
-              diff, iPopnOrig, iPopnDest, iterator,
+              diffOrig, diffDest, iPopnOrig, iPopnDest, iterator,
               population, dataModels, datasets,
               seriesIndices, transforms)
     }
@@ -1839,36 +1849,71 @@ diffLogLikPopnPair <- function(diff, iPopnOrig, iPopnDest,
             assoc.with.popn <- seriesIndices[i.dataset] == 0L
             if (assoc.with.popn) {
                 transform <- transforms[[i.dataset]]
+                model <- dataModels[[i.dataset]]
+                dataset <- datasets[[i.dataset]]
+                ## process first pair of cells
                 i.after.orig <- getIAfter(i = iPopnOrig, transform = transform)
                 i.after.dest <- getIAfter(i = iPopnDest, transform = transform)
                 if (i.after.orig != i.after.dest) {
-                    model <- dataModels[[i.dataset]]
-                    dataset <- datasets[[i.dataset]]
-                    diff.orig <- diffLogLikPopnOneDataset(diff = -diff,
-                                                          iFirst = iPopnOrig,
-                                                          iterator = iterator,
-                                                          population = population,
-                                                          model = model,
-                                                          dataset = dataset,
-                                                          transform = transform)
-                    if (is.infinite(diff.orig))
-                        return(diff.orig)
-                    diff.dest <- diffLogLikPopnOneDataset(diff = diff,
-                                                          iFirst = iPopnDest,
-                                                          iterator = iterator,
-                                                          population = population,
-                                                          model = model,
-                                                          dataset = dataset,
-                                                          transform = transform)
-                    if (is.infinite(diff.dest))
-                        return(diff.dest)
-                    ans <- ans + diff.orig + diff.dest
+                    if (i.after.orig > 0L) {
+                        diff.orig <- diffLogLikPopnOneCell(iAfter = i.after.orig,
+                                                           diff = diffOrig,
+                                                           transform = transform,
+                                                           population = population,
+                                                           model = model,
+                                                           dataset = dataset)
+                        ans <- ans + diff.orig
+                    }
+                    if (i.after.dest > 0L) {
+                        diff.dest <- diffLogLikPopnOneCell(iAfter = i.after.dest,
+                                                           diff = diffDest,
+                                                           transform = transform,
+                                                           population = population,
+                                                           model = model,
+                                                           dataset = dataset)
+                        ans <- ans + diff.dest
+                    }
                 }
-            }
-        }
+                ## process subsequent cells
+                iterator.orig <- resetCP(iterator, i = iPopnOrig)
+                iterator.dest <- resetCP(iterator, i = iPopnDest)
+                while (!iterator.orig@finished) {
+                    iterator.orig <- advanceCP(iterator.orig)
+                    iterator.dest <- advanceCP(iterator.dest)
+                    i.popn.orig <- iterator.orig@i
+                    i.popn.dest <- iterator.dest@i
+                    i.after.orig <- getIAfter(i = i.popn.orig,
+                                              transform = transform)
+                    i.after.dest <- getIAfter(i = i.popn.orig,
+                                              transform = transform)
+                    if (i.after.orig != i.after.dest) {
+                        if (i.after.orig > 0L) {
+                            diff.log.lik <- diffLogLikPopnOneCell(iAfter = i.after.orig,
+                                                                  diff = diffOrig,
+                                                                  transform = transform,
+                                                                  population = population,
+                                                                  model = model,
+                                                                  dataset = dataset)
+                            ans <- ans + diff.log.lik
+                        }
+                        if (i.after.dest > 0L) {
+                            diff.log.lik <- diffLogLikPopnOneCell(iAfter = i.after.dest,
+                                                                  diff = diffDest,
+                                                                  transform = transform,
+                                                                  population = population,
+                                                                  model = model,
+                                                                  dataset = dataset)
+                            ans <- ans + diff.log.lik
+                        }
+                    } ## finished this pair of cells
+                } ## finished all subsequent cells
+            } ## finished this dataset
+        } ## finished all datasets
         ans
     }
 }
+
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -1892,6 +1937,8 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
         i.popn.out <- combined@iPopnNext
         i.popn.in <- combined@iPopnNextOther
         diff <- combined@diffProp
+        diff.out <- -1L * diff
+        diff.in <- diff
         diff.log.lik.cells <- diffLogLikCellsPool(diff = diff,
                                                   iCellOut = i.cell.out,
                                                   iCellIn = i.cell.in,
@@ -1903,7 +1950,8 @@ diffLogLikAccountMovePool <- function(combined, useC = FALSE) {
                                                   transforms = transforms)
         if (is.infinite(diff.log.lik.cells))
             return(diff.log.lik.cells)
-        diff.log.lik.popn <- diffLogLikPopnPair(diff = diff,
+        diff.log.lik.popn <- diffLogLikPopnPair(diffOrig = diff.out,
+                                                diffDest = diff.in,
                                                 iPopnOrig = i.popn.out,
                                                 iPopnDest = i.popn.in,
                                                 iterator = iterator,
@@ -2021,6 +2069,8 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
         i.popn.add <- combined@iPopnNext
         i.popn.sub <- combined@iPopnNextOther
         diff <- combined@diffProp
+        diff.add = diff
+        diff.sub = -1L * diff
         diff.log.lik.cells <- diffLogLikCellsNet(diff = diff,
                                                  iCellAdd = i.cell.add,
                                                  iCellSub = i.cell.sub,
@@ -2032,10 +2082,8 @@ diffLogLikAccountMoveNet <- function(combined, useC = FALSE) {
                                                  transforms = transforms)
         if (is.infinite(diff.log.lik.cells))
             return(diff.log.lik.cells)
-        ## 'diffLogLikPopnPair assumes 'diff' is subtracted from first cohort
-        ## and added to second, which is what happens with orig-dest and pool.
-        ## To instead add and subtract, we use -diff.
-        diff.log.lik.popn <- diffLogLikPopnPair(diff = -diff,
+        diff.log.lik.popn <- diffLogLikPopnPair(diffOrig = diff.add,
+                                                diffDest = diff.sub,
                                                 iPopnOrig = i.popn.add,
                                                 iPopnDest = i.popn.sub,
                                                 iterator = iterator,
@@ -3585,6 +3633,7 @@ diffLogDensJumpOrigDestSmall <- function(combined, useC = FALSE) {
                 else {
                     if (expose.low.curr < 0)
                         return(-Inf)
+                    browser()
                     stop(sprintf("negative value for 'expose.low.prop' : %f", expose.low.prop))
                 }
             }
@@ -3682,6 +3731,7 @@ diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
                 else {
                     if (expose.low.curr < 0)
                         return(-Inf)
+                    browser()
                     stop(sprintf("negative value for 'expose.low.prop' : %f", expose.low.prop))
                 }
             }
@@ -3734,15 +3784,22 @@ updateAccSmall <- function(combined, useC = FALSE) {
         if (!is.births) {
             i.orig.dest <- combined@iOrigDest
             is.orig.dest <- i.comp == i.orig.dest
-            is.increment <- combined@isIncrement[[i.comp]]
             diff <- combined@diffProp
             i.acc <- combined@iAccNext
             has.accession <- i.acc > 0L
             if (has.accession) {
-                if (is.orig.dest || !is.increment)
+                if (is.orig.dest) {
+                    i.acc.dest <- combined@iAccNextOther
                     combined@accession[i.acc] <- combined@accession[i.acc] - diff
-                else
-                    combined@accession[i.acc] <- combined@accession[i.acc] - diff
+                    combined@accession[i.acc.dest] <- combined@accession[i.acc.dest] + diff
+                }
+                else {
+                    is.increment <- combined@isIncrement[[i.comp]]
+                    if (is.increment)
+                        combined@accession[i.acc] <- combined@accession[i.acc] + diff
+                    else
+                        combined@accession[i.acc] <- combined@accession[i.acc] - diff                        
+                }
             }
         }
         combined
