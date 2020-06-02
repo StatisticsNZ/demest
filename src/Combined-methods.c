@@ -855,9 +855,7 @@ updateCombined_CombinedCountsBinomial(SEXP object_R, int nUpdate)
 
     while (nUpdate > 0) {
 
-        updateCountsBinomial(y_R, model_R,
-                                exposure_R, dataModels_R,
-                                datasets_R, transforms_R);
+      updateCountsAndThetaBinomial(object_R);
 
         updateModelUseExp_Internal(model_R, y_R, exposure_R, i_method_model);
 

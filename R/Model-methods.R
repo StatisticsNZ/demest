@@ -1321,8 +1321,9 @@ setMethod("makeOutputModel",
               dims <- model@dims
               dfSigma <- model@nuSigma@.Data
               scaleSigma <- model@ASigma@.Data
+              cell.in.lik <- model@cellInLik
               n.beta <- length(betas.obj)
-              n.attempt <- as.integer(prod(dim(metadata)))
+              n.attempt <- sum(cell.in.lik)
               nChain <- mcmc["nChain"]
               nIteration <- mcmc["nIteration"]
               ## make theta
@@ -3185,9 +3186,11 @@ setMethod("updateModelUseExp",
                       .Call(updateModelUseExp_R, object, y, exposure)
               }
               else {
-                  object <- updateTheta_BinomialVarying(object,
-                                                        y = y,
-                                                        exposure = exposure)
+                  update.theta <- object@updateTheta@.Data
+                  if (update.theta)
+                      object <- updateTheta_BinomialVarying(object,
+                                                            y = y,
+                                                            exposure = exposure)
                   object <- updateSigma_Varying(object)
                   object <- updateBetas(object)
                   object <- updateMu(object)

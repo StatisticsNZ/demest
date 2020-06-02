@@ -854,7 +854,8 @@ setClass("StrucZeroArrayMixin",
 setClass("Theta",
          slots = c(theta = "numeric",
                    thetaTransformed = "numeric",
-                   logPostTheta = "Parameter"),
+                   logPostTheta = "Parameter",
+                   updateTheta = "LogicalFlag"),
          contains = "VIRTUAL",
          validity = function(object) {
              theta <- object@theta

@@ -7199,67 +7199,83 @@ updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
 
 }
 
+
 void
-updateCountsBinomial(SEXP y_R, SEXP model_R,
-             SEXP exposure_R, SEXP dataModels_R,
-             SEXP datasets_R, SEXP transforms_R)
+updateCountsAndThetaBinomial(SEXP object_R)
 {
 
+  SEXP y_R = GET_SLOT(object_R, y_sym);
+  SEXP model_R = GET_SLOT(object_R, model_sym);
+  SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
+  SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
+  SEXP transforms_R = GET_SLOT(object_R, transforms_sym);
   double *theta = REAL(GET_SLOT(model_R, theta_sym));
+  double *thetaTransformed = REAL(GET_SLOT(model_R, thetaTransformed_sym));
   double *mu = REAL(GET_SLOT(model_R, mu_sym));
   double sigma = *REAL(GET_SLOT(model_R, sigma_sym));
-  int *exposure = INTEGER(exposure_R);
+  double scale = *REAL(GET_SLOT(model_R, scaleTheta_sym));
+  int *exposure = INTEGER(GET_SLOT(object_R, exposure_sym));
   int *cellInLik = INTEGER(GET_SLOT(model_R, cellInLik_sym));
+  double lower = *REAL(GET_SLOT(model_R, lower_sym));
+  double upper = *REAL(GET_SLOT(model_R, upper_sym));
+  double tolerance = *REAL(GET_SLOT(model_R, tolerance_sym));
+  int maxAttempt = *INTEGER(GET_SLOT(model_R, maxAttempt_sym));
   int nY = LENGTH(y_R);
   int *y = INTEGER(y_R);
-
-<<<<<<< HEAD
-  double eta_prop;
-  double theta_prop;
-  
-=======
->>>>>>> master
-  for(int i = 0; i < nY; ++i) {
-
+  int nFailedPropTheta = 0;
+  int nAcceptTheta = 0;
+  double logitThProp;
+  double thetaProp;
+  for (int i = 0; i < nY; ++i) {
     int ir = i+1; /* R style index */
-
-<<<<<<< HEAD
-    if (cellInLik[i]) {
-      theta_prop = theta[i];
+    int inLik = cellInLik[i];
+    int foundProp = 0;
+    int attempt = 0;
+    double sdJump = sigma;
+    if (inLik)
+      sdJump *= scale;
+    while (!foundProp && (attempt < maxAttempt)) {
+      logitThProp = rnorm(mu[i], sdJump);
+      foundProp = ((logitThProp > lower + tolerance)
+		   && (logitThProp < upper + tolerance));
+    }
+    if (foundProp) {
+      if (logitThProp > 0)
+	thetaProp = 1 / (1 + exp(-logitThProp));
+      else
+	thetaProp = exp(logitThProp) / (1 + exp(logitThProp));
+      int yProp = rbinom(exposure[i], thetaProp);
+      int accept = 1;
+      if (inLik) {
+	double logitThCurr = thetaTransformed[i];
+	double diffLL = diffLogLik(&yProp, y_R,
+				   &ir, 1, /* 1 is value for 'n_element_indices_y' */
+				   dataModels_R, datasets_R, transforms_R);
+	double diffLogDens = (dnorm(logitThProp, mu[i], sigma, USE_LOG)
+			      - dnorm(logitThCurr, mu[i], sigma, USE_LOG));
+	double diffLogJump = (dnorm(logitThCurr, mu[i], sdJump, USE_LOG)
+			      - dnorm(logitThProp, mu[i], sdJump, USE_LOG));
+	double logR = diffLL + diffLogDens + diffLogJump;
+	accept =  ( !( logR < 0.0) || ( runif(0.0, 1.0) < exp(logR) ) );
+      }
+      if (accept) {
+	if (inLik)
+	  ++nAcceptTheta;
+	y[i] = yProp;
+	theta[i] = thetaProp;
+	thetaTransformed[i] = logitThProp;
+      }
     }
     else {
-      eta_prop = rnorm(mu[i], sigma);
-      if (eta_prop > 0)
-    	theta_prop = 1 / (1 + exp(-eta_prop));
-      else
-    	theta_prop = exp(eta_prop) / (1 + exp(eta_prop));
-    }
-
-    /* eta_prop = rnorm(mu[i], sigma); */
-    /* if (eta_prop > 0) */
-    /*   theta_prop = 1 / (1 + exp(-eta_prop)); */
-    /* else */
-    /*   theta_prop = exp(eta_prop) / (1 + exp(eta_prop)); */
-
-    int yProp = rbinom(exposure[i], theta_prop);
-=======
-    int yProp = rbinom(exposure[i], theta[i]);
->>>>>>> master
-    /* cast to int */
-
-    double diffLL = diffLogLik(&yProp, y_R,
-                   &ir, 1,
-                   dataModels_R, datasets_R, transforms_R);
-
-
-    int accept =  ( !( diffLL < 0.0)
-            || ( runif(0.0, 1.0) < exp(diffLL) ) );
-    if (accept) {
-      /* accept proposals */
-      y[i] = yProp;
+      ++nFailedPropTheta;
     }
   }
+  SET_INTSCALE_SLOT(model_R, nAcceptTheta_sym, nAcceptTheta);
+  SET_INTSCALE_SLOT(model_R, nFailedPropTheta_sym, nFailedPropTheta);
 }
+
+
+
 
 void
 updateDataModelsCounts(SEXP y_R, SEXP dataModels_R,

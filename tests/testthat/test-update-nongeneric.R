@@ -11209,8 +11209,9 @@ test_that("R and C versions of updateCountsPoissonUseExp give same answer with s
     }
 })
 
-test_that("R version of updateCountsBinomial works", {
-    updateCountsBinomial <- demest:::updateCountsBinomial
+test_that("R version of updateCountsAndThetaBinomial works", {
+    updateCountsAndThetaBinomial <- demest:::updateCountsAndThetaBinomial
+    initialCombinedCounts <- demest:::initialCombinedCounts
     diffLogLik <- demest:::diffLogLik
     initialModel <- demest:::initialModel
     getIAfter <- dembase::getIAfter
@@ -11224,45 +11225,66 @@ test_that("R version of updateCountsBinomial works", {
         y <- Counts(array(as.integer(rbinom(48, size = exposure, prob = 0.5)),
                           dim = c(6, 2, 4),
                           dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:4])))
-        model <- initialModel(Model(y ~ Binomial(mean ~ reg + sex + age)),
-                              y = y,
-                              exposure = exposure)
+        model <- Model(y ~ Binomial(mean ~ reg + sex + age))
         datasets <- list(Counts(array(as.integer(rpois(n = 24, lambda = collapseDimension(y, dimension = "sex"))),
                                       dim = c(6, 4),
                                       dimnames = list(age = 0:5, reg = letters[1:4]))),
                          Counts(array(as.integer(rpois(n = 36, lambda = y[,,1:3])),
                                       dim = c(6, 2, 3),
                                       dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:3]))))
-        observation <- vector("list", 2)
+        data.models <- vector("list", 2)
         transforms <- vector("list", 2)
+        names.datasets <- c("census", "admin")
         for (i in 1:2) {
             transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
                                                                         y = datasets[[i]],
                                                                         subset = TRUE))
-            observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                             y = datasets[[i]],
-                                             exposure = dembase::collapse(y, transforms[[i]]))
+            data.models[[i]] <- Model(y ~ Poisson(mean ~ 1))
         }
+        x <- initialCombinedCounts(object = model,
+                                   y = y,
+                                   exposure = exposure,
+                                   dataModels = data.models,
+                                   datasets = datasets,
+                                   namesDatasets = names.datasets,
+                                   transforms = transforms)
+        expect_true(validObject(x))
+        expect_is(x, "CombinedCountsBinomial")
         set.seed(seed)
-        ans.obtained <- updateCountsBinomial(y = y,
-                                             model = model,
-                                             exposure = exposure,
-                                             dataModels = observation,
-                                             datasets = datasets,
-                                             transforms = transforms)
+        ans.obtained <- updateCountsAndThetaBinomial(x)
         set.seed(seed)
-        ans.expected <- y
+        ans.expected <- x
+        y <- x@y
         for (i in seq_along(y)) {
-            y.prop <- as.integer(rbinom(n = 1, size = exposure[i], prob = model@theta[i]))
+            eta.prop <- rnorm(n = 1, mean = x@model@mu[i], sd = x@model@scaleTheta * x@model@sigma)
+            if (eta.prop > 0)
+                th.prop <- 1 / (1 + exp(-eta.prop))
+            else
+                th.prop <- exp(eta.prop) / (1 + exp(eta.prop))
+            y.prop <- rbinom(n = 1, size = x@exposure[i], prob = th.prop)
             diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = ans.expected,
+                                       y = y,
                                        indicesY = i,
-                                       dataModels = observation,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
-                ans.expected[i] <- y.prop
+                                       dataModels = x@dataModels,
+                                       datasets = x@datasets,
+                                       transforms = x@transforms)
+            eta.curr <- x@model@thetaTransformed[i]
+            diff.log.dens <- (dnorm(eta.prop, x@model@mu[i], x@model@sigma, log = TRUE)
+                - dnorm(eta.curr, x@model@mu[i], x@model@sigma, log = TRUE))
+            diff.log.jump <- (dnorm(eta.curr, x@model@mu[i],
+                                    x@model@scaleTheta * x@model@sigma, log = TRUE)
+                - dnorm(eta.prop, x@model@mu[i],
+                        x@model@scaleTheta * x@model@sigma, log = TRUE))
+            diff <- diff.log.lik + diff.log.dens + diff.log.jump
+            accept <- (diff >= 0) || (runif(1) < exp(diff))
+            if (accept) {
+                y[i] <- y.prop
+                ans.expected@model@theta[i] <- th.prop
+                ans.expected@model@thetaTransformed[i] <- eta.prop
+                ans.expected@model@nAcceptTheta@.Data  <- ans.expected@model@nAcceptTheta@.Data + 1L
+            }
         }
+        ans.expected@y <- y
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -11270,8 +11292,10 @@ test_that("R version of updateCountsBinomial works", {
     }
 })
 
-test_that("R and C versions of updateCountsBinomial give same answer", {
-    updateCountsBinomial <- demest:::updateCountsBinomial
+
+test_that("R and C versions of version of updateCountsAndThetaBinomial give same answer", {
+    updateCountsAndThetaBinomial <- demest:::updateCountsAndThetaBinomial
+    initialCombinedCounts <- demest:::initialCombinedCounts
     diffLogLik <- demest:::diffLogLik
     initialModel <- demest:::initialModel
     getIAfter <- dembase::getIAfter
@@ -11285,47 +11309,45 @@ test_that("R and C versions of updateCountsBinomial give same answer", {
         y <- Counts(array(as.integer(rbinom(48, size = exposure, prob = 0.5)),
                           dim = c(6, 2, 4),
                           dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:4])))
-        model <- initialModel(Model(y ~ Binomial(mean ~ reg + sex + age)),
-                              y = y,
-                              exposure = exposure)
+        model <- Model(y ~ Binomial(mean ~ reg + sex + age))
         datasets <- list(Counts(array(as.integer(rpois(n = 24, lambda = collapseDimension(y, dimension = "sex"))),
                                       dim = c(6, 4),
                                       dimnames = list(age = 0:5, reg = letters[1:4]))),
                          Counts(array(as.integer(rpois(n = 36, lambda = y[,,1:3])),
                                       dim = c(6, 2, 3),
                                       dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:3]))))
-        observation <- vector("list", 2)
+        data.models <- vector("list", 2)
         transforms <- vector("list", 2)
+        names.datasets <- c("census", "admin")
         for (i in 1:2) {
             transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
                                                                         y = datasets[[i]],
                                                                         subset = TRUE))
-            observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                             y = datasets[[i]],
-                                             exposure = dembase::collapse(y, transforms[[i]]))
+            data.models[[i]] <- Model(y ~ Poisson(mean ~ 1))
         }
+        x <- initialCombinedCounts(object = model,
+                                   y = y,
+                                   exposure = exposure,
+                                   dataModels = data.models,
+                                   datasets = datasets,
+                                   namesDatasets = names.datasets,
+                                   transforms = transforms)
+        expect_true(validObject(x))
+        expect_is(x, "CombinedCountsBinomial")
         set.seed(seed)
-        ans.R <- updateCountsBinomial(y = y,
-                                      model = model,
-                                      exposure = exposure,
-                                      dataModels = observation,
-                                      datasets = datasets,
-                                      transforms = transforms,
-                                      useC = FALSE)
         set.seed(seed)
-        ans.C <- updateCountsBinomial(y = y,
-                                      model = model,
-                                      exposure = exposure,
-                                      dataModels = observation,
-                                      datasets = datasets,
-                                      transforms = transforms,
-                                      useC = TRUE)
+        ans.R <- updateCountsAndThetaBinomial(x,
+                                              useC = FALSE)
+        set.seed(seed)
+        ans.C <- updateCountsAndThetaBinomial(x,
+                                              useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
     }
 })
+
 
 
 ## updateDataModel ######################################################

@@ -483,6 +483,7 @@ setMethod("initialCombinedCounts",
                   }
               }
               model <- initialModel(object, y = y.tmp, exposure = exposure)
+              model@updateTheta@.Data <- FALSE
               methods::new("CombinedCountsBinomial",
                            model = model,
                            y = y,

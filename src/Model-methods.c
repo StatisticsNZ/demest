@@ -822,13 +822,16 @@ updateModelUseExp_CMPVaryingUseExp_i(SEXP object, SEXP y_R, SEXP exposure_R)
 static __inline__ void
 updateModelUseExp_BinomialVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
+  int updateTheta = *LOGICAL(GET_SLOT(object, updateTheta_sym));
+  if (updateTheta) {
     updateTheta_BinomialVarying(object, y_R, exposure_R);
-    updateSigma_Varying(object);
-    updateBetas(object);
-    updateMu(object);
-    updatePriorsBetas(object);
-    updateMeansBetas(object);
-    updateVariancesBetas(object);
+  }
+  updateSigma_Varying(object);
+  updateBetas(object);
+  updateMu(object);
+  updatePriorsBetas(object);
+  updateMeansBetas(object);
+  updateVariancesBetas(object);
 }
 
 

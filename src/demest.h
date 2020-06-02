@@ -69,6 +69,7 @@ SEXP
   logPostSigma_sym,
   logPostTheta_sym,
   logPostVarsigma_sym,
+  updateTheta_sym,
   theta_sym,
   thetaTransformed_sym,
   cellInLik_sym,
@@ -828,9 +829,7 @@ void updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R,
 void updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
                         SEXP exposure_R, SEXP dataModels_R,
                         SEXP datasets_R, SEXP transforms_R);
-void updateCountsBinomial(SEXP y_R, SEXP model_R,
-                        SEXP exposure_R, SEXP dataModels_R,
-                        SEXP datasets_R, SEXP transforms_R);
+void updateCountsAndThetaBinomial(SEXP object_R);
 void
 updateDataModelsCounts(SEXP y_R, SEXP dataModels_R,
                SEXP datasets_R, SEXP transforms_R);

@@ -2271,7 +2271,7 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
                 else {
                     log.lik.prop <- stats::dbinom(x = y[i], size = exposure[i], prob = th.prop, log = TRUE)
                     log.lik.curr <- stats::dbinom(x = y[i], size = exposure[i], prob = th.curr, log = TRUE)
-                    ## The Jacobians from the transformation of variables cancel,
+                    ## The Jacobians from the transformation of variablesx Rcancel,
                     ## as do the normal densities in the proposal distributions.
                     log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu[i], sd = sigma, log = TRUE)
                     log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu[i], sd = sigma, log = TRUE)
@@ -5241,81 +5241,83 @@ updateCountsPoissonUseExp <- function(y, model, exposure, dataModels, datasets,
 
 ## TRANSLATED
 ## HAS_TESTS
-updateCountsBinomial <- function(y, model, exposure, dataModels, datasets,
-                                 transforms, useC = FALSE) {
-    ## y
-    stopifnot(methods::is(y, "Counts"))
-    stopifnot(!methods::is(y, "HasSubtotals"))
-    stopifnot(is.integer(y))
-    stopifnot(!any(is.na(y)))
-    stopifnot(all(y >= 0))
-    ## model
-    stopifnot(methods::is(model, "Model"))
-    stopifnot(methods::is(model, "Binomial"))
-    ## exposure
-    stopifnot(methods::is(model, "UseExposure"))
-    stopifnot(methods::is(exposure, "Counts"))
-    stopifnot(!any(is.na(exposure)))
-    stopifnot(is.integer(exposure))
-    stopifnot(all(exposure >= 0))
-    ## dataModels
-    stopifnot(is.list(dataModels))
-    stopifnot(all(sapply(dataModels, methods::is, "Model")))
-    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
-    ## datasets
-    stopifnot(is.list(datasets))
-    stopifnot(all(sapply(datasets, methods::is, "Counts")))
-    stopifnot(all(sapply(datasets, is.integer)))
-    stopifnot(all(sapply(datasets, function(x) all(x[!is.na(x)] >= 0))))
-    ## transforms
-    stopifnot(is.list(transforms))
-    stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
-    ## y and exposure
-    stopifnot(all(y <= exposure))
-    ## y and transforms
-    for (i in seq_along(transforms))
-        stopifnot(identical(dim(y), transforms[[i]]@dimBefore))
-    ## dataModels and datasets
-    stopifnot(identical(length(dataModels), length(datasets)))
-    ## dataModels and transforms
-    stopifnot(identical(length(dataModels), length(transforms)))
-    ## datasets and transforms
-    for (i in seq_along(datasets))
-        stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
+updateCountsAndThetaBinomial <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "CombinedCountsBinomial"))
+    stopifnot(methods::validObject(object))
     if (useC) {
-        .Call(updateCountsBinomial_R, y, model, exposure,
-              dataModels, datasets, transforms)
+        .Call(updateCountsAndThetaBinomial_R, object)
     }
     else {
+        y <- object@y
+        model <- object@model
+        dataModels <- object@dataModels
+        datasets <- object@datasets
+        transforms <- object@transforms
+        exposure <- object@exposure
+        theta <- model@theta
+        theta.transformed <- model@thetaTransformed
         mu <- model@mu
         sigma <- model@sigma
+        scale <- model@scaleTheta
         cell.in.lik <- model@cellInLik
+        lower <- model@lower
+        upper <- model@upper
+        tolerance <- model@tolerance
+        max.attempt <- model@maxAttempt
+        n.failed.prop.theta <- 0L
+        n.accept.theta <- 0L
         for (i in seq_along(y)) {
-            if (cell.in.lik[i]) {
-                theta.prop <- theta[i]
+            in.lik  <- cell.in.lik[i]
+            found.prop <- FALSE
+            attempt <- 0L
+            sd.jump <- if (in.lik) scale * sigma else sigma
+            while (!found.prop && (attempt < max.attempt)) {
+                attempt <- attempt + 1L
+                logit.th.prop <- stats::rnorm(n = 1L, mean = mu[i], sd = sd.jump)
+                found.prop <- ((logit.th.prop > lower + tolerance)
+                    && (logit.th.prop < upper - tolerance))
             }
-            else {
-                eta.prop <- stats::rnorm(n = 1L, mean = mu[i], sd = sigma)
-                if (eta.prop > 0)
-                    theta.prop <- 1 / (1 + exp(-eta.prop))
+            if (found.prop) {
+                if (logit.th.prop > 0)
+                    theta.prop <- 1 / (1 + exp(-logit.th.prop))
                 else
-                    theta.prop <- exp(eta.prop) / (1 + exp(eta.prop))
+                    theta.prop <- exp(logit.th.prop) / (1 + exp(logit.th.prop))
+                y.prop <- stats::rbinom(n = 1L, size = exposure[i], prob = theta.prop)
+                if (in.lik) {
+                    ## jacobians cancel
+                    logit.th.curr <- theta.transformed[i]
+                    diff.log.lik <- diffLogLik(yProp = y.prop,
+                                               y = y,
+                                               indicesY = i,
+                                               dataModels = dataModels,
+                                               datasets = datasets,
+                                               transforms = transforms)
+                    diff.log.dens <- (stats::dnorm(logit.th.prop, mean = mu[i], sd = sigma, log = TRUE)
+                        - stats::dnorm(logit.th.curr, mean = mu[i], sd = sigma, log = TRUE))
+                    diff.log.jump <- (stats::dnorm(logit.th.curr, mean = mu[i], sd = sd.jump, log = TRUE)
+                        - stats::dnorm(logit.th.prop, mean = mu[i], sd = sd.jump, log = TRUE))
+                    log.r <- diff.log.lik + diff.log.dens + diff.log.jump
+                    accept <- (log.r >= 0) || (stats::runif(n = 1L) < exp(log.r))
+                }
+                else
+                    accept <- TRUE
+                if (accept) {
+                    n.accept.theta <- n.accept.theta + in.lik
+                    y[i] <- y.prop
+                    theta[i] <- theta.prop
+                    theta.transformed[i] <- logit.th.prop
+                }
             }
-            y.prop <- stats::rbinom(n = 1L, size = exposure[i], prob = theta.prop)
-            y.prop <- as.integer(y.prop)  # needed for R < 3.0
-            diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = y,
-                                       indicesY = i,
-                                       dataModels = dataModels,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
-            if (accept)
-                y[i] <- y.prop
+            else
+                n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
-        y
+        object@y <- y
+        object@model@theta <- theta
+        object@model@thetaTransformed <- theta.transformed
+        object@model@nFailedPropTheta@.Data <- n.failed.prop.theta
+        object@model@nAcceptTheta@.Data <- n.accept.theta
+        object
     }
-
 }
 
 ## TODO - modify this to use 'updateDataModel' slot

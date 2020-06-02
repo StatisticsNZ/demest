@@ -1287,7 +1287,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndNu_CMPVaryingUseExp);
 /* wrap update Counts functions */
 UPDATECOUNTS_NOEXP_WRAPPER_R(updateCountsPoissonNotUseExp);
 UPDATECOUNTS_WITHEXP_WRAPPER_R(updateCountsPoissonUseExp);
-UPDATECOUNTS_WITHEXP_WRAPPER_R(updateCountsBinomial);
+UPDATEOBJECT_WRAPPER_R(updateCountsAndThetaBinomial);
 
 /* wrap  transfer param model functions*/
 TRANSFERPARAM_WRAPPER_R(transferParamModel);
@@ -2410,7 +2410,7 @@ R_CallMethodDef callMethods[] = {
   /* update counts */
   CALLDEF(updateCountsPoissonNotUseExp_R, 5),
   CALLDEF(updateCountsPoissonUseExp_R, 6),
-  CALLDEF(updateCountsBinomial_R, 6),
+  CALLDEF(updateCountsAndThetaBinomial_R, 1),
 
   /* update dataModels and datasets */
   CALLDEF(updateDataModelsCounts_R, 4),
@@ -2815,6 +2815,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(logPostSigma);
   ADD_SYM(logPostTheta);
   ADD_SYM(logPostVarsigma);
+  ADD_SYM(updateTheta);
   ADD_SYM(iMethodModel);
   ADD_SYM(priorsBetas);
   ADD_SYM(theta);

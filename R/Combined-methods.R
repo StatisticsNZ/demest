@@ -828,19 +828,16 @@ setMethod("updateCombined",
                   datasets <- object@datasets
                   transforms <- object@transforms
                   for (i in seq_len(nUpdate)) {
-                      y <- updateCountsBinomial(y = y,
-                                                model = model,
-                                                exposure = exposure,
-                                                dataModels = dataModels,
-                                                datasets = datasets,
-                                                transforms = transforms)
+                      object <- updateCountsAndThetaBinomial(object)
+                      y <- object@y
+                      model <- object@model
                       model <- updateModelUseExp(object = model,
                                                  y = y,
                                                  exposure = exposure)
                       dataModels <- updateDataModelsCounts(dataModels = dataModels,
-                                                             datasets = datasets,
-                                                             transforms = transforms,
-                                                             y = y)
+                                                           datasets = datasets,
+                                                           transforms = transforms,
+                                                           y = y)
                   }
                   object@y <- y
                   object@model <- model
