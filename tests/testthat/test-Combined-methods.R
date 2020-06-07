@@ -1287,12 +1287,6 @@ test_that("R, C generic and C specific versions of predictCombined give same ans
 })
 
 
-
-
-
-
-
-
 test_that("predictCombined works with object of class CombinedCountsPoissonHasExp", {
     predictCombined <- demest:::predictCombined
     initialCombinedCounts <- demest:::initialCombinedCounts

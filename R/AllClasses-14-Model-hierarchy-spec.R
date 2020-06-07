@@ -65,6 +65,7 @@ setClass("SpecLikelihood",
 #' @export
 setClass("SpecLikelihoodBinomial",
          contains = c("SpecLikelihood",
+                      "StructuralZerosMixin",
                       "FormulaMuMixin"))
 
 #' @rdname SpecLikelihood-class
@@ -308,7 +309,8 @@ setClass("SpecVarying",
 setClass("SpecBinomialVarying",
          prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecVarying",
-                      "SpecAgNotPoissonMixin"),
+                      "SpecAgNotPoissonMixin",
+                      "StructuralZerosMixin"),
          validity = function(object) {
              lower <- object@lower
              upper <- object@upper

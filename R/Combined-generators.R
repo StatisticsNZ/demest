@@ -412,9 +412,25 @@ setMethod("initialCombinedCounts",
                                                   y = datasets[[i]],
                                                   exposure = y.collapsed)
               }
+              y.tmp <- y
+              for (i.cell.y in seq_along(y)) {
+                  is.in.lik <- FALSE
+                  for (i.dataset in seq_along(transforms)) {
+                      transform <- transforms[[i.dataset]]
+                      i.cell.dataset <- dembase:::getIAfter(i = i.cell.y,
+                                                            transform = transform,
+                                                            useC = TRUE)
+                      if (i.cell.dataset > 0L) {
+                          is.in.lik <- TRUE
+                          break
+                      }
+                  }
+                  if (!is.in.lik)
+                      y.tmp[i.cell.y] <- NA
+              }
               has.exposure <- !is.null(exposure)
               if (has.exposure) {
-                  model <- initialModel(object, y = y, exposure = exposure)
+                  model <- initialModel(object, y = y.tmp, exposure = exposure)
                   methods::new("CombinedCountsPoissonHasExp",
                                model = model,
                                y = y,
@@ -425,7 +441,7 @@ setMethod("initialCombinedCounts",
                                transforms = transforms)
               }
               else {
-                  model <- initialModel(object, y = y, exposure = exposure)
+                  model <- initialModel(object, y = y.tmp, exposure = exposure)
                   methods::new("CombinedCountsPoissonNotHasExp",
                                model = model,
                                y = y,
@@ -450,6 +466,10 @@ setMethod("initialCombinedCounts",
               if (is.null(exposure))
                   stop(gettextf("binomial model, but no '%s' argument supplied",
                                 "exposure"))
+              struc.zeros <- object@structuralZeros
+              struc.zero.array <- makeStrucZeroArray(structuralZeros = struc.zeros,
+                                                     y = y)
+              y[struc.zero.array@.Data == 0L] <- 0L
               y <- imputeCountsInternal(y, max = exposure)
               if (any(y[!is.na(y)] > exposure[!is.na(y)]))
                   stop(gettextf("'%s' greater than '%s'",
@@ -468,15 +488,17 @@ setMethod("initialCombinedCounts",
               }
               y.tmp <- y
               for (i.cell.y in seq_along(y)) {
-                  is.in.lik <- FALSE
-                  for (i.dataset in seq_along(transforms)) {
-                      transform <- transforms[[i.dataset]]
-                      i.cell.dataset <- dembase:::getIAfter(i = i.cell.y,
-                                                            transform = transform,
-                                                            useC = TRUE)
-                      if (i.cell.dataset > 0L) {
-                          is.in.lik <- TRUE
-                          break
+                  if (struc.zero.array@.Data[i.cell.y] != 0L) {
+                      is.in.lik <- FALSE
+                      for (i.dataset in seq_along(transforms)) {
+                          transform <- transforms[[i.dataset]]
+                          i.cell.dataset <- dembase:::getIAfter(i = i.cell.y,
+                                                                transform = transform,
+                                                                useC = TRUE)
+                          if (i.cell.dataset > 0L) {
+                              is.in.lik <- TRUE
+                              break
+                          }
                       }
                       if (!is.in.lik)
                           y.tmp[i.cell.y] <- NA

@@ -20,14 +20,17 @@ setClass("Model",
 setClass("Binomial",
          contains = c("VIRTUAL",
                       "UseExposure",
-                      "ScaleThetaMultiplierMixin"),
+                      "ScaleThetaMultiplierMixin",
+                      "StrucZeroArrayMixin"),
          validity = function(object) {
              theta <- object@theta
+             struc.zero.array <- object@strucZeroArray
+             is.struc.zero <- struc.zero.array@.Data == 0L
              ## 'theta' is non-negative
-             if (any(theta < 0))
+             if (any(theta[!is.struc.zero] < 0))
                  return(gettextf("'%s' has negative values", "theta"))
              ## 'theta' is less than or equal to 1
-             if (any(theta > 1))
+             if (any(theta[!is.struc.zero] > 1))
                  return(gettextf("'%s' has values greater than %d",
                                  "theta", 1L))
              TRUE
@@ -129,12 +132,14 @@ setClass("BinomialVarying",
              lower <- object@lower
              upper <- object@upper
              tolerance <- object@tolerance
+             struc.zero.array <- object@strucZeroArray
+             is.struc.zero <- struc.zero.array@.Data == 0L
              ## 'theta' greater than or equal to invlogit(lower)
-             if (any(theta < invlogit1(lower) - tolerance))
+             if (any(theta[!is.struc.zero] < invlogit1(lower) - tolerance))
                  return(gettextf("'%s' has values that are less than '%s'",
                                  "theta", "lower"))
              ## 'theta' less than or equal to invlogit(upper)
-             if (any(theta > invlogit1(upper) + tolerance))
+             if (any(theta[!is.struc.zero] > invlogit1(upper) + tolerance))
                  return(gettextf("'%s' has values that are greater than '%s'",
                                  "theta", "upper"))
              TRUE
@@ -404,6 +409,7 @@ setClass("LN2",
                       "SigmaMaxMixin",
                       "SigmaMixin",
                       "StrucZeroArrayMixin",
+                      "UseExposure",
                       "VarsigmaUnknown"),
          prototype = prototype(slotsToExtract = c("alphaLN2",
                                                   "varsigma",

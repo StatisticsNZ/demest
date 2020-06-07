@@ -227,10 +227,12 @@ CMP <- function(formula, dispersion = Dispersion(), useExpose = TRUE,
 ## HAS_TESTS
 #' @rdname likelihood
 #' @export
-Binomial <- function(formula) {
+Binomial <- function(formula, structuralZeros = NULL) {
     checkFormulaMu(formula)
     checkForMarginalTerms(formula)
+    structuralZeros <- checkAndTidyStructuralZeros(structuralZeros)
     methods::new("SpecLikelihoodBinomial",
+                 structuralZeros = structuralZeros,
                  formulaMu = formula)
 }
 
@@ -845,6 +847,7 @@ setMethod("SpecModel",
                    lower, upper, priorSD, jump,
                    series, aggregate) {
               formula.mu <- specInner@formulaMu
+              structuralZeros <- specInner@structuralZeros              
               specs.priors <- makeSpecsPriors(dots)
               names.specs.priors <- makeNamesSpecsPriors(dots)
               if (is.null(lower))
@@ -898,6 +901,7 @@ setMethod("SpecModel",
                            scaleTheta = scale.theta,
                            series = series,
                            sigmaMax = sigma.max,
+                           structuralZeros = structuralZeros,
                            upper = upper,
                            aggregate = aggregate)
           })

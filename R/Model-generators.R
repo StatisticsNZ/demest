@@ -545,6 +545,7 @@ setMethod("initialModel",
               formula.mu <- object@formulaMu
               specs.priors <- object@specsPriors
               names.specs.priors <- object@namesSpecsPriors
+              structural.zeros <- object@structuralZeros
               lower <- object@lower
               upper <- object@upper
               tolerance <- object@tolerance
@@ -558,6 +559,10 @@ setMethod("initialModel",
               checkLengthDimInFormula(y = y, formula = formula.mu)
               metadataY <- y@metadata
               dim <- dim(y)
+              struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, 
+                                                     y = y)
+              y <- checkAndTidyYForStrucZero(y = y, 
+                                             strucZeroArray = struc.zero.array) 
               y.tmp <- as.integer(y)
               exposure.tmp <- as.integer(exposure)
               y.tmp[is.na(y)] <- 0.0
@@ -565,7 +570,8 @@ setMethod("initialModel",
               A.sigma <- methods::new("Scale", A.sigma)
               nu.sigma <- methods::new("DegreesFreedom", nu.sigma)
               sigma.max <- methods::new("Scale", sigma.max)
-              m <- sum(y[!is.na(y)]) / sum(exposure[!is.na(y)])
+              include <- !is.na(y) & (struc.zero.array != 0L)
+              m <- sum(y[include]) / sum(exposure[include])
               nu <- m * (1 - m)
               sigma <- stats::runif(n = 1L,
                                     min = 0,
@@ -596,11 +602,10 @@ setMethod("initialModel",
               logit.theta <- log(theta / (1 - theta))
               betas <- makeLinearBetas(theta = logit.theta, formula = formula.mu)
               theta <- as.numeric(theta)
+              theta[struc.zero.array == 0L] <- NA
               theta.transformed <- log(theta / (1 - theta))
               names.betas <- names(betas)
               margins <- makeMargins(betas = betas, y = y)
-              struc.zero.array <- makeStrucZeroArray(structuralZeros = NULL,
-                                                     y = y) 
               priors.betas <- makePriors(betas = betas,
                                          specs = specs.priors,
                                          namesSpecs = names.specs.priors,
@@ -619,7 +624,7 @@ setMethod("initialModel",
               }
               betas <- unname(lapply(betas, as.numeric))
               betas <- jitterBetas(betas = betas, priorsBetas = priors.betas)
-              val.betas <- lapply(betas, function(x) rep(0, length(x)))
+              val.betas <- lapply(betas, function(x) ifelse(is.na(x), as.double(NA), 0))
               fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
               beta.equals.mean <- sapply(priors.betas, fun)
               iterator.betas <- BetaIterator(dim = dim, margins = margins)
@@ -635,6 +640,7 @@ setMethod("initialModel",
                                     thetaTransformed = theta.transformed,
                                     metadataY = metadataY,
                                     cellInLik = cellInLik,
+                                    strucZeroArray = struc.zero.array,
                                     scaleTheta = scale.theta,
                                     scaleThetaMultiplier = scale.theta.multiplier,
                                     nAcceptTheta = methods::new("Counter", 0L),
@@ -662,7 +668,8 @@ setMethod("initialModel",
                              aggregate = aggregate,
                              defaultWeights = default.weights)
               model <- makeCellInLik(model = model,
-                                     y = y)
+                                     y = y,
+                                     strucZeroArray = struc.zero.array)
               model <- updateMu(model, useC = TRUE)
               model <- updateMeansBetas(model, useC = TRUE)
               model <- updateVariancesBetas(model, useC = TRUE)
@@ -1657,6 +1664,7 @@ setMethod("initialModelPredict",
                                   thetaTransformed = l$thetaTransformed,
                                   metadataY = metadataY,
                                   cellInLik = l$cellInLik,
+                                  strucZeroArray = l$strucZeroArray,
                                   nAcceptTheta = methods::new("Counter", 0L),
                                   lower = lower,
                                   upper = upper,
