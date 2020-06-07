@@ -1162,6 +1162,7 @@ test_that("predictCombined works with object of class CombinedCountsBinomial", {
                                            labels = NULL,
                                            n = 2L,
                                            exposure = exposure.pred,
+                                           predictData = TRUE,
                                            covariates = list(),
                                            aggregate = list(),
                                            lower = list(),
@@ -1244,6 +1245,7 @@ test_that("R, C generic and C specific versions of predictCombined give same ans
                                            labels = NULL,
                                            n = 2L,
                                            exposure = exposure.pred,
+                                           predictData = TRUE,
                                            covariates = list(),
                                            aggregate = list(),
                                            lower = list(),
@@ -1329,6 +1331,7 @@ test_that("predictCombined works with object of class CombinedCountsPoissonHasEx
                                            labels = NULL,
                                            n = 2L,
                                            exposure = exposure.pred,
+                                           predictData = TRUE,
                                            covariates = list(),
                                            aggregate = list(),
                                            lower = list(),
@@ -1408,6 +1411,7 @@ test_that("R, C generic and C specific versions of predictCombined give same ans
                                            labels = NULL,
                                            n = 2L,
                                            exposure = exposure.pred,
+                                           predictData = TRUE,
                                            covariates = list(),
                                            aggregate = list(),
                                            lower = list(),
@@ -1493,6 +1497,7 @@ test_that("predictCombined works with object of class CombinedCountsPoissonNotHa
                                            along = 3L,
                                            labels = NULL,
                                            n = 2L,
+                                           predictData = TRUE,
                                            exposure = NULL,
                                            covariates = list(),
                                            aggregate = list(),
@@ -1571,6 +1576,7 @@ test_that("R, C generic and C specific versions of predictCombined give same ans
                                            along = 3L,
                                            labels = NULL,
                                            n = 2L,
+                                           predictData = TRUE,
                                            exposure = NULL,
                                            covariates = list(),
                                            aggregate = list(),
@@ -2075,7 +2081,7 @@ test_that("updateCombined method for CombinedCountsBinomial updates correct slot
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
     exposure <- y + y
-    model <- Model(y ~ Binomial(mean ~ age))
+    model <- Model(y ~ Binomial(mean ~ age), jump = 1)
     data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
@@ -2098,7 +2104,8 @@ test_that("updateCombined method for CombinedCountsBinomial updates correct slot
     for (name in c("model", "y", "dataModels")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
     }
-    for (name in c("namesDatasets", "datasets", "exposure", "transforms", "iMethodCombined", "slotsToExtract"))
+    for (name in c("namesDatasets", "datasets", "exposure", "transforms", "iMethodCombined",
+                   "slotsToExtract"))
         expect_true(identical(slot(x1, name), slot(x0, name)))
 })
 
