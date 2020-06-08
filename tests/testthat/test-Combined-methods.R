@@ -2448,6 +2448,7 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
         warning("no small updates - deaths")
 })
 
+
 test_that("R and C versions of diffLogLikAccount give same answer with CombinedAccountMovementsHasAge", {
     diffLogLikAccount <- demest:::diffLogLikAccount
     updateProposalAccount <- demest:::updateProposalAccount
@@ -2564,7 +2565,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms,
-                                 probSmallUpdate = 1)
+                                 probSmallUpdate = 0.5)
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
