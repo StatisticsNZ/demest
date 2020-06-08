@@ -1812,14 +1812,12 @@ diffLogLikPopnPair(int diffOrig, int diffDest,
 		   SEXP datasets_R, SEXP seriesIndices_R,
 		   SEXP transforms_R)
 {
-  resetCP(iterator_R, iPopnOrig_r);
   SEXP iteratorDest_R = NULL;
   PROTECT(iteratorDest_R = duplicate(iterator_R));
-  resetCP(iteratorDest_R, iPopnDest_r);
-  int * iPopnOrig_ptr = INTEGER(GET_SLOT(iterator_R, i_sym));
-  int * iPopnDest_ptr = INTEGER(GET_SLOT(iteratorDest_R, i_sym));
+  int * iPopnOrigHere_ptr = INTEGER(GET_SLOT(iterator_R, i_sym));
+  int * iPopnDestHere_ptr = INTEGER(GET_SLOT(iteratorDest_R, i_sym));
   int * finished_ptr = LOGICAL(GET_SLOT(iterator_R, finished_sym));
-  int finished = *finished_ptr;
+  int finished;
   double ans = 0;
   if (iPopnOrig_r != iPopnDest_r) {
     int nDatasets = LENGTH(datasets_R);
@@ -1852,13 +1850,16 @@ diffLogLikPopnPair(int diffOrig, int diffDest,
 	    ans += diffLogLikDest;
 	  }
 	}
+	resetCP(iterator_R, iPopnOrig_r);
+	resetCP(iteratorDest_R, iPopnDest_r);
+	finished = *finished_ptr;
 	while (!finished) {
 	  advanceCP(iterator_R);
 	  advanceCP(iteratorDest_R);
-	  iPopnOrig_r = *iPopnOrig_ptr;
-	  iPopnDest_r = *iPopnDest_ptr;
-	  int iAfterOrig_r = dembase_getIAfter(iPopnOrig_r, transform_R);
-	  int iAfterDest_r = dembase_getIAfter(iPopnDest_r, transform_R);
+	  int iPopnOrigHere_r = *iPopnOrigHere_ptr;
+	  int iPopnDestHere_r = *iPopnDestHere_ptr;
+	  int iAfterOrig_r = dembase_getIAfter(iPopnOrigHere_r, transform_R);
+	  int iAfterDest_r = dembase_getIAfter(iPopnDestHere_r, transform_R);
 	  if (iAfterOrig_r != iAfterDest_r) {
 	    if (iAfterOrig_r > 0) {
 	      double diffLogLikOrig = diffLogLikPopnOneCell(iAfterOrig_r,

@@ -1884,7 +1884,7 @@ diffLogLikPopnPair <- function(diffOrig, diffDest, iPopnOrig, iPopnDest,
                     i.popn.dest <- iterator.dest@i
                     i.after.orig <- getIAfter(i = i.popn.orig,
                                               transform = transform)
-                    i.after.dest <- getIAfter(i = i.popn.orig,
+                    i.after.dest <- getIAfter(i = i.popn.dest,
                                               transform = transform)
                     if (i.after.orig != i.after.dest) {
                         if (i.after.orig > 0L) {
