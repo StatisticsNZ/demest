@@ -7215,6 +7215,7 @@ updateCountsAndThetaBinomial(SEXP object_R)
   double sigma = *REAL(GET_SLOT(model_R, sigma_sym));
   double scale = *REAL(GET_SLOT(model_R, scaleTheta_sym));
   int *exposure = INTEGER(GET_SLOT(object_R, exposure_sym));
+  int *strucZeroArray = INTEGER(GET_SLOT(model_R, strucZeroArray_sym));
   int *cellInLik = INTEGER(GET_SLOT(model_R, cellInLik_sym));
   double lower = *REAL(GET_SLOT(model_R, lower_sym));
   double upper = *REAL(GET_SLOT(model_R, upper_sym));
@@ -7227,47 +7228,50 @@ updateCountsAndThetaBinomial(SEXP object_R)
   double logitThProp;
   double thetaProp;
   for (int i = 0; i < nY; ++i) {
-    int ir = i+1; /* R style index */
-    int inLik = cellInLik[i];
-    int foundProp = 0;
-    int attempt = 0;
-    double sdJump = sigma;
-    if (inLik)
-      sdJump *= scale;
-    while (!foundProp && (attempt < maxAttempt)) {
-      logitThProp = rnorm(mu[i], sdJump);
-      foundProp = ((logitThProp > lower + tolerance)
-		   && (logitThProp < upper + tolerance));
-    }
-    if (foundProp) {
-      if (logitThProp > 0)
-	thetaProp = 1 / (1 + exp(-logitThProp));
-      else
-	thetaProp = exp(logitThProp) / (1 + exp(logitThProp));
-      int yProp = rbinom(exposure[i], thetaProp);
-      int accept = 1;
-      if (inLik) {
-	double logitThCurr = thetaTransformed[i];
-	double diffLL = diffLogLik(&yProp, y_R,
-				   &ir, 1, /* 1 is value for 'n_element_indices_y' */
-				   dataModels_R, datasets_R, transforms_R);
-	double diffLogDens = (dnorm(logitThProp, mu[i], sigma, USE_LOG)
-			      - dnorm(logitThCurr, mu[i], sigma, USE_LOG));
-	double diffLogJump = (dnorm(logitThCurr, mu[i], sdJump, USE_LOG)
-			      - dnorm(logitThProp, mu[i], sdJump, USE_LOG));
-	double logR = diffLL + diffLogDens + diffLogJump;
-	accept =  ( !( logR < 0.0) || ( runif(0.0, 1.0) < exp(logR) ) );
+    int isStrucZero = strucZeroArray[i] == 0;
+    if (!isStrucZero) {
+      int ir = i+1; /* R style index */
+      int inLik = cellInLik[i];
+      int foundProp = 0;
+      int attempt = 0;
+      double sdJump = sigma;
+      if (inLik)
+	sdJump *= scale;
+      while (!foundProp && (attempt < maxAttempt)) {
+	attempt++;
+	logitThProp = rnorm(mu[i], sdJump);
+	foundProp = ((logitThProp > lower + tolerance)
+		     && (logitThProp < upper + tolerance));
       }
-      if (accept) {
-	if (inLik)
+      if (foundProp) {
+	if (logitThProp > 0)
+	  thetaProp = 1 / (1 + exp(-logitThProp));
+	else
+	  thetaProp = exp(logitThProp) / (1 + exp(logitThProp));
+	int yProp = rbinom(exposure[i], thetaProp);
+	int accept = 1;
+	if (inLik) {
+	  double logitThCurr = thetaTransformed[i];
+	  double diffLL = diffLogLik(&yProp, y_R,
+				     &ir, 1, /* 1 is value for 'n_element_indices_y' */
+				     dataModels_R, datasets_R, transforms_R);
+	  double diffLogDens = (dnorm(logitThProp, mu[i], sigma, USE_LOG)
+				- dnorm(logitThCurr, mu[i], sigma, USE_LOG));
+	  double diffLogJump = (dnorm(logitThCurr, mu[i], sdJump, USE_LOG)
+				- dnorm(logitThProp, mu[i], sdJump, USE_LOG));
+	  double logR = diffLL + diffLogDens + diffLogJump;
+	  accept =  ( !( logR < 0.0) || ( runif(0.0, 1.0) < exp(logR) ) );
+	}
+	if (accept) {
 	  ++nAcceptTheta;
-	y[i] = yProp;
-	theta[i] = thetaProp;
-	thetaTransformed[i] = logitThProp;
+	  y[i] = yProp;
+	  theta[i] = thetaProp;
+	  thetaTransformed[i] = logitThProp;
+	}
       }
-    }
-    else {
-      ++nFailedPropTheta;
+      else {
+	++nFailedPropTheta;
+      }
     }
   }
   SET_INTSCALE_SLOT(model_R, nAcceptTheta_sym, nAcceptTheta);

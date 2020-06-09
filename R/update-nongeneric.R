@@ -5259,6 +5259,7 @@ updateCountsAndThetaBinomial <- function(object, useC = FALSE) {
         mu <- model@mu
         sigma <- model@sigma
         scale <- model@scaleTheta
+        struc.zero.array <- model@strucZeroArray@.Data
         cell.in.lik <- model@cellInLik
         lower <- model@lower
         upper <- model@upper
@@ -5267,49 +5268,52 @@ updateCountsAndThetaBinomial <- function(object, useC = FALSE) {
         n.failed.prop.theta <- 0L
         n.accept.theta <- 0L
         for (i in seq_along(y)) {
-            in.lik  <- cell.in.lik[i]
-            found.prop <- FALSE
-            attempt <- 0L
-            sd.jump <- if (in.lik) scale * sigma else sigma
-            while (!found.prop && (attempt < max.attempt)) {
-                attempt <- attempt + 1L
-                logit.th.prop <- stats::rnorm(n = 1L, mean = mu[i], sd = sd.jump)
-                found.prop <- ((logit.th.prop > lower + tolerance)
-                    && (logit.th.prop < upper - tolerance))
-            }
-            if (found.prop) {
-                if (logit.th.prop > 0)
-                    theta.prop <- 1 / (1 + exp(-logit.th.prop))
-                else
-                    theta.prop <- exp(logit.th.prop) / (1 + exp(logit.th.prop))
-                y.prop <- stats::rbinom(n = 1L, size = exposure[i], prob = theta.prop)
-                if (in.lik) {
-                    ## jacobians cancel
-                    logit.th.curr <- theta.transformed[i]
-                    diff.log.lik <- diffLogLik(yProp = y.prop,
-                                               y = y,
-                                               indicesY = i,
-                                               dataModels = dataModels,
-                                               datasets = datasets,
-                                               transforms = transforms)
-                    diff.log.dens <- (stats::dnorm(logit.th.prop, mean = mu[i], sd = sigma, log = TRUE)
-                        - stats::dnorm(logit.th.curr, mean = mu[i], sd = sigma, log = TRUE))
-                    diff.log.jump <- (stats::dnorm(logit.th.curr, mean = mu[i], sd = sd.jump, log = TRUE)
-                        - stats::dnorm(logit.th.prop, mean = mu[i], sd = sd.jump, log = TRUE))
-                    log.r <- diff.log.lik + diff.log.dens + diff.log.jump
-                    accept <- (log.r >= 0) || (stats::runif(n = 1L) < exp(log.r))
+            is.struc.zero <- struc.zero.array[i] == 0L
+            if (!is.struc.zero) {
+                in.lik  <- cell.in.lik[i]
+                found.prop <- FALSE
+                attempt <- 0L
+                sd.jump <- if (in.lik) scale * sigma else sigma
+                while (!found.prop && (attempt < max.attempt)) {
+                    attempt <- attempt + 1L
+                    logit.th.prop <- stats::rnorm(n = 1L, mean = mu[i], sd = sd.jump)
+                    found.prop <- ((logit.th.prop > lower + tolerance)
+                        && (logit.th.prop < upper - tolerance))
+                }
+                if (found.prop) {
+                    if (logit.th.prop > 0)
+                        theta.prop <- 1 / (1 + exp(-logit.th.prop))
+                    else
+                        theta.prop <- exp(logit.th.prop) / (1 + exp(logit.th.prop))
+                    y.prop <- stats::rbinom(n = 1L, size = exposure[i], prob = theta.prop)
+                    if (in.lik) {
+                        ## jacobians cancel
+                        logit.th.curr <- theta.transformed[i]
+                        diff.log.lik <- diffLogLik(yProp = y.prop,
+                                                   y = y,
+                                                   indicesY = i,
+                                                   dataModels = dataModels,
+                                                   datasets = datasets,
+                                                   transforms = transforms)
+                        diff.log.dens <- (stats::dnorm(logit.th.prop, mean = mu[i], sd = sigma, log = TRUE)
+                            - stats::dnorm(logit.th.curr, mean = mu[i], sd = sigma, log = TRUE))
+                        diff.log.jump <- (stats::dnorm(logit.th.curr, mean = mu[i], sd = sd.jump, log = TRUE)
+                            - stats::dnorm(logit.th.prop, mean = mu[i], sd = sd.jump, log = TRUE))
+                        log.r <- diff.log.lik + diff.log.dens + diff.log.jump
+                        accept <- (log.r >= 0) || (stats::runif(n = 1L) < exp(log.r))
+                    }
+                    else
+                        accept <- TRUE
+                    if (accept) {
+                        n.accept.theta <- n.accept.theta + in.lik
+                        y[i] <- y.prop
+                        theta[i] <- theta.prop
+                        theta.transformed[i] <- logit.th.prop
+                    }
                 }
                 else
-                    accept <- TRUE
-                if (accept) {
-                    n.accept.theta <- n.accept.theta + in.lik
-                    y[i] <- y.prop
-                    theta[i] <- theta.prop
-                    theta.transformed[i] <- logit.th.prop
-                }
+                    n.failed.prop.theta <- n.failed.prop.theta + 1L
             }
-            else
-                n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
         object@y <- y
         object@model@theta <- theta

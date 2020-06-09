@@ -1321,15 +1321,25 @@ setMethod("makeOutputModel",
               dims <- model@dims
               dfSigma <- model@nuSigma@.Data
               scaleSigma <- model@ASigma@.Data
-              cell.in.lik <- model@cellInLik
               n.beta <- length(betas.obj)
-              n.attempt <- sum(cell.in.lik)
+              struc.zero.array <- model@strucZeroArray
+              n.attempt <- as.integer(prod(dim(metadata)) - sum(struc.zero.array == 0L))
               nChain <- mcmc["nChain"]
               nIteration <- mcmc["nIteration"]
               ## make theta
               first <- pos
               pos <- first + length(theta)
-              theta <- Skeleton(metadata = metadata, first = first)
+              .Data <- array(theta,
+                             dim = dim(metadata),
+                             dimnames = dimnames(metadata))
+              theta <- methods::new("Values",
+                                    .Data = .Data,
+                                    metadata = metadata)
+              s <- seq_along(dim(metadata))
+              theta <- Skeleton(object = theta,
+                                first = first,
+                                strucZeroArray = struc.zero.array,
+                                margin = s)
               ## make nFailedPropTheta
               first <- pos
               pos <- first + 1L
@@ -1350,7 +1360,8 @@ setMethod("makeOutputModel",
               mu <- SkeletonMu(betas = betas.obj,
                                margins = margins,
                                first = first,
-                               metadata = metadata)
+                               metadata = metadata,
+                               strucZeroArray = struc.zero.array)
               betas <- vector(mode = "list", length = n.beta)
               betas[[1L]] <- SkeletonBetaIntercept(first = first)
               if (n.beta > 1L) {
