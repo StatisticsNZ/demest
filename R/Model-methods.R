@@ -1323,7 +1323,8 @@ setMethod("makeOutputModel",
               scaleSigma <- model@ASigma@.Data
               n.beta <- length(betas.obj)
               struc.zero.array <- model@strucZeroArray
-              n.attempt <- as.integer(prod(dim(metadata)) - sum(struc.zero.array == 0L))
+              cell.in.lik <- model@cellInLik
+              n.attempt <- sum(cell.in.lik)
               nChain <- mcmc["nChain"]
               nIteration <- mcmc["nIteration"]
               ## make theta

@@ -548,6 +548,9 @@ setMethod("initialCombinedCountsPredict",
                                                 upper = upper.pred)
               pos <- pos + lengthValues(model.est)
               y.pred <- makeCountsPred(modelPred = model.pred)
+              exposure <- dembase::makeCompatible(x = exposure,
+                                                  y = y.pred,
+                                                  subset = TRUE)
               pos <- pos + lengthValues(y.est)
               if (predictData) {
                   data.models.pred <- vector(mode = "list", length = n.dataset)
@@ -634,6 +637,9 @@ setMethod("initialCombinedCountsPredict",
                                                 upper = upper.pred)
               pos <- pos + lengthValues(model.est)
               y.pred <- makeCountsPred(modelPred = model.pred)
+              exposure <- dembase::makeCompatible(x = exposure,
+                                                  y = y.pred,
+                                                  subset = TRUE)
               pos <- pos + lengthValues(y.est)
               if (predictData) {
                   data.models.pred <- vector(mode = "list", length = n.dataset)

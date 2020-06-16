@@ -2236,56 +2236,61 @@ updateTheta_BinomialVarying <- function(object, y, exposure, useC = FALSE) {
         tolerance <- object@tolerance
         sigma <- object@sigma
         max.attempt <- object@maxAttempt
+        struc.zero.array <- object@strucZeroArray
+        cell.in.lik <- object@cellInLik
         n.failed.prop.theta <- 0L
         n.accept.theta <- 0L
         scale <- scale * scale.multiplier
         for (i in seq_along(theta)) {
-            y.is.missing <- is.na(y[i])
-            if (y.is.missing) {
-                mean <- mu[i]
-                sd <- sigma
-            }
-            else {
-                th.curr <- theta[i]
-                logit.th.curr <- theta.transformed[i]
-                mean <- logit.th.curr
-                sd <- scale * sqrt((exposure[i] - y[i] + 0.5) / ((exposure[i] + 0.5) * (y[i] + 0.5)))
-            }
-            found.prop <- FALSE
-            attempt <- 0L
-            while (!found.prop && (attempt < max.attempt)) {
-                attempt <- attempt + 1L
-                logit.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
-                found.prop <- ((logit.th.prop > lower + tolerance)
-                               && (logit.th.prop < upper - tolerance))
-            }
-            if (found.prop) {
-                if (logit.th.prop > 0)
-                    th.prop <- 1 / (1 + exp(-logit.th.prop))
-                else
-                    th.prop <- exp(logit.th.prop) / (1 + exp(logit.th.prop))
-                if (y.is.missing) {
-                    theta[i] <- th.prop
-                    theta.transformed[i] <- logit.th.prop
+            is.struc.zero <- struc.zero.array[i] == 0L
+            if (!is.struc.zero) {
+                draw.from.prior <- !cell.in.lik[i] || is.na(y[i])
+                if (draw.from.prior) {
+                    mean <- mu[i]
+                    sd <- sigma
                 }
                 else {
-                    log.lik.prop <- stats::dbinom(x = y[i], size = exposure[i], prob = th.prop, log = TRUE)
-                    log.lik.curr <- stats::dbinom(x = y[i], size = exposure[i], prob = th.curr, log = TRUE)
-                    ## The Jacobians from the transformation of variablesx Rcancel,
-                    ## as do the normal densities in the proposal distributions.
-                    log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu[i], sd = sigma, log = TRUE)
-                    log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu[i], sd = sigma, log = TRUE)
-                    log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
-                    accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
-                    if (accept) {
-                        n.accept.theta <- n.accept.theta + 1L
+                    th.curr <- theta[i]
+                    logit.th.curr <- theta.transformed[i]
+                    mean <- logit.th.curr
+                    sd <- scale * sqrt((exposure[i] - y[i] + 0.5) / ((exposure[i] + 0.5) * (y[i] + 0.5)))
+                }
+                found.prop <- FALSE
+                attempt <- 0L
+                while (!found.prop && (attempt < max.attempt)) {
+                    attempt <- attempt + 1L
+                    logit.th.prop <- stats::rnorm(n = 1L, mean = mean, sd = sd)
+                    found.prop <- ((logit.th.prop > lower + tolerance)
+                        && (logit.th.prop < upper - tolerance))
+                }
+                if (found.prop) {
+                    if (logit.th.prop > 0)
+                        th.prop <- 1 / (1 + exp(-logit.th.prop))
+                    else
+                        th.prop <- exp(logit.th.prop) / (1 + exp(logit.th.prop))
+                    if (draw.from.prior) {
                         theta[i] <- th.prop
                         theta.transformed[i] <- logit.th.prop
                     }
+                    else {
+                        log.lik.prop <- stats::dbinom(x = y[i], size = exposure[i], prob = th.prop, log = TRUE)
+                        log.lik.curr <- stats::dbinom(x = y[i], size = exposure[i], prob = th.curr, log = TRUE)
+                        ## The Jacobians from the transformation of variablesx Rcancel,
+                        ## as do the normal densities in the proposal distributions.
+                        log.dens.prop <- stats::dnorm(x = logit.th.prop, mean = mu[i], sd = sigma, log = TRUE)
+                        log.dens.curr <- stats::dnorm(x = logit.th.curr, mean = mu[i], sd = sigma, log = TRUE)
+                        log.diff <- log.lik.prop + log.dens.prop - log.lik.curr - log.dens.curr
+                        accept <- (log.diff >= 0) || (stats::runif(n = 1L) < exp(log.diff))
+                        if (accept) {
+                            n.accept.theta <- n.accept.theta + 1L
+                            theta[i] <- th.prop
+                            theta.transformed[i] <- logit.th.prop
+                        }
+                    }
                 }
+                else
+                    n.failed.prop.theta <- n.failed.prop.theta + 1L
             }
-            else
-                n.failed.prop.theta <- n.failed.prop.theta + 1L
         }
         object@theta <- theta
         object@thetaTransformed <- theta.transformed

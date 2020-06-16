@@ -484,10 +484,10 @@ setClass("SkeletonNAccept",
              if (is.na(nAttempt))
                  return(gettextf("'%s' is missing",
                                  "nAttempt"))
-             ## 'nAttempt' is positive
-             if (nAttempt < 1L)
-                 return(gettextf("'%s' is less than %d",
-                                 "nAttempt", 1L))
+             ## 'nAttempt' is non-negative
+             if (nAttempt < 0L)
+                 return(gettextf("'%s' is negative",
+                                 "nAttempt"))
              TRUE
          })
 

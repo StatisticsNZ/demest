@@ -514,11 +514,11 @@ test_that("validity tests for SkeletonNAccept inherited from SkeletonNAccept wor
     x.wrong@nAttempt <- as.integer(NA)
     expect_error(validObject(x.wrong),
                  "'nAttempt' is missing")
-    ## 'nAttempt' is positive
+    ## 'nAttempt' is non-negative
     x.wrong <- x
     x.wrong@nAttempt <- -1L
     expect_error(validObject(x.wrong),
-                 "'nAttempt' is less than 1")
+                 "'nAttempt' is negative")
 })
 
 

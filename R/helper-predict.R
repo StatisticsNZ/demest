@@ -75,7 +75,7 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
                                               .Data = .Data,
                                               metadata = metadata.pred)
     }
-    theta <- ifelse(struc.zero.array.pred@.Data == 0L, 0, mean(theta.old))
+    theta <- ifelse(struc.zero.array.pred@.Data == 0L, 0, mean(theta.old, na.rm = TRUE))
     theta <- as.double(theta)
     thetaTransformed <- rep(0, length = length(theta))
     mu <- rep(0, length = length(theta))

@@ -2864,6 +2864,8 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
   double upper = *REAL(GET_SLOT(object, upper_sym));
   double tolerance = *REAL(GET_SLOT(object, tolerance_sym));
   int maxAttempt = *INTEGER(GET_SLOT(object, maxAttempt_sym));
+  int *cellInLik = LOGICAL(GET_SLOT(object, cellInLik_sym));
+  int *strucZeroArray = INTEGER(GET_SLOT(object, strucZeroArray_sym));
 
   double sigma = *REAL(GET_SLOT(object, sigma_sym));
 
@@ -2876,83 +2878,84 @@ updateTheta_BinomialVarying(SEXP object, SEXP y_R, SEXP exposure_R)
   scale = scale * scale_multiplier;
 
   for (int i = 0; i < n_theta; ++i) {
+    
+    int isStrucZero = strucZeroArray[i] == 0;
+    if (!isStrucZero) {
+      
+      int this_y = y[i];
+      int this_exposure = exposure[i];
 
-    int this_y = y[i];
-    int this_exposure = exposure[i];
-    int y_is_missing = ( this_y == NA_INTEGER || ISNA(this_y) );
+      double mean = 0;
+      double sd = 0;
+      double theta_curr = theta[i]; /* only used if y not missing */
+      double logit_th_curr = thetaTransformed[i]; /* only used if y not missing */
 
-    double mean = 0;
-    double sd = 0;
-    double theta_curr = theta[i]; /* only used if y not missing */
-    double logit_th_curr = thetaTransformed[i]; /* only used if y not missing */
-
-    if (y_is_missing) {
-      mean = mu[i];
-      sd = sigma;
-    }
-    else {
-      mean = logit_th_curr;
-      sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
-    }
-
-    int attempt = 0;
-    int found_prop = 0;
-
-    double logit_th_prop = 0.0;
-
-    while( (!found_prop) && (attempt < maxAttempt) ) {
-
-      ++attempt;
-      logit_th_prop = rnorm(mean, sd);
-
-      found_prop = ( (logit_th_prop > lower + tolerance) &&
-             (logit_th_prop < upper - tolerance));
-    } /* end while loop */
-
-    if (found_prop) {
-
-      double theta_prop = 0.0;
-
-      if (logit_th_prop > 0) {
-    theta_prop = 1/(1+exp(-logit_th_prop));
+      int drawFromPrior = !cellInLik[i] || (this_y == NA_INTEGER);
+      if (drawFromPrior) {
+	mean = mu[i];
+	sd = sigma;
       }
       else {
-    theta_prop = exp(logit_th_prop) / (1 + exp(logit_th_prop));
+	mean = logit_th_curr;
+	sd = scale * sqrt((this_exposure - this_y + 0.5) / ((this_exposure + 0.5) * (this_y + 0.5)));
       }
 
-      if (y_is_missing) {
-    theta[i] = theta_prop;
-    thetaTransformed[i] = logit_th_prop;
+      int attempt = 0;
+      int found_prop = 0;
+
+      double logit_th_prop = 0.0;
+
+      while( (!found_prop) && (attempt < maxAttempt) ) {
+
+	++attempt;
+	logit_th_prop = rnorm(mean, sd);
+
+	found_prop = ( (logit_th_prop > lower + tolerance) &&
+		       (logit_th_prop < upper - tolerance));
+      } /* end while loop */
+
+      if (found_prop) {
+
+	double theta_prop = 0.0;
+
+	if (logit_th_prop > 0) {
+	  theta_prop = 1/(1+exp(-logit_th_prop));
+	}
+	else {
+	  theta_prop = exp(logit_th_prop) / (1 + exp(logit_th_prop));
+	}
+
+	if (drawFromPrior) {
+	  theta[i] = theta_prop;
+	  thetaTransformed[i] = logit_th_prop;
+	}
+	else {
+	  double loglik_prop = dbinom(this_y, this_exposure,
+				      theta_prop, USE_LOG);
+	  double loglik_curr = dbinom(this_y, this_exposure,
+				      theta_curr, USE_LOG);
+	  /* Calculate log of (prior density * proposal density). The Jacobians
+	     from the transformation of variables cancel, as do the normal
+	     densitites in the proposal distributions.*/
+	  double log_dens_prop = dnorm(logit_th_prop, mu[i], sigma, USE_LOG);
+	  double log_dens_curr = dnorm(logit_th_curr, mu[i], sigma, USE_LOG);
+
+	  double log_diff = loglik_prop + log_dens_prop
+	    - loglik_curr - log_dens_curr;
+
+	  int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
+	  /* acceptance */
+	  if (accept) {
+	    ++n_accept_theta;
+	    theta[i] = theta_prop;
+	    thetaTransformed[i] = logit_th_prop;
+	  }
+	}
       }
-      else {
-
-    double loglik_prop = dbinom(this_y, this_exposure,
-                    theta_prop, USE_LOG);
-    double loglik_curr = dbinom(this_y, this_exposure,
-                    theta_curr, USE_LOG);
-    /* Calculate log of (prior density * proposal density). The Jacobians
-       from the transformation of variables cancel, as do the normal
-       densitites in the proposal distributions.*/
-
-    double log_dens_prop = dnorm(logit_th_prop, mu[i], sigma, USE_LOG);
-    double log_dens_curr = dnorm(logit_th_curr, mu[i], sigma, USE_LOG);
-
-    double log_diff = loglik_prop + log_dens_prop
-      - loglik_curr - log_dens_curr;
-
-    int accept = (!(log_diff < 0) || (runif(0, 1) < exp(log_diff)));
-    /* acceptance */
-    if (accept) {
-      ++n_accept_theta;
-      theta[i] = theta_prop;
-      thetaTransformed[i] = logit_th_prop;
-    }
+      else  {
+	++n_failed_prop_theta;
       }
-    }
-    else  {
-      ++n_failed_prop_theta;
-    }
-
+    } /* end isStrucZero */
   } /* end loop through thetas */
 
     /* theta updated in place */
@@ -7261,9 +7264,10 @@ updateCountsAndThetaBinomial(SEXP object_R)
 				- dnorm(logitThProp, mu[i], sdJump, USE_LOG));
 	  double logR = diffLL + diffLogDens + diffLogJump;
 	  accept =  ( !( logR < 0.0) || ( runif(0.0, 1.0) < exp(logR) ) );
+	  if (accept)
+	    ++nAcceptTheta;
 	}
 	if (accept) {
-	  ++nAcceptTheta;
 	  y[i] = yProp;
 	  theta[i] = thetaProp;
 	  thetaTransformed[i] = logitThProp;
