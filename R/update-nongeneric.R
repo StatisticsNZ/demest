@@ -5329,6 +5329,91 @@ updateCountsAndThetaBinomial <- function(object, useC = FALSE) {
     }
 }
 
+## Assume no subtotals
+updateCountsAndThetaPoissonNotUseExp <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "CombinedCountsPoissonNotUseExp"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(updateCountsAndThetaPoissonNotUseExp_R, object)
+    }
+    else {
+        y <- object@y
+        model <- object@model
+        dataModels <- object@dataModels
+        datasets <- object@datasets
+        transforms <- object@transforms
+        exposure <- object@exposure
+        theta <- model@theta
+        theta.transformed <- model@thetaTransformed
+        mu <- model@mu
+        sigma <- model@sigma
+        scale <- model@scaleTheta
+        struc.zero.array <- model@strucZeroArray
+        cell.in.lik <- model@cellInLik
+        lower <- model@lower
+        upper <- model@upper
+        tolerance <- model@tolerance
+        max.attempt <- model@maxAttempt
+        n.failed.prop.theta <- 0L
+        n.accept.theta <- 0L
+        for (i in seq_along(y)) {
+            is.struc.zero <- struc.zero.array[i] == 0L
+            if (!is.struc.zero) {
+                in.lik  <- cell.in.lik[i]
+                found.prop <- FALSE
+                attempt <- 0L
+                sd.jump <- if (in.lik) scale * sigma else sigma
+                while (!found.prop && (attempt < max.attempt)) {
+                    attempt <- attempt + 1L
+                    tr.th.prop <- stats::rnorm(n = 1L, mean = mu[i], sd = sd.jump)
+                    found.prop <- ((tr.th.prop > lower + tolerance)
+                        && (tr.th.prop < upper - tolerance))
+                }
+                if (found.prop) {
+                    if (box.cox.param > 0)
+                        th.prop <- (box.cox.param * tr.th.prop + 1) ^ (1 / box.cox.param)
+                    else
+                        th.prop <- exp(tr.th.prop)
+                    y.prop <- stats::rpois(n = 1L, lambda = theta.prop)
+                    if (in.lik) {
+                        ## jacobians cancel
+                        tr.th.curr <- theta.transformed[i]
+                        diff.log.lik <- diffLogLik(yProp = y.prop,
+                                                   y = y,
+                                                   indicesY = i,
+                                                   dataModels = dataModels,
+                                                   datasets = datasets,
+                                                   transforms = transforms)
+                        diff.log.dens <- (stats::dnorm(tr.th.prop, mean = mu[i], sd = sigma, log = TRUE)
+                            - stats::dnorm(tr.th.curr, mean = mu[i], sd = sigma, log = TRUE))
+                        diff.log.jump <- (stats::dnorm(tr.th.curr, mean = mu[i], sd = sd.jump, log = TRUE)
+                            - stats::dnorm(tr.th.prop, mean = mu[i], sd = sd.jump, log = TRUE))
+                        log.r <- diff.log.lik + diff.log.dens + diff.log.jump
+                        accept <- (log.r >= 0) || (stats::runif(n = 1L) < exp(log.r))
+                    }
+                    else
+                        accept <- TRUE
+                    if (accept) {
+                        n.accept.theta <- n.accept.theta + in.lik
+                        y[i] <- y.prop
+                        theta[i] <- theta.prop
+                        theta.transformed[i] <- tr.th.prop
+                    }
+                }
+                else
+                    n.failed.prop.theta <- n.failed.prop.theta + 1L
+            }
+        }
+        object@y <- y
+        object@model@theta <- theta
+        object@model@thetaTransformed <- theta.transformed
+        object@model@nFailedPropTheta@.Data <- n.failed.prop.theta
+        object@model@nAcceptTheta@.Data <- n.accept.theta
+        object
+    }
+}
+
+
 ## TODO - modify this to use 'updateDataModel' slot
 ## TRANSLATED
 ## HAS_TESTS
