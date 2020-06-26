@@ -384,7 +384,7 @@ test_that("R and C versions of drawAlphaLN2 give same answer", {
                       dimnames = c(list(sex = c("Female", "Male"),
                                         age = c("0-19", "20-39", "40-59", "60+"),
                                         time = c("2000", "2010", "2020")))))
-    exposure <- 2L * y
+    exposure <-  y
     spec <- Model(y ~ LN2(constraint = constraint))
     set.seed(0)
     x <- initialModel(spec, y = y, exposure = exposure)
