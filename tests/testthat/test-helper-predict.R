@@ -432,7 +432,7 @@ test_that("R and C versions of predictAlphaLN2 give same answer", {
     initialModel <- demest:::initialModel
     initialModelPredict <- demest:::initialModelPredict
     predictAlphaLN2 <- demest:::predictAlphaLN2
-    set.seed(0)
+    set.seed(1)
     constraint <- Values(array(c(NA, -1L, 0L, 1L),
                                dim = c(2, 2),
                                dimnames = list(age = c("0-39", "40+"),

@@ -654,13 +654,16 @@ updateModelNotUseExp_NormalVaryingVarsigmaUnknown_i(SEXP object, SEXP y_R)
 static __inline__ void
 updateModelNotUseExp_PoissonVaryingNotUseExp_i(SEXP object, SEXP y_R)
 {
+  int updateTheta = *LOGICAL(GET_SLOT(object, updateTheta_sym));
+  if (updateTheta) {
     updateTheta_PoissonVaryingNotUseExp(object, y_R);
-    updateSigma_Varying(object);
-    updateBetas(object);
-    updateMu(object);
-    updatePriorsBetas(object);
-    updateMeansBetas(object);
-    updateVariancesBetas(object);
+  }
+  updateSigma_Varying(object);
+  updateBetas(object);
+  updateMu(object);
+  updatePriorsBetas(object);
+  updateMeansBetas(object);
+  updateVariancesBetas(object);
 }
 
 static __inline__ void
@@ -838,7 +841,10 @@ updateModelUseExp_BinomialVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
 static __inline__ void
 updateModelUseExp_PoissonVarying_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
-  updateTheta_PoissonVaryingUseExp(object, y_R, exposure_R);
+  int updateTheta = *LOGICAL(GET_SLOT(object, updateTheta_sym));
+  if (updateTheta) {
+    updateTheta_PoissonVaryingUseExp(object, y_R, exposure_R);
+  }
   updateSigma_Varying(object);
   updateBetas(object);
   updateMu(object);

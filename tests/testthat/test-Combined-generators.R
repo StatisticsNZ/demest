@@ -443,7 +443,6 @@ test_that("test that initialCombinedModelPredict works with with CombinedModelCM
 test_that("initialCombinedCounts creates object of class CombinedCountsPoissonNotHasExp from valid inputs", {
     initialCombinedCounts <- demest:::initialCombinedCounts
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    ## no subtotals
     object <- Model(y ~ Poisson(mean ~ age * sex, useExpose = FALSE))
     y <- Counts(array(c(1:23, NA),
                       dim = 2:4,
@@ -470,44 +469,11 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonNo
     expect_true(validObject(x))
     expect_is(x, "CombinedCountsPoissonNotHasExp")
     expect_true(!any(is.na(x@y)))
-    ## with subtotals
-    object <- Model(y ~ Poisson(mean ~ age * sex, useExpose = FALSE))
-    y <- Counts(array(c(1:18, rep(NA, 6)),
-                      dim = 2:4,
-                      dimnames = list(sex = c("f", "m"), region = 1:3, age = 0:3)))
-    subtotals <- Counts(array(5:6,
-                              dim = c(2, 1),
-                              dimnames = list(sex = c("f", "m"), age = 3)))
-    y <- attachSubtotals(y, subtotals = subtotals)
-    datasets <- list(Counts(array(c(1:11, NA),
-                                  dim = c(2, 3, 2),
-                                  dimnames = list(sex = c("f", "m"), region = 1:3, age = 2:3))),
-                     Counts(array(1:12,
-                                  dim = 3:4,
-                                  dimnames = list(region = 1:3, age = 0:3))))
-    namesDatasets <- c("tax", "census")
-    transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
-                       makeTransform(x = y, y = datasets[[2]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    data.models <- list(Model(tax ~ Poisson(mean ~ age + sex)),
-                        Model(census ~ PoissonBinomial(prob = 0.9)))
-    x <- initialCombinedCounts(object = object,
-                               y = y,
-                               exposure = NULL,
-                               dataModels = data.models,
-                               datasets = datasets,
-                               namesDatasets = namesDatasets,
-                               transforms = transforms)
-    expect_true(validObject(x))
-    expect_is(x, "CombinedCountsPoissonNotHasExp")
-    expect_true(!any(is.na(x@y)))
-    expect_true(is(x@y, "CountsWithSubtotalsInternal"))
 })
 
 test_that("initialCombinedCounts creates object of class CombinedCountsPoissonHasExp from valid inputs", {
     initialCombinedCounts <- demest:::initialCombinedCounts
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    ## no subtotals
     object <- Model(y ~ Poisson(mean ~ age * sex))
     y <- Counts(array(1:24,
                       dim = 2:4,
@@ -536,40 +502,6 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonHa
     expect_true(validObject(x))
     expect_is(x, "CombinedCountsPoissonHasExp")
     expect_true(!any(is.na(x@y)))
-    ## with subtotals
-    object <- Model(y ~ Poisson(mean ~ age * sex))
-    y <- Counts(array(1:24,
-                      dim = 2:4,
-                      dimnames = list(sex = c("f", "m"), region = 1:3, age = 0:3)))
-    exposure <- y + 2
-    y[19:24] <- NA
-    subtotals <- Counts(array(5:6,
-                              dim = c(2, 1),
-                              dimnames = list(sex = c("f", "m"), age = 3)))
-    y <- attachSubtotals(y, subtotals = subtotals)
-    datasets <- list(Counts(array(c(1:11, NA),
-                                  dim = c(2, 3, 2),
-                                  dimnames = list(sex = c("f", "m"), region = 1:3, age = 2:3))),
-                     Counts(array(1:12,
-                                  dim = 3:4,
-                                  dimnames = list(region = 1:3, age = 0:3))))
-    namesDatasets <- c("tax", "census")
-    transforms <- list(makeTransform(x = y, y = datasets[[1]], subset = TRUE),
-                       makeTransform(x = y, y = datasets[[2]], subset = TRUE))
-    transforms <- lapply(transforms, makeCollapseTransformExtra)
-    data.models <- list(Model(tax ~ Poisson(mean ~ age + sex)),
-                        Model(census ~ PoissonBinomial(prob = 0.9)))
-    x <- initialCombinedCounts(object = object,
-                               y = y,
-                               exposure = exposure,
-                               dataModels = data.models,
-                               datasets = datasets,
-                               namesDatasets = namesDatasets,
-                               transforms = transforms)
-    expect_true(validObject(x))
-    expect_is(x, "CombinedCountsPoissonHasExp")
-    expect_true(!any(is.na(x@y)))
-    expect_true(is(x@y, "CountsWithSubtotalsInternal"))
 })
 
 test_that("initialCombinedCounts creates object of class CombinedCountsBinomial from valid inputs", {

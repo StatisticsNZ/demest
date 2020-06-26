@@ -803,8 +803,7 @@ updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
 
     while (nUpdate > 0) {
 
-        updateCountsPoissonNotUseExp(y_R, model_R, dataModels_R,
-                                        datasets_R, transforms_R);
+        updateCountsAndThetaPoissonNotUseExp(object_R);
 
         updateModelNotUseExp_Internal(model_R, y_R, i_method_model);
 
@@ -830,9 +829,7 @@ updateCombined_CombinedCountsPoissonHasExp(SEXP object_R, int nUpdate)
 
     while (nUpdate > 0) {
 
-        updateCountsPoissonUseExp(y_R, model_R,
-                                exposure_R, dataModels_R,
-                                datasets_R, transforms_R);
+        updateCountsAndThetaPoissonUseExp(object_R);
         updateModelUseExp_Internal(model_R, y_R, exposure_R, i_method_model);
         updateDataModelsCounts(y_R, dataModels_R, datasets_R,
                                         transforms_R);

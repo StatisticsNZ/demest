@@ -728,25 +728,18 @@ setMethod("updateCombined",
                       .Call(updateCombined_R, object, nUpdate)
               }
               else {
-                  y <- object@y
-                  model <- object@model
                   dataModels <- object@dataModels
                   datasets <- object@datasets
                   transforms <- object@transforms
                   for (i in seq_len(nUpdate)) {
-                      y <- updateCountsPoissonNotUseExp(y = y,
-                                                        model = model,
-                                                        dataModels = dataModels,
-                                                        datasets = datasets,
-                                                        transforms = transforms)
-                      model <- updateModelNotUseExp(object = model,
-                                                    y = y)
+                      object <- updateCountsAndThetaPoissonNotUseExp(object)
+                      model <- updateModelNotUseExp(object = object@model,
+                                                    y = object@y)
                       dataModels <- updateDataModelsCounts(dataModels = dataModels,
                                                            datasets = datasets,
                                                            transforms = transforms,
-                                                           y = y)
+                                                           y = object@y)
                   }
-                  object@y <- y
                   object@model <- model
                   object@dataModels <- dataModels
                   object
@@ -773,28 +766,20 @@ setMethod("updateCombined",
                       .Call(updateCombined_R, object, nUpdate)
               }
               else {
-                  y <- object@y
-                  model <- object@model
                   exposure <- object@exposure
                   dataModels <- object@dataModels
                   datasets <- object@datasets
                   transforms <- object@transforms
                   for (i in seq_len(nUpdate)) {
-                      y <- updateCountsPoissonUseExp(y = y,
-                                                     model = model,
-                                                     exposure = exposure,
-                                                     dataModels = dataModels,
-                                                     datasets = datasets,
-                                                     transforms = transforms)
-                      model <- updateModelUseExp(object = model,
-                                                 y = y,
+                      object <- updateCountsAndThetaPoissonUseExp(object)
+                      model <- updateModelUseExp(object = object@model,
+                                                 y = object@y,
                                                  exposure = exposure)
                       dataModels <- updateDataModelsCounts(dataModels = dataModels,
-                                                             datasets = datasets,
-                                                             transforms = transforms,
-                                                             y = y)
+                                                           datasets = datasets,
+                                                           transforms = transforms,
+                                                           y = object@y)
                   }
-                  object@y <- y
                   object@model <- model
                   object@dataModels <- dataModels
                   object

@@ -18,7 +18,7 @@ CMP(
   boxcox = 0
 )
 
-Binomial(formula)
+Binomial(formula, structuralZeros = NULL)
 
 Normal(formula, sd = NULL, priorSD = HalfT())
 }

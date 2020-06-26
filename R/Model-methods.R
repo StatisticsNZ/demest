@@ -1433,7 +1433,8 @@ setMethod("makeOutputModel",
               scaleSigma <- model@ASigma@.Data
               struc.zero.array <- model@strucZeroArray
               n.beta <- length(betas.obj)
-              n.attempt <- as.integer(prod(dim(metadata)) - sum(struc.zero.array == 0L))
+              cell.in.lik <- model@cellInLik
+              n.attempt <- sum(cell.in.lik)
               nChain <- mcmc["nChain"]
               nIteration <- mcmc["nIteration"]
               uses.exposure <- methods::is(model, "UseExposure")
@@ -2821,7 +2822,10 @@ setMethod("updateModelNotUseExp",
                       .Call(updateModelNotUseExp_R, object, y)
               }
               else {
-                  object <- updateTheta_PoissonVaryingNotUseExp(object, y = y)
+                  update.theta <- object@updateTheta@.Data
+                  if (update.theta)
+                      object <- updateTheta_PoissonVaryingNotUseExp(object,
+                                                                    y = y)
                   object <- updateSigma_Varying(object)
                   object <- updateBetas(object)
                   object <- updateMu(object)
@@ -3275,7 +3279,11 @@ setMethod("updateModelUseExp",
                       .Call(updateModelUseExp_R, object, y, exposure)
               }
               else {
-                  object <- updateTheta_PoissonVaryingUseExp(object, y = y, exposure = exposure)
+                  update.theta <- object@updateTheta@.Data
+                  if (update.theta)
+                      object <- updateTheta_PoissonVaryingUseExp(object,
+                                                                 y = y,
+                                                                 exposure = exposure)
                   object <- updateSigma_Varying(object)
                   object <- updateBetas(object)
                   object <- updateMu(object)

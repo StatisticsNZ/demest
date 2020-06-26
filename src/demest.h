@@ -824,12 +824,9 @@ void updateVarsigma(SEXP object, SEXP y_R);
 void updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R);
 
 /* update counts */
-void updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R,
-            SEXP dataModels_R, SEXP datasets_R, SEXP transforms_R);
-void updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
-                        SEXP exposure_R, SEXP dataModels_R,
-                        SEXP datasets_R, SEXP transforms_R);
 void updateCountsAndThetaBinomial(SEXP object_R);
+void updateCountsAndThetaPoissonUseExp(SEXP object_R);
+void updateCountsAndThetaPoissonNotUseExp(SEXP object_R);
 void
 updateDataModelsCounts(SEXP y_R, SEXP dataModels_R,
                SEXP datasets_R, SEXP transforms_R);

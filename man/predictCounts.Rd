@@ -11,6 +11,7 @@ predictCounts(
   labels = NULL,
   n = NULL,
   exposure = NULL,
+  predictData = FALSE,
   data = list(),
   aggregate = list(),
   lower = list(),
@@ -37,6 +38,9 @@ and when the units have equal length.}
 
 \item{exposure}{A \code{\link[dembase:DemographicArray-class]{Counts}}
 object specifying exposure or sample size.}
+
+\item{predictData}{Whether to predict data models
+and datasets. Defaults to \code{FALSE}.}
 
 \item{data}{A named list containing future values of covariates.}
 

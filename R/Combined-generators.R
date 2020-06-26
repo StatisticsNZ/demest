@@ -395,9 +395,17 @@ setMethod("initialCombinedCounts",
                     transforms = "list"),
           function(object, y, exposure, dataModels, datasets,
                    namesDatasets, transforms) {
+              is.ag <- !methods::is(object@aggregate, "SpecAgPlaceholder")
+              if (is.ag)
+                  stop(gettextf("model cannot have aggregate values with function '%s'",
+                                "estimateCounts"))
               struc.zeros <- object@structuralZeros
               struc.zero.array <- makeStrucZeroArray(structuralZeros = struc.zeros,
                                                      y = y)
+              y.has.subtotals <- methods::is(y, "HasSubtotals")
+              if (y.has.subtotals)
+                  stop(gettextf("'%s' cannot have subtotals with function '%s'",
+                                "y", "estimateCounts"))
               y[struc.zero.array@.Data == 0L] <- 0L
               y <- imputeCountsInternal(y)
               for (i in seq_along(dataModels)) {
@@ -431,6 +439,7 @@ setMethod("initialCombinedCounts",
               has.exposure <- !is.null(exposure)
               if (has.exposure) {
                   model <- initialModel(object, y = y.tmp, exposure = exposure)
+                  model@updateTheta@.Data <- FALSE
                   methods::new("CombinedCountsPoissonHasExp",
                                model = model,
                                y = y,
@@ -442,6 +451,7 @@ setMethod("initialCombinedCounts",
               }
               else {
                   model <- initialModel(object, y = y.tmp, exposure = exposure)
+                  model@updateTheta@.Data <- FALSE
                   methods::new("CombinedCountsPoissonNotHasExp",
                                model = model,
                                y = y,
@@ -463,6 +473,10 @@ setMethod("initialCombinedCounts",
                     transforms = "list"),
           function(object, y, exposure, dataModels, datasets,
                    namesDatasets, transforms) {
+              is.ag <- !methods::is(object@aggregate, "SpecAgPlaceholder")
+              if (is.ag)
+                  stop(gettextf("model cannot have aggregate values with function '%s'",
+                                "estimateCounts"))
               if (is.null(exposure))
                   stop(gettextf("binomial model, but no '%s' argument supplied",
                                 "exposure"))

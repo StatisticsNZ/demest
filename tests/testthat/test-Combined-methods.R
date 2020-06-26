@@ -2005,7 +2005,7 @@ test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct
     exposure <- Counts(array(runif(12, max = 20),
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
-    model <- Model(y ~ Poisson(mean ~ age))
+    model <- Model(y ~ Poisson(mean ~ age), jump = 1.5)
     data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
@@ -2042,7 +2042,7 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     exposure <- Counts(array(runif(12, max = 20),
                       dim = c(6, 2),
                       dimnames = list(age = 0:5, sex = c("f", "m"))))
-    model <- Model(y ~ Poisson(mean ~ age))
+    model <- Model(y ~ Poisson(mean ~ age), jump = 1.5)
     data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
                         Model(tax ~ Binomial(mean ~ 1)))
     datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),

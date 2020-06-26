@@ -1285,9 +1285,9 @@ UPDATEOBJECT_NOEXP_WRAPPER_R(updateThetaAndNu_CMPVaryingNotUseExp);
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateThetaAndNu_CMPVaryingUseExp);
 
 /* wrap update Counts functions */
-UPDATECOUNTS_NOEXP_WRAPPER_R(updateCountsPoissonNotUseExp);
-UPDATECOUNTS_WITHEXP_WRAPPER_R(updateCountsPoissonUseExp);
 UPDATEOBJECT_WRAPPER_R(updateCountsAndThetaBinomial);
+UPDATEOBJECT_WRAPPER_R(updateCountsAndThetaPoissonUseExp);
+UPDATEOBJECT_WRAPPER_R(updateCountsAndThetaPoissonNotUseExp);
 
 /* wrap  transfer param model functions*/
 TRANSFERPARAM_WRAPPER_R(transferParamModel);
@@ -2408,9 +2408,9 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateVarsigmaLN2_R, 3),
 
   /* update counts */
-  CALLDEF(updateCountsPoissonNotUseExp_R, 5),
-  CALLDEF(updateCountsPoissonUseExp_R, 6),
   CALLDEF(updateCountsAndThetaBinomial_R, 1),
+  CALLDEF(updateCountsAndThetaPoissonNotUseExp_R, 1),
+  CALLDEF(updateCountsAndThetaPoissonUseExp_R, 1),
 
   /* update dataModels and datasets */
   CALLDEF(updateDataModelsCounts_R, 4),

@@ -10643,12 +10643,14 @@ test_that("R and C versions of updateVarsigmaLN2 give same answer", {
 
 ## UPDATING COUNTS ####################################################################
 
-## updateCounts - PoissonNotUseExp
 
-test_that("R version of updateCountsPoissonNotUseExp works with no subtotals", {
-    updateCountsPoissonNotUseExp <- demest:::updateCountsPoissonNotUseExp
+## updateCountsAndThetaPoissonNotUseExp
+
+test_that("R version of updateCountsAndThetaPoissonNotUseExp works", {
+    updateCountsAndThetaPoissonNotUseExp <- demest:::updateCountsAndThetaPoissonNotUseExp
     diffLogLik <- demest:::diffLogLik
     initialModel <- demest:::initialModel
+    initialCombinedCounts <- demest:::initialCombinedCounts
     getIAfter <- dembase::getIAfter
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     logLikelihood <- demest:::logLikelihood
@@ -10658,329 +10660,74 @@ test_that("R version of updateCountsPoissonNotUseExp works with no subtotals", {
         y <- Counts(array(as.integer(rpois(24, lambda = 10)),
                           dim = c(6, 4),
                           dimnames = list(age = 0:5, reg = letters[1:4])))
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
-                              y = y, exposure = NULL)
+        model <- Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE),
+                       jump = 1)
         datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
                                       dim = 3,
                                       dimnames = list(reg = letters[1:3]))),
                          Counts(array(as.integer(rpois(18, lambda = 10)),
                                       dim = c(6, 3),
                                       dimnames = list(age = 0:5, reg = letters[1:3]))))
-        observation <- vector("list", 2)
+        dataModels <- vector("list", 2)
         transforms <- vector("list", 2)
         for (i in 1:2) {
             transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
                                                                         y = datasets[[i]],
                                                                         subset = TRUE))
-            observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                             y = datasets[[i]],
-                                             exposure = dembase::collapse(y, transforms[[i]]))
+            dataModels[[i]] <- Model(y ~ Poisson(mean ~ 1))
         }
-        set.seed(seed)
-        ans.obtained <- updateCountsPoissonNotUseExp(y = y,
-                                                     model = model,
-                                                     dataModels = observation,
-                                                     datasets = datasets,
-                                                     transforms = transforms)
-        set.seed(seed)
-        ans.expected <- y
-        for (i in seq_along(y)) {
-            y.prop <- as.integer(rpois(n = 1, lambda = model@theta[i]))
-            diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = ans.expected,
-                                       indicesY = i,
-                                       dataModels = observation,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
-                ans.expected[i] <- y.prop
-        }
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-    }
-    set.seed(100)
-    ans.obtained <- updateCountsPoissonNotUseExp(y = y,
-                                                 model = model,
-                                                 dataModels = observation,
-                                                 datasets = datasets,
-                                                 transforms = transforms)
-    set.seed(100)
-    ans.expected <- y
-    for (i in seq_along(y)) {
-        y.prop <- as.integer(rpois(n = 1, lambda = model@theta[i]))
-        diff.log.lik <- diffLogLik(yProp = y.prop,
-                                   y = ans.expected,
-                                   indicesY = i,
-                                   dataModels = observation,
+        x <- initialCombinedCounts(object = model,
+                                   y = y,
+                                   exposure = NULL,
+                                   dataModels = dataModels,
                                    datasets = datasets,
+                                   namesDatasets = c("d1", "d2"),
                                    transforms = transforms)
-        if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
-            ans.expected[i] <- y.prop
-    }
-    if (test.identity)
-        expect_identical(ans.obtained, ans.expected)
-    else
-        expect_equal(ans.obtained, ans.expected)
-})
-
-test_that("R and C versions of updateCountsPoissonNotUseExp with no subtotals give same answer", {
-    updateCountsPoissonNotUseExp <- demest:::updateCountsPoissonNotUseExp
-    initialModel <- demest:::initialModel
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    set.seed(100)
-    yProp <- as.integer(rpois(n = 1, lambda = 10))
-    y <- Counts(array(as.integer(rpois(24, lambda = 10)),
-                      dim = c(6, 4),
-                      dimnames = list(age = 0:5, reg = letters[1:4])))
-    model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
-                          y = y, exposure = NULL)
-    datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
-                                  dim = 3,
-                                  dimnames = list(reg = letters[1:3]))),
-                     Counts(array(as.integer(rpois(18, lambda = 10)),
-                                  dim = c(6, 3),
-                                  dimnames = list(age = 0:5, reg = letters[1:3]))))
-    observation <- vector("list", 2)
-    transforms <- vector("list", 2)
-    for (i in 1:2) {
-        transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
-                                                                    y = datasets[[i]],
-                                                                    subset = TRUE))
-        observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                         y = datasets[[i]],
-                                         exposure = dembase::collapse(y, transforms[[i]]))
-    }
-    set.seed(100)
-    ans.R <- updateCountsPoissonNotUseExp(y = y,
-                                          model = model,
-                                          dataModels = observation,
-                                          datasets = datasets,
-                                          transforms = transforms,
-                                          useC = FALSE)
-    set.seed(100)
-    ans.C <- updateCountsPoissonNotUseExp(y = y,
-                                          model = model,
-                                          dataModels = observation,
-                                          datasets = datasets,
-                                          transforms = transforms,
-                                          useC = TRUE)
-    if (test.identity)
-        expect_identical(ans.R, ans.C)
-    else
-        expect_equal(ans.R, ans.C)
-})
-
-test_that("R version of updateCountsPoissonNotUseExp works with subtotals made from collapsed y", {
-    updateCountsPoissonNotUseExp <- demest:::updateCountsPoissonNotUseExp
-    diffLogLik <- demest:::diffLogLik
-    initialModel <- demest:::initialModel
-    getIAfter <- dembase::getIAfter
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    logLikelihood <- demest:::logLikelihood
-    makeIOther <- demest:::makeIOther
-    for (seed in seq_len(n.test)) {
         set.seed(seed)
-        y <- Counts(array(as.integer(rpois(24, lambda = 10)),
-                          dim = c(6, 4),
-                          dimnames = list(age = 0:5, reg = letters[1:4])))
-        transformSubtotals <- new("CollapseTransformExtra",
-                                  indices = list(rep(1L, 6L), c(1:3, 0L)),
-                                  dims = c(0L, 1L),
-                                  dimBefore = c(6L, 4L),
-                                  dimAfter = 3L,
-                                  multiplierBefore = c(1L, 6L),
-                                  multiplierAfter = 1L,
-                                  invIndices = list(list(1:6), list(1L, 2L, 3L)))
-        subtotals <- dembase::collapse(y, transform = transformSubtotals)
-        y <- new("CountsWithSubtotalsInternal",
-                 y,
-                 subtotals = as.integer(subtotals),
-                 metadataSubtotals = subtotals@metadata,
-                 transformSubtotals = transformSubtotals)
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
-                              y = y, exposure = NULL)
-        datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
-                                      dim = 3,
-                                      dimnames = list(reg = letters[1:3]))),
-                         Counts(array(as.integer(rpois(18, lambda = 10)),
-                                      dim = c(6, 3),
-                                      dimnames = list(age = 0:5, reg = letters[1:3]))))
-        observation <- vector("list", 2)
-        transforms <- vector("list", 2)
-        for (i in 1:2) {
-            transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
-                                                                        y = datasets[[i]],
-                                                                        subset = TRUE))
-            observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                             y = datasets[[i]],
-                                             exposure = dembase::collapse(y, transforms[[i]]))
-        }
+        ans.obtained <- updateCountsAndThetaPoissonNotUseExp(x)
         set.seed(seed)
-        ans.obtained <- updateCountsPoissonNotUseExp(y = y,
-                                                     model = model,
-                                                     dataModels = observation,
-                                                     datasets = datasets,
-                                                     transforms = transforms)
-        set.seed(seed)
-        y.tmp <- y
-        for (i in 1:18) {
-            i.other <- makeIOther(i = i, transform = transformSubtotals)
-            y.prop <- as.integer(rmultinom(n = 1L,
-                                           size = sum(y.tmp[c(i, i.other)]),
-                                           prob = model@theta[c(i, i.other)]))
-            diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = y.tmp,
-                                       indicesY = c(i, i.other),
-                                       dataModels = observation,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
-                y.tmp[c(i, i.other)] <- y.prop
-        }
-        for (i in 19:24) {
-            y.prop <- as.integer(rpois(n = 1, lambda = model@theta[i]))
-            diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = y.tmp,
-                                       indicesY = i,
-                                       dataModels = observation,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
-                y.tmp[i] <- y.prop
-        }
-        ans.expected <- y.tmp
-        if (test.identity)
-            expect_identical(ans.obtained, ans.expected)
-        else
-            expect_equal(ans.obtained, ans.expected)
-    }
-})
-
-test_that("R and C versions of updateCountsPoissonNotUseExp give same answer with subtotals made from collapsed y", {
-    updateCountsPoissonNotUseExp <- demest:::updateCountsPoissonNotUseExp
-    diffLogLik <- demest:::diffLogLik
-    initialModel <- demest:::initialModel
-    getIAfter <- dembase::getIAfter
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    logLikelihood <- demest:::logLikelihood
-    makeIOther <- demest:::makeIOther
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        y <- Counts(array(as.integer(rpois(24, lambda = 10)),
-                          dim = c(6, 4),
-                          dimnames = list(age = 0:5, reg = letters[1:4])))
-        transformSubtotals <- new("CollapseTransformExtra",
-                                  indices = list(rep(1L, 6L), c(1:3, 0L)),
-                                  dims = c(0L, 1L),
-                                  dimBefore = c(6L, 4L),
-                                  dimAfter = 3L,
-                                  multiplierBefore = c(1L, 6L),
-                                  multiplierAfter = 1L,
-                                  invIndices = list(list(1:6), list(1L, 2L, 3L)))
-        subtotals <- dembase::collapse(y, transform = transformSubtotals)
-        y <- new("CountsWithSubtotalsInternal",
-                 y,
-                 subtotals = as.integer(subtotals),
-                 metadataSubtotals = subtotals@metadata,
-                 transformSubtotals = transformSubtotals)
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE)),
-                              y = y, exposure = NULL)
-        datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
-                                      dim = 3,
-                                      dimnames = list(reg = letters[1:3]))),
-                         Counts(array(as.integer(rpois(18, lambda = 10)),
-                                      dim = c(6, 3),
-                                      dimnames = list(age = 0:5, reg = letters[1:3]))))
-        observation <- vector("list", 2)
-        transforms <- vector("list", 2)
-        for (i in 1:2) {
-            transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
-                                                                        y = datasets[[i]],
-                                                                        subset = TRUE))
-            observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                             y = datasets[[i]],
-                                             exposure = dembase::collapse(y, transforms[[i]]))
-        }
-        set.seed(seed)
-        ans.R <- updateCountsPoissonNotUseExp(y = y,
-                                              model = model,
-                                              dataModels = observation,
-                                              datasets = datasets,
-                                              transforms = transforms,
-                                              useC = FALSE)
-        set.seed(seed)
-        ans.C <- updateCountsPoissonNotUseExp(y = y,
-                                              model = model,
-                                              dataModels = observation,
-                                              datasets = datasets,
-                                              transforms = transforms,
-                                              useC = TRUE)
-        if (test.identity)
-            expect_identical(ans.R, ans.C)
-        else
-            expect_equal(ans.R, ans.C)
-    }
-})
-
-
-
-## updateCounts - PoissonUseExp
-
-test_that("R version of updateCountsPoissonUseExp works with no subtotals", {
-    updateCountsPoissonUseExp <- demest:::updateCountsPoissonUseExp
-    diffLogLik <- demest:::diffLogLik
-    initialModel <- demest:::initialModel
-    getIAfter <- dembase::getIAfter
-    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
-    logLikelihood <- demest:::logLikelihood
-    for (seed in seq_len(n.test)) {
-        set.seed(seed)
-        exposure <- Counts(array(rgamma(n = 48, shape = 2, rate = 0.2),
-                                 dim = c(6, 2, 4),
-                                 dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:4])))
-        y <- Counts(array(as.integer(rpois(48, lambda = exposure * 0.3)),
-                          dim = c(6, 2, 4),
-                          dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:4])))
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + sex + age)),
-                              y = y,
-                              exposure = exposure)
-        datasets <- list(Counts(array(as.integer(rpois(n = 24, lambda = collapseDimension(y, dimension = "sex"))),
-                                      dim = c(6, 4),
-                                      dimnames = list(age = 0:5, reg = letters[1:4]))),
-                         Counts(array(as.integer(rpois(n = 36, lambda = y[,,1:3])),
-                                      dim = c(6, 2, 3),
-                                      dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:3]))))
-        observation <- vector("list", 2)
-        transforms <- vector("list", 2)
-        for (i in 1:2) {
-            transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
-                                                                        y = datasets[[i]],
-                                                                        subset = TRUE))
-            observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                             y = datasets[[i]],
-                                             exposure = dembase::collapse(y, transforms[[i]]))
-        }
-        set.seed(seed)
-        ans.obtained <- updateCountsPoissonUseExp(y = y,
-                                                  model = model,
-                                                  exposure = exposure,
-                                                  dataModels = observation,
-                                                  datasets = datasets,
-                                                  transforms = transforms)
-        set.seed(seed)
-        ans.expected <- y
+        ans.expected <- x
         for (i in seq_along(y)) {
-            y.prop <- as.integer(rpois(n = 1, lambda = model@theta[i] * exposure[i]))
+            if (ans.expected@model@cellInLik[i]) {
+                th.prop <- exp(rnorm(n = 1, mean = x@model@mu[i],
+                                     sd = x@model@scaleTheta@.Data * x@model@sigma@.Data))
+            }
+            else {
+                th.prop <- exp(rnorm(n = 1, mean = x@model@mu[i],
+                                     sd = x@model@sigma@.Data))
+            }
+            y.prop <- as.integer(rpois(n = 1, lambda = th.prop))
             diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = ans.expected,
+                                       y = ans.expected@y,
                                        indicesY = i,
-                                       dataModels = observation,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
-                ans.expected[i] <- y.prop
+                                       dataModels = x@dataModels,
+                                       datasets = x@datasets,
+                                       transforms = x@transforms)
+            if (ans.expected@model@cellInLik[i]) {
+                th.curr <- x@model@theta[i]
+                diff.log.dens <- (dnorm(x = log(th.prop), mean = x@model@mu[i],
+                                        sd = x@model@sigma, log = TRUE)
+                    - dnorm(x = log(th.curr), mean = x@model@mu[i],
+                            sd = x@model@sigma, log = TRUE))
+                diff.log.jump <- (dnorm(x = log(th.curr), mean = x@model@mu[i],
+                                        sd = x@model@sigma * x@model@scaleTheta,
+                                        log = TRUE)
+                    - dnorm(x = log(th.prop), mean = x@model@mu[i],
+                            sd = x@model@sigma * x@model@scaleTheta,
+                            log = TRUE))
+            }
+            else {
+                diff.log.dens <- 0
+                diff.log.jump <- 0
+            }
+            diff <- diff.log.lik + diff.log.dens + diff.log.jump
+            if ((diff >= 0) || (runif(1) < exp(diff))) {
+                ans.expected@model@theta[i] <- th.prop
+                ans.expected@model@thetaTransformed[i] <- log(th.prop)
+                ans.expected@y[i] <- y.prop
+                if (ans.expected@model@cellInLik[i])
+                    ans.expected@model@nAcceptTheta@.Data <- ans.expected@model@nAcceptTheta@.Data + 1L
+            }
         }
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
@@ -10989,56 +10736,48 @@ test_that("R version of updateCountsPoissonUseExp works with no subtotals", {
     }
 })
 
-test_that("R and C versions of updateCountsPoissonUseExp give same answer with no subtotals", {
-    updateCountsPoissonUseExp <- demest:::updateCountsPoissonUseExp
+
+test_that("R and C versions of updateCountsAndThetaPoissonNotUseExp give same answer", {
+    updateCountsAndThetaPoissonNotUseExp <- demest:::updateCountsAndThetaPoissonNotUseExp
     diffLogLik <- demest:::diffLogLik
     initialModel <- demest:::initialModel
+    initialCombinedCounts <- demest:::initialCombinedCounts
     getIAfter <- dembase::getIAfter
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     logLikelihood <- demest:::logLikelihood
     for (seed in seq_len(n.test)) {
         set.seed(seed)
-        exposure <- Counts(array(rgamma(n = 48, shape = 2, rate = 0.2),
-                                 dim = c(6, 2, 4),
-                                 dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:4])))
-        y <- Counts(array(as.integer(rpois(48, lambda = exposure * 0.3)),
-                          dim = c(6, 2, 4),
-                          dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:4])))
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + sex + age)),
-                              y = y,
-                              exposure = exposure)
-        datasets <- list(Counts(array(as.integer(rpois(n = 24, lambda = collapseDimension(y, dimension = "sex"))),
-                                      dim = c(6, 4),
-                                      dimnames = list(age = 0:5, reg = letters[1:4]))),
-                         Counts(array(as.integer(rpois(n = 36, lambda = y[,,1:3])),
-                                      dim = c(6, 2, 3),
-                                      dimnames = list(age = 0:5, sex = c("f", "m"), reg = letters[1:3]))))
-        observation <- vector("list", 2)
+        yProp <- as.integer(rpois(n = 1, lambda = 10))
+        y <- Counts(array(as.integer(rpois(24, lambda = 10)),
+                          dim = c(6, 4),
+                          dimnames = list(age = 0:5, reg = letters[1:4])))
+        model <- Model(y ~ Poisson(mean ~ reg + age, useExpose = FALSE),
+                       jump = 1)
+        datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
+                                      dim = 3,
+                                      dimnames = list(reg = letters[1:3]))),
+                         Counts(array(as.integer(rpois(18, lambda = 10)),
+                                      dim = c(6, 3),
+                                      dimnames = list(age = 0:5, reg = letters[1:3]))))
+        dataModels <- vector("list", 2)
         transforms <- vector("list", 2)
         for (i in 1:2) {
             transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
                                                                         y = datasets[[i]],
                                                                         subset = TRUE))
-            observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                             y = datasets[[i]],
-                                             exposure = dembase::collapse(y, transforms[[i]]))
+            dataModels[[i]] <- Model(y ~ Poisson(mean ~ 1))
         }
+        x <- initialCombinedCounts(object = model,
+                                   y = y,
+                                   exposure = NULL,
+                                   dataModels = dataModels,
+                                   datasets = datasets,
+                                   namesDatasets = c("d1", "d2"),
+                                   transforms = transforms)
         set.seed(seed)
-        ans.R <- updateCountsPoissonUseExp(y = y,
-                                           model = model,
-                                           exposure = exposure,
-                                           dataModels = observation,
-                                           datasets = datasets,
-                                           transforms = transforms,
-                                           useC = FALSE)
+        ans.R <- updateCountsAndThetaPoissonNotUseExp(x, useC = FALSE)
         set.seed(seed)
-        ans.C <- updateCountsPoissonUseExp(y = y,
-                                           model = model,
-                                           exposure = exposure,
-                                           dataModels = observation,
-                                           datasets = datasets,
-                                           transforms = transforms,
-                                           useC = TRUE)
+        ans.C <- updateCountsAndThetaPoissonNotUseExp(x, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
@@ -11046,90 +10785,93 @@ test_that("R and C versions of updateCountsPoissonUseExp give same answer with n
     }
 })
 
-test_that("R version of updateCountsPoissonUseExp works with subtotals made from collapsed y", {
-    updateCountsPoissonUseExp <- demest:::updateCountsPoissonUseExp
+
+## updateCountsAndThetaPoissonUseExp
+
+test_that("R version of updateCountsAndThetaPoissonUseExp works", {
+    updateCountsAndThetaPoissonUseExp <- demest:::updateCountsAndThetaPoissonUseExp
     diffLogLik <- demest:::diffLogLik
     initialModel <- demest:::initialModel
+    initialCombinedCounts <- demest:::initialCombinedCounts
     getIAfter <- dembase::getIAfter
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     logLikelihood <- demest:::logLikelihood
-    makeIOther <- demest:::makeIOther
     for (seed in seq_len(n.test)) {
         set.seed(seed)
+        yProp <- as.integer(rpois(n = 1, lambda = 10))
         y <- Counts(array(as.integer(rpois(24, lambda = 10)),
                           dim = c(6, 4),
                           dimnames = list(age = 0:5, reg = letters[1:4])))
-        exposure <- Counts(array(runif(24, max = 20),
-                                 dim = c(6, 4),
-                                 dimnames = list(age = 0:5, reg = letters[1:4])))
-        transformSubtotals <- new("CollapseTransformExtra",
-                                  indices = list(rep(1L, 6L), c(1:3, 0L)),
-                                  dims = c(0L, 1L),
-                                  dimBefore = c(6L, 4L),
-                                  dimAfter = 3L,
-                                  multiplierBefore = c(1L, 6L),
-                                  multiplierAfter = 1L,
-                                  invIndices = list(list(1:6), list(1L, 2L, 3L)))
-        subtotals <- dembase::collapse(y, transform = transformSubtotals)
-        y <- new("CountsWithSubtotalsInternal",
-                 y,
-                 subtotals = as.integer(subtotals),
-                 metadataSubtotals = subtotals@metadata,
-                 transformSubtotals = transformSubtotals)
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age)),
-                              y = y,
-                              exposure = exposure)
+        exposure <- y + 1
+        model <- Model(y ~ Poisson(mean ~ reg + age),
+                       jump = 1)
         datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
                                       dim = 3,
                                       dimnames = list(reg = letters[1:3]))),
                          Counts(array(as.integer(rpois(18, lambda = 10)),
                                       dim = c(6, 3),
                                       dimnames = list(age = 0:5, reg = letters[1:3]))))
-        observation <- vector("list", 2)
+        dataModels <- vector("list", 2)
         transforms <- vector("list", 2)
         for (i in 1:2) {
             transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
                                                                         y = datasets[[i]],
                                                                         subset = TRUE))
-            observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                             y = datasets[[i]],
-                                             exposure = dembase::collapse(y, transforms[[i]]))
+            dataModels[[i]] <- Model(y ~ Poisson(mean ~ 1))
         }
+        x <- initialCombinedCounts(object = model,
+                                   y = y,
+                                   exposure = exposure,
+                                   dataModels = dataModels,
+                                   datasets = datasets,
+                                   namesDatasets = c("d1", "d2"),
+                                   transforms = transforms)
         set.seed(seed)
-        ans.obtained <- updateCountsPoissonUseExp(y = y,
-                                                  exposure = exposure,
-                                                  model = model,
-                                                  dataModels = observation,
-                                                  datasets = datasets,
-                                                  transforms = transforms)
+        ans.obtained <- updateCountsAndThetaPoissonUseExp(x)
         set.seed(seed)
-        y.tmp <- y
-        for (i in 1:18) {
-            i.other <- makeIOther(i = i, transform = transformSubtotals)
-            y.prop <- as.integer(rmultinom(n = 1L,
-                                           size = sum(y.tmp[c(i, i.other)]),
-                                           prob = model@theta[c(i, i.other)] * exposure[c(i, i.other)]))
+        ans.expected <- x
+        for (i in seq_along(y)) {
+            if (ans.expected@model@cellInLik[i]) {
+                th.prop <- exp(rnorm(n = 1, mean = x@model@mu[i],
+                                     sd = x@model@scaleTheta@.Data * x@model@sigma@.Data))
+            }
+            else {
+                th.prop <- exp(rnorm(n = 1, mean = x@model@mu[i],
+                                     sd = x@model@sigma@.Data))
+            }
+            y.prop <- as.integer(rpois(n = 1, lambda = th.prop * exposure[i]))
             diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = y.tmp,
-                                       indicesY = c(i, i.other),
-                                       dataModels = observation,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
-                y.tmp[c(i, i.other)] <- y.prop
-        }
-        for (i in 19:24) {
-            y.prop <- as.integer(rpois(n = 1, lambda = model@theta[i] * exposure[i]))
-            diff.log.lik <- diffLogLik(yProp = y.prop,
-                                       y = y.tmp,
+                                       y = ans.expected@y,
                                        indicesY = i,
-                                       dataModels = observation,
-                                       datasets = datasets,
-                                       transforms = transforms)
-            if ((diff.log.lik >= 0) || (runif(1) < exp(diff.log.lik)))
-                y.tmp[i] <- y.prop
+                                       dataModels = x@dataModels,
+                                       datasets = x@datasets,
+                                       transforms = x@transforms)
+            if (ans.expected@model@cellInLik[i]) {
+                th.curr <- x@model@theta[i]
+                diff.log.dens <- (dnorm(x = log(th.prop), mean = x@model@mu[i],
+                                        sd = x@model@sigma, log = TRUE)
+                    - dnorm(x = log(th.curr), mean = x@model@mu[i],
+                            sd = x@model@sigma, log = TRUE))
+                diff.log.jump <- (dnorm(x = log(th.curr), mean = x@model@mu[i],
+                                        sd = x@model@sigma * x@model@scaleTheta,
+                                        log = TRUE)
+                    - dnorm(x = log(th.prop), mean = x@model@mu[i],
+                            sd = x@model@sigma * x@model@scaleTheta,
+                            log = TRUE))
+            }
+            else {
+                diff.log.dens <- 0
+                diff.log.jump <- 0
+            }
+            diff <- diff.log.lik + diff.log.dens + diff.log.jump
+            if ((diff >= 0) || (runif(1) < exp(diff))) {
+                ans.expected@model@theta[i] <- th.prop
+                ans.expected@model@thetaTransformed[i] <- log(th.prop)
+                ans.expected@y[i] <- y.prop
+                if (ans.expected@model@cellInLik[i])
+                    ans.expected@model@nAcceptTheta@.Data <- ans.expected@model@nAcceptTheta@.Data + 1L
+            }
         }
-        ans.expected <- y.tmp
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
@@ -11137,77 +10879,57 @@ test_that("R version of updateCountsPoissonUseExp works with subtotals made from
     }
 })
 
-test_that("R and C versions of updateCountsPoissonUseExp give same answer with subtotals made from collapsed y", {
-    updateCountsPoissonUseExp <- demest:::updateCountsPoissonUseExp
+test_that("R and C versions of updateCountsAndThetaPoissonUseExp give same answer", {
+    updateCountsAndThetaPoissonUseExp <- demest:::updateCountsAndThetaPoissonUseExp
     diffLogLik <- demest:::diffLogLik
     initialModel <- demest:::initialModel
+    initialCombinedCounts <- demest:::initialCombinedCounts
     getIAfter <- dembase::getIAfter
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     logLikelihood <- demest:::logLikelihood
-    makeIOther <- demest:::makeIOther
     for (seed in seq_len(n.test)) {
         set.seed(seed)
+        yProp <- as.integer(rpois(n = 1, lambda = 10))
         y <- Counts(array(as.integer(rpois(24, lambda = 10)),
                           dim = c(6, 4),
                           dimnames = list(age = 0:5, reg = letters[1:4])))
-        exposure <- Counts(array(runif(24, max = 20),
-                                 dim = c(6, 4),
-                                 dimnames = list(age = 0:5, reg = letters[1:4])))
-        transformSubtotals <- new("CollapseTransformExtra",
-                                  indices = list(rep(1L, 6L), c(1:3, 0L)),
-                                  dims = c(0L, 1L),
-                                  dimBefore = c(6L, 4L),
-                                  dimAfter = 3L,
-                                  multiplierBefore = c(1L, 6L),
-                                  multiplierAfter = 1L,
-                                  invIndices = list(list(1:6), list(1L, 2L, 3L)))
-        subtotals <- dembase::collapse(y, transform = transformSubtotals)
-        y <- new("CountsWithSubtotalsInternal",
-                 y,
-                 subtotals = as.integer(subtotals),
-                 metadataSubtotals = subtotals@metadata,
-                 transformSubtotals = transformSubtotals)
-        model <- initialModel(Model(y ~ Poisson(mean ~ reg + age)),
-                              y = y,
-                              exposure = exposure)
+        exposure  <- y + 1
+        model <- Model(y ~ Poisson(mean ~ reg + age),
+                       jump = 1)
         datasets <- list(Counts(array(as.integer(rpois(3, lambda = 20)),
                                       dim = 3,
                                       dimnames = list(reg = letters[1:3]))),
                          Counts(array(as.integer(rpois(18, lambda = 10)),
                                       dim = c(6, 3),
                                       dimnames = list(age = 0:5, reg = letters[1:3]))))
-        observation <- vector("list", 2)
+        dataModels <- vector("list", 2)
         transforms <- vector("list", 2)
         for (i in 1:2) {
             transforms[[i]] <- makeCollapseTransformExtra(makeTransform(x = y,
                                                                         y = datasets[[i]],
                                                                         subset = TRUE))
-            observation[[i]] <- initialModel(Model(y ~ Poisson(mean ~ 1)),
-                                             y = datasets[[i]],
-                                             exposure = dembase::collapse(y, transforms[[i]]))
+            dataModels[[i]] <- Model(y ~ Poisson(mean ~ 1))
         }
+        x <- initialCombinedCounts(object = model,
+                                   y = y,
+                                   exposure = exposure,
+                                   dataModels = dataModels,
+                                   datasets = datasets,
+                                   namesDatasets = c("d1", "d2"),
+                                   transforms = transforms)
         set.seed(seed)
-        ans.R <- updateCountsPoissonUseExp(y = y,
-                                           exposure = exposure,
-                                           model = model,
-                                           dataModels = observation,
-                                           datasets = datasets,
-                                           transforms = transforms,
-                                           useC = FALSE)
+        ans.R <- updateCountsAndThetaPoissonUseExp(x, useC = FALSE)
         set.seed(seed)
-        ans.C <- updateCountsPoissonUseExp(y = y,
-                                           exposure = exposure,
-                                           model = model,
-                                           dataModels = observation,
-                                           datasets = datasets,
-                                           transforms = transforms,
-                                           useC = TRUE)
+        ans.C <- updateCountsAndThetaPoissonUseExp(x, useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
     }
 })
+
+
+## updateCountsAndThetaBinomial
 
 test_that("R version of updateCountsAndThetaBinomial works", {
     updateCountsAndThetaBinomial <- demest:::updateCountsAndThetaBinomial
