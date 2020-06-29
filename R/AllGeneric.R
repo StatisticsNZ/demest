@@ -380,6 +380,7 @@ setGeneric("initialCombinedAccount",
                     dataModels, seriesIndices, 
                     datasets, namesDatasets, transforms,
                     dominant = c("Female", "Male"),
+                    jointUpdate = TRUE,
                     updateInitialPopn,
                     usePriorPopn, probSmallUpdate = 0,
                     scaleNoise = 0)

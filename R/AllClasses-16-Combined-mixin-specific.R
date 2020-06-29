@@ -188,18 +188,22 @@ setClass("DescriptionsMixin",
 
 ## NO_TESTS
 setClass("DiffPropMixin",
-         slots = c(diffProp = "integer"),
+         slots = c(diffProp = "integer",
+                   jointUpdate = "logical",
+                   diffTheta = "numeric"),
          contains = "VIRTUAL",
          validity = function(object) {
-             diffProp <- object@diffProp
-             ## 'diffProp' has length 1
-             if (!identical(length(diffProp), 1L))
-                 return(gettextf("'%s' does not have length %d",
-                                 "diffProp", 1L))
-             ## if 'diffProp' not missing, is not equal to 0
-             if (!is.na(diffProp) && (diffProp == 0L))
-                 return(gettextf("'%s' equals %d",
-                                 "diffProp", 0L))
+             jointUpdate <- object@jointUpdate
+             for (name in c("diffProp", "jointUpdate", "diffTheta")) {
+                 x <- slot(object, name)
+                 if (!identical(length(x), 1L))
+                     return(gettextf("'%s' does not have length %d",
+                                     name, 1L))
+             }
+             if (is.na(jointUpdate)) {
+                 return(gettextf("'%s' is missing",
+                                 name))
+             }
              TRUE
          })
 

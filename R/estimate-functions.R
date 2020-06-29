@@ -708,6 +708,9 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #' @param dominant Either \code{"Female"} (the default) or \code{"Male"}.
 #' Determines which sex is used to generate exposures in the system
 #' model for births.
+#' @param jointUpdate Whether to jointly update count(s) and
+#' associated rate(s) in one combined Metropolis-Hastings update.
+#' Defaults to \code{TRUE}.
 #' @param updateInitialPopn If \code{TRUE} (the default) population counts
 #' in the first year of the account are inferred as part of
 #' the overall estimation process. If \code{FALSE}, the values supplied
@@ -731,6 +734,7 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 estimateAccount <- function(account, systemModels, datasets, dataModels, 
                             concordances = list(), weights = list(),
                             dominant = c("Female", "Male"),
+                            jointUpdate = TRUE,
                             updateInitialPopn = TRUE,
                             usePriorPopn = TRUE, probSmallUpdate = 0,
                             scaleNoise = 0,
@@ -742,6 +746,8 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     call <- match.call()
     methods::validObject(account)
     dominant <- match.arg(dominant)
+    jointUpdate <- checkAndTidyLogicalFlag(x = jointUpdate,
+                                           name = "jointUpdate")
     updateInitialPopn <- checkAndTidyLogicalFlag(x = updateInitialPopn,
                                                  name = "updateInitialPopn")
     usePriorPopn <- checkAndTidyLogicalFlag(x = usePriorPopn,
@@ -804,6 +810,7 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
                                                   namesDatasets = namesDatasets,
                                                   transforms = transforms,
                                                   dominant = dominant,
+                                                  jointUpdate = jointUpdate,
                                                   updateInitialPopn = updateInitialPopn,
                                                   usePriorPopn = usePriorPopn,
                                                   probSmallUpdate = probSmallUpdate,
