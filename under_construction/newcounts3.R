@@ -1102,3 +1102,124 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         combined
     }
 }
+
+
+
+
+## EXPOSURE
+## TRANSLATED
+## HAS_TESTS
+## function called only if component uses exposure
+## (otherwise ratios cancel)
+diffLogDensJumpComp <- function(combined, useC = FALSE) {
+    stopifnot(methods::is(combined, "CombinedAccountMovements"))
+    if (useC) {
+        .Call(diffLogDensJumpComp_R, combined)
+    }
+    else {
+        uses.exposure <- combined@modelUsesExposure[i.comp + 1L]
+        joint.update <- combined@jointUpdate
+        if (!uses.exposure && !joint.update)
+            return(0)
+        i.comp <- combined@iComp
+        i.births <- combined@iBirths
+        is.births <- i.comp == i.births
+        component <- combined@account@components[[i.comp]]
+        theta <- combined@systemModels[[i.comp + 1L]]@theta
+        i.cell <- combined@iCell
+        diff.prop <- combined@diffProp
+        diff.theta <- combined@diffTheta
+        has.age <- combined@hasAge@.Data
+        age.time.step <- combined@ageTimeStep
+        is.increment <- combined@isIncrement
+        if (uses.exposure) {
+            i.exposure <- combined@iExposure
+            i.exp.first <- combined@iExpFirst
+            tol.exposure <- 0.000001
+            exposure <- combined@exposure
+            expected.exposure <- combined@expectedExposure
+            exposure.cell.curr <- exposure[i.exposure]
+            exposure.cell.jump <- expected.exposure[i.exposure]
+        }
+        if (is.births)
+            exp.changes <- (i.exp.first != 0L) && (i.exp.first == i.exposure)
+        else
+            exp.changes <- TRUE
+        if (uses.exposure) {
+            if (exp.changes) {
+                if (has.age) {
+                    iterator <- combined@iteratorsComp[[i.comp]]
+                    iterator <- resetCC(iterator, i = i.cell)
+                    n.age <- iterator@nAge
+                    last.age.group.open <- iterator@lastAgeGroupOpen
+                    i.age <- iterator@iAge
+                    i.triangle <- iterator@iTriangle
+                    is.final <- i.age == n.age
+                    is.upper <- i.triangle == 2L
+                    if (is.final && last.age.group.open) {
+                        if (is.upper)
+                            incr.exp <- 0.5 * age.time.step * diff
+                        else
+                            incr.exp <- (1/3) * age.time.step * diff
+                    }
+                    else {
+                        if (is.upper)
+                            incr.exp <- (1/6) * age.time.step * diff
+                        else
+                            incr.exp <- (1/3) * age.time.step * diff
+                    }
+                }
+                else
+                    incr.exp <- 0.5 * age.time.step * diff
+                if (!is.increment[i.comp])
+                    incr.exp <- -1 * incr.exp
+            }
+            else
+                incr.exp <- 0
+            exposure.cell.prop <- exposure.cell.curr + incr.exp
+            if (exposure.cell.prop < tol.exposure) {
+                if (exposure.cell.prop > -1 * tol.exposure)
+                    exposure.cell.prop <- 0
+                else {
+                    if (exposure.cell.curr < 0)
+                        return(-Inf)
+                    stop(sprintf("negative value for 'exposure.cell.prop' : %f", exposure.cell.prop))
+                }
+            }
+        }
+        val.curr <- component[i.cell]
+        val.prop <- val.curr + diff
+        if (uses.exposure && (val.prop > 0) && !(exposure.cell.prop > 0))
+            ans <- -Inf ## even if same is true for current value
+        else {
+            theta.curr <- theta[i.cell]
+            if (joint.update) {
+                theta.prop <- theta.curr + diff.theta
+                if (uses.exposure) {
+                    lambda.dens.prop <- theta.prop * exposure.cell.prop
+                    lambda.dens.curr <- theta.curr * exposure.cell.curr
+                }
+                else {
+
+                }
+                
+
+                
+                diff.log.dens <- (stats::dpois(x = val.prop, lambda = lambda.dens.prop, log = TRUE)
+                    - stats::dpois(x = val.curr, lambda = lambda.dens.prop, log = TRUE))
+            }
+            else {
+                lambda.dens.prop <- theta.cell * exposure.cell.prop
+                lambda.jump <- theta.cell * exposure.cell.jump
+                diff.log.dens <- (stats::dpois(x = val.prop, lambda = lambda.dens.prop, log = TRUE)
+                    - stats::dpois(x = val.curr, lambda = lambda.dens.prop, log = TRUE))
+                diff.log.jump <- (stats::dpois(x = val.curr, lambda = lambda.jump, log = TRUE)
+                    - stats::dpois(x = val.prop, lambda = lambda.jump, log = TRUE))
+            }
+            ans <- diff.log.dens + diff.log.jump
+            ans <- unname(ans)
+        }
+        ans
+    }
+}
+
