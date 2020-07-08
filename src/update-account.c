@@ -1643,10 +1643,10 @@ diffLogLikPopnOneCell(int iAfter_r, int diff, SEXP population_R,
             double diffProp = abs(totalPopnProp - dataset[iAfter]);
             double diffCurr = abs(totalPopnCurr - dataset[iAfter]);
             if (diffProp > diffCurr) {
-                retValue = -1000;
+                retValue = -1000000;
             }
             else {
-                retValue = 1000;
+                retValue = 1000000;
             }
         }
     }
@@ -1791,10 +1791,10 @@ diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R,
             double diffProp = abs(totalCompProp - dataset[iAfter]);
             double diffCurr = abs(totalCompCurr - dataset[iAfter]);
             if (diffProp > diffCurr) {
-                ans = -1000;
+                ans = -1000000;
             }
             else {
-                ans = 1000;
+                ans = 1000000;
             }
         }
     }

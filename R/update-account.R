@@ -1599,9 +1599,9 @@ diffLogLikPopnOneCell <- function(iAfter, diff, population, model,
             diff.prop <- abs(total.popn.prop - dataset[iAfter])
             diff.curr <- abs(total.popn.curr - dataset[iAfter])
             if (diff.prop > diff.curr)
-                -1000
+                -1000000
             else
-                1000
+                1000000
         }
     }
 }
@@ -1772,13 +1772,13 @@ diffLogLikCellOneDataset <- function(diff, iCell, component,
             ## If both -Inf, but proposed value is closer
             ## to observed value, then return a large but not
             ## infinite value (which can be overruled by
-            ## the log-density).
+            ## an infinite log-density).
             diff.prop <- abs(total.comp.prop - dataset[i.after])
             diff.curr <- abs(total.comp.curr - dataset[i.after])
             if (diff.prop > diff.curr)
-                -1000
+                -1000000
             else
-                1000
+                1000000
         }
     }
 }
