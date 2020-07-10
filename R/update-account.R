@@ -699,7 +699,10 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
                 if (val.popn.dest < val.acc.orig + val.acc.dest )
                     upper <- val.up.curr + val.popn.dest - val.acc.dest
             }
-            size <- val.up.curr + val.low.curr
+            if (lower < 0L)
+                lower <- 0L
+            if (upper < 0L)
+                upper <- 0L
             val.up.prop <- as.integer(runif(n = 1L) * (upper - lower + 1L)) + lower
             if (val.up.prop > upper)
                 val.up.prop <- upper

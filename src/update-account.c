@@ -739,6 +739,11 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
 	  }
 	}
 
+	if (lower < 0)
+	  lower = 0;
+	if (upper < 0)
+	  upper = 0;
+	
 	int val_up_prop = (int)(runif(0, 1) * (upper - lower + 1)) + lower;
 	if (val_up_prop > upper) /* paranoia */
 	  val_up_prop = upper;
