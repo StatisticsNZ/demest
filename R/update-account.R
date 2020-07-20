@@ -703,6 +703,9 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
                 lower <- 0L
             if (upper < 0L)
                 upper <- 0L
+            size <- val.up.curr + val.low.curr
+            if (upper > size)
+                upper <- size
             val.up.prop <- as.integer(runif(n = 1L) * (upper - lower + 1L)) + lower
             if (val.up.prop > upper)
                 val.up.prop <- upper

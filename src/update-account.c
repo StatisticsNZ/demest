@@ -707,6 +707,7 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
         int val_acc_orig = accession[i_acc_orig];
         int val_acc_dest = accession[i_acc_dest];
         int val_up_curr = component[i_cell_up];
+	int val_low_curr = component[i_cell_low];
 
         if(usesExposure) {
 	  getIExpFirstPairFromOrigDestInternal(pairArray, i_cell_up_r, mappingToExp_R);
@@ -743,6 +744,9 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
 	  lower = 0;
 	if (upper < 0)
 	  upper = 0;
+	int size = val_up_curr + val_low_curr;
+	if (upper > size)
+	  upper = size;
 	
 	int val_up_prop = (int)(runif(0, 1) * (upper - lower + 1)) + lower;
 	if (val_up_prop > upper) /* paranoia */
