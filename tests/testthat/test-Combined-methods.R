@@ -2470,6 +2470,9 @@ test_that("R and C versions of diffLogDensAccount give same answer with Combined
 test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
     diffLogLikAccount <- demest:::diffLogLikAccount
     updateProposalAccount <- demest:::updateProposalAccount
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+    updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     set.seed(1)
@@ -2580,9 +2583,10 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
     is.small.deaths <- FALSE
     for (seed in seq_len(3 * n.test)) {
         set.seed(seed)
+        ## births
         x1 <- x0
-        x1@iComp <- 1L # births
-        x1 <- updateProposalAccount(x1)
+        x1@iComp <- 1L
+        x1 <- updateProposalAccountMoveBirthsSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2591,9 +2595,10 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
             expect_true(is.numeric(ans.obtained))
             expect_true(!is.na(ans.obtained))
         }
+        ## internal
         x1 <- x0
-        x1@iComp <- 2L # internal
-        x1 <- updateProposalAccount(x1)
+        x1@iComp <- 2L
+        x1 <- updateProposalAccountMoveOrigDestSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2602,9 +2607,10 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
             expect_true(is.numeric(ans.obtained))
             expect_true(!is.na(ans.obtained))
         }
+        ## deaths
         x1 <- x0
-        x1@iComp <- 3L # deaths
-        x1 <- updateProposalAccount(x1)
+        x1@iComp <- 3L
+        x1 <- updateProposalAccountMoveCompSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2626,6 +2632,9 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
 test_that("R and C versions of diffLogLikAccount give same answer with CombinedAccountMovementsHasAge", {
     diffLogLikAccount <- demest:::diffLogLikAccount
     updateProposalAccount <- demest:::updateProposalAccount
+    updateProposalAccountMoveBirthsSmall <- demest:::updateProposalAccountMoveBirthsSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+    updateProposalAccountMoveCompSmall <- demest:::updateProposalAccountMoveCompSmall
     initialCombinedAccount <- demest:::initialCombinedAccount
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     set.seed(21)
@@ -2650,7 +2659,6 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
                                              reg_dest = 1:5,
                                              time = c("2001-2005", "2006-2010"),
                                              triangle = c("Lower", "Upper"))))
-    internal <- collapseOrigDest(internal, to = "pool")
     deaths <- Counts(array(rpois(n = 72, lambda = 10),
                            dim = c(3, 2, 5, 2, 2),
                            dimnames = list(age = c("0-4", "5-9", "10+"),
@@ -2665,7 +2673,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
     account <- makeConsistent(account)
     systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
                          Model(births ~ Poisson(mean ~ 1)),
-                         Model(internal ~ Poisson(mean ~ reg)),
+                         Model(internal ~ Poisson(mean ~ 1)),
                          Model(deaths ~ Poisson(mean ~ 1)))
     systemWeights <- list(NULL, NULL, NULL, NULL)
     census <- subarray(popn, time == "2000", drop = FALSE) + 2L
@@ -2739,7 +2747,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
                                  transforms = transforms,
-                                 probSmallUpdate = 0.5)
+                                 probSmallUpdate = 1)
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
@@ -2747,7 +2755,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
         set.seed(seed)
         x1 <- x0
         x1@iComp <- 1L # births
-        x1 <- updateProposalAccount(x1)
+        x1 <- updateProposalAccountMoveBirthsSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2766,7 +2774,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
         }
         x1 <- x0
         x1@iComp <- 2L # internal
-        x1 <- updateProposalAccount(x1)
+        x1 <- updateProposalAccountMoveOrigDestSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)
@@ -2785,7 +2793,7 @@ test_that("R and C versions of diffLogLikAccount give same answer with CombinedA
         }
         x1 <- x0
         x1@iComp <- 3L # deaths
-        x1 <- updateProposalAccount(x1)
+        x1 <- updateProposalAccountMoveCompSmall(x1)
         if (x1@generatedNewProposal@.Data) {
             updated <- TRUE
             if (x1@isSmallUpdate@.Data)

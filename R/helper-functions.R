@@ -1918,7 +1918,7 @@ sweepMargins <- function(x, margins) {
 ## sparse data.  When the data model is binomial, it occurs
 ## whenever the cell in 'dataset' has a higher value than the
 ## sum of the corresponding cell(s) from 'y'.  When the
-## data model is Poisson or a Poisson-binomial mixture,
+## data model is Poisson, CMP, or a Poisson-binomial mixture,
 ## it occurs whenever the cell in 'dataset' has a value > 0
 ## but the corresponding cell(s)
 ## in 'y' are all 0. Whether testing and allowing for an
@@ -1990,9 +1990,9 @@ diffLogLik <- function(yProp, y, indicesY, dataModels,
                     i.cell.dataset <- dembase::getIAfter(i.cell.y, transform = transform)
                     if (i.cell.dataset > 0L) {
                         dataset <- datasets[[i.dataset]]
+                        model <- dataModels[[i.dataset]]
                         cell.observed <- !is.na(dataset[i.cell.dataset])
                         if (cell.observed) {
-                            model <- dataModels[[i.dataset]]
                             i.contrib.to.cell <- dembase::getIShared(i = i.cell.y, transform = transform)
                             collapsed.y.curr <- sum(y[i.contrib.to.cell])
                             diff.prop.curr <- yProp[i.element.indices.y] - y[i.cell.y]

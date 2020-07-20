@@ -399,10 +399,9 @@ updateProposalAccountMoveBirthsSmall <- function(combined, useC = FALSE) {
                                                        mapping = mapping)
             }
             size <- val.up.curr + val.low.curr
-            prob <- 0.5
-            val.up.prop <- stats::rbinom(n = 1L,
-                                         size = size,
-                                         prob = prob)
+            val.up.prop <- as.integer(runif(n = 1L) * (size + 1L))
+            if (val.up.prop > size)
+                val.up.prop <- size
             diff.prop <- unname(val.up.prop - val.up.curr)
             generated.new.proposal  <- diff.prop != 0L
         }
@@ -700,20 +699,18 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
                 if (val.popn.dest < val.acc.orig + val.acc.dest )
                     upper <- val.up.curr + val.popn.dest - val.acc.dest
             }
+            if (lower < 0L)
+                lower <- 0L
+            if (upper < 0L)
+                upper <- 0L
             size <- val.up.curr + val.low.curr
-            prob <- 0.5
-            val.up.prop <- rbinomTrunc1(size = size,
-                                        prob = prob,
-                                        lower = lower,
-                                        upper = upper,
-                                        maxAttempt = max.attempt)
-            found.value <- !is.na(val.up.prop)
-            if (found.value) {
-                diff.prop <- unname(val.up.prop - val.up.curr)
-                generated.new.proposal  <- diff.prop != 0L
-            }
-            else
-                generated.new.proposal  <- FALSE
+            if (upper > size)
+                upper <- size
+            val.up.prop <- as.integer(runif(n = 1L) * (upper - lower + 1L)) + lower
+            if (val.up.prop > upper)
+                val.up.prop <- upper
+            diff.prop <- unname(val.up.prop - val.up.curr)
+            generated.new.proposal  <- diff.prop != 0L
         }
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
@@ -1328,19 +1325,13 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
                 upper <- val.up.curr + val.acc
             }
             size <- val.up.curr + val.low.curr
-            prob <- 0.5
-            val.up.prop <- rbinomTrunc1(size = size,
-                                        prob = prob,
-                                        lower = lower,
-                                        upper = upper,
-                                        maxAttempt = max.attempt)
-            found.value <- !is.na(val.up.prop)
-            if (found.value) {
-                diff.prop <- unname(val.up.prop - val.up.curr)
-                generated.new.proposal  <- diff.prop != 0L
-            }
-            else
-                generated.new.proposal  <- FALSE
+            if (is.na(lower) || (lower < 0))
+                lower <- 0L
+            if (is.na(upper) || (upper > size))
+                upper <- size
+            val.up.prop <- as.integer(runif(n = 1L) * (upper - lower + 1L)) + lower
+            diff.prop <- unname(val.up.prop - val.up.curr)
+            generated.new.proposal  <- diff.prop != 0L
         }
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
@@ -1599,9 +1590,9 @@ diffLogLikPopnOneCell <- function(iAfter, diff, population, model,
             diff.prop <- abs(total.popn.prop - dataset[iAfter])
             diff.curr <- abs(total.popn.curr - dataset[iAfter])
             if (diff.prop > diff.curr)
-                -1000
+                -1000000
             else
-                1000
+                1000000
         }
     }
 }
@@ -1772,13 +1763,13 @@ diffLogLikCellOneDataset <- function(diff, iCell, component,
             ## If both -Inf, but proposed value is closer
             ## to observed value, then return a large but not
             ## infinite value (which can be overruled by
-            ## the log-density).
+            ## an infinite log-density).
             diff.prop <- abs(total.comp.prop - dataset[i.after])
             diff.curr <- abs(total.comp.curr - dataset[i.after])
             if (diff.prop > diff.curr)
-                -1000
+                -1000000
             else
-                1000
+                1000000
         }
     }
 }
@@ -3560,15 +3551,11 @@ diffLogDensJumpBirthsSmall <- function(combined, useC = FALSE) {
             val.up.expect <- theta.up
             val.low.expect <- theta.low
         }
-        size <- val.up.curr + val.low.curr
-        prob <- 0.5
         ans.dens.prop <- stats::dpois(x = val.up.prop, lambda = val.up.expect, log = TRUE) +
             stats::dpois(x = val.low.prop, lambda = val.low.expect, log = TRUE)
         ans.dens.curr <- stats::dpois(x = val.up.curr, lambda = val.up.expect, log = TRUE) +
             stats::dpois(x = val.low.curr, lambda = val.low.expect, log = TRUE)
-        ans.jump <- (stats::dbinom(x = val.up.curr, prob = prob, size = size, log = TRUE) -
-                     stats::dbinom(x = val.up.prop, prob = prob, size = size, log = TRUE))
-        ans <- ans.dens.prop - ans.dens.curr + ans.jump
+        ans <- ans.dens.prop - ans.dens.curr
         ans
     }
 }
@@ -3654,15 +3641,11 @@ diffLogDensJumpOrigDestSmall <- function(combined, useC = FALSE) {
             val.up.expect.prop <- theta.up
             val.low.expect.prop <- theta.low
         }
-        size <- val.up.curr + val.low.curr
-        prob <- 0.5
         ans.dens.prop <- stats::dpois(x = val.up.prop, lambda = val.up.expect.prop, log = TRUE) +
             stats::dpois(x = val.low.prop, lambda = val.low.expect.prop, log = TRUE)
         ans.dens.curr <- stats::dpois(x = val.up.curr, lambda = val.up.expect.curr, log = TRUE) +
             stats::dpois(x = val.low.curr, lambda = val.low.expect.curr, log = TRUE)
-        ans.jump <- (stats::dbinom(x = val.up.curr, size = size, prob = prob, log = TRUE) -
-                     stats::dbinom(x = val.up.prop, size = size, prob = prob, log = TRUE))
-        ans <- ans.dens.prop - ans.dens.curr + ans.jump
+        ans <- ans.dens.prop - ans.dens.curr
         ans
     }
 }
@@ -3752,15 +3735,11 @@ diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
             val.up.expect.prop <- theta.up
             val.low.expect.prop <- theta.low
         }
-        size <- val.up.curr + val.low.curr
-        prob <- 0.5
         ans.dens.prop <- stats::dpois(x = val.up.prop, lambda = val.up.expect.prop, log = TRUE) +
             stats::dpois(x = val.low.prop, lambda = val.low.expect.prop, log = TRUE)
         ans.dens.curr <- stats::dpois(x = val.up.curr, lambda = val.up.expect.curr, log = TRUE) +
             stats::dpois(x = val.low.curr, lambda = val.low.expect.curr, log = TRUE)
-        ans.jump <- (stats::dbinom(x = val.up.curr, prob = prob, size = size, log = TRUE) -
-                     stats::dbinom(x = val.up.prop, prob = prob, size = size, log = TRUE))
-        ans <- ans.dens.prop - ans.dens.curr + ans.jump
+        ans <- ans.dens.prop - ans.dens.curr
         ans
     }
 }

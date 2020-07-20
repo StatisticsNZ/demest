@@ -352,7 +352,6 @@ updateProposalAccountMoveBirthsSmall(SEXP combined_R)
 
     int i_cell_up_r = 0;
     int i_cell_up = 0;
-    int int_diff_prop = 0;
     int generatedNewProposal = 0;
 
     for (int i = 0; i < maxAttempt; i++) {
@@ -370,6 +369,7 @@ updateProposalAccountMoveBirthsSmall(SEXP combined_R)
     int isLowerTriangleValue = 0;
     int i_expose_up_r = 0;
     int i_expose_low_r = NA_INTEGER;
+    int diff_prop = NA_INTEGER;
 
     if (generatedNewProposal) {
 
@@ -384,11 +384,11 @@ updateProposalAccountMoveBirthsSmall(SEXP combined_R)
         }
 
         int size = val_up_curr + val_low_curr;
-        double prob = 0.5;
-        double val_up_prop = rbinom(size, prob);
-        double diff_prop = val_up_prop - val_up_curr;
+        int val_up_prop = (int)(runif(0, 1) * (size + 1));
+	if (val_up_prop > size) /* paranoia */
+	  val_up_prop = size;
+        diff_prop = val_up_prop - val_up_curr;
         generatedNewProposal = (diff_prop != 0);
-        int_diff_prop = (int)diff_prop;
     } /* end generatedNewProposal */
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
@@ -407,7 +407,7 @@ updateProposalAccountMoveBirthsSmall(SEXP combined_R)
          isLowerTriangleValue = NA_LOGICAL;
          i_expose_up_r = NA_INTEGER;
          i_expose_low_r = NA_INTEGER;
-         int_diff_prop = NA_INTEGER;
+	 diff_prop = NA_INTEGER;
     }
 
     SET_INTSCALE_SLOT(combined_R, iCell_sym, i_cell_up_r);
@@ -417,7 +417,7 @@ updateProposalAccountMoveBirthsSmall(SEXP combined_R)
 
     SET_INTSCALE_SLOT(combined_R, iExposure_sym, i_expose_up_r);
     SET_INTSCALE_SLOT(combined_R, iExposureOther_sym, i_expose_low_r);
-    SET_INTSCALE_SLOT(combined_R, diffProp_sym, int_diff_prop);
+    SET_INTSCALE_SLOT(combined_R, diffProp_sym, diff_prop);
 }
 
 
@@ -740,19 +740,19 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
 	  }
 	}
 
+	if (lower < 0)
+	  lower = 0;
+	if (upper < 0)
+	  upper = 0;
 	int size = val_up_curr + val_low_curr;
-	double prob = 0.5;
-	int val_up_prop = rbinomTrunc1(size, prob, lower, upper, maxAttempt);
-
-        int foundValue = !(val_up_prop == NA_INTEGER);
-
-        if(foundValue) {
-            diff_prop = val_up_prop - val_up_curr;
-            generatedNewProposal = (diff_prop != 0);
-        }
-        else {
-            generatedNewProposal = 0;
-        }
+	if (upper > size)
+	  upper = size;
+	
+	int val_up_prop = (int)(runif(0, 1) * (upper - lower + 1)) + lower;
+	if (val_up_prop > upper) /* paranoia */
+	  val_up_prop = upper;
+	diff_prop = val_up_prop - val_up_curr;
+	generatedNewProposal = (diff_prop != 0);
 
     }
 
@@ -1453,34 +1453,34 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
 	  val_popn = population[i_popn_r - 1];
 	}
        
-	int lower = NA_INTEGER;
-	int upper = NA_INTEGER;
+	int lower = 0;
+	int lower_alt = lower;
+	int upper = val_up_curr + val_low_curr;
+	int upper_alt = upper;
+	
 	if (isIncrement) {
-	  lower = val_up_curr - val_acc;
+	  lower_alt = val_up_curr - val_acc;
 	  if (is_final_age_group) {
-            upper = val_up_curr + val_popn - val_acc;
+            upper_alt = val_up_curr + val_popn - val_acc;
 	  }
         }
         else {
 	  if (is_final_age_group) {
-            lower = val_up_curr - val_popn + val_acc;
+            lower_alt = val_up_curr - val_popn + val_acc;
 	  }
-	  upper = val_up_curr + val_acc;
+	  upper_alt = val_up_curr + val_acc;
 	}
 
-        int size = val_up_curr + val_low_curr;
-	double prob = 0.5;
-	int val_up_prop = rbinomTrunc1(size, prob, lower, upper, maxAttempt);
+	if (lower_alt > lower)
+	  lower = lower_alt;
+	if (upper_alt < upper)
+	  upper = upper_alt;
 
-        int found_value = !(val_up_prop == NA_INTEGER);
-
-        if (found_value) {
-            diff_prop = val_up_prop - val_up_curr;
-            generatedNewProposal = (diff_prop != 0);
-        }
-        else {
-            generatedNewProposal = 0;
-        }
+	int val_up_prop = (int)(runif(0, 1) * (upper - lower + 1) + lower);
+	if (val_up_prop > upper) /* paranoia */
+	  val_up_prop = upper;
+	diff_prop = val_up_prop - val_up_curr;
+	generatedNewProposal = (diff_prop != 0);
 
     } /* end generatedNewProposal */
 
@@ -1643,10 +1643,10 @@ diffLogLikPopnOneCell(int iAfter_r, int diff, SEXP population_R,
             double diffProp = abs(totalPopnProp - dataset[iAfter]);
             double diffCurr = abs(totalPopnCurr - dataset[iAfter]);
             if (diffProp > diffCurr) {
-                retValue = -1000;
+                retValue = -1000000;
             }
             else {
-                retValue = 1000;
+                retValue = 1000000;
             }
         }
     }
@@ -1791,10 +1791,10 @@ diffLogLikCellOneDataset(int diff, int iCell_r, SEXP component_R,
             double diffProp = abs(totalCompProp - dataset[iAfter]);
             double diffCurr = abs(totalCompCurr - dataset[iAfter]);
             if (diffProp > diffCurr) {
-                ans = -1000;
+                ans = -1000000;
             }
             else {
-                ans = 1000;
+                ans = 1000000;
             }
         }
     }
@@ -3571,15 +3571,11 @@ diffLogDensJumpBirthsSmall(SEXP combined_R)
     ans = R_PosInf;
   }
   else {
-    int size = val_up_curr + val_low_curr;
-    double prob = 0.5;
     double ans_dens_prop = dpois(val_up_prop, val_up_expect, USE_LOG) +
       dpois(val_low_prop, val_low_expect, USE_LOG);
     double ans_dens_curr = dpois(val_up_curr, val_up_expect, USE_LOG) +
       dpois(val_low_curr, val_low_expect, USE_LOG);
-    double ans_jump = dbinom(val_up_curr, size, prob, USE_LOG) -
-      dbinom(val_up_prop, size, prob, USE_LOG);
-    ans = ans_dens_prop - ans_dens_curr + ans_jump;
+    ans = ans_dens_prop - ans_dens_curr;
   }
   return ans;
 }
@@ -3681,15 +3677,11 @@ diffLogDensJumpOrigDestSmall(SEXP combined_R)
       ans = R_PosInf;
     }
     else {
-      int size = val_up_curr + val_low_curr;
-      double prob = 0.5;
       double ans_dens_prop = dpois(val_up_prop, val_up_expect_prop, USE_LOG) +
 	dpois(val_low_prop, val_low_expect_prop, USE_LOG);
       double ans_dens_curr = dpois(val_up_curr, val_up_expect_curr, USE_LOG) +
 	dpois(val_low_curr, val_low_expect_curr, USE_LOG);
-      double ans_jump = dbinom(val_up_curr, size, prob, USE_LOG) -
-	dbinom(val_up_prop, size, prob, USE_LOG);
-      ans = ans_dens_prop - ans_dens_curr + ans_jump;
+      ans = ans_dens_prop - ans_dens_curr;
     }
   }
   UNPROTECT(1);
@@ -3796,15 +3788,11 @@ diffLogDensJumpCompSmall(SEXP combined_R)
       ans = R_PosInf;
     }
     else {
-      int size = val_up_curr + val_low_curr;
-      double prob = 0.5;
       double ans_dens_prop = dpois(val_up_prop, val_up_expect_prop, USE_LOG) +
 	dpois(val_low_prop, val_low_expect_prop, USE_LOG);
       double ans_dens_curr = dpois(val_up_curr, val_up_expect_curr, USE_LOG) +
 	dpois(val_low_curr, val_low_expect_curr, USE_LOG);
-      double ans_jump = dbinom(val_up_curr, size, prob, USE_LOG) -
-	dbinom(val_up_prop, size, prob, USE_LOG);
-      ans = ans_dens_prop - ans_dens_curr + ans_jump;
+      ans = ans_dens_prop - ans_dens_curr;
     }
   }
   UNPROTECT(1);
