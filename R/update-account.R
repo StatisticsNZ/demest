@@ -2516,6 +2516,8 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
 ## EXPOSURE
 ## TRANSLATED
 ## HAS_TESTS
+## Use this function with *all* births, not just ParCh, because need to
+## include effects on females and males.
 diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
                                                component, theta, strucZeroArray,
                                                iteratorComp, iExpFirst, exposure, iteratorExposure,
