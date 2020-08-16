@@ -2412,8 +2412,7 @@ diffLogDensExpPopn(SEXP combined_R)
   				        updatedPopnTrue, updatedBirthsFalse,
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirst_r,
-                                        exposure, iteratorExposure_R,
-                                        diff);
+                                        exposure, iteratorExposure_R, diff, 0);
 
 
             }
@@ -2432,8 +2431,7 @@ diffLogDensExpPopn(SEXP combined_R)
   				        updatedBirthsFalse,
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirstBirths_R,
-                                        exposure, iteratorExposure_R,
-                                        diff);
+                                        exposure, iteratorExposure_R, diff, 0);
 
                 }
             }
@@ -2446,7 +2444,7 @@ diffLogDensExpPopn(SEXP combined_R)
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirst_r,
                                         exposure, iteratorExposure_R,
-                                        diff);
+						diff, 0);
             }
 
             if (R_finite(diffLog) ) {
@@ -2473,7 +2471,7 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
 				   SEXP iteratorComp_R,
 				   int iExpFirst_r, double * exposure,
 				   SEXP iteratorExposure_R,
-				   int diff)
+				   int diff, int firstOnly)
 {
   double ans = 0;
   int * component = INTEGER(component_R);
@@ -2598,7 +2596,7 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
     if (keepGoing) {
       isFirstCell = 0;
       int finishedComp = *finishedComp_ptr;
-      if (finishedComp) {
+      if (finishedComp || firstOnly) {
 	keepGoing = 0;
       }
       else {
@@ -2618,7 +2616,7 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
 		      SEXP iteratorComp_R,
 		      int iExpFirst_r, double * exposure,
 		      SEXP iteratorExposure_R,
-		      int diff)
+		      int diff, int firstOnly)
 {
   double ans = 0;
   int * component = INTEGER(component_R);
@@ -2753,7 +2751,7 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
     if (keepGoing) {
       isFirstCell = 0;
       int finishedComp = *finishedComp_ptr;
-      if (finishedComp) {
+      if (finishedComp || firstOnly) {
 	keepGoing = 0;
       }
       else {
@@ -2924,36 +2922,38 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
 
                 if (isOrigDest || isPool) {
 
-                    int iCellOrig_r = getICellCompFromExp(iExpFirstOrig_r,
-                                                mappingFromExposure_R);
-                    int iCellDest_r = getICellCompFromExp(iExpFirstDest_r,
-                                                mappingFromExposure_R);
-                    diffLogOrig
-                            = diffLogDensExpOneOrigDestParChPool(iCellOrig_r,
-                                                    hasAge, ageTimeStep,
-                                                    updatedPopnFalse,
-						 updatedBirthsFalse,
-                                                    component_R, theta,
-                                                    strucZeroArray,
-                                                    iteratorComp_R,
-                                                    iExpFirstOrig_r,
-                                                    exposure,
-                                                    iteratorExposure_R,
-                                                    diffOrig);
-                    if (R_finite(diffLogOrig)) {
+		  int iCellOrig_r = getICellCompFromExp(iExpFirstOrig_r,
+							mappingFromExposure_R);
+		  int iCellDest_r = getICellCompFromExp(iExpFirstDest_r,
+							mappingFromExposure_R);
+		  diffLogOrig
+		    = diffLogDensExpOneOrigDestParChPool(iCellOrig_r,
+							 hasAge, ageTimeStep,
+							 updatedPopnFalse,
+							 updatedBirthsFalse,
+							 component_R, theta,
+							 strucZeroArray,
+							 iteratorComp_R,
+							 iExpFirstOrig_r,
+							 exposure,
+							 iteratorExposure_R,
+							 diffOrig,
+							 0);
+		  if (R_finite(diffLogOrig)) {
 
-                        diffLogDest
-                            = diffLogDensExpOneOrigDestParChPool(iCellDest_r,
-                                                    hasAge, ageTimeStep,
-                                                    updatedPopnFalse,
-   						    updatedBirthsFalse,
-                                                    component_R, theta,
-                                                    strucZeroArray,
-                                                    iteratorComp_R,
-                                                    iExpFirstDest_r,
-                                                    exposure,
-                                                    iteratorExposure_R,
-                                                    diffDest);
+		      diffLogDest
+			= diffLogDensExpOneOrigDestParChPool(iCellDest_r,
+							     hasAge, ageTimeStep,
+							     updatedPopnFalse,
+							     updatedBirthsFalse,
+							     component_R, theta,
+							     strucZeroArray,
+							     iteratorComp_R,
+							     iExpFirstDest_r,
+							     exposure,
+							     iteratorExposure_R,
+							     diffDest,
+							     0);
                     }
                 } /* end if isOrigDest || isPool */
 
@@ -2970,33 +2970,35 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
 		    int iExpFirstOrigBirths_R = getIExposureFromBirths(iCellOrig_r, mappingToExposure_R);
 		    int iExpFirstDestBirths_R = getIExposureFromBirths(iCellDest_r, mappingToExposure_R);
 		      
-                            diffLogOrig
-                            = diffLogDensExpOneOrigDestParChPool(iCellOrig_r,
-                                                    hasAge, ageTimeStep,
-                                                    updatedPopnFalse,
- 						    updatedBirthsFalse,
-                                                    component_R, theta,
-                                                    strucZeroArray,
-                                                    iteratorComp_R,
-                                                    iExpFirstOrigBirths_R,
-                                                    exposure,
-                                                    iteratorExposure_R,
-                                                    diffOrig);
+		    diffLogOrig
+		      = diffLogDensExpOneOrigDestParChPool(iCellOrig_r,
+							   hasAge, ageTimeStep,
+							   updatedPopnFalse,
+							   updatedBirthsFalse,
+							   component_R, theta,
+							   strucZeroArray,
+							   iteratorComp_R,
+							   iExpFirstOrigBirths_R,
+							   exposure,
+							   iteratorExposure_R,
+							   diffOrig,
+							   0);
 
                             if (R_finite(diffLogOrig)) {
 
-                                diffLogDest
-                                    = diffLogDensExpOneOrigDestParChPool(iCellDest_r,
-                                                            hasAge, ageTimeStep,
-                                                            updatedPopnFalse,
-							    updatedBirthsFalse,
-                                                            component_R, theta,
-                                                            strucZeroArray,
-                                                            iteratorComp_R,
-                                                            iExpFirstDestBirths_R,
-                                                            exposure,
-                                                            iteratorExposure_R,
-                                                            diffDest);
+			      diffLogDest
+				= diffLogDensExpOneOrigDestParChPool(iCellDest_r,
+								     hasAge, ageTimeStep,
+								     updatedPopnFalse,
+								     updatedBirthsFalse,
+								     component_R, theta,
+								     strucZeroArray,
+								     iteratorComp_R,
+								     iExpFirstDestBirths_R,
+								     exposure,
+								     iteratorExposure_R,
+								     diffDest,
+								     0);
                             }
 
                     } /* end cellIsAffected */
@@ -3021,7 +3023,8 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                                     iExpFirstOrig_r,
                                                     exposure,
                                                     iteratorExposure_R,
-                                                    diffOrig);
+                                                    diffOrig,
+						    0);
 
                     if (R_finite(diffLogOrig)) {
 
@@ -3036,7 +3039,8 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                                     iExpFirstDest_r,
                                                     exposure,
                                                     iteratorExposure_R,
-                                                    diffDest);
+                                                    diffDest,
+						    0);
                    }
                 }/* end else */
 
@@ -3448,19 +3452,20 @@ diffLogDensExpComp(SEXP combined_R)
 
                 if (isOrigDest || isPool) {
 
-                    int iCell_r = getICellCompFromExp(iExpFirst_r,
-                                                mappingFromExposure_R);
-                    diffLog = diffLogDensExpOneOrigDestParChPool(iCell_r,
-                                                    hasAge, ageTimeStep,
-                                                    updatedPopnFalse,
-								 updatedBirths,
-                                                    component_R, theta,
-                                                    strucZeroArray,
-                                                    iteratorComp_R,
-                                                    iExpFirst_r,
-                                                    exposure,
-                                                    iteratorExposure_R,
-                                                    diff);
+		  int iCell_r = getICellCompFromExp(iExpFirst_r,
+						    mappingFromExposure_R);
+		  diffLog = diffLogDensExpOneOrigDestParChPool(iCell_r,
+							       hasAge, ageTimeStep,
+							       updatedPopnFalse,
+							       updatedBirths,
+							       component_R, theta,
+							       strucZeroArray,
+							       iteratorComp_R,
+							       iExpFirst_r,
+							       exposure,
+							       iteratorExposure_R,
+							       diff,
+							       0);
                 } /* end if isOrigDest || isPool */
 
                 else if(isBirths) {
@@ -3473,18 +3478,19 @@ diffLogDensExpComp(SEXP combined_R)
 		    SEXP mappingToExposure_R = VECTOR_ELT(mappingsToExposure_R, i);
 		    int iExpFirstBirths_R = getIExposureFromBirths(iCell_r, mappingToExposure_R);
 
-                            diffLog
-                            = diffLogDensExpOneOrigDestParChPool(iCell_r,
-                                                    hasAge, ageTimeStep,
-                                                    updatedPopnFalse,
-								 updatedBirths,
-                                                    component_R, theta,
-                                                    strucZeroArray,
-                                                    iteratorComp_R,
-                                                    iExpFirstBirths_R,
-                                                    exposure,
-                                                    iteratorExposure_R,
-                                                    diff);
+		    diffLog
+		      = diffLogDensExpOneOrigDestParChPool(iCell_r,
+							   hasAge, ageTimeStep,
+							   updatedPopnFalse,
+							   updatedBirths,
+							   component_R, theta,
+							   strucZeroArray,
+							   iteratorComp_R,
+							   iExpFirstBirths_R,
+							   exposure,
+							   iteratorExposure_R,
+							   diff,
+							   0);
 
                     } /* end cellIsAffected */
 
@@ -3504,7 +3510,8 @@ diffLogDensExpComp(SEXP combined_R)
                                                     iExpFirst_r,
                                                     exposure,
                                                     iteratorExposure_R,
-                                                    diff);
+                                                    diff,
+						    0);
                 }/* end else */
 
                 if (R_finite(diffLog)) {

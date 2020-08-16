@@ -2041,74 +2041,78 @@ DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpPopn);
 
 /* diffLogDensExpOneOrigDestParChPool */
 SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
-                        SEXP ageTimeStep_R, SEXP updatedPopn_R,
+					  SEXP ageTimeStep_R, SEXP updatedPopn_R,
 					  SEXP updatedBirths_R,
-                        SEXP component_R, SEXP theta_R,
-                        SEXP strucZeroArray_R,
-                        SEXP iteratorComp_R,
-                        SEXP iExpFirst_R, SEXP exposure_R,
-                        SEXP iteratorExposure_R,
-                        SEXP diff_R)
+					  SEXP component_R, SEXP theta_R,
+					  SEXP strucZeroArray_R,
+					  SEXP iteratorComp_R,
+					  SEXP iExpFirst_R, SEXP exposure_R,
+					  SEXP iteratorExposure_R,
+					  SEXP diff_R,
+					  SEXP firstOnly_R)
 {
-    int diff = *INTEGER(diff_R);
-    int iCell_r = *INTEGER(iCell_R);
-    int hasAge = *LOGICAL(hasAge_R);
-    double ageTimeStep = *REAL(ageTimeStep_R);
-    int updatedPopn = *LOGICAL(updatedPopn_R);
-    int updatedBirths = *LOGICAL(updatedBirths_R);
-    double * theta = REAL(theta_R);
-    int * strucZeroArray = INTEGER(strucZeroArray_R);
-    double * exposure = REAL(exposure_R);
-    int iExpFirst_r = *INTEGER(iExpFirst_R);
-    SEXP iteratorCompNew_R;
-    PROTECT(iteratorCompNew_R = duplicate(iteratorComp_R));
-    SEXP iteratorExpNew_R;
-    PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
-    double ans = diffLogDensExpOneOrigDestParChPool(iCell_r, hasAge,
-						    ageTimeStep, updatedPopn, updatedBirths,
-                        component_R, theta, strucZeroArray,
-                        iteratorCompNew_R,
-                        iExpFirst_r, exposure,
-                        iteratorExpNew_R,
-                        diff);
-    UNPROTECT(2);
-    return ScalarReal(ans);
+  int diff = *INTEGER(diff_R);
+  int firstOnly = *INTEGER(firstOnly_R);
+  int iCell_r = *INTEGER(iCell_R);
+  int hasAge = *LOGICAL(hasAge_R);
+  double ageTimeStep = *REAL(ageTimeStep_R);
+  int updatedPopn = *LOGICAL(updatedPopn_R);
+  int updatedBirths = *LOGICAL(updatedBirths_R);
+  double * theta = REAL(theta_R);
+  int * strucZeroArray = INTEGER(strucZeroArray_R);
+  double * exposure = REAL(exposure_R);
+  int iExpFirst_r = *INTEGER(iExpFirst_R);
+  SEXP iteratorCompNew_R;
+  PROTECT(iteratorCompNew_R = duplicate(iteratorComp_R));
+  SEXP iteratorExpNew_R;
+  PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
+  double ans = diffLogDensExpOneOrigDestParChPool(iCell_r, hasAge,
+						  ageTimeStep, updatedPopn, updatedBirths,
+						  component_R, theta, strucZeroArray,
+						  iteratorCompNew_R,
+						  iExpFirst_r, exposure,
+						  iteratorExpNew_R,
+						  diff, firstOnly);
+  UNPROTECT(2);
+  return ScalarReal(ans);
 }
 
 /* diffLogDensExpOneComp */
 SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
-                        SEXP ageTimeStep_R, SEXP updatedPopn_R,
+			     SEXP ageTimeStep_R, SEXP updatedPopn_R,
 			     SEXP updatedBirths_R,
-                        SEXP component_R, SEXP theta_R,
-                        SEXP strucZeroArray_R,
-                        SEXP iteratorComp_R,
-                        SEXP iExpFirst_R, SEXP exposure_R,
-                        SEXP iteratorExposure_R,
-                        SEXP diff_R)
+			     SEXP component_R, SEXP theta_R,
+			     SEXP strucZeroArray_R,
+			     SEXP iteratorComp_R,
+			     SEXP iExpFirst_R, SEXP exposure_R,
+			     SEXP iteratorExposure_R,
+			     SEXP diff_R,
+			     SEXP firstOnly_R)
 {
-    int diff = *INTEGER(diff_R);
-    int iCell_r = *INTEGER(iCell_R);
-    int hasAge = *LOGICAL(hasAge_R);
-    double ageTimeStep = *REAL(ageTimeStep_R);
-    int updatedPopn = *LOGICAL(updatedPopn_R);
-    int updatedBirths = *LOGICAL(updatedBirths_R);
-    double * theta = REAL(theta_R);
-    int * strucZeroArray = INTEGER(strucZeroArray_R);
-    double * exposure = REAL(exposure_R);
-    int iExpFirst_r = *INTEGER(iExpFirst_R);
-    SEXP iteratorCompNew_R;
-    PROTECT(iteratorCompNew_R = duplicate(iteratorComp_R));
-    SEXP iteratorExpNew_R;
-    PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
-    double ans = diffLogDensExpOneComp(iCell_r, hasAge,
-				       ageTimeStep, updatedPopn, updatedBirths,
-                        component_R, theta, strucZeroArray,
-                        iteratorCompNew_R,
-                        iExpFirst_r, exposure,
-                        iteratorExpNew_R,
-                        diff);
-    UNPROTECT(2);
-    return ScalarReal(ans);
+  int diff = *INTEGER(diff_R);
+  int firstOnly = *INTEGER(firstOnly_R);
+  int iCell_r = *INTEGER(iCell_R);
+  int hasAge = *LOGICAL(hasAge_R);
+  double ageTimeStep = *REAL(ageTimeStep_R);
+  int updatedPopn = *LOGICAL(updatedPopn_R);
+  int updatedBirths = *LOGICAL(updatedBirths_R);
+  double * theta = REAL(theta_R);
+  int * strucZeroArray = INTEGER(strucZeroArray_R);
+  double * exposure = REAL(exposure_R);
+  int iExpFirst_r = *INTEGER(iExpFirst_R);
+  SEXP iteratorCompNew_R;
+  PROTECT(iteratorCompNew_R = duplicate(iteratorComp_R));
+  SEXP iteratorExpNew_R;
+  PROTECT(iteratorExpNew_R = duplicate(iteratorExposure_R));
+  double ans = diffLogDensExpOneComp(iCell_r, hasAge,
+				     ageTimeStep, updatedPopn, updatedBirths,
+				     component_R, theta, strucZeroArray,
+				     iteratorCompNew_R,
+				     iExpFirst_r, exposure,
+				     iteratorExpNew_R,
+				     diff, firstOnly);
+  UNPROTECT(2);
+  return ScalarReal(ans);
 }
 
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpOrigDest);
@@ -2702,8 +2706,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensPopn_R, 1),
   CALLDEF(diffLogDensPopnOneCohort_R, 6),
   CALLDEF(diffLogDensExpPopn_R, 1),
-  CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 13),
-  CALLDEF(diffLogDensExpOneComp_R, 13),
+  CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 14),
+  CALLDEF(diffLogDensExpOneComp_R, 14),
   CALLDEF(diffLogDensJumpOrigDest_R, 1),
   CALLDEF(diffLogDensExpOrigDestPoolNet_R, 1),
   CALLDEF(diffLogDensJumpPoolWithExpose_R, 1),

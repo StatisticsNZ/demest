@@ -2456,7 +2456,8 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                                    iExpFirst = i.exp.first,
                                                                    exposure = exposure,
                                                                    iteratorExposure = iterator.exposure,
-                                                                   diff = diff)
+                                                                   diff = diff,
+                                                                   firstOnly = FALSE)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
@@ -2481,7 +2482,8 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                                        iExpFirst = i.exp.first.births,
                                                                        exposure = exposure,
                                                                        iteratorExposure = iterator.exposure,
-                                                                       diff = diff)
+                                                                       diff = diff,
+                                                                       firstOnly = FALSE)
                         if (is.infinite(diff.log))
                             return(diff.log)
                         ans <- ans + diff.log
@@ -2502,7 +2504,8 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                       iExpFirst = i.exp.first,
                                                       exposure = exposure,
                                                       iteratorExposure = iterator.exposure,
-                                                      diff = diff)
+                                                      diff = diff,
+                                                      firstOnly = FALSE)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
@@ -2521,7 +2524,7 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
 diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
                                                component, theta, strucZeroArray,
                                                iteratorComp, iExpFirst, exposure, iteratorExposure,
-                                               diff, useC = FALSE) {
+                                               diff, firstOnly, useC = FALSE) {
     ## iCell
     stopifnot(identical(length(iCell), 1L))
     stopifnot(is.integer(iCell))
@@ -2572,6 +2575,10 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
     stopifnot(identical(length(diff), 1L))
     stopifnot(is.integer(diff))
     stopifnot(!is.na(diff))
+    ## firstOnly
+    stopifnot(identical(length(firstOnly), 1L))
+    stopifnot(is.logical(firstOnly))
+    stopifnot(!is.na(firstOnly))
     ## iCell and component
     stopifnot(iCell <= length(component))
     ## iExpFirst and exposure
@@ -2583,7 +2590,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
               iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
               component, theta, strucZeroArray, iteratorComp,
               iExpFirst, exposure, iteratorExposure,
-              diff)
+              diff, firstOnly)
     }
     else {
         ans <- 0
@@ -2690,7 +2697,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                     ans <- ans + log.lik.prop - log.lik.curr
                 }
             }
-            if (iteratorComp@finished)
+            if (iteratorComp@finished || firstOnly)
                 break
             is.first.cell <- FALSE
             iteratorComp <- advanceCODPCP(iteratorComp)
@@ -2707,7 +2714,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
 diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
                                   component, theta, strucZeroArray, iteratorComp,
                                   iExpFirst, exposure, iteratorExposure,
-                                  diff, useC = FALSE) {
+                                  diff, firstOnly, useC = FALSE) {
     ## iCell
     stopifnot(identical(length(iCell), 1L))
     stopifnot(is.integer(iCell))
@@ -2756,6 +2763,10 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
     stopifnot(identical(length(diff), 1L))
     stopifnot(is.integer(diff))
     stopifnot(!is.na(diff))
+    ## firstOnly
+    stopifnot(identical(length(firstOnly), 1L))
+    stopifnot(is.logical(firstOnly))
+    stopifnot(!is.na(firstOnly))
     ## iCell and component
     stopifnot(iCell <= length(component))
     ## iExpFirst and exposure
@@ -2766,7 +2777,8 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
         .Call(diffLogDensExpOneComp_R,
               iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
               component, theta, strucZeroArray, iteratorComp,
-              iExpFirst, exposure, iteratorExposure, diff)
+              iExpFirst, exposure, iteratorExposure, diff,
+              firstOnly)
     }
     else {
         ans <- 0
@@ -2873,7 +2885,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
                                    log = TRUE))
                 ans <- ans + diff.log.lik
             }
-            if (iteratorComp@finished)
+            if (iteratorComp@finished || firstOnly)
                 break
             is.first.cell <- FALSE
             iteratorComp <- advanceCC(iteratorComp)
@@ -3034,7 +3046,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                         iExpFirst = i.exp.first.orig,
                                                                         exposure = exposure,
                                                                         iteratorExposure = iterator.exposure,
-                                                                        diff = diff.orig)
+                                                                        diff = diff.orig,
+                                                                        firstOnly = FALSE)
                     if (is.infinite(diff.log.orig))
                         return(diff.log.orig)
                     ans <- ans + diff.log.orig
@@ -3050,7 +3063,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                         iExpFirst = i.exp.first.dest,
                                                                         exposure = exposure,
                                                                         iteratorExposure = iterator.exposure,
-                                                                        diff = diff.dest)
+                                                                        diff = diff.dest,
+                                                                        firstOnly = FALSE)
                     if (is.infinite(diff.log.dest))
                         return(diff.log.dest)
                     ans <- ans + diff.log.dest
@@ -3079,7 +3093,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                             iExpFirst = i.exp.first.orig.births,
                                                                             exposure = exposure,
                                                                             iteratorExposure = iterator.exposure,
-                                                                            diff = diff.orig)
+                                                                            diff = diff.orig,
+                                                                            firstOnly = FALSE)
                         if (is.infinite(diff.log.orig))
                             return(diff.log.orig)
                         ans <- ans + diff.log.orig
@@ -3095,7 +3110,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                             iExpFirst = i.exp.first.dest.births,
                                                                             exposure = exposure,
                                                                             iteratorExposure = iterator.exposure,
-                                                                            diff = diff.dest)
+                                                                            diff = diff.dest,
+                                                                            firstOnly = FALSE)
                         if (is.infinite(diff.log.dest))
                             return(diff.log.dest)
                         ans <- ans + diff.log.dest
@@ -3118,7 +3134,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                            iExpFirst = i.exp.first.orig,
                                                            exposure = exposure,
                                                            iteratorExposure = iterator.exposure,
-                                                           diff = diff.orig)
+                                                           diff = diff.orig,
+                                                           firstOnly = FALSE)
                     if (is.infinite(diff.log.orig))
                         return(diff.log.orig)
                     ans <- ans + diff.log.orig
@@ -3134,7 +3151,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                            iExpFirst = i.exp.first.dest,
                                                            exposure = exposure,
                                                            iteratorExposure = iterator.exposure,
-                                                           diff = diff.dest)
+                                                           diff = diff.dest,
+                                                           firstOnly = FALSE)
                     if (is.infinite(diff.log.dest))
                         return(diff.log.dest)
                     ans <- ans + diff.log.dest
@@ -3455,7 +3473,8 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                                    iExpFirst = i.exp.first,
                                                                    exposure = exposure,
                                                                    iteratorExposure = iterator.exposure,
-                                                                   diff = diff)
+                                                                   diff = diff,
+                                                                   firstOnly = FALSE)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
@@ -3480,7 +3499,8 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                                        iExpFirst = i.exp.first.births,
                                                                        exposure = exposure,
                                                                        iteratorExposure = iterator.exposure,
-                                                                       diff = diff)
+                                                                       diff = diff,
+                                                                       firstOnly = FALSE)
                         if (is.infinite(diff.log))
                             return(diff.log)
                         ans <- ans + diff.log
@@ -3501,7 +3521,8 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                       iExpFirst = i.exp.first,
                                                       exposure = exposure,
                                                       iteratorExposure = iterator.exposure,
-                                                      diff = diff)
+                                                      diff = diff,
+                                                      firstOnly = FALSE)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
