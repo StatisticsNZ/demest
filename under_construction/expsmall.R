@@ -283,7 +283,7 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                                                                       hasAge = TRUE,
                                                                       ageTimeStep = age.time.step,
                                                                       updatedPopn = FALSE,
-                                                                      updatedBirths = updated.births,
+                                                                      updatedBirths = FALSE,
                                                                       component = component,
                                                                       theta = theta,
                                                                       strucZeroArray = strucZeroArray,
@@ -297,7 +297,7 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                                                                        hasAge = TRUE,
                                                                        ageTimeStep = age.time.step,
                                                                        updatedPopn = FALSE,
-                                                                       updatedBirths = updated.births,
+                                                                       updatedBirths = FALSE,
                                                                        component = component,
                                                                        theta = theta,
                                                                        strucZeroArray = strucZeroArray,
@@ -314,7 +314,7 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                                                          hasAge = TRUE,
                                                          ageTimeStep = age.time.step,
                                                          updatedPopn = FALSE,
-                                                         updatedBirths = updated.births,
+                                                         updatedBirths = FALSE,
                                                          component = component,
                                                          theta = theta,
                                                          strucZeroArray = strucZeroArray,
@@ -328,7 +328,7 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                                                           hasAge = TRUE,
                                                           ageTimeStep = age.time.step,
                                                           updatedPopn = FALSE,
-                                                          updatedBirths = updated.births,
+                                                          updatedBirths = FALSE,
                                                           component = component,
                                                           theta = theta,
                                                           strucZeroArray = strucZeroArray,
@@ -352,3 +352,141 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
 
 
 
+double
+diffLogDensExpCompSmall(SEXP combined_R)
+{
+    SEXP account_R = GET_SLOT(combined_R, account_sym);
+    SEXP components_R = GET_SLOT(account_R, components_sym);
+    int nComponents = LENGTH(components_R);
+    SEXP iteratorsComp_R = GET_SLOT(combined_R, iteratorsComp_sym);
+    int * modelUsesExposure = LOGICAL(GET_SLOT(combined_R, modelUsesExposure_sym));
+    SEXP mappingsFromExposure_R = GET_SLOT(combined_R, mappingsFromExp_sym);
+    SEXP mappingsToExposure_R = GET_SLOT(combined_R, mappingsToExp_sym);
+    int iExposeUp_r = *INTEGER(GET_SLOT(combined_R, iExposure_sym));
+    int iExposeLow_r = *INTEGER(GET_SLOT(combined_R, iExposureOther_sym));
+    int * isIncrementVec = LOGICAL(GET_SLOT(combined_R, isIncrement_sym));
+    int diff = *INTEGER(GET_SLOT(combined_R, diffProp_sym));
+    int iComp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
+    int iOrigDest_r = *INTEGER(GET_SLOT(combined_R, iOrigDest_sym));
+    int iPool_r = *INTEGER(GET_SLOT(combined_R, iPool_sym));
+    int iBirths_r = *INTEGER(GET_SLOT(combined_R, iBirths_sym));
+    double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
+    SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
+    double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
+    int isIncrement = isIncrementVec[iComp_r - 1];
+    int diffUp = diff;
+    int diffLow = -1 * diff;
+    if (!isIncrement) {
+        diffUp = -1 * diffUp.;
+        diffLow = -1 * diffLow;
+    }
+    int updatedPopnFalse = 0;
+    int updatedBirthsFalse = 0;
+    int firstOnlyTrue = 1;
+    double ans = 0;
+    for (int i = 0; i < nComponents; ++i) {
+        int thisModelUsesExposure = modelUsesExposure[i + 1];
+        if (thisModelUsesExposure) {
+            SEXP component_R = VECTOR_ELT(components_R, i);
+            SEXP thisSystemModel_R = VECTOR_ELT(systemModels_R, i+1);
+            double * theta = REAL(GET_SLOT(thisSystemModel_R, theta_sym));
+            int * strucZeroArray = INTEGER(GET_SLOT(thisSystemModel_R, strucZeroArray_sym));
+            SEXP iteratorComp_R = VECTOR_ELT(iteratorsComp_R, i);
+            SEXP mappingFromExposure_R = VECTOR_ELT(mappingsFromExposure_R, i);
+            int isOrigDest = (i == iOrigDest_r - 1);
+            int isPool = (i == iPool_r - 1);
+            int isBirths = (i == iBirths_r - 1);
+            int iCellUp_r;
+            int iCellLow_r;
+            int iExpFirstUp_r;
+            int iExpFirstLow_r;
+            double diffLogUp;
+            double diffLogLow;
+            if (isBirths) {
+                iCellUp_r = getICellBirthsFromExp(iExposeUp_r, mappingFromExposure_R);
+                int cellIsAffected = (iCellUp_r > 0);
+                if (!cellIsAffected)
+                    continue;
+                iCellLow_r = getICellBirthsFromExp(iExposeLow_r, mappingFromExposure_R);
+                SEXP mappingToExposure_R = VECTOR_ELT(mappingsToExposure_R, i);
+                iExpFirstUp_r = getIExposureFromBirths(iCellUp_r, mappingToExposure_R);
+                iExpFirstLow_r = getIExposureFromBirths(iCellLow_r, mappingToExposure_R);
+            }
+            else {
+                iCellUp_r = getICellCompFromExp(iExposeUp_r,
+                                                mappingFromExposure_R);
+                iCellLow_r = getICellCompFromExp(iExposeLow_r,
+                                                 mappingFromExposure_R);
+                iExpFirstUp_r = iExposeUp_r;
+                iExpFirstLow_r = iExposeLow_r;
+            }
+            if (isOrigDest || isPool || isBirths) {
+                diffLogUp = diffLogDensExpOneOrigDestParChPool(iCellUp_r,
+                                                             hasAge, ageTimeStep,
+                                                             updatedPopnFalse,
+                                                             updatedBirthsFalse,
+                                                             component_R, theta,
+                                                             strucZeroArray,
+                                                             iteratorComp_R,
+                                                             iExpFirst_r,
+                                                             exposure,
+                                                             iteratorExposure_R,
+                                                             diff,
+                                                             firstOnlyTrue);
+                diffLogLow = diffLogDensExpOneOrigDestParChPool(iCellLow_r,
+                                                             hasAge, ageTimeStep,
+                                                             updatedPopnFalse,
+                                                             updatedBirthsFalse,
+                                                             component_R, theta,
+                                                             strucZeroArray,
+                                                             iteratorComp_R,
+                                                             iExpFirst_r,
+                                                             exposure,
+                                                             iteratorExposure_R,
+                                                             diff,
+                                                             firstOnlyTrue);
+            }
+            else {
+                diffLogUp = diffLogDensExpOneComp(iCellUp_r,
+                                                  hasAge, ageTimeStep,
+                                                  updatedPopnFalse,
+                                                  updatedBirthsFalse,
+                                                  component_R, theta,
+                                                  strucZeroArray,
+                                                  iteratorComp_R,
+                                                  iExpFirst_r,
+                                                  exposure,
+                                                  iteratorExposure_R,
+                                                  diff,
+                                                  firstOnlyTrue);
+                diffLogLow = diffLogDensExpOneComp(iCellLow_r,
+                                                  hasAge, ageTimeStep,
+                                                  updatedPopnFalse,
+                                                  updatedBirthsFalse,
+                                                  component_R, theta,
+                                                  strucZeroArray,
+                                                  iteratorComp_R,
+                                                  iExpFirst_r,
+                                                  exposure,
+                                                  iteratorExposure_R,
+                                                  diff,
+                                                  firstOnlyTrue);
+            }
+            if (R_finite(diffLogUp)) {
+                ans += diffLogUp;
+            }
+            else {
+                ans = diffLogUp;
+                break;
+            }
+            if (R_finite(diffLogLow)) {
+                ans += diffLogLow;
+            }
+            else {
+                ans = diffLogLow;
+                break;
+            }
+        } /* end modelUsesExposure */
+    } /* end for loop through components */
+    return ans;
+}
