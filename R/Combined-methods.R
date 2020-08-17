@@ -839,7 +839,7 @@ setMethod("diffLogDensAccount",
                   else if (is.orig.dest) {
                       if (is.small.update)  {
                           diff.dens.self <- diffLogDensJumpOrigDestSmall(combined)
-                          diff.dens.exp <- 0
+                          diff.dens.exp <- diffLogDensExpOrigDestSmall(combined)
                       }
                       else { 
                           if (model.uses.exposure[i.comp])
@@ -863,7 +863,7 @@ setMethod("diffLogDensAccount",
                   else { 
                       if (is.small.update) {
                           diff.dens.self <- diffLogDensJumpCompSmall(combined)
-                          diff.dens.exp <- 0
+                          diff.dens.exp <- diffLogDensExpCompSmall(combined)
                       }
                       else { 
                           if (model.uses.exposure[i.comp])

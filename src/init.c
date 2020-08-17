@@ -2117,11 +2117,13 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
 
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpOrigDest);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpOrigDestPoolNet);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpOrigDestSmall);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpPoolWithExpose);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpPoolNoExpose);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpNet);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpComp);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpComp);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensExpCompSmall);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpBirthsSmall);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpOrigDestSmall);
 DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogDensJumpCompSmall);
@@ -2710,11 +2712,13 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensExpOneComp_R, 14),
   CALLDEF(diffLogDensJumpOrigDest_R, 1),
   CALLDEF(diffLogDensExpOrigDestPoolNet_R, 1),
+  CALLDEF(diffLogDensExpOrigDestSmall_R, 1),
   CALLDEF(diffLogDensJumpPoolWithExpose_R, 1),
   CALLDEF(diffLogDensJumpPoolNoExpose_R, 1),
   CALLDEF(diffLogDensJumpNet_R, 1),
   CALLDEF(diffLogDensJumpComp_R, 1),
   CALLDEF(diffLogDensExpComp_R, 1),
+  CALLDEF(diffLogDensExpCompSmall_R, 1),
   CALLDEF(diffLogDensJumpBirthsSmall_R, 1),
   CALLDEF(diffLogDensJumpOrigDestSmall_R, 1),
   CALLDEF(diffLogDensJumpCompSmall_R, 1),

@@ -922,6 +922,7 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
 
         if (isSmallUpdate) {
             diffDensSelf += diffLogDensJumpOrigDestSmall(object_R);
+            diffDensExp += diffLogDensExpOrigDestSmall(object_R);
         }
         else {
 
@@ -955,6 +956,7 @@ diffLogDensAccount_CombinedAccountMovements(SEXP object_R)
 
         if (isSmallUpdate) {
             diffDensSelf += diffLogDensJumpCompSmall(object_R);
+            diffDensExp += diffLogDensExpCompSmall(object_R);
         }
         else {
             int * usesExposureVec = LOGICAL(GET_SLOT(object_R, modelUsesExposure_sym));
