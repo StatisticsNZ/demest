@@ -6620,7 +6620,8 @@ test_that("diffLogDensExpPopn works", {
             updated <- TRUE
             ans.obtained <- diffLogDensExpPopn(x)
             ans.expected <- 0
-            i.cell.births <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
+            i.cell.births <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]],
+                                                   ageForward = TRUE)
             if (i.cell.births > 0L) {
                 i.exp.first.births <- getIExposureFromBirths(i = i.cell.births,
                                                              mapping = x@mappingsToExp[[1]])
@@ -7095,9 +7096,9 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
             updated <- TRUE
             ans.obtained <- diffLogDensExpOrigDestPoolNet(x)
             ans.expected <- 0
-            i.cell.orig <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
+            i.cell.orig <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]], TRUE)
             if (i.cell.orig > 0) {
-                i.cell.dest <- getICellBirthsFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
+                i.cell.dest <- getICellBirthsFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]], TRUE)
                 i.exp.first.orig.births <- getIExposureFromBirths(i = i.cell.orig,
                                                              mapping = x@mappingsToExp[[1]])
                 i.exp.first.dest.births <- getIExposureFromBirths(i = i.cell.dest,
@@ -7350,8 +7351,8 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
         if (x@generatedNewProposal@.Data && (x@iExpFirst != x@iExpFirstOther)) {
             updated <- TRUE
             ans.obtained <- diffLogDensExpOrigDestPoolNet(x)
-            i.cell.orig <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
-            i.cell.dest <- getICellBirthsFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]])
+            i.cell.orig <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]], TRUE)
+            i.cell.dest <- getICellBirthsFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]], TRUE)
             if (i.cell.orig > 0L) {
                 i.exp.first.orig.births <- getIExposureFromBirths(i = i.cell.orig,
                                                                   mapping = x@mappingsToExp[[1L]])
@@ -7565,6 +7566,317 @@ test_that("R and C versions of diffLogDensExpOrigDestPoolNet give same answer - 
     if (!updated)
         warning("not updated")
 })
+
+
+## diffLogDensExpOrigDestSmall
+
+
+test_that("diffLogDensExpOrigDestSmall works", {
+    diffLogDensExpOrigDestSmall <- demest:::diffLogDensExpOrigDestSmall
+    updateProposalAccountMoveOrigDestSmall <- demest:::updateProposalAccountMoveOrigDestSmall
+    initialCombinedAccount <- demest:::initialCombinedAccount
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    getICellBirthsFromExp <- demest:::getICellBirthsFromExp
+    getICellCompFromExp <- demest:::getICellCompFromExp
+    getIExposureFromBirths <- demest:::getIExposureFromBirths
+    diffLogDensExpOneComp <- demest:::diffLogDensExpOneComp
+    diffLogDensExpOneOrigDestParChPool <- demest:::diffLogDensExpOneOrigDestParChPool
+    set.seed(1)
+    popn <- Counts(array(rpois(n = 90, lambda = 100),
+                         dim = c(3, 2, 5, 3),
+                         dimnames = list(age = c("0-4", "5-9", "10+"),
+                                         sex = c("f", "m"),
+                                         reg = 1:5,
+                                         time = c(2000, 2005, 2010))))
+    births <- Counts(array(rpois(n = 90, lambda = 2.5),
+                           dim = c(1, 2, 5, 2, 2),
+                           dimnames = list(age = "5-9",
+                                           sex = c("m", "f"),
+                                           reg = 1:5,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    internal <- Counts(array(rpois(n = 300, lambda = 10),
+                             dim = c(3, 2, 5, 5, 2, 2),
+                             dimnames = list(age = c("0-4", "5-9", "10+"),
+                                             sex = c("m", "f"),
+                                             reg_orig = 1:5,
+                                             reg_dest = 1:5,
+                                             time = c("2001-2005", "2006-2010"),
+                                             triangle = c("Lower", "Upper"))))
+    internal[slice.index(internal, 3) == slice.index(internal, 4)] <- 0L
+    deaths <- Counts(array(rpois(n = 72, lambda = 10),
+                           dim = c(3, 2, 5, 2, 2),
+                           dimnames = list(age = c("0-4", "5-9", "10+"),
+                                           sex = c("m", "f"),
+                                           reg = 5:1,
+                                           time = c("2001-2005", "2006-2010"),
+                                           triangle = c("Lower", "Upper"))))
+    account <- Movements(population = popn,
+                         births = births,
+                         internal = internal,
+                         exits = list(deaths = deaths))
+    account <- makeConsistent(account)
+    systemModels <- list(Model(population ~ Poisson(mean ~ age + sex, useExpose = FALSE)),
+                         Model(births ~ Poisson(mean ~ 1)),
+                         Model(internal ~ Poisson(mean ~ reg_orig + reg_dest, structuralZeros = "diag")),
+                         Model(deaths ~ Poisson(mean ~ 1)))
+    systemWeights <- list(NULL, NULL, NULL, NULL)
+    census <- subarray(popn, time == "2000", drop = FALSE) + 2L
+    register <- Counts(array(rpois(n = 90, lambda = popn),
+                             dim = dim(popn),
+                             dimnames = dimnames(popn)))
+    reg.births <- Counts(array(rbinom(n = 90, size = births, prob = 0.98),
+                               dim = dim(births),
+                               dimnames = dimnames(births)))
+    address.change <- Counts(array(rpois(n = 300, lambda = internal),
+                                   dim = dim(internal),
+                                   dimnames = dimnames(internal)))
+    reg.deaths <- Counts(array(rbinom(n = 90, size = deaths, prob = 0.98),
+                               dim = dim(deaths),
+                               dimnames = dimnames(deaths))) + 1L
+    datasets <- list(census, register, reg.births, address.change, reg.deaths)
+    namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
+    data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+    seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
+    updateInitialPopn <- new("LogicalFlag", TRUE)
+    usePriorPopn <- new("LogicalFlag", TRUE)
+    transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
+                       makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
+                       makeTransform(x = components(account, "births"), y = datasets[[3]], subset = TRUE),
+                       makeTransform(x = components(account, "internal"), y = datasets[[4]], subset = TRUE),
+                       makeTransform(x = components(account, "deaths"), y = datasets[[5]], subset = TRUE))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedAccount(account = account,
+                                 systemModels = systemModels,
+                                 systemWeights = systemWeights,
+                                 dataModels = data.models,
+                                 seriesIndices = seriesIndices,
+                                 updateInitialPopn = updateInitialPopn,
+                                 usePriorPopn = usePriorPopn,
+                                 datasets = datasets,
+                                 namesDatasets = namesDatasets,
+                                 transforms = transforms)
+    x0@iComp <- 2L
+    updated <- FALSE
+    for (seed in seq_len(n.test * 10)) {
+        set.seed(seed)
+        print(seed)
+        x <- updateProposalAccountMoveOrigDestSmall(x0)
+        if (x@generatedNewProposal@.Data) {
+            updated <- TRUE
+            ans.obtained <- diffLogDensExpOrigDestSmall(x)
+            i.cell.up.orig <- getICellBirthsFromExp(x@iExposure, x@mappingsFromExp[[1]], FALSE)
+            i.cell.low.orig <- getICellBirthsFromExp(x@iExposureOther, x@mappingsFromExp[[1]], FALSE)
+            i.cell.up.dest <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]], FALSE)
+            i.cell.low.dest <- getICellBirthsFromExp(x@iExpFirstOther, x@mappingsFromExp[[1]], FALSE)
+            log.diff.births <- 0
+            if (i.cell.up.orig > 0L) {
+                i.exp.first.up.orig.births <- getIExposureFromBirths(i = i.cell.up.orig,
+                                                                     mapping = x@mappingsToExp[[1L]])
+                i.exp.first.up.dest.births <- getIExposureFromBirths(i = i.cell.up.dest,
+                                                                     mapping = x@mappingsToExp[[1L]])
+                log.diff.births.up <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.orig,
+                                                                         hasAge = TRUE,
+                                                                         updatedPopn = FALSE,
+                                                                         updatedBirths = FALSE,
+                                                                         ageTimeStep = x@ageTimeStep,
+                                                                         component = x@account@components[[1]],
+                                                                         theta = x@systemModels[[2]]@theta,
+                                                                         strucZeroArray = x@systemModels[[2]]@strucZeroArray,
+                                                                         iteratorComp = x@iteratorsComp[[1]],
+                                                                         iExpFirst = i.exp.first.up.orig.births,
+                                                                         exposure = x@exposure,
+                                                                         iteratorExposure = x@iteratorExposure,
+                                                                         diff = -x@diffProp,
+                                                                         firstOnly = TRUE) +
+                    diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.dest,
+                                                       hasAge = TRUE,
+                                                       updatedPopn = FALSE,
+                                                       updatedBirths = FALSE,
+                                                       ageTimeStep = x@ageTimeStep,
+                                                       component = x@account@components[[1]],
+                                                       theta = x@systemModels[[2]]@theta,
+                                                       strucZeroArray = x@systemModels[[2]]@strucZeroArray,
+                                                       iteratorComp = x@iteratorsComp[[1]],
+                                                       iExpFirst = i.exp.first.up.dest.births,
+                                                       exposure = x@exposure,
+                                                       iteratorExposure = x@iteratorExposure,
+                                                       diff = x@diffProp,
+                                                       firstOnly = TRUE)
+                log.diff.births <- log.diff.births + log.diff.births.up
+            }
+            if (i.cell.low.orig > 0L) {
+                i.exp.first.low.orig.births <- getIExposureFromBirths(i = i.cell.low.orig,
+                                                                      mapping = x@mappingsToExp[[1L]])
+                i.exp.first.low.dest.births <- getIExposureFromBirths(i = i.cell.low.dest,
+                                                                      mapping = x@mappingsToExp[[1L]])
+                log.diff.births.low <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.orig,
+                                                                          hasAge = TRUE,
+                                                                          updatedPopn = FALSE,
+                                                                          updatedBirths = FALSE,
+                                                                          ageTimeStep = x@ageTimeStep,
+                                                                          component = x@account@components[[1]],
+                                                                          theta = x@systemModels[[2]]@theta,
+                                                                          strucZeroArray = x@systemModels[[2]]@strucZeroArray,
+                                                                          iteratorComp = x@iteratorsComp[[1]],
+                                                                          iExpFirst = i.exp.first.low.orig.births,
+                                                                          exposure = x@exposure,
+                                                                          iteratorExposure = x@iteratorExposure,
+                                                                          diff = x@diffProp,
+                                                                          firstOnly = TRUE) +
+                    diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.dest,
+                                                       hasAge = TRUE,
+                                                       updatedPopn = FALSE,
+                                                       updatedBirths = FALSE,
+                                                       ageTimeStep = x@ageTimeStep,
+                                                       component = x@account@components[[1]],
+                                                       theta = x@systemModels[[2]]@theta,
+                                                       strucZeroArray = x@systemModels[[2]]@strucZeroArray,
+                                                       iteratorComp = x@iteratorsComp[[1]],
+                                                       iExpFirst = i.exp.first.low.dest.births,
+                                                       exposure = x@exposure,
+                                                       iteratorExposure = x@iteratorExposure,
+                                                       diff = -x@diffProp,
+                                                       firstOnly = TRUE)
+                log.diff.births <- log.diff.births + log.diff.births.low
+            }
+            i.cell.up.orig <- getICellCompFromExp(x@iExposure, x@mappingsFromExp[[2]])
+            i.cell.low.orig <- getICellCompFromExp(x@iExposureOther, x@mappingsFromExp[[2]])
+            i.cell.up.dest <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[2]])
+            i.cell.low.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[2]])
+            log.diff.internal <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.orig,
+                                                                    hasAge = TRUE,
+                                                                    updatedPopn = FALSE,
+                                                                    updatedBirths = FALSE,
+                                                                    ageTimeStep = x@ageTimeStep,
+                                                                    component = x@account@components[[2]],
+                                                                    theta = x@systemModels[[3]]@theta,
+                                                                    strucZeroArray = x@systemModels[[3]]@strucZeroArray,
+                                                                    iteratorComp = x@iteratorsComp[[2]],
+                                                                    iExpFirst = x@iExposure,
+                                                                    exposure = x@exposure,
+                                                                    iteratorExposure = x@iteratorExposure,
+                                                                    diff = -x@diffProp,
+                                                                    firstOnly = TRUE) +
+                diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.orig,
+                                                   hasAge = TRUE,
+                                                   updatedPopn = FALSE,
+                                                   updatedBirths = FALSE,
+                                                   ageTimeStep = x@ageTimeStep,
+                                                   component = x@account@components[[2]],
+                                                   theta = x@systemModels[[3]]@theta,
+                                                   strucZeroArray = x@systemModels[[3]]@strucZeroArray,
+                                                   iteratorComp = x@iteratorsComp[[2]],
+                                                   iExpFirst = x@iExposureOther,
+                                                   exposure = x@exposure,
+                                                   iteratorExposure = x@iteratorExposure,
+                                                   diff = x@diffProp,
+                                                   firstOnly = TRUE) +
+                diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.dest,
+                                                   hasAge = TRUE,
+                                                   updatedPopn = FALSE,
+                                                   updatedBirths = FALSE,
+                                                   ageTimeStep = x@ageTimeStep,
+                                                   component = x@account@components[[2]],
+                                                   theta = x@systemModels[[3]]@theta,
+                                                   strucZeroArray = x@systemModels[[3]]@strucZeroArray,
+                                                   iteratorComp = x@iteratorsComp[[2]],
+                                                   iExpFirst = x@iExpFirst,
+                                                   exposure = x@exposure,
+                                                   iteratorExposure = x@iteratorExposure,
+                                                   diff = x@diffProp,
+                                                   firstOnly = TRUE) +
+                diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.dest,
+                                                   hasAge = TRUE,
+                                                   updatedPopn = FALSE,
+                                                   updatedBirths = FALSE,
+                                                   ageTimeStep = x@ageTimeStep,
+                                                   component = x@account@components[[2]],
+                                                   theta = x@systemModels[[3]]@theta,
+                                                   strucZeroArray = x@systemModels[[3]]@strucZeroArray,
+                                                   iteratorComp = x@iteratorsComp[[2]],
+                                                   iExpFirst = x@iExpFirstOther,
+                                                   exposure = x@exposure,
+                                                   iteratorExposure = x@iteratorExposure,
+                                                   diff = -x@diffProp,
+                                                   firstOnly = TRUE)
+            i.cell.up.orig <- getICellCompFromExp(x@iExposure, x@mappingsFromExp[[3]])
+            i.cell.low.orig <- getICellCompFromExp(x@iExposureOther, x@mappingsFromExp[[3]])
+            i.cell.up.dest <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[3]])
+            i.cell.low.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[3]])
+            log.diff.deaths <- diffLogDensExpOneComp(iCell = i.cell.up.orig,
+                                                     hasAge = TRUE,
+                                                     updatedPopn = FALSE,
+                                                     updatedBirths = FALSE,
+                                                     ageTimeStep = x@ageTimeStep,
+                                                     component = x@account@components[[3]],
+                                                     theta = x@systemModels[[4]]@theta,
+                                                     strucZeroArray = x@systemModels[[4]]@strucZeroArray,
+                                                     iteratorComp = x@iteratorsComp[[3]],
+                                                     iExpFirst = x@iExposure,
+                                                     exposure = x@exposure,
+                                                     iteratorExposure = x@iteratorExposure,
+                                                     diff = -x@diffProp,
+                                                     firstOnly = TRUE) +
+                diffLogDensExpOneComp(iCell = i.cell.low.orig,
+                                      hasAge = TRUE,
+                                      updatedPopn = FALSE,
+                                      updatedBirths = FALSE,
+                                      ageTimeStep = x@ageTimeStep,
+                                      component = x@account@components[[3]],
+                                      theta = x@systemModels[[4]]@theta,
+                                      strucZeroArray = x@systemModels[[4]]@strucZeroArray,
+                                      iteratorComp = x@iteratorsComp[[3]],
+                                      iExpFirst = x@iExposureOther,
+                                      exposure = x@exposure,
+                                      iteratorExposure = x@iteratorExposure,
+                                      diff = x@diffProp,
+                                      firstOnly = TRUE) +
+                diffLogDensExpOneComp(iCell = i.cell.up.dest,
+                                      hasAge = TRUE,
+                                      updatedPopn = FALSE,
+                                      updatedBirths = FALSE,
+                                      ageTimeStep = x@ageTimeStep,
+                                      component = x@account@components[[3]],
+                                      theta = x@systemModels[[4]]@theta,
+                                      strucZeroArray = x@systemModels[[4]]@strucZeroArray,
+                                      iteratorComp = x@iteratorsComp[[3]],
+                                      iExpFirst = x@iExpFirst,
+                                      exposure = x@exposure,
+                                      iteratorExposure = x@iteratorExposure,
+                                      diff = x@diffProp,
+                                      firstOnly = TRUE) +
+                diffLogDensExpOneComp(iCell = i.cell.low.dest,
+                                      hasAge = TRUE,
+                                      updatedPopn = FALSE,
+                                      updatedBirths = FALSE,
+                                      ageTimeStep = x@ageTimeStep,
+                                      component = x@account@components[[3]],
+                                      theta = x@systemModels[[4]]@theta,
+                                      strucZeroArray = x@systemModels[[4]]@strucZeroArray,
+                                      iteratorComp = x@iteratorsComp[[3]],
+                                      iExpFirst = x@iExpFirstOther,
+                                      exposure = x@exposure,
+                                      iteratorExposure = x@iteratorExposure,
+                                      diff = -x@diffProp,
+                                      firstOnly = TRUE)
+            ans.expected <- log.diff.births + log.diff.internal + log.diff.deaths
+            if (test.identity)
+                expect_identical(ans.obtained, ans.expected)
+            else
+                expect_equal(ans.obtained, ans.expected)
+        }
+    }
+    if (!updated)
+        warning("not updated")
+})
+
+
+
 
 ## diffLogDensExpOneOrigDestParChPool
 
@@ -8838,7 +9150,7 @@ test_that("diffLogDensExpComp works", {
             updated <- TRUE
             ans.obtained <- diffLogDensExpComp(x)
             ans.expected <- 0
-            i.cell.births <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
+            i.cell.births <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]], TRUE)
             if (i.cell.births > 0L) {
                 i.cell.exp.first <- getIExposureFromBirths(i = i.cell.births,
                                                            mapping = x@mappingsToExp[[1L]])
@@ -9068,7 +9380,7 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
             updated <- TRUE
             ans.obtained <- diffLogDensExpComp(x)
             ans.expected <- 0
-            i.cell.births <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]])
+            i.cell.births <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]], TRUE)
             if (i.cell.births > 0L)
                 ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell= i.cell.births,
                                                                                   hasAge = FALSE,

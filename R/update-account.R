@@ -710,7 +710,7 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
             if (val.up.prop > upper)
                 val.up.prop <- upper
             diff.prop <- unname(val.up.prop - val.up.curr)
-            generated.new.proposal  <- diff.prop != 0L
+            generated.new.proposal  <- (diff.prop != 0L)
         }
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
@@ -2464,7 +2464,8 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                 }
                 else if (is.births) {
                     i.cell <- getICellBirthsFromExp(i = i.exp.first,
-                                                    mapping = mapping.from.exp)
+                                                    mapping = mapping.from.exp,
+                                                    ageForward = TRUE)
                     cell.is.affected <- i.cell > 0L
                     if (cell.is.affected) {
                         mapping.to.exp <- mappings.to.exp[[i]]
@@ -3071,9 +3072,11 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                 }
                 else if (is.births) {
                     i.cell.orig <- getICellBirthsFromExp(i = i.exp.first.orig,
-                                                         mapping = mapping.from.exp)
+                                                         mapping = mapping.from.exp,
+                                                         ageForward = TRUE)
                     i.cell.dest <- getICellBirthsFromExp(i = i.exp.first.dest,
-                                                         mapping = mapping.from.exp)
+                                                         mapping = mapping.from.exp,
+                                                         ageForward = TRUE)
                     cell.is.affected <- i.cell.orig > 0L
                     if (cell.is.affected) {
                         mapping.to.exp <- mappings.to.exp[[i]]
@@ -3164,7 +3167,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
 }
 
 
-
+## TRANSLATED
+## NO_TESTS
 diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -3180,6 +3184,8 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
         i.expose.low.orig <- combined@iExposureOther
         i.expose.up.dest <- combined@iExpFirst
         i.expose.low.dest <- combined@iExpFirstOther
+        if (i.expose.up.orig == i.expose.up.dest)
+            return(0)
         iterator.exposure <- combined@iteratorExposure
         diff <- combined@diffProp
         i.comp <- combined@iComp
@@ -3207,28 +3213,30 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                 is.births <- i == i.births
                 if (is.births) {
                     i.cell.up.orig <- getICellBirthsFromExp(i = i.expose.up.orig,
-                                                            mapping = mapping.from.exp)
+                                                            mapping = mapping.from.exp,
+                                                            ageForward = FALSE)
                     i.cell.low.orig <- getICellBirthsFromExp(i = i.expose.low.orig,
-                                                             mapping = mapping.from.exp)
+                                                             mapping = mapping.from.exp,
+                                                             ageForward = FALSE)
                     i.cell.up.dest <- getICellBirthsFromExp(i = i.expose.up.dest,
-                                                            mapping = mapping.from.exp)
+                                                            mapping = mapping.from.exp,
+                                                            ageForward = FALSE)
                     i.cell.low.dest <- getICellBirthsFromExp(i = i.expose.low.dest,
-                                                             mapping = mapping.from.exp)
-                    cell.births.is.affected <- i.cell.up.orig > 0L
-                    if (!cell.births.is.affected)
-                        next
+                                                             mapping = mapping.from.exp,
+                                                             ageForward = FALSE)
                     mapping.to.exp <- mappings.to.exp[[i]]
-                    ## copying use of 'getIExposureFromBirths' from
-                    ## 'diffLogDensExpComp', but may be possible to just
-                    ## use 'i.expose.up'?
-                    i.exp.first.up.orig <- getIExposureFromBirths(i = i.cell.up.orig,
-                                                                  mapping = mapping.to.exp)
-                    i.exp.first.low.orig <- getIExposureFromBirths(i = i.cell.low.orig,
-                                                                   mapping = mapping.to.exp)
-                    i.exp.first.up.dest <- getIExposureFromBirths(i = i.cell.up.dest,
-                                                                  mapping = mapping.to.exp)
-                    i.exp.first.low.dest <- getIExposureFromBirths(i = i.cell.low.dest,
-                                                                   mapping = mapping.to.exp)
+                    if (i.cell.up.orig > 0L) {
+                        i.exp.first.up.orig <- getIExposureFromBirths(i = i.cell.up.orig,
+                                                                      mapping = mapping.to.exp)
+                        i.exp.first.up.dest <- getIExposureFromBirths(i = i.cell.up.dest,
+                                                                      mapping = mapping.to.exp)
+                    }
+                    if (i.cell.low.orig > 0L) {
+                        i.exp.first.low.orig <- getIExposureFromBirths(i = i.cell.low.orig,
+                                                                       mapping = mapping.to.exp)
+                        i.exp.first.low.dest <- getIExposureFromBirths(i = i.cell.low.dest,
+                                                                       mapping = mapping.to.exp)
+                    }
                 }
                 else {
                     i.cell.up.orig <- getICellCompFromExp(i = i.expose.up.orig,
@@ -3245,62 +3253,74 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                     i.exp.first.low.dest <- i.expose.low.dest
                 }
                 if (is.orig.dest || is.pool || is.births) {
-                    diff.log.up.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.orig,
-                                                                           hasAge = TRUE,
-                                                                           ageTimeStep = age.time.step,
-                                                                           updatedPopn = FALSE,
-                                                                           updatedBirths = FALSE,
-                                                                           component = component,
-                                                                           theta = theta,
-                                                                           strucZeroArray = strucZeroArray,
-                                                                           iteratorComp = iterator.comp,
-                                                                           iExpFirst = i.exp.first.up.orig,
-                                                                           exposure = exposure,
-                                                                           iteratorExposure = iterator.exposure,
-                                                                           diff = diff.up.orig,
-                                                                           firstOnly = TRUE)
-                    diff.log.low.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.orig,
-                                                                            hasAge = TRUE,
-                                                                            ageTimeStep = age.time.step,
-                                                                            updatedPopn = FALSE,
-                                                                            updatedBirths = FALSE,
-                                                                            component = component,
-                                                                            theta = theta,
-                                                                            strucZeroArray = strucZeroArray,
-                                                                            iteratorComp = iterator.comp,
-                                                                            iExpFirst = i.exp.first.low.orig,
-                                                                            exposure = exposure,
-                                                                            iteratorExposure = iterator.exposure,
-                                                                            diff = diff.low.orig,
-                                                                            firstOnly = TRUE)
-                    diff.log.up.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.dest,
-                                                                           hasAge = TRUE,
-                                                                           ageTimeStep = age.time.step,
-                                                                           updatedPopn = FALSE,
-                                                                           updatedBirths = FALSE,
-                                                                           component = component,
-                                                                           theta = theta,
-                                                                           strucZeroArray = strucZeroArray,
-                                                                           iteratorComp = iterator.comp,
-                                                                           iExpFirst = i.exp.first.up.dest,
-                                                                           exposure = exposure,
-                                                                           iteratorExposure = iterator.exposure,
-                                                                           diff = diff.up.dest,
-                                                                           firstOnly = TRUE)
-                    diff.log.low.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.dest,
-                                                                            hasAge = TRUE,
-                                                                            ageTimeStep = age.time.step,
-                                                                            updatedPopn = FALSE,
-                                                                            updatedBirths = FALSE,
-                                                                            component = component,
-                                                                            theta = theta,
-                                                                            strucZeroArray = strucZeroArray,
-                                                                            iteratorComp = iterator.comp,
-                                                                            iExpFirst = i.exp.first.low.dest,
-                                                                            exposure = exposure,
-                                                                            iteratorExposure = iterator.exposure,
-                                                                            diff = diff.low.dest,
-                                                                            firstOnly = TRUE)
+                    if (!is.births || i.cell.up.orig > 0L) {
+                        diff.log.up.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.orig,
+                                                                               hasAge = TRUE,
+                                                                               ageTimeStep = age.time.step,
+                                                                               updatedPopn = FALSE,
+                                                                               updatedBirths = FALSE,
+                                                                               component = component,
+                                                                               theta = theta,
+                                                                               strucZeroArray = strucZeroArray,
+                                                                               iteratorComp = iterator.comp,
+                                                                               iExpFirst = i.exp.first.up.orig,
+                                                                               exposure = exposure,
+                                                                               iteratorExposure = iterator.exposure,
+                                                                               diff = diff.up.orig,
+                                                                               firstOnly = TRUE)
+                        diff.log.up.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.dest,
+                                                                               hasAge = TRUE,
+                                                                               ageTimeStep = age.time.step,
+                                                                               updatedPopn = FALSE,
+                                                                               updatedBirths = FALSE,
+                                                                               component = component,
+                                                                               theta = theta,
+                                                                               strucZeroArray = strucZeroArray,
+                                                                               iteratorComp = iterator.comp,
+                                                                               iExpFirst = i.exp.first.up.dest,
+                                                                               exposure = exposure,
+                                                                               iteratorExposure = iterator.exposure,
+                                                                               diff = diff.up.dest,
+                                                                               firstOnly = TRUE)
+                    }
+                    else {
+                        diff.log.up.orig <- 0
+                        diff.log.up.dest <- 0
+                    }
+                    if (!is.births || i.cell.low.orig > 0L) {
+                        diff.log.low.orig <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.orig,
+                                                                                hasAge = TRUE,
+                                                                                ageTimeStep = age.time.step,
+                                                                                updatedPopn = FALSE,
+                                                                                updatedBirths = FALSE,
+                                                                                component = component,
+                                                                                theta = theta,
+                                                                                strucZeroArray = strucZeroArray,
+                                                                                iteratorComp = iterator.comp,
+                                                                                iExpFirst = i.exp.first.low.orig,
+                                                                                exposure = exposure,
+                                                                                iteratorExposure = iterator.exposure,
+                                                                                diff = diff.low.orig,
+                                                                                firstOnly = TRUE)
+                        diff.log.low.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.dest,
+                                                                                hasAge = TRUE,
+                                                                                ageTimeStep = age.time.step,
+                                                                                updatedPopn = FALSE,
+                                                                                updatedBirths = FALSE,
+                                                                                component = component,
+                                                                                theta = theta,
+                                                                                strucZeroArray = strucZeroArray,
+                                                                                iteratorComp = iterator.comp,
+                                                                                iExpFirst = i.exp.first.low.dest,
+                                                                                exposure = exposure,
+                                                                                iteratorExposure = iterator.exposure,
+                                                                                diff = diff.low.dest,
+                                                                                firstOnly = TRUE)
+                    }
+                    else {
+                        diff.log.low.orig <- 0
+                        diff.log.low.dest <- 0
+                    }
                 }
                 else {
                     diff.log.up.orig <- diffLogDensExpOneComp(iCell = i.cell.up.orig,
@@ -3696,7 +3716,8 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                 }
                 else if (is.births) {
                     i.cell <- getICellBirthsFromExp(i = i.exp.first,
-                                                    mapping = mapping.from.exp)
+                                                    mapping = mapping.from.exp,
+                                                    ageForward = TRUE)
                     cell.is.affected <- i.cell > 0L
                     if (cell.is.affected) {
                         mapping.to.exp <- mappings.to.exp[[i]]
@@ -3794,20 +3815,21 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                 is.births <- i == i.births
                 if (is.births) {
                     i.cell.up <- getICellBirthsFromExp(i = i.expose.up,
-                                                       mapping = mapping.from.exp)
+                                                       mapping = mapping.from.exp,
+                                                       ageForward = FALSE)
                     i.cell.low <- getICellBirthsFromExp(i = i.expose.low,
-                                                        mapping = mapping.from.exp)
-                    cell.births.is.affected <- i.cell.up > 0L
-                    if (!cell.births.is.affected)
-                        next
+                                                        mapping = mapping.from.exp,
+                                                        ageForward = FALSE)
                     mapping.to.exp <- mappings.to.exp[[i]]
                     ## copying use of 'getIExposureFromBirths' from
                     ## 'diffLogDensExpComp', but may be possible to just
                     ## use 'i.expose.up'?
-                    i.exp.first.up <- getIExposureFromBirths(i = i.cell.up,
-                                                             mapping = mapping.to.exp)
-                    i.exp.first.low <- getIExposureFromBirths(i = i.cell.low,
-                                                              mapping = mapping.to.exp)
+                    if (i.cell.up > 0)
+                        i.exp.first.up <- getIExposureFromBirths(i = i.cell.up,
+                                                                 mapping = mapping.to.exp)
+                    if (i.cell.low > 0)
+                        i.exp.first.low <- getIExposureFromBirths(i = i.cell.low,
+                                                                  mapping = mapping.to.exp)
                 }
                 else {
                     i.cell.up <- getICellCompFromExp(i = i.expose.up,
@@ -3818,34 +3840,40 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                     i.exp.first.low <- i.expose.low
                 }
                 if (is.orig.dest || is.pool || is.births) {
-                    diff.log.up <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up,
-                                                                      hasAge = TRUE,
-                                                                      ageTimeStep = age.time.step,
-                                                                      updatedPopn = FALSE,
-                                                                      updatedBirths = FALSE,
-                                                                      component = component,
-                                                                      theta = theta,
-                                                                      strucZeroArray = strucZeroArray,
-                                                                      iteratorComp = iterator.comp,
-                                                                      iExpFirst = i.exp.first.up,
-                                                                      exposure = exposure,
-                                                                      iteratorExposure = iterator.exposure,
-                                                                      diff = diff.up,
-                                                                      firstOnly = TRUE)
-                    diff.log.low <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low,
-                                                                       hasAge = TRUE,
-                                                                       ageTimeStep = age.time.step,
-                                                                       updatedPopn = FALSE,
-                                                                       updatedBirths = FALSE,
-                                                                       component = component,
-                                                                       theta = theta,
-                                                                       strucZeroArray = strucZeroArray,
-                                                                       iteratorComp = iterator.comp,
-                                                                       iExpFirst = i.exp.first.low,
-                                                                       exposure = exposure,
-                                                                       iteratorExposure = iterator.exposure,
-                                                                       diff = diff.low,
-                                                                       firstOnly = TRUE)                    
+                    if (!is.births || (i.cell.up > 0))
+                        diff.log.up <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up,
+                                                                          hasAge = TRUE,
+                                                                          ageTimeStep = age.time.step,
+                                                                          updatedPopn = FALSE,
+                                                                          updatedBirths = FALSE,
+                                                                          component = component,
+                                                                          theta = theta,
+                                                                          strucZeroArray = strucZeroArray,
+                                                                          iteratorComp = iterator.comp,
+                                                                          iExpFirst = i.exp.first.up,
+                                                                          exposure = exposure,
+                                                                          iteratorExposure = iterator.exposure,
+                                                                          diff = diff.up,
+                                                                          firstOnly = TRUE)
+                    else
+                        diff.log.up <- 0
+                    if (!is.births || (i.cell.low > 0))
+                        diff.log.low <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low,
+                                                                           hasAge = TRUE,
+                                                                           ageTimeStep = age.time.step,
+                                                                           updatedPopn = FALSE,
+                                                                           updatedBirths = FALSE,
+                                                                           component = component,
+                                                                           theta = theta,
+                                                                           strucZeroArray = strucZeroArray,
+                                                                           iteratorComp = iterator.comp,
+                                                                           iExpFirst = i.exp.first.low,
+                                                                           exposure = exposure,
+                                                                           iteratorExposure = iterator.exposure,
+                                                                           diff = diff.low,
+                                                                           firstOnly = TRUE)
+                    else
+                        diff.log.low <- 0
                 }
                 else {
                     diff.log.up <- diffLogDensExpOneComp(iCell = i.cell.up,

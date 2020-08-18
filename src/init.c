@@ -888,6 +888,14 @@ SEXP isOldestAgeGroup_R(SEXP i_R, SEXP description_R)
     return ScalarLogical(ans);
 }
 
+/* one off wrapper for getICellBirthsFromExp */
+SEXP getICellBirthsFromExp_R(SEXP i_R, SEXP mapping_R, SEXP ageForward_R)  {
+    int i = *INTEGER(i_R);
+    int ageForward = *INTEGER(ageForward_R);
+    int ans = getICellBirthsFromExp(i, mapping_R, ageForward);
+    return ScalarInteger(ans);
+}
+
 /* wrap getIMappingFunctions */
 MAPPING_GET_I_WRAPPER(getIAccNextFromPopn);
 MAPPING_GET_I_WRAPPER(getIPopnNextFromPopn);
@@ -903,7 +911,6 @@ MAPPING_GET_I_WRAPPER(getIExpFirstFromComp);
 MAPPING_GET_I_WRAPPER(getIExpFirstFromBirths);
 MAPPING_GET_IVEC_WRAPPER(getIExpFirstPairFromOrigDest);
 MAPPING_GET_I_WRAPPER(getICellCompFromExp);
-MAPPING_GET_I_WRAPPER(getICellBirthsFromExp);
 MAPPING_GET_I_WRAPPER(getICellLowerTriFromComp);
 MAPPING_GET_I_WRAPPER(getICellLowerTriNextFromComp);
 
@@ -2589,7 +2596,6 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getIExpFirstFromBirths_R, 2),
   CALLDEF(getIExpFirstPairFromOrigDest_R, 2),
   CALLDEF(getICellCompFromExp_R, 2),
-  CALLDEF(getICellBirthsFromExp_R, 2),
   CALLDEF(getICellLowerTriFromComp_R, 2),
   CALLDEF(getICellLowerTriNextFromComp_R, 2),
 

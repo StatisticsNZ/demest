@@ -1060,7 +1060,7 @@ int getIExpFirstFromComp(int i, SEXP mapping_R);
 int getIExpFirstFromBirths(int i, SEXP mapping_R);
 SEXP getIExpFirstPairFromOrigDest(int i, SEXP mapping_R);
 int getICellCompFromExp(int i, SEXP mapping_R);
-int getICellBirthsFromExp(int i, SEXP mapping_R);
+int getICellBirthsFromExp(int i, SEXP mapping_R, int ageForward);
 
 /* CMP */
 double logDensCMPUnnormalised1(int x, double gamma, double nu);
