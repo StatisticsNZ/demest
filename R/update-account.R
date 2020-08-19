@@ -3780,13 +3780,15 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
     else {
         components <- combined@account@components
         iterators.comp <- combined@iteratorsComp
+        iterator.exposure <- combined@iteratorExposure
         model.uses.exposure <- combined@modelUsesExposure
         mappings.from.exp <- combined@mappingsFromExp
         mappings.to.exp <- combined@mappingsToExp
         i.expose.up <- combined@iExposure
         i.expose.low <- combined@iExposureOther
-        is.increment <- combined@isIncrement
+        is.increment.vec <- combined@isIncrement
         diff <- combined@diffProp
+        iterator.exposure <- combined@iteratorExposure
         i.comp <- combined@iComp
         i.orig.dest <- combined@iOrigDest
         i.pool <- combined@iPool
@@ -3794,12 +3796,13 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
         exposure <- combined@exposure
         systemModels <- combined@systemModels
         age.time.step <- combined@ageTimeStep
+        is.increment <- is.increment.vec[i.comp]
         if (is.increment) {
             diff.up <- diff
-            diff.low <- -1 * diff
+            diff.low <- -1L * diff
         }
         else {
-            diff.up <- -1 * diff
+            diff.up <- -1L * diff
             diff.low  <- diff
         }
         ans <- 0
