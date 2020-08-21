@@ -3909,6 +3909,8 @@ diffLogDensExpCompSmall(SEXP combined_R)
 	ans = diffLogLow;
 	break;
       }
+      printf("diffLogUp %f, diffLogLow %f\n",
+	     diffLogUp, diffLogLow);
     } /* end modelUsesExposure */
   } /* end for loop through components */
   return ans;

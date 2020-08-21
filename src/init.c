@@ -2595,6 +2595,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(getIExpFirstFromComp_R, 2),
   CALLDEF(getIExpFirstFromBirths_R, 2),
   CALLDEF(getIExpFirstPairFromOrigDest_R, 2),
+  CALLDEF(getICellBirthsFromExp_R, 3),
   CALLDEF(getICellCompFromExp_R, 2),
   CALLDEF(getICellLowerTriFromComp_R, 2),
   CALLDEF(getICellLowerTriNextFromComp_R, 2),

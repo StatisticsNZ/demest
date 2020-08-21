@@ -3769,9 +3769,8 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
     }
 }
 
-
-
-
+## TRANSLATED
+## HAS_TESTS
 diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -3824,9 +3823,6 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                                                         mapping = mapping.from.exp,
                                                         ageForward = FALSE)
                     mapping.to.exp <- mappings.to.exp[[i]]
-                    ## copying use of 'getIExposureFromBirths' from
-                    ## 'diffLogDensExpComp', but may be possible to just
-                    ## use 'i.expose.up'?
                     if (i.cell.up > 0)
                         i.exp.first.up <- getIExposureFromBirths(i = i.cell.up,
                                                                  mapping = mapping.to.exp)
@@ -3912,6 +3908,8 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                     return(diff.log.up)
                 if (is.infinite(diff.log.low))
                     return(diff.log.low)
+                print(sprintf("diff.log.up %f, diff.log.low %f",
+                              diff.log.up, diff.log.low))
                 ans <- ans + diff.log.up + diff.log.low
             }
         }
