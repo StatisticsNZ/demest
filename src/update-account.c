@@ -2172,9 +2172,6 @@ diffLogLikAccountMoveCompSmall(SEXP combined_R)
     int i_comp_r = *INTEGER(GET_SLOT(combined_R, iComp_sym));
     int i_comp = i_comp_r - 1;
 
-    int i_orig_dest_r = *INTEGER(GET_SLOT(combined_R, iOrigDest_sym));
-    int is_orig_dest = i_comp_r == i_orig_dest_r;
-
     SEXP component_R = VECTOR_ELT(GET_SLOT(account_R, components_sym), i_comp);
 
     SEXP dataModels_R = GET_SLOT(combined_R, dataModels_sym);
@@ -2193,8 +2190,7 @@ diffLogLikAccountMoveCompSmall(SEXP combined_R)
                                         dataModels_R, datasets_R,
                                         seriesIndices_R, transforms_R);
     if (R_finite(diffLogLikUp) ) {
-
-      if (!is_orig_dest)
+      
 	diff *= -1;
 
         double diffLogLikLow = diffLogLikCellComp(diff, i_comp_r,
@@ -2531,8 +2527,8 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
 		diffExposure -= (1.0/6.0) * ageTimeStep * diff;
 	    }
 	  }
-	  /* adjust for popn */
-	  if (!isUpper)
+	  /* adjust for popn unless is small update */
+	  if (!isUpper && !firstOnly)
 	    diffExposure += 0.5 * ageTimeStep * diff;
 	}
       }
@@ -2687,8 +2683,8 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
 		}
 	      }
 	    }
-	    /* increment due to popn */
-	    if (!isUpper) {
+	    /* increment due to popn, except in small updates */
+	    if (!isUpper && !firstOnly) {
 	      diffExposure += 0.5 * ageTimeStep * diff;
 	    }
 	  }
@@ -3909,8 +3905,6 @@ diffLogDensExpCompSmall(SEXP combined_R)
 	ans = diffLogLow;
 	break;
       }
-      printf("diffLogUp %f, diffLogLow %f\n",
-	     diffLogUp, diffLogLow);
     } /* end modelUsesExposure */
   } /* end for loop through components */
   return ans;

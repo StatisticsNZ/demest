@@ -399,7 +399,7 @@ updateProposalAccountMoveBirthsSmall <- function(combined, useC = FALSE) {
                                                        mapping = mapping)
             }
             size <- val.up.curr + val.low.curr
-            val.up.prop <- as.integer(runif(n = 1L) * (size + 1L))
+            val.up.prop <- as.integer(stats::runif(n = 1L) * (size + 1L))
             if (val.up.prop > size)
                 val.up.prop <- size
             diff.prop <- unname(val.up.prop - val.up.curr)
@@ -706,7 +706,7 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
             size <- val.up.curr + val.low.curr
             if (upper > size)
                 upper <- size
-            val.up.prop <- as.integer(runif(n = 1L) * (upper - lower + 1L)) + lower
+            val.up.prop <- as.integer(stats::runif(n = 1L) * (upper - lower + 1L)) + lower
             if (val.up.prop > upper)
                 val.up.prop <- upper
             diff.prop <- unname(val.up.prop - val.up.curr)
@@ -1329,7 +1329,7 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
                 lower <- 0L
             if (is.na(upper) || (upper > size))
                 upper <- size
-            val.up.prop <- as.integer(runif(n = 1L) * (upper - lower + 1L)) + lower
+            val.up.prop <- as.integer(stats::runif(n = 1L) * (upper - lower + 1L)) + lower
             diff.prop <- unname(val.up.prop - val.up.curr)
             generated.new.proposal  <- diff.prop != 0L
         }
@@ -2249,8 +2249,7 @@ diffLogLikAccountMoveCompSmall <- function(combined, useC = FALSE) {
                                               transforms = transforms)
         if (is.infinite(diff.log.lik.up))
             return(diff.log.lik.up)
-        if (!is.orig.dest)
-            diff <- -1L * diff
+        diff <- -1L * diff
         diff.log.lik.low <- diffLogLikCellComp(diff = diff,
                                                iComp = i.comp,
                                                iCell = i.cell.low,
@@ -2640,8 +2639,9 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                                     incr.exp <- incr.exp - (1/6) * ageTimeStep * diff
                             }
                         }
-                        ## adjust for change in population
-                        if (!is.upper) {
+                        ## adjust for change in population - except in small updates
+                        ## (ie when firstOnly is TRUE)
+                        if (!is.upper && !firstOnly) {
                             incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                         }
                     }
@@ -2838,8 +2838,9 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
                                         incr.exp <- incr.exp - (1/6) * ageTimeStep * diff
                                 }
                             }
-                            ## adjust for change in population
-                            if (!is.upper) {
+                            ## adjust for change in population - except in small updates
+                            ## (ie when firstOnly is TRUE)
+                            if (!is.upper && !firstOnly) {
                                 incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                             }
                         }
@@ -3168,7 +3169,7 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
 
 
 ## TRANSLATED
-## NO_TESTS
+## HAS_TESTS
 diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
     stopifnot(methods::is(combined, "CombinedAccountMovements"))
     if (useC) {
@@ -3908,8 +3909,6 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                     return(diff.log.up)
                 if (is.infinite(diff.log.low))
                     return(diff.log.low)
-                print(sprintf("diff.log.up %f, diff.log.low %f",
-                              diff.log.up, diff.log.low))
                 ans <- ans + diff.log.up + diff.log.low
             }
         }

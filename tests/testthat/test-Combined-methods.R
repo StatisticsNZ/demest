@@ -2356,10 +2356,10 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
     datasets <- list(census, register, reg.births, address.change, reg.deaths)
     namesDatasets <- c("census", "register", "reg.births", "address.change", "reg.deaths")
     data.models <- list(Model(census ~ PoissonBinomial(prob = 0.95), series = "population"),
-                              Model(register ~ Poisson(mean ~ 1), series = "population"),
-                              Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
-                              Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
-                              Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
+                        Model(register ~ Poisson(mean ~ 1), series = "population"),
+                        Model(reg.births ~ PoissonBinomial(prob = 0.98), series = "births"),
+                        Model(address.change ~ Poisson(mean ~ 1), series = "internal"),
+                        Model(reg.deaths ~ PoissonBinomial(prob = 0.98), series = "deaths"))
     seriesIndices <- c(0L, 0L, 1L, 2L, 3L)
     transforms <- list(makeTransform(x = population(account), y = datasets[[1]], subset = TRUE),
                        makeTransform(x = population(account), y = datasets[[2]], subset = TRUE),
@@ -2373,12 +2373,12 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
-                                transforms = transforms,
-                                probSmallUpdate = 0)
+                                 transforms = transforms,
+                                 probSmallUpdate = 0)
     updated <- FALSE
     for (seed in seq_len(n.test)) {
         set.seed(seed)
@@ -2398,12 +2398,12 @@ test_that("diffLogLikAccount works with CombinedAccountMovementsHasAge", {
                                  systemWeights = systemWeights,
                                  dataModels = data.models,
                                  seriesIndices = seriesIndices,
-                                updateInitialPopn = new("LogicalFlag", TRUE),
-                                usePriorPopn = new("LogicalFlag", TRUE),
+                                 updateInitialPopn = new("LogicalFlag", TRUE),
+                                 usePriorPopn = new("LogicalFlag", TRUE),
                                  datasets = datasets,
                                  namesDatasets = namesDatasets,
-                                transforms = transforms,
-                                probSmallUpdate = 1)
+                                 transforms = transforms,
+                                 probSmallUpdate = 1)
     is.small.births <- FALSE
     is.small.internal <- FALSE
     is.small.deaths <- FALSE
