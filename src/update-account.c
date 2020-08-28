@@ -136,6 +136,7 @@ updateProposalAccountMovePopn(SEXP combined_R)
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdateFinal_sym, 0);
 
     if (!generatedNewProposal) {
          iCell_r = NA_INTEGER;
@@ -293,6 +294,7 @@ updateProposalAccountMoveBirths(SEXP combined_R)
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdateFinal_sym, 0);
 
     if (!generatedNewProposal) {
          iCell_r = NA_INTEGER;
@@ -393,6 +395,7 @@ updateProposalAccountMoveBirthsSmall(SEXP combined_R)
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 1);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdateFinal_sym, 0);
 
     SET_INTSCALE_SLOT(combined_R, iPopnNext_sym, NA_INTEGER);
     SET_INTSCALE_SLOT(combined_R, iPopnNextOther_sym, NA_INTEGER);
@@ -587,6 +590,7 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdateFinal_sym, 0);
 
     if (!generatedNewProposal) {
          iCell_r = NA_INTEGER;
@@ -663,6 +667,7 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
     int i_cell_up_r = 0;
     int i_cell_up = 0;
     int generatedNewProposal = 0;
+    int is_final_age_group = 0;
 
     for (int i = 0; i < maxAttempt; i++) {
         i_cell_up_r = chooseICellCompUpperTri(description_R);
@@ -702,7 +707,7 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
         int i_acc_dest = i_acc_dest_r - 1;
 
 	int i_age_r = ((i_cell_up / stepAge) % nAge) + 1;
-	int is_final_age_group = (i_age_r == nAge);
+	is_final_age_group = (i_age_r == nAge);
 
         int val_acc_orig = accession[i_acc_orig];
         int val_acc_dest = accession[i_acc_dest];
@@ -758,6 +763,7 @@ updateProposalAccountMoveOrigDestSmall(SEXP combined_R)
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 1);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdateFinal_sym, is_final_age_group);
 
     SET_INTSCALE_SLOT(combined_R, iPopnNext_sym, NA_INTEGER);
     SET_INTSCALE_SLOT(combined_R, iPopnNextOther_sym, NA_INTEGER);
@@ -957,6 +963,7 @@ updateProposalAccountMovePool(SEXP combined_R)
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdateFinal_sym, 0);
 
     if (!generatedNewProposal) {
          iCellOut_r = NA_INTEGER;
@@ -1132,6 +1139,7 @@ updateProposalAccountMoveNet(SEXP combined_R)
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym,
                                     generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdateFinal_sym, 0);
 
     if (!generatedNewProposal) {
          iCellAdd_r = NA_INTEGER;
@@ -1333,6 +1341,7 @@ updateProposalAccountMoveComp(SEXP combined_R)
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 0);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdateFinal_sym, 0);
 
     if (!generatedNewProposal) {
          iCell_r = NA_INTEGER;
@@ -1412,6 +1421,7 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
     int i_cell_up = 0;
     int generatedNewProposal = 0;
     int diff_prop = 0;
+    int is_final_age_group = 0;
 
     for (int i = 0; i < maxAttempt; i++) {
         i_cell_up_r = chooseICellCompUpperTri(description_R);
@@ -1437,7 +1447,7 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
         int i_acc = i_acc_r - 1;
 
 	int i_age_r = ((i_cell_up / stepAge) % nAge) + 1;
-	int is_final_age_group = (i_age_r == nAge);
+	is_final_age_group = (i_age_r == nAge);
 	int val_acc = accession[i_acc];
         int val_up_curr = component[i_cell_up];
         int val_low_curr = component[i_cell_low];
@@ -1486,6 +1496,7 @@ updateProposalAccountMoveCompSmall(SEXP combined_R)
 
     SET_LOGICALSCALE_SLOT(combined_R, generatedNewProposal_sym, generatedNewProposal);
     SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdate_sym, 1);
+    SET_LOGICALSCALE_SLOT(combined_R, isSmallUpdateFinal_sym, is_final_age_group);
 
     SET_INTSCALE_SLOT(combined_R, iPopnNext_sym, NA_INTEGER);
     SET_INTSCALE_SLOT(combined_R, iPopnNextOther_sym, NA_INTEGER);
@@ -2373,6 +2384,8 @@ diffLogDensExpPopn(SEXP combined_R)
 
     int updatedPopnTrue = 1;
     int updatedBirthsFalse = 0;
+    int firstOnlyFalse = 0;
+    int isSmallUpdateFinal = 0;
 
 
     for (int i = 0; i < nComponents; ++i) {
@@ -2408,7 +2421,9 @@ diffLogDensExpPopn(SEXP combined_R)
   				        updatedPopnTrue, updatedBirthsFalse,
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirst_r,
-                                        exposure, iteratorExposure_R, diff, 0);
+                                        exposure, iteratorExposure_R, diff,
+   				     firstOnlyFalse, isSmallUpdateFinal);
+		
 
 
             }
@@ -2427,7 +2442,8 @@ diffLogDensExpPopn(SEXP combined_R)
   				        updatedBirthsFalse,
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirstBirths_R,
-                                        exposure, iteratorExposure_R, diff, 0);
+                                        exposure, iteratorExposure_R, diff,
+   				     firstOnlyFalse, isSmallUpdateFinal);
 
                 }
             }
@@ -2440,7 +2456,7 @@ diffLogDensExpPopn(SEXP combined_R)
                                         component_R, theta, strucZeroArray,
                                         iteratorComp_R, iExpFirst_r,
                                         exposure, iteratorExposure_R,
-						diff, 0);
+						diff, firstOnlyFalse, isSmallUpdateFinal);
             }
 
             if (R_finite(diffLog) ) {
@@ -2467,7 +2483,7 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
 				   SEXP iteratorComp_R,
 				   int iExpFirst_r, double * exposure,
 				   SEXP iteratorExposure_R,
-				   int diff, int firstOnly)
+				   int diff, int firstOnly, int isSmallUpdateFinal)
 {
   double ans = 0;
   int * component = INTEGER(component_R);
@@ -2527,8 +2543,9 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
 		diffExposure -= (1.0/6.0) * ageTimeStep * diff;
 	    }
 	  }
-	  /* adjust for popn unless is small update */
-	  if (!isUpper && !firstOnly)
+	  /* adjust for popn */
+	  int popnSame = isUpper || (firstOnly && !isSmallUpdateFinal);
+	  if (!popnSame)
 	    diffExposure += 0.5 * ageTimeStep * diff;
 	}
       }
@@ -2612,7 +2629,7 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
 		      SEXP iteratorComp_R,
 		      int iExpFirst_r, double * exposure,
 		      SEXP iteratorExposure_R,
-		      int diff, int firstOnly)
+		      int diff, int firstOnly, int isSmallUpdateFinal)
 {
   double ans = 0;
   int * component = INTEGER(component_R);
@@ -2683,8 +2700,9 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
 		}
 	      }
 	    }
-	    /* increment due to popn, except in small updates */
-	    if (!isUpper && !firstOnly) {
+	    /* increment due to popn */
+	    int popnSame = isUpper || (firstOnly && !isSmallUpdateFinal);
+	    if (!popnSame) {
 	      diffExposure += 0.5 * ageTimeStep * diff;
 	    }
 	  }
@@ -2718,6 +2736,12 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
       }
       double exposureCurr = exposure[iExp];
       double exposureProp = exposureCurr + diffExposure;
+
+      /* if (isFinal) { */
+      /* 	printf("'exposureProp'=%f, 'exposureCurr'=%f, diff=%d, isFinal=%d, isUpper=%d, iCell_r=%d, firstOnly=%d, compCurr=%d\n\n", */
+      /* 	       exposureProp, exposureCurr, diff, isFinal, isUpper, iCell_r, firstOnly, compCurr); */
+      /* } */
+      
       if (exposureProp < tolExposure) {
 	if (exposureProp > -1 * tolExposure)
 	  exposureProp = 0;
@@ -2727,7 +2751,9 @@ diffLogDensExpOneComp(int iCell_r, int hasAge,
 	    keepGoing = 0;
 	  }
 	  else
-	    error("negative value for 'exposureProp' : %f", exposureProp);
+	    error("negative value for 'exposureProp' : %f, 'exposureCurr'=%f, diff=%d, isFinal=%d, isUpper=%d, iCell_r=%d, firstOnly=%d, compCurr=%d, updatedPopn=%d, updatedBirths=%d",
+		  exposureProp, exposureCurr, diff, isFinal, isUpper, iCell_r, firstOnly, compCurr,
+		  updatedPopn, updatedBirths);
 	}
       }
       if ( (compCurr > 0) && !(exposureProp > 0) ) {
@@ -2882,6 +2908,9 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
     int updatedPopnFalse = 0;
     int updatedBirthsFalse = 0;
 
+    int firstOnlyFalse = 0;
+    int isSmallUpdateFinalFalse = 0;
+
     double ans = 0;
 
     int noExposureAffected = ( (iExpFirstOrig_r == 0)
@@ -2934,7 +2963,8 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
 							 exposure,
 							 iteratorExposure_R,
 							 diffOrig,
-							 0);
+							 firstOnlyFalse,
+							 isSmallUpdateFinalFalse);
 		  if (R_finite(diffLogOrig)) {
 
 		      diffLogDest
@@ -2949,7 +2979,8 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
 							     exposure,
 							     iteratorExposure_R,
 							     diffDest,
-							     0);
+							     firstOnlyFalse,
+							     isSmallUpdateFinalFalse);
                     }
                 } /* end if isOrigDest || isPool */
 
@@ -2980,7 +3011,8 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
 							   exposure,
 							   iteratorExposure_R,
 							   diffOrig,
-							   0);
+							   firstOnlyFalse,
+							   isSmallUpdateFinalFalse);
 
                             if (R_finite(diffLogOrig)) {
 
@@ -2996,7 +3028,8 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
 								     exposure,
 								     iteratorExposure_R,
 								     diffDest,
-								     0);
+								     firstOnlyFalse,
+								     isSmallUpdateFinalFalse);
                             }
 
                     } /* end cellIsAffected */
@@ -3022,7 +3055,8 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                                     exposure,
                                                     iteratorExposure_R,
                                                     diffOrig,
-						    0);
+						    firstOnlyFalse,
+						    isSmallUpdateFinalFalse);
 
                     if (R_finite(diffLogOrig)) {
 
@@ -3038,7 +3072,8 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                                                     exposure,
                                                     iteratorExposure_R,
                                                     diffDest,
-						    0);
+						    firstOnlyFalse,
+						    isSmallUpdateFinalFalse);
                    }
                 }/* end else */
 
@@ -3088,6 +3123,7 @@ diffLogDensExpOrigDestSmall(SEXP combined_R)
   double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
   SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
   double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
+  int isSmallUpdateFinal = *INTEGER(GET_SLOT(combined_R, isSmallUpdateFinal_sym));
   int diffUpOrig = -1 * diff;
   int diffLowOrig = diff;
   int diffUpDest = diff;
@@ -3159,7 +3195,8 @@ diffLogDensExpOrigDestSmall(SEXP combined_R)
 							     exposure,
 							     iteratorExposure_R,
 							     diffUpOrig,
-							     firstOnlyTrue);
+							     firstOnlyTrue,
+							     isSmallUpdateFinal);
 	  diffLogUpDest = diffLogDensExpOneOrigDestParChPool(iCellUpDest_r,
 							     hasAgeTrue, ageTimeStep,
 							     updatedPopnFalse,
@@ -3171,7 +3208,8 @@ diffLogDensExpOrigDestSmall(SEXP combined_R)
 							     exposure,
 							     iteratorExposure_R,
 							     diffUpDest,
-							     firstOnlyTrue);
+							     firstOnlyTrue,
+							     isSmallUpdateFinal);
 	}
 	else {
 	  diffLogUpOrig = 0;
@@ -3189,7 +3227,8 @@ diffLogDensExpOrigDestSmall(SEXP combined_R)
 							      exposure,
 							      iteratorExposure_R,
 							      diffLowOrig,
-							      firstOnlyTrue);
+							      firstOnlyTrue,
+							      isSmallUpdateFinal);
 	  diffLogLowDest = diffLogDensExpOneOrigDestParChPool(iCellLowDest_r,
 							      hasAgeTrue, ageTimeStep,
 							      updatedPopnFalse,
@@ -3201,7 +3240,8 @@ diffLogDensExpOrigDestSmall(SEXP combined_R)
 							      exposure,
 							      iteratorExposure_R,
 							      diffLowDest,
-							      firstOnlyTrue);
+							      firstOnlyTrue,
+							      isSmallUpdateFinal);
 	}
 	else {
 	  diffLogLowOrig = 0;
@@ -3220,7 +3260,8 @@ diffLogDensExpOrigDestSmall(SEXP combined_R)
 					      exposure,
 					      iteratorExposure_R,
 					      diffUpOrig,
-					      firstOnlyTrue);
+					      firstOnlyTrue,
+					      isSmallUpdateFinal);
 	diffLogLowOrig = diffLogDensExpOneComp(iCellLowOrig_r,
 					       hasAgeTrue, ageTimeStep,
 					       updatedPopnFalse,
@@ -3232,7 +3273,8 @@ diffLogDensExpOrigDestSmall(SEXP combined_R)
 					       exposure,
 					       iteratorExposure_R,
 					       diffLowOrig,
-					       firstOnlyTrue);
+					       firstOnlyTrue,
+					       isSmallUpdateFinal);
 	diffLogUpDest = diffLogDensExpOneComp(iCellUpDest_r,
 					      hasAgeTrue, ageTimeStep,
 					      updatedPopnFalse,
@@ -3244,7 +3286,8 @@ diffLogDensExpOrigDestSmall(SEXP combined_R)
 					      exposure,
 					      iteratorExposure_R,
 					      diffUpDest,
-					      firstOnlyTrue);
+					      firstOnlyTrue,
+					      isSmallUpdateFinal);
 	diffLogLowDest = diffLogDensExpOneComp(iCellLowDest_r,
 					       hasAgeTrue, ageTimeStep,
 					       updatedPopnFalse,
@@ -3256,7 +3299,8 @@ diffLogDensExpOrigDestSmall(SEXP combined_R)
 					       exposure,
 					       iteratorExposure_R,
 					       diffLowDest,
-					       firstOnlyTrue);
+					       firstOnlyTrue,
+					       isSmallUpdateFinal);
       }
       if (R_finite(diffLogUpOrig)) {
 	ans += diffLogUpOrig;
@@ -3649,6 +3693,8 @@ diffLogDensExpComp(SEXP combined_R)
     double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
 
     int updatedPopnFalse = 0;
+    int firstOnlyFalse = 0;
+    int isSingleUpdateFinalFalse = 0;
     int updatedBirths = iComp_r == iBirths_r;
 
     double ans = 0;
@@ -3693,7 +3739,8 @@ diffLogDensExpComp(SEXP combined_R)
 							       exposure,
 							       iteratorExposure_R,
 							       diff,
-							       0);
+							       firstOnlyFalse,
+							       isSingleUpdateFinalFalse);
                 } /* end if isOrigDest || isPool */
 
                 else if(isBirths) {
@@ -3717,7 +3764,8 @@ diffLogDensExpComp(SEXP combined_R)
 							   exposure,
 							   iteratorExposure_R,
 							   diff,
-							   0);
+							   firstOnlyFalse,
+							   isSingleUpdateFinalFalse);
 
                     } /* end cellIsAffected */
 
@@ -3738,7 +3786,8 @@ diffLogDensExpComp(SEXP combined_R)
                                                     exposure,
                                                     iteratorExposure_R,
                                                     diff,
-						    0);
+						    firstOnlyFalse,
+						    isSingleUpdateFinalFalse);
                 }/* end else */
 
                 if (R_finite(diffLog)) {
@@ -3782,6 +3831,7 @@ diffLogDensExpCompSmall(SEXP combined_R)
   double * exposure = REAL(GET_SLOT(combined_R, exposure_sym));
   SEXP systemModels_R = GET_SLOT(combined_R, systemModels_sym);
   double ageTimeStep = *REAL(GET_SLOT(combined_R, ageTimeStep_sym));
+  int isSmallUpdateFinal = *INTEGER(GET_SLOT(combined_R, isSmallUpdateFinal_sym));
   int isIncrement = isIncrementVec[iComp_r - 1];
   int diffUp = diff;
   int diffLow = -1 * diff;
@@ -3842,7 +3892,8 @@ diffLogDensExpCompSmall(SEXP combined_R)
 							 exposure,
 							 iteratorExposure_R,
 							 diffUp,
-							 firstOnlyTrue);
+							 firstOnlyTrue,
+							 isSmallUpdateFinal);
 	}
 	else {
 	  diffLogUp = 0;
@@ -3859,7 +3910,8 @@ diffLogDensExpCompSmall(SEXP combined_R)
 							  exposure,
 							  iteratorExposure_R,
 							  diffLow,
-							  firstOnlyTrue);
+							  firstOnlyTrue,
+							  isSmallUpdateFinal);
 	}
 	else {
 	  diffLogLow = 0;
@@ -3877,7 +3929,8 @@ diffLogDensExpCompSmall(SEXP combined_R)
 					  exposure,
 					  iteratorExposure_R,
 					  diffUp,
-					  firstOnlyTrue);
+					  firstOnlyTrue,
+					  isSmallUpdateFinal);
 	diffLogLow = diffLogDensExpOneComp(iCellLow_r,
 					   hasAgeTrue, ageTimeStep,
 					   updatedPopnFalse,
@@ -3889,7 +3942,8 @@ diffLogDensExpCompSmall(SEXP combined_R)
 					   exposure,
 					   iteratorExposure_R,
 					   diffLow,
-					   firstOnlyTrue);
+					   firstOnlyTrue,
+					   isSmallUpdateFinal);
       }
       if (R_finite(diffLogUp)) {
 	ans += diffLogUp;

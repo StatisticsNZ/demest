@@ -6638,7 +6638,8 @@ test_that("diffLogDensExpPopn works", {
                                                                      exposure = x@exposure,
                                                                      iteratorExposure = x@iteratorExposure,
                                                                      diff = x@diffProp,
-                                                                     firstOnly = FALSE)
+                                                                     firstOnly = FALSE,
+                                                                     isSmallUpdateFinal = FALSE)
             }
             i.cell.internal <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[2]])
             ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell = i.cell.internal,
@@ -6654,7 +6655,8 @@ test_that("diffLogDensExpPopn works", {
                                                                               exposure = x@exposure,
                                                                               iteratorExposure = x@iteratorExposure,
                                                                               diff = x@diffProp,
-                                                                              firstOnly = FALSE)
+                                                                              firstOnly = FALSE,
+                                                                              isSmallUpdateFinal = FALSE)
             i.cell.deaths <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[3]])
                 ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
                                                                      hasAge = TRUE,
@@ -6669,7 +6671,8 @@ test_that("diffLogDensExpPopn works", {
                                                                      exposure = x@exposure,
                                                                      iteratorExposure = x@iteratorExposure,
                                                                      diff = x@diffProp,
-                                                                     firstOnly = FALSE)
+                                                                     firstOnly = FALSE,
+                                                                     isSmallUpdateFinal = FALSE)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else
@@ -7117,7 +7120,8 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                           exposure = x@exposure,
                                           iteratorExposure = x@iteratorExposure, 
                                           diff = -x@diffProp,
-                                          firstOnly = FALSE) +
+                                          firstOnly = FALSE,
+                                          isSmallUpdateFinal = FALSE) +
                     diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                           hasAge = FALSE,
                                           updatedPopn = FALSE,
@@ -7131,7 +7135,8 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                           exposure = x@exposure,
                                           iteratorExposure = x@iteratorExposure,
                                           diff = x@diffProp,
-                                          firstOnly = FALSE)
+                                          firstOnly = FALSE,
+                                          isSmallUpdateFinal = FALSE)
             }
             i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[2]])
             if (i.cell.orig > 0L) {
@@ -7150,7 +7155,8 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                                        exposure = x@exposure,
                                                        iteratorExposure = x@iteratorExposure,
                                                        diff = -x@diffProp,
-                                                       firstOnly = FALSE) +
+                                                       firstOnly = FALSE,
+                                                       isSmallUpdateFinal = FALSE) +
                     diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                                        hasAge = FALSE,
                                                        updatedPopn = FALSE,
@@ -7164,7 +7170,8 @@ test_that("diffLogDensExpOrigDestPoolNet works with CombinedAccountMovements - n
                                                        exposure = x@exposure,
                                                        iteratorExposure = x@iteratorExposure,
                                                        diff = x@diffProp,
-                                                       firstOnly = FALSE)
+                                                       firstOnly = FALSE,
+                                                       isSmallUpdateFinal = FALSE)
             }
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
@@ -7371,7 +7378,8 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                                          exposure = x@exposure,
                                                          iteratorExposure = x@iteratorExposure,
                                                          diff = -x@diffProp,
-                                                         firstOnly = FALSE) +
+                                                         firstOnly = FALSE,
+                                                         isSmallUpdateFinal = FALSE) +
                     diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                           hasAge = TRUE,
                                           updatedPopn = FALSE,
@@ -7385,7 +7393,8 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                           exposure = x@exposure,
                                           iteratorExposure = x@iteratorExposure,
                                           diff = x@diffProp,
-                                          firstOnly = FALSE)
+                                          firstOnly = FALSE,
+                                          isSmallUpdateFinal = FALSE)
             }
             else
                 log.diff.births <- 0
@@ -7404,7 +7413,8 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                                                     exposure = x@exposure,
                                                                     iteratorExposure = x@iteratorExposure,
                                                                     diff = -x@diffProp,
-                                                                    firstOnly = FALSE) +
+                                                                    firstOnly = FALSE,
+                                                                    isSmallUpdateFinal = FALSE) +
                 diffLogDensExpOneOrigDestParChPool(iCell = i.cell.dest,
                                                    hasAge = TRUE,
                                                    updatedPopn = FALSE,
@@ -7418,7 +7428,8 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                                    exposure = x@exposure,
                                                    iteratorExposure = x@iteratorExposure,
                                                    diff = x@diffProp,
-                                                   firstOnly = FALSE)
+                                                   firstOnly = FALSE,
+                                                   isSmallUpdateFinal = FALSE)
             i.cell.orig <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[3]])
             i.cell.dest <- getICellCompFromExp(x@iExpFirstOther, x@mappingsFromExp[[3]])
             log.diff.deaths <- diffLogDensExpOneComp(iCell = i.cell.orig,
@@ -7434,7 +7445,8 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                                      exposure = x@exposure,
                                                      iteratorExposure = x@iteratorExposure,
                                                      diff = -x@diffProp,
-                                                     firstOnly = FALSE) +
+                                                     firstOnly = FALSE,
+                                                     isSmallUpdateFinal = FALSE) +
                 diffLogDensExpOneComp(iCell = i.cell.dest,
                                       hasAge = TRUE,
                                       updatedPopn = FALSE,
@@ -7448,7 +7460,8 @@ test_that("diffLogDensExpOrigDestPoolNet works - with age", {
                                       exposure = x@exposure,
                                       iteratorExposure = x@iteratorExposure,
                                       diff = x@diffProp,
-                                      firstOnly = FALSE)
+                                      firstOnly = FALSE,
+                                      isSmallUpdateFinal = FALSE)
             ans.expected <- log.diff.births + log.diff.internal + log.diff.deaths
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
@@ -7668,6 +7681,7 @@ test_that("diffLogDensExpOrigDestSmall works", {
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
             ans.obtained <- diffLogDensExpOrigDestSmall(x)
+            is.small.update.final <- x@isSmallUpdateFinal@.Data
             i.cell.up.orig <- getICellBirthsFromExp(x@iExposure, x@mappingsFromExp[[1]], FALSE)
             i.cell.low.orig <- getICellBirthsFromExp(x@iExposureOther, x@mappingsFromExp[[1]], FALSE)
             i.cell.up.dest <- getICellBirthsFromExp(x@iExpFirst, x@mappingsFromExp[[1]], FALSE)
@@ -7691,7 +7705,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                                                          exposure = x@exposure,
                                                                          iteratorExposure = x@iteratorExposure,
                                                                          diff = -x@diffProp,
-                                                                         firstOnly = TRUE) +
+                                                                         firstOnly = TRUE,
+                                                                         isSmallUpdateFinal = is.small.update.final) +
                     diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.dest,
                                                        hasAge = TRUE,
                                                        updatedPopn = FALSE,
@@ -7705,7 +7720,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                                        exposure = x@exposure,
                                                        iteratorExposure = x@iteratorExposure,
                                                        diff = x@diffProp,
-                                                       firstOnly = TRUE)
+                                                       firstOnly = TRUE,
+                                                       isSmallUpdateFinal = is.small.update.final)
                 log.diff.births <- log.diff.births + log.diff.births.up
             }
             if (i.cell.low.orig > 0L) {
@@ -7726,7 +7742,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                                                           exposure = x@exposure,
                                                                           iteratorExposure = x@iteratorExposure,
                                                                           diff = x@diffProp,
-                                                                          firstOnly = TRUE) +
+                                                                          firstOnly = TRUE,
+                                                                          isSmallUpdateFinal = is.small.update.final) +
                     diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.dest,
                                                        hasAge = TRUE,
                                                        updatedPopn = FALSE,
@@ -7740,7 +7757,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                                        exposure = x@exposure,
                                                        iteratorExposure = x@iteratorExposure,
                                                        diff = -x@diffProp,
-                                                       firstOnly = TRUE)
+                                                       firstOnly = TRUE,
+                                                       isSmallUpdateFinal = is.small.update.final)
                 log.diff.births <- log.diff.births + log.diff.births.low
             }
             i.cell.up.orig <- getICellCompFromExp(x@iExposure, x@mappingsFromExp[[2]])
@@ -7760,7 +7778,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                                                     exposure = x@exposure,
                                                                     iteratorExposure = x@iteratorExposure,
                                                                     diff = -x@diffProp,
-                                                                    firstOnly = TRUE) +
+                                                                    firstOnly = TRUE,
+                                                                    isSmallUpdateFinal = is.small.update.final) +
                 diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.orig,
                                                    hasAge = TRUE,
                                                    updatedPopn = FALSE,
@@ -7774,7 +7793,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                                    exposure = x@exposure,
                                                    iteratorExposure = x@iteratorExposure,
                                                    diff = x@diffProp,
-                                                   firstOnly = TRUE) +
+                                                   firstOnly = TRUE,
+                                                   isSmallUpdateFinal = is.small.update.final) +
                 diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.dest,
                                                    hasAge = TRUE,
                                                    updatedPopn = FALSE,
@@ -7788,7 +7808,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                                    exposure = x@exposure,
                                                    iteratorExposure = x@iteratorExposure,
                                                    diff = x@diffProp,
-                                                   firstOnly = TRUE) +
+                                                   firstOnly = TRUE,
+                                                   isSmallUpdateFinal = is.small.update.final) +
                 diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.dest,
                                                    hasAge = TRUE,
                                                    updatedPopn = FALSE,
@@ -7802,7 +7823,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                                    exposure = x@exposure,
                                                    iteratorExposure = x@iteratorExposure,
                                                    diff = -x@diffProp,
-                                                   firstOnly = TRUE)
+                                                   firstOnly = TRUE,
+                                                   isSmallUpdateFinal = is.small.update.final)
             i.cell.up.orig <- getICellCompFromExp(x@iExposure, x@mappingsFromExp[[3]])
             i.cell.low.orig <- getICellCompFromExp(x@iExposureOther, x@mappingsFromExp[[3]])
             i.cell.up.dest <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[3]])
@@ -7820,7 +7842,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                                      exposure = x@exposure,
                                                      iteratorExposure = x@iteratorExposure,
                                                      diff = -x@diffProp,
-                                                     firstOnly = TRUE) +
+                                                     firstOnly = TRUE,
+                                                     isSmallUpdateFinal = is.small.update.final) +
                 diffLogDensExpOneComp(iCell = i.cell.low.orig,
                                       hasAge = TRUE,
                                       updatedPopn = FALSE,
@@ -7834,7 +7857,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                       exposure = x@exposure,
                                       iteratorExposure = x@iteratorExposure,
                                       diff = x@diffProp,
-                                      firstOnly = TRUE) +
+                                      firstOnly = TRUE,
+                                      isSmallUpdateFinal = is.small.update.final) +
                 diffLogDensExpOneComp(iCell = i.cell.up.dest,
                                       hasAge = TRUE,
                                       updatedPopn = FALSE,
@@ -7848,7 +7872,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                       exposure = x@exposure,
                                       iteratorExposure = x@iteratorExposure,
                                       diff = x@diffProp,
-                                      firstOnly = TRUE) +
+                                      firstOnly = TRUE,
+                                      isSmallUpdateFinal = is.small.update.final) +
                 diffLogDensExpOneComp(iCell = i.cell.low.dest,
                                       hasAge = TRUE,
                                       updatedPopn = FALSE,
@@ -7862,7 +7887,8 @@ test_that("diffLogDensExpOrigDestSmall works", {
                                       exposure = x@exposure,
                                       iteratorExposure = x@iteratorExposure,
                                       diff = -x@diffProp,
-                                      firstOnly = TRUE)
+                                      firstOnly = TRUE,
+                                      isSmallUpdateFinal = is.small.update.final)
             ans.expected <- log.diff.births + log.diff.internal + log.diff.deaths
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
@@ -8054,7 +8080,8 @@ test_that("diffLogDensExpOneOrigDestParChPool works - no age", {
                                                                exposure = x@exposure,
                                                                iteratorExposure = x@iteratorExposure,
                                                                diff = x@diffProp,
-                                                               firstOnly = FALSE)
+                                                               firstOnly = FALSE,
+                                                               isSmallUpdateFinal = FALSE)
             i.cell <- getICellCompFromExp(i = x@iExpFirst,
                                           mapping = x@mappingsFromExp[[1]])
             ans.expected <- sum(dpois(x = internal[i.cell + c(0, 3, 6)],
@@ -8140,6 +8167,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                         iteratorExposure = x@iteratorExposure,
                                                         diff = x@diffProp,
                                                         firstOnly = FALSE,
+                                                        isSmallUpdateFinal = FALSE,
                                                         useC = FALSE)
             ans.C <- diffLogDensExpOneOrigDestParChPool(iCell = getICellCompFromExp(i = x@iExpFirst,
                                                                                     mapping = x@mappingsFromExp[[1]]),
@@ -8156,6 +8184,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                         iteratorExposure = x@iteratorExposure,
                                                         diff = x@diffProp,
                                                         firstOnly = FALSE,
+                                                        isSmallUpdateFinal = FALSE,
                                                         useC = TRUE)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
@@ -8243,6 +8272,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                         iteratorExposure = x@iteratorExposure,
                                                         diff = x@diffProp,
                                                         firstOnly = FALSE,
+                                                        isSmallUpdateFinal = FALSE,
                                                         useC = FALSE)
             ans.C <- diffLogDensExpOneOrigDestParChPool(iCell = getICellCompFromExp(i = x@iExpFirst,
                                                                                     mapping = x@mappingsFromExp[[2]]),
@@ -8259,6 +8289,7 @@ test_that("R and C versions of diffLogDensExpOneOrigDestParChPool give same answ
                                                         iteratorExposure = x@iteratorExposure,
                                                         diff = x@diffProp,
                                                         firstOnly = FALSE,
+                                                        isSmallUpdateFinal = FALSE,
                                                         useC = TRUE)
             if (test.identity)
                 expect_identical(ans.R, ans.C)
@@ -8312,7 +8343,8 @@ test_that("diffLogDensExpOneComp works with no age", {
                                           exposure = expose,
                                           iteratorExposure = iteratorExposure,
                                           diff = diff,
-                                          firstOnly = FALSE)
+                                          firstOnly = FALSE,
+                                          isSmallUpdateFinal = FALSE)
     ans.expected <- unname(dpois(deaths[4], lambda = theta[4] * (expose[4] - 3/2 * 10), log = TRUE)
                            - dpois(deaths[4], lambda = theta[4] * expose[4], log = TRUE)
                            + sum(dpois(deaths[5:9], lambda = theta[5:9] * (expose[5:9] - 3 * 10), log = TRUE))
@@ -8363,6 +8395,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer with no ag
                                    iteratorExposure = iteratorExposure,
                                    diff = diff,
                                    firstOnly = FALSE,
+                                   isSmallUpdateFinal = FALSE,
                                    useC = FALSE)
     ans.C <- diffLogDensExpOneComp(iCell = iCell,
                                    hasAge = hasAge,
@@ -8377,6 +8410,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer with no ag
                                    exposure = expose,
                                    iteratorExposure = iteratorExposure,
                                    diff = diff,
+                                   isSmallUpdateFinal = FALSE,
                                    firstOnly = FALSE,
                                    useC = TRUE)
     if (test.identity)
@@ -8437,6 +8471,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer with age",
                                        iteratorExposure = iteratorExposure,
                                        diff = diff,
                                        firstOnly = FALSE,
+                                       isSmallUpdateFinal = FALSE,
                                        useC = FALSE)
         ans.C <- diffLogDensExpOneComp(iCell = iCell,
                                        hasAge = hasAge,
@@ -8452,6 +8487,7 @@ test_that("R and C versions of diffLogDensExpOneComp give same answer with age",
                                        iteratorExposure = iteratorExposure,
                                        diff = diff,
                                        firstOnly = FALSE,
+                                       isSmallUpdateFinal = FALSE,
                                        useC = TRUE)
         if (test.identity)
             expect_identical(ans.R, ans.C)
@@ -9276,7 +9312,8 @@ test_that("diffLogDensExpComp works", {
                                                                      exposure = x@exposure,
                                                                      iteratorExposure = x@iteratorExposure,
                                                                      diff = -x@diffProp,
-                                                                     firstOnly = FALSE)
+                                                                     firstOnly = FALSE,
+                                                                     isSmallUpdateFinal = FALSE)
             }
             i.cell.internal <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[2]])
             ans.expected <- ans.expected + diffLogDensExpOneOrigDestParChPool(iCell = i.cell.internal,
@@ -9292,7 +9329,8 @@ test_that("diffLogDensExpComp works", {
                                                                               exposure = x@exposure,
                                                                               iteratorExposure = x@iteratorExposure,
                                                                               diff = -x@diffProp,
-                                                                              firstOnly = FALSE)
+                                                                              firstOnly = FALSE,
+                                                                              isSmallUpdateFinal = FALSE)
             i.cell.deaths <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[3]])
             ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
                                                                  hasAge = TRUE,
@@ -9307,7 +9345,8 @@ test_that("diffLogDensExpComp works", {
                                                                  exposure = x@exposure,
                                                                  iteratorExposure = x@iteratorExposure,
                                                                  diff = -x@diffProp,
-                                                                 firstOnly = FALSE)
+                                                                 firstOnly = FALSE,
+                                                                 isSmallUpdateFinal = FALSE)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else
@@ -9504,7 +9543,8 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
                                                                                   exposure = x@exposure,
                                                                                   iteratorExposure = x@iteratorExposure,
                                                                                   diff = x@diffProp,
-                                                                                  firstOnly = FALSE)
+                                                                                  firstOnly = FALSE,
+                                                                                  isSmallUpdateFinal = FALSE)
             i.cell.deaths <- getICellCompFromExp(x@iExpFirst, x@mappingsFromExp[[2]])
             ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths,
                                                                  hasAge = FALSE,
@@ -9519,7 +9559,8 @@ test_that("diffLogDensExpComp works with CombinedAccountMovements - Parent-Child
                                                                  exposure = x@exposure,
                                                                  iteratorExposure = x@iteratorExposure,
                                                                  diff = x@diffProp,
-                                                                 firstOnly = FALSE)
+                                                                 firstOnly = FALSE,
+                                                                 isSmallUpdateFinal = FALSE)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else
@@ -9702,6 +9743,7 @@ test_that("diffLogDensExpCompSmall works", {
         x <- updateProposalAccountMoveCompSmall(x)
         if (x@generatedNewProposal@.Data) {
             updated <- TRUE
+            is.small.update.final <- x@isSmallUpdateFinal@.Data
             ans.obtained <- diffLogDensExpCompSmall(x)
             ans.expected <- 0
             i.cell.births.up <- getICellBirthsFromExp(x@iExposure, x@mappingsFromExp[[1]], FALSE)
@@ -9722,7 +9764,8 @@ test_that("diffLogDensExpCompSmall works", {
                                                                                   exposure = x@exposure,
                                                                                   iteratorExposure = x@iteratorExposure,
                                                                                   diff = -x@diffProp,
-                                                                                  firstOnly = TRUE)
+                                                                                  firstOnly = TRUE,
+                                                                                  isSmallUpdateFinal = is.small.update.final)
             }
             if (i.cell.births.low > 0L) {
                 i.cell.exp.first.low <- getIExposureFromBirths(i = i.cell.births.low,
@@ -9740,7 +9783,8 @@ test_that("diffLogDensExpCompSmall works", {
                                                                                   exposure = x@exposure,
                                                                                   iteratorExposure = x@iteratorExposure,
                                                                                   diff = x@diffProp,
-                                                                                  firstOnly = TRUE)
+                                                                                  firstOnly = TRUE,
+                                                                                  isSmallUpdateFinal = is.small.update.final)
             }
             i.cell.internal.up <- getICellCompFromExp(x@iExposure, x@mappingsFromExp[[2]])
             i.cell.internal.low <- getICellCompFromExp(x@iExposureOther, x@mappingsFromExp[[2]])
@@ -9757,7 +9801,8 @@ test_that("diffLogDensExpCompSmall works", {
                                                                               exposure = x@exposure,
                                                                               iteratorExposure = x@iteratorExposure,
                                                                               diff = -x@diffProp,
-                                                                              firstOnly = TRUE) +
+                                                                              firstOnly = TRUE,
+                                                                              isSmallUpdateFinal = is.small.update.final) +
                 diffLogDensExpOneOrigDestParChPool(iCell = i.cell.internal.low,
                                                    hasAge = TRUE,
                                                    updatedPopn = FALSE,
@@ -9771,7 +9816,8 @@ test_that("diffLogDensExpCompSmall works", {
                                                    exposure = x@exposure,
                                                    iteratorExposure = x@iteratorExposure,
                                                    diff = x@diffProp,
-                                                   firstOnly = TRUE)
+                                                   firstOnly = TRUE,
+                                                   isSmallUpdateFinal = is.small.update.final)
             i.cell.deaths.up <- getICellCompFromExp(x@iExposure, x@mappingsFromExp[[3]])
             i.cell.deaths.low <- getICellCompFromExp(x@iExposureOther, x@mappingsFromExp[[3]])
             ans.expected <- ans.expected + diffLogDensExpOneComp(iCell= i.cell.deaths.up,
@@ -9787,7 +9833,8 @@ test_that("diffLogDensExpCompSmall works", {
                                                                  exposure = x@exposure,
                                                                  iteratorExposure = x@iteratorExposure,
                                                                  diff = -x@diffProp,
-                                                                 firstOnly = TRUE) +
+                                                                 firstOnly = TRUE,
+                                                                 isSmallUpdateFinal = is.small.update.final) +
                 diffLogDensExpOneComp(iCell= i.cell.deaths.low,
                                       hasAge = TRUE,
                                       updatedPopn = FALSE,
@@ -9801,7 +9848,8 @@ test_that("diffLogDensExpCompSmall works", {
                                       exposure = x@exposure,
                                       iteratorExposure = x@iteratorExposure,
                                       diff = x@diffProp,
-                                      firstOnly = TRUE)
+                                      firstOnly = TRUE,
+                                      isSmallUpdateFinal = is.small.update.final)
             if (test.identity)
                 expect_identical(ans.obtained, ans.expected)
             else

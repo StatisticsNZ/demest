@@ -2056,10 +2056,12 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
 					  SEXP iExpFirst_R, SEXP exposure_R,
 					  SEXP iteratorExposure_R,
 					  SEXP diff_R,
-					  SEXP firstOnly_R)
+					  SEXP firstOnly_R,
+					  SEXP isSmallUpdateFinal_R)
 {
   int diff = *INTEGER(diff_R);
   int firstOnly = *INTEGER(firstOnly_R);
+  int isSmallUpdateFinal = *INTEGER(isSmallUpdateFinal_R);  
   int iCell_r = *INTEGER(iCell_R);
   int hasAge = *LOGICAL(hasAge_R);
   double ageTimeStep = *REAL(ageTimeStep_R);
@@ -2079,7 +2081,8 @@ SEXP diffLogDensExpOneOrigDestParChPool_R(SEXP iCell_R, SEXP hasAge_R,
 						  iteratorCompNew_R,
 						  iExpFirst_r, exposure,
 						  iteratorExpNew_R,
-						  diff, firstOnly);
+						  diff, firstOnly,
+						  isSmallUpdateFinal);
   UNPROTECT(2);
   return ScalarReal(ans);
 }
@@ -2094,10 +2097,12 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
 			     SEXP iExpFirst_R, SEXP exposure_R,
 			     SEXP iteratorExposure_R,
 			     SEXP diff_R,
-			     SEXP firstOnly_R)
+			     SEXP firstOnly_R,
+			     SEXP isSmallUpdateFinal_R)
 {
   int diff = *INTEGER(diff_R);
   int firstOnly = *INTEGER(firstOnly_R);
+  int isSmallUpdateFinal = *INTEGER(isSmallUpdateFinal_R);
   int iCell_r = *INTEGER(iCell_R);
   int hasAge = *LOGICAL(hasAge_R);
   double ageTimeStep = *REAL(ageTimeStep_R);
@@ -2117,7 +2122,8 @@ SEXP diffLogDensExpOneComp_R(SEXP iCell_R, SEXP hasAge_R,
 				     iteratorCompNew_R,
 				     iExpFirst_r, exposure,
 				     iteratorExpNew_R,
-				     diff, firstOnly);
+				     diff, firstOnly,
+				     isSmallUpdateFinal);
   UNPROTECT(2);
   return ScalarReal(ans);
 }
@@ -2715,8 +2721,8 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(diffLogDensPopn_R, 1),
   CALLDEF(diffLogDensPopnOneCohort_R, 6),
   CALLDEF(diffLogDensExpPopn_R, 1),
-  CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 14),
-  CALLDEF(diffLogDensExpOneComp_R, 14),
+  CALLDEF(diffLogDensExpOneOrigDestParChPool_R, 15),
+  CALLDEF(diffLogDensExpOneComp_R, 15),
   CALLDEF(diffLogDensJumpOrigDest_R, 1),
   CALLDEF(diffLogDensExpOrigDestPoolNet_R, 1),
   CALLDEF(diffLogDensExpOrigDestSmall_R, 1),
@@ -3158,6 +3164,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(generatedNewProposal);
   ADD_SYM(probSmallUpdate);
   ADD_SYM(isSmallUpdate);
+  ADD_SYM(isSmallUpdateFinal);
   ADD_SYM(probPopn);
   ADD_SYM(cumProbComp);
   ADD_SYM(scaleNoise);

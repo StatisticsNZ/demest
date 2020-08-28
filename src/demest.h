@@ -397,6 +397,7 @@ SEXP
   generatedNewProposal_sym,
   probSmallUpdate_sym,
   isSmallUpdate_sym,
+  isSmallUpdateFinal_sym,
   probPopn_sym,
   cumProbComp_sym,
   nCellAccount_sym,
@@ -1128,14 +1129,15 @@ double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
                         SEXP iteratorComp_R,
                         int iExpFirst_r, double * exposure,
                         SEXP iteratorExposure_R,
-					  int diff, int firstOnly);
+					  int diff, int firstOnly,
+					  int isSmallUpdateFinal);
 double diffLogDensExpOneComp(int iCell_r, int hasAge,
 			     double ageTimeStep, int updatedPopn, int updatedBirths,
                         SEXP component_R, double * theta, int * strucZeroArray,
                         SEXP iteratorComp_R,
                         int iExpFirst_r, double * exposure,
                         SEXP iteratorExposure_R,
-			     int diff, int firstOnly);
+			     int diff, int firstOnly, int isSmallUpdateFinal);
 double diffLogDensJumpOrigDest(SEXP combined_R);
 double diffLogDensExpOrigDestPoolNet(SEXP combined_R);
 double diffLogDensExpOrigDestSmall(SEXP combined_R);

@@ -182,6 +182,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -200,6 +201,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
         else {
             combined@generatedNewProposal@.Data <- FALSE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -312,6 +314,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -336,6 +339,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
         else {
             combined@generatedNewProposal@.Data <- FALSE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -408,6 +412,7 @@ updateProposalAccountMoveBirthsSmall <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- TRUE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- i.cell.up
             combined@iCellOther <- i.cell.low
             combined@iPopnNext <- NA_integer_
@@ -430,6 +435,7 @@ updateProposalAccountMoveBirthsSmall <- function(combined, useC = FALSE) {
         else {
             combined@generatedNewProposal@.Data <- FALSE
             combined@isSmallUpdate@.Data <- TRUE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -577,6 +583,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next.orig
@@ -601,6 +608,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
         else {
             combined@generatedNewProposal@.Data <- FALSE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -646,6 +654,7 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
         theta <- sys.mod.comp@theta
         struc.zero.array <- sys.mod.comp@strucZeroArray
         generated.new.proposal  <- FALSE
+        is.final.age.group <- FALSE
         for (i in seq_len(max.attempt)) {
             i.cell.up <- chooseICellCompUpperTri(description)
             is.struc.zero <- struc.zero.array[i.cell.up] == 0L
@@ -715,6 +724,7 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- TRUE
+            combined@isSmallUpdateFinal@.Data <- is.final.age.group
             combined@iCell <- i.cell.up
             combined@iCellOther <- i.cell.low
             combined@iPopnNext <- NA_integer_
@@ -740,6 +750,7 @@ updateProposalAccountMoveOrigDestSmall <- function(combined, useC = FALSE) {
         else {
             combined@generatedNewProposal@.Data <- FALSE
             combined@isSmallUpdate@.Data <- TRUE
+            combined@isSmallUpdateFinal@.Data <- is.final.age.group
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -889,6 +900,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- i.cell.out
             combined@iCellOther <- i.cell.in
             combined@iPopnNext <- i.popn.next.out
@@ -913,6 +925,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
         else {
             combined@generatedNewProposal@.Data <- FALSE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -1044,6 +1057,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- i.cell.add
             combined@iCellOther <- i.cell.sub
             combined@iPopnNext <- i.popn.next.add
@@ -1062,6 +1076,7 @@ updateProposalAccountMoveNet <- function(combined, useC = FALSE) {
         else {
             combined@generatedNewProposal@.Data <- FALSE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -1209,6 +1224,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- i.cell
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- i.popn.next
@@ -1233,6 +1249,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
         else {
             combined@generatedNewProposal@.Data <- FALSE
             combined@isSmallUpdate@.Data <- FALSE
+            combined@isSmallUpdateFinal@.Data <- FALSE
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -1277,6 +1294,7 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
         description <- combined@descriptions[[i.comp + 1L]]
         sys.mod.comp <- combined@systemModels[[i.comp + 1L]]
         struc.zero.array <- sys.mod.comp@strucZeroArray
+        is.final.age.group <- FALSE
         for (i in seq_len(max.attempt)) {
             i.cell.up <- chooseICellCompUpperTri(description)
             is.struc.zero <- struc.zero.array[i.cell.up] == 0L
@@ -1336,6 +1354,7 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
         if (generated.new.proposal) {
             combined@generatedNewProposal@.Data <- TRUE
             combined@isSmallUpdate@.Data <- TRUE
+            combined@isSmallUpdateFinal@.Data <- is.final.age.group
             combined@iCell <- i.cell.up
             combined@iCellOther <- i.cell.low
             combined@iPopnNext <- NA_integer_
@@ -1358,6 +1377,7 @@ updateProposalAccountMoveCompSmall <- function(combined, useC = FALSE) {
         else {
             combined@generatedNewProposal@.Data <- FALSE
             combined@isSmallUpdate@.Data <- TRUE
+            combined@isSmallUpdateFinal@.Data <- is.final.age.group
             combined@iCell <- NA_integer_
             combined@iCellOther <- NA_integer_
             combined@iPopnNext <- NA_integer_
@@ -2456,7 +2476,8 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                                    exposure = exposure,
                                                                    iteratorExposure = iterator.exposure,
                                                                    diff = diff,
-                                                                   firstOnly = FALSE)
+                                                                   firstOnly = FALSE,
+                                                                   isSmallUpdateFinal = FALSE)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
@@ -2483,7 +2504,8 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                                        exposure = exposure,
                                                                        iteratorExposure = iterator.exposure,
                                                                        diff = diff,
-                                                                       firstOnly = FALSE)
+                                                                       firstOnly = FALSE,
+                                                                       isSmallUpdateFinal = FALSE)
                         if (is.infinite(diff.log))
                             return(diff.log)
                         ans <- ans + diff.log
@@ -2505,7 +2527,8 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
                                                       exposure = exposure,
                                                       iteratorExposure = iterator.exposure,
                                                       diff = diff,
-                                                      firstOnly = FALSE)
+                                                      firstOnly = FALSE,
+                                                      isSmallUpdateFinal = FALSE)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
@@ -2524,7 +2547,8 @@ diffLogDensExpPopn <- function(combined, useC = FALSE) {
 diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
                                                component, theta, strucZeroArray,
                                                iteratorComp, iExpFirst, exposure, iteratorExposure,
-                                               diff, firstOnly, useC = FALSE) {
+                                               diff, firstOnly, isSmallUpdateFinal,
+                                               useC = FALSE) {
     ## iCell
     stopifnot(identical(length(iCell), 1L))
     stopifnot(is.integer(iCell))
@@ -2579,6 +2603,10 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
     stopifnot(identical(length(firstOnly), 1L))
     stopifnot(is.logical(firstOnly))
     stopifnot(!is.na(firstOnly))
+    ## isSmallUpdateFinal
+    stopifnot(identical(length(isSmallUpdateFinal), 1L))
+    stopifnot(is.logical(isSmallUpdateFinal))
+    stopifnot(!is.na(isSmallUpdateFinal))
     ## iCell and component
     stopifnot(iCell <= length(component))
     ## iExpFirst and exposure
@@ -2590,7 +2618,7 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
               iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
               component, theta, strucZeroArray, iteratorComp,
               iExpFirst, exposure, iteratorExposure,
-              diff, firstOnly)
+              diff, firstOnly, isSmallUpdateFinal)
     }
     else {
         ans <- 0
@@ -2639,9 +2667,9 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                                     incr.exp <- incr.exp - (1/6) * ageTimeStep * diff
                             }
                         }
-                        ## adjust for change in population - except in small updates
-                        ## (ie when firstOnly is TRUE)
-                        if (!is.upper && !firstOnly) {
+                        ## adjust for change in population
+                        popn.same <- is.upper || (firstOnly && !isSmallUpdateFinal)
+                        if (!popn.same) {
                             incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                         }
                     }
@@ -2715,7 +2743,8 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
 diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
                                   component, theta, strucZeroArray, iteratorComp,
                                   iExpFirst, exposure, iteratorExposure,
-                                  diff, firstOnly, useC = FALSE) {
+                                  diff, firstOnly, isSmallUpdateFinal,
+                                  useC = FALSE) {
     ## iCell
     stopifnot(identical(length(iCell), 1L))
     stopifnot(is.integer(iCell))
@@ -2768,6 +2797,10 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
     stopifnot(identical(length(firstOnly), 1L))
     stopifnot(is.logical(firstOnly))
     stopifnot(!is.na(firstOnly))
+    ## isSmallUpdateFinal
+    stopifnot(identical(length(isSmallUpdateFinal), 1L))
+    stopifnot(is.logical(isSmallUpdateFinal))
+    stopifnot(!is.na(isSmallUpdateFinal))
     ## iCell and component
     stopifnot(iCell <= length(component))
     ## iExpFirst and exposure
@@ -2779,7 +2812,7 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
               iCell, hasAge, ageTimeStep, updatedPopn, updatedBirths,
               component, theta, strucZeroArray, iteratorComp,
               iExpFirst, exposure, iteratorExposure, diff,
-              firstOnly)
+              firstOnly, isSmallUpdateFinal)
     }
     else {
         ans <- 0
@@ -2838,9 +2871,9 @@ diffLogDensExpOneComp <- function(iCell, hasAge, ageTimeStep, updatedPopn, updat
                                         incr.exp <- incr.exp - (1/6) * ageTimeStep * diff
                                 }
                             }
-                            ## adjust for change in population - except in small updates
-                            ## (ie when firstOnly is TRUE)
-                            if (!is.upper && !firstOnly) {
+                            ## adjust for change in population
+                            popn.same <- is.upper || (firstOnly && !isSmallUpdateFinal)
+                            if (!popn.same) {
                                 incr.exp <- incr.exp + 0.5 * ageTimeStep * diff
                             }
                         }
@@ -3049,7 +3082,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                         exposure = exposure,
                                                                         iteratorExposure = iterator.exposure,
                                                                         diff = diff.orig,
-                                                                        firstOnly = FALSE)
+                                                                        firstOnly = FALSE,
+                                                                        isSmallUpdateFinal = FALSE)
                     if (is.infinite(diff.log.orig))
                         return(diff.log.orig)
                     ans <- ans + diff.log.orig
@@ -3066,7 +3100,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                         exposure = exposure,
                                                                         iteratorExposure = iterator.exposure,
                                                                         diff = diff.dest,
-                                                                        firstOnly = FALSE)
+                                                                        firstOnly = FALSE,
+                                                                        isSmallUpdateFinal = FALSE)
                     if (is.infinite(diff.log.dest))
                         return(diff.log.dest)
                     ans <- ans + diff.log.dest
@@ -3098,7 +3133,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                             exposure = exposure,
                                                                             iteratorExposure = iterator.exposure,
                                                                             diff = diff.orig,
-                                                                            firstOnly = FALSE)
+                                                                            firstOnly = FALSE,
+                                                                            isSmallUpdateFinal = FALSE)
                         if (is.infinite(diff.log.orig))
                             return(diff.log.orig)
                         ans <- ans + diff.log.orig
@@ -3115,7 +3151,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                                             exposure = exposure,
                                                                             iteratorExposure = iterator.exposure,
                                                                             diff = diff.dest,
-                                                                            firstOnly = FALSE)
+                                                                            firstOnly = FALSE,
+                                                                            isSmallUpdateFinal = FALSE)
                         if (is.infinite(diff.log.dest))
                             return(diff.log.dest)
                         ans <- ans + diff.log.dest
@@ -3139,7 +3176,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                            exposure = exposure,
                                                            iteratorExposure = iterator.exposure,
                                                            diff = diff.orig,
-                                                           firstOnly = FALSE)
+                                                           firstOnly = FALSE,
+                                                           isSmallUpdateFinal = FALSE)
                     if (is.infinite(diff.log.orig))
                         return(diff.log.orig)
                     ans <- ans + diff.log.orig
@@ -3156,7 +3194,8 @@ diffLogDensExpOrigDestPoolNet <- function(combined, useC = FALSE) {
                                                            exposure = exposure,
                                                            iteratorExposure = iterator.exposure,
                                                            diff = diff.dest,
-                                                           firstOnly = FALSE)
+                                                           firstOnly = FALSE,
+                                                           isSmallUpdateFinal = FALSE)
                     if (is.infinite(diff.log.dest))
                         return(diff.log.dest)
                     ans <- ans + diff.log.dest
@@ -3197,6 +3236,7 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
         exposure <- combined@exposure
         systemModels <- combined@systemModels
         age.time.step <- combined@ageTimeStep
+        is.small.update.final <- combined@isSmallUpdateFinal@.Data
         diff.up.orig <- -diff
         diff.low.orig <- diff
         diff.up.dest <- diff
@@ -3268,7 +3308,8 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                                                                                exposure = exposure,
                                                                                iteratorExposure = iterator.exposure,
                                                                                diff = diff.up.orig,
-                                                                               firstOnly = TRUE)
+                                                                               firstOnly = TRUE,
+                                                                               isSmallUpdateFinal = is.small.update.final)
                         diff.log.up.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.up.dest,
                                                                                hasAge = TRUE,
                                                                                ageTimeStep = age.time.step,
@@ -3282,7 +3323,8 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                                                                                exposure = exposure,
                                                                                iteratorExposure = iterator.exposure,
                                                                                diff = diff.up.dest,
-                                                                               firstOnly = TRUE)
+                                                                               firstOnly = TRUE,
+                                                                               isSmallUpdateFinal = is.small.update.final)
                     }
                     else {
                         diff.log.up.orig <- 0
@@ -3302,7 +3344,8 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                                                                                 exposure = exposure,
                                                                                 iteratorExposure = iterator.exposure,
                                                                                 diff = diff.low.orig,
-                                                                                firstOnly = TRUE)
+                                                                                firstOnly = TRUE,
+                                                                                isSmallUpdateFinal = is.small.update.final)
                         diff.log.low.dest <- diffLogDensExpOneOrigDestParChPool(iCell = i.cell.low.dest,
                                                                                 hasAge = TRUE,
                                                                                 ageTimeStep = age.time.step,
@@ -3316,7 +3359,8 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                                                                                 exposure = exposure,
                                                                                 iteratorExposure = iterator.exposure,
                                                                                 diff = diff.low.dest,
-                                                                                firstOnly = TRUE)
+                                                                                firstOnly = TRUE,
+                                                                                isSmallUpdateFinal = is.small.update.final)
                     }
                     else {
                         diff.log.low.orig <- 0
@@ -3337,7 +3381,8 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                                                               exposure = exposure,
                                                               iteratorExposure = iterator.exposure,
                                                               diff = diff.up.orig,
-                                                              firstOnly = TRUE)
+                                                              firstOnly = TRUE,
+                                                              isSmallUpdateFinal = is.small.update.final)
                     diff.log.low.orig <- diffLogDensExpOneComp(iCell = i.cell.low.orig,
                                                                hasAge = TRUE,
                                                                ageTimeStep = age.time.step,
@@ -3351,7 +3396,8 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                                                                exposure = exposure,
                                                                iteratorExposure = iterator.exposure,
                                                                diff = diff.low.orig,
-                                                               firstOnly = TRUE)
+                                                               firstOnly = TRUE,
+                                                               isSmallUpdateFinal = is.small.update.final)
                     diff.log.up.dest <- diffLogDensExpOneComp(iCell = i.cell.up.dest,
                                                               hasAge = TRUE,
                                                               ageTimeStep = age.time.step,
@@ -3365,7 +3411,8 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                                                               exposure = exposure,
                                                               iteratorExposure = iterator.exposure,
                                                               diff = diff.up.dest,
-                                                              firstOnly = TRUE)
+                                                              firstOnly = TRUE,
+                                                              isSmallUpdateFinal = is.small.update.final)
                     diff.log.low.dest <- diffLogDensExpOneComp(iCell = i.cell.low.dest,
                                                                hasAge = TRUE,
                                                                ageTimeStep = age.time.step,
@@ -3379,7 +3426,8 @@ diffLogDensExpOrigDestSmall <- function(combined, useC = FALSE) {
                                                                exposure = exposure,
                                                                iteratorExposure = iterator.exposure,
                                                                diff = diff.low.dest,
-                                                               firstOnly = TRUE)
+                                                               firstOnly = TRUE,
+                                                               isSmallUpdateFinal = is.small.update.final)
                 }
                 if (is.infinite(diff.log.up.orig))
                     return(diff.log.up.orig)
@@ -3710,7 +3758,8 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                                    exposure = exposure,
                                                                    iteratorExposure = iterator.exposure,
                                                                    diff = diff,
-                                                                   firstOnly = FALSE)
+                                                                   firstOnly = FALSE,
+                                                                   isSmallUpdateFinal = FALSE)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
@@ -3737,7 +3786,8 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                                        exposure = exposure,
                                                                        iteratorExposure = iterator.exposure,
                                                                        diff = diff,
-                                                                       firstOnly = FALSE)
+                                                                       firstOnly = FALSE,
+                                                                       isSmallUpdateFinal = FALSE)
                         if (is.infinite(diff.log))
                             return(diff.log)
                         ans <- ans + diff.log
@@ -3759,7 +3809,8 @@ diffLogDensExpComp <- function(combined, useC = FALSE) {
                                                       exposure = exposure,
                                                       iteratorExposure = iterator.exposure,
                                                       diff = diff,
-                                                      firstOnly = FALSE)
+                                                      firstOnly = FALSE,
+                                                      isSmallUpdateFinal = FALSE)
                     if (is.infinite(diff.log))
                         return(diff.log)
                     ans <- ans + diff.log
@@ -3796,6 +3847,7 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
         exposure <- combined@exposure
         systemModels <- combined@systemModels
         age.time.step <- combined@ageTimeStep
+        is.small.update.final <- combined@isSmallUpdateFinal@.Data
         is.increment <- is.increment.vec[i.comp]
         if (is.increment) {
             diff.up <- diff
@@ -3854,7 +3906,8 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                                                                           exposure = exposure,
                                                                           iteratorExposure = iterator.exposure,
                                                                           diff = diff.up,
-                                                                          firstOnly = TRUE)
+                                                                          firstOnly = TRUE,
+                                                                          isSmallUpdateFinal = is.small.update.final)
                     else
                         diff.log.up <- 0
                     if (!is.births || (i.cell.low > 0))
@@ -3871,7 +3924,8 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                                                                            exposure = exposure,
                                                                            iteratorExposure = iterator.exposure,
                                                                            diff = diff.low,
-                                                                           firstOnly = TRUE)
+                                                                           firstOnly = TRUE,
+                                                                           isSmallUpdateFinal = is.small.update.final)
                     else
                         diff.log.low <- 0
                 }
@@ -3889,7 +3943,8 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                                                          exposure = exposure,
                                                          iteratorExposure = iterator.exposure,
                                                          diff = diff.up,
-                                                         firstOnly = TRUE)
+                                                         firstOnly = TRUE,
+                                                         isSmallUpdateFinal = is.small.update.final)
                     diff.log.low <- diffLogDensExpOneComp(iCell = i.cell.low,
                                                           hasAge = TRUE,
                                                           ageTimeStep = age.time.step,
@@ -3903,7 +3958,8 @@ diffLogDensExpCompSmall <- function(combined, useC = FALSE) {
                                                           exposure = exposure,
                                                           iteratorExposure = iterator.exposure,
                                                           diff = diff.low,
-                                                          firstOnly = TRUE)
+                                                          firstOnly = TRUE,
+                                                          isSmallUpdateFinal = is.small.update.final)
                 }
                 if (is.infinite(diff.log.up))
                     return(diff.log.up)
@@ -4289,7 +4345,7 @@ updateCellMove <- function(combined, useC = FALSE) {
         i.cell.other <- combined@iCellOther
         i.pool <- combined@iPool
         i.int.net <- combined@iIntNet
-        is.small.update <- combined@isSmallUpdate@.Data ## NEW
+        is.small.update <- combined@isSmallUpdate@.Data
         diff <- combined@diffProp
         is.popn <- i.comp == 0L
         is.pool <- i.comp == i.pool
