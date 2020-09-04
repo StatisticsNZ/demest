@@ -674,7 +674,7 @@ getICellCompFromExp <- function(i, mapping, useC = FALSE) {
 ## HAS_TESTS
 ## Do not include sex dimension when calculating iCell,
 ## so implicitly set to first value
-getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
+getICellBirthsFromExp <- function(i, mapping, ageForward, useC = FALSE) {
     ## 'i'
     stopifnot(is.integer(i))
     stopifnot(identical(length(i), 1L))
@@ -682,8 +682,12 @@ getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
     stopifnot(i >= 1L)
     ## 'mapping'
     stopifnot(methods::is(mapping, "MappingExpToBirths"))
+    ## 'ageForward'
+    stopifnot(is.logical(ageForward))
+    stopifnot(identical(length(ageForward), 1L))
+    stopifnot(!is.na(ageForward))
     if (useC) {
-        .Call(getICellBirthsFromExp_R, i, mapping)
+        .Call(getICellBirthsFromExp_R, i, mapping, ageForward)
     }
     else {
         n.shared.vec <- mapping@nSharedVec
@@ -713,7 +717,7 @@ getICellBirthsFromExp <- function(i, mapping, useC = FALSE) {
             i.min.age <- mapping@iMinAge ## R-style index
             i.age.exp <- ((i - 1L) %/% step.age.exp) %% n.age.exp
             i.triangle.exp <- ((i - 1L) %/% step.triangle.exp) %% 2L
-            if (i.age.exp < (i.min.age - 1L)) {
+            if ((i.age.exp < (i.min.age - 1L)) && ageForward) {
                 if (i.triangle.exp == 0L)
                     i.time.births <- i.time.exp + i.min.age - i.age.exp - 1L
                 else

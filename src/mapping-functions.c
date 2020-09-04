@@ -728,7 +728,7 @@ getICellCompFromExpNotOneToOne(int i, SEXP mapping_R)
 }
 
 int
-getICellBirthsFromExp(int i, SEXP mapping_R)
+getICellBirthsFromExp(int i, SEXP mapping_R, int ageForward)
 {
     int nTime  = *INTEGER(GET_SLOT(mapping_R, nTimeCurrent_sym));
     int stepTimeExp  = *INTEGER(GET_SLOT(mapping_R, stepTimeCurrent_sym));
@@ -778,23 +778,25 @@ getICellBirthsFromExp(int i, SEXP mapping_R)
         
         iTimeBirths = iTimeExp + iMinAge - iAgeExp - 2;
 
-        if ( iAgeExp < (iMinAge - 1) ) {
-            
+	int ageLTMin = iAgeExp < (iMinAge - 1);
+	int ageLEMax = iAgeExp < (iMinAge + nAgeBirths - 1);
+	  
+
+        if (ageLTMin) {
             if (iTriangleExp == 0) {
                 iTimeBirths = iTimeExp + iMinAge - iAgeExp - 1;
             }
-            if (iTimeBirths >= nTime) {
+            if ((iTimeBirths >= nTime) || !ageForward) {
                 iBirths_r = 0;
                 returnZero = 1;
             }
         }
-        else if ( iAgeExp < (iMinAge + nAgeBirths - 1) ) {
+        else if (!ageLTMin && ageLEMax) {
             int iAgeBirths = iAgeExp - iMinAge + 1;
             int iTriangleBirths = iTriangleExp;
             iTimeBirths = iTimeExp;
             iBirths_r += iAgeBirths * stepAgeBirths;
             iBirths_r += iTriangleBirths * stepTriangleBirths;
-            
         }
         else {
                 iBirths_r = 0;

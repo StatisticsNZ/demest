@@ -398,6 +398,7 @@ SEXP
   generatedNewProposal_sym,
   probSmallUpdate_sym,
   isSmallUpdate_sym,
+  isSmallUpdateFinal_sym,
   probPopn_sym,
   cumProbComp_sym,
   nCellAccount_sym,
@@ -1058,7 +1059,7 @@ int getIExpFirstFromComp(int i, SEXP mapping_R);
 int getIExpFirstFromBirths(int i, SEXP mapping_R);
 SEXP getIExpFirstPairFromOrigDest(int i, SEXP mapping_R);
 int getICellCompFromExp(int i, SEXP mapping_R);
-int getICellBirthsFromExp(int i, SEXP mapping_R);
+int getICellBirthsFromExp(int i, SEXP mapping_R, int ageForward);
 
 /* CMP */
 double logDensCMPUnnormalised1(int x, double gamma, double nu);
@@ -1126,21 +1127,24 @@ double diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
                         SEXP iteratorComp_R,
                         int iExpFirst_r, double * exposure,
                         SEXP iteratorExposure_R,
-                        int diff);
+					  int diff, int firstOnly,
+					  int isSmallUpdateFinal);
 double diffLogDensExpOneComp(int iCell_r, int hasAge,
 			     double ageTimeStep, int updatedPopn, int updatedBirths,
                         SEXP component_R, double * theta, int * strucZeroArray,
                         SEXP iteratorComp_R,
                         int iExpFirst_r, double * exposure,
                         SEXP iteratorExposure_R,
-                        int diff);
+			     int diff, int firstOnly, int isSmallUpdateFinal);
 double diffLogDensJumpOrigDest(SEXP combined_R);
 double diffLogDensExpOrigDestPoolNet(SEXP combined_R);
+double diffLogDensExpOrigDestSmall(SEXP combined_R);
 double diffLogDensJumpPoolWithExpose(SEXP combined_R);
 double diffLogDensJumpPoolNoExpose(SEXP combined_R);
 double diffLogDensJumpNet(SEXP combined_R);
 double diffLogDensJumpComp(SEXP combined_R);
 double diffLogDensExpComp(SEXP combined_R);
+double diffLogDensExpCompSmall(SEXP combined_R);
 double diffLogDensJumpBirthsSmall(SEXP combined_R);
 double diffLogDensJumpOrigDestSmall(SEXP combined_R);
 double diffLogDensJumpCompSmall(SEXP combined_R);

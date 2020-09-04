@@ -267,6 +267,7 @@ setClass("ExposureMixin",
 setClass("GeneratedNewProposalMixin",
          slots = c(generatedNewProposal = "LogicalFlag",
                    isSmallUpdate = "LogicalFlag",
+                   isSmallUpdateFinal = "LogicalFlag",
                    probSmallUpdate = "numeric"),
          contains = "VIRTUAL",
          validity = function(object) {
