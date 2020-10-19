@@ -4083,7 +4083,6 @@ diffLogDensJumpOrigDestSmall <- function(combined, useC = FALSE) {
                 else {
                     if (expose.low.curr < 0)
                         return(-Inf)
-                    browser()
                     stop(sprintf("negative value for 'expose.low.prop' : %f", expose.low.prop))
                 }
             }
