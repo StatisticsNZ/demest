@@ -347,3 +347,29 @@ setMethod("SkeletonMissingDataset",
                            offsetsComponent = offsets.component)
           })
 
+
+## HAS_TESTS
+setMethod("SkeletonMissingDataset",
+          signature(object = "Counts",
+                    model = "LN2",
+                    outputModel = "list",
+                    transformComponent = "CollapseTransform",
+                    skeletonComponent = "SkeletonMany"),
+          function(object, model, outputModel, transformComponent, skeletonComponent) {
+            fl.alpha <- outputModel$likelihood$mean
+            fl.varsigma <- outputModel$likelihood$sd
+            offsets.alpha <- methods::new("Offsets",
+                                          c(fl.alpha@first, fl.alpha@last))
+            offsets.varsigma <- methods::new("Offsets",
+                                             c(fl.varsigma@first, fl.varsigma@first))
+            offsets.component <- methods::new("Offsets",
+                                              c(skeletonComponent@first, skeletonComponent@last))
+            methods::new("SkeletonMissingDatasetLN2",
+                         offsetsAlphaLN2 = offsets.alpha,
+                         offsetsVarsigmaLN2 = offsets.varsigma,
+                         offsetsComponent = offsets.component,
+                         strucZeroArray = model@strucZeroArray,
+                         transformLN2 = model@transformLN2,
+                         transformComponent = transformComponent,
+                         data = object)
+          })

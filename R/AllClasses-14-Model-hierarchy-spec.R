@@ -135,8 +135,6 @@ setClass("SpecLikelihoodTFixed",
                       "NuMixin",
                       "UseExposeMixin"))
 
-
-
 validity_LN2 <- function(object) {
     constraintLN2 <- object@constraintLN2
     concordances <- object@concordances
@@ -179,10 +177,10 @@ setClass("SpecLikelihoodLN2",
                       "SpecVarsigmaMaxMixin",
                       "StructuralZerosMixin"),
          slots = c(constraintLN2 = "Values",
-                   concordances = "list"),
+                   concordances = "list",
+                   updateVarsigmaLN2 = "LogicalFlag",
+                   varsigmaLN2 = "Scale"),
          validity = validity_LN2)
-
-
 
 
 #' S4 classes to specify a model.
@@ -465,5 +463,7 @@ setClass("SpecLN2",
                       "StructuralZerosMixin"),
          prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          slots = c(constraintLN2 = "Values",
-                   concordances = "list"),
+                   concordances = "list",
+                   updateVarsigmaLN2 = "LogicalFlag",
+                   varsigmaLN2 = "Scale"),
          validity = validity_LN2)

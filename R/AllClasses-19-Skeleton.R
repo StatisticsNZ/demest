@@ -606,6 +606,31 @@ setClass("SkeletonMissingDatasetNormalFixedUseExp",
 
 
 
+## HAS_TESTS
+## HAS_FETCH
+setClass("SkeletonMissingDatasetLN2",
+         slots = c(offsetsAlphaLN2 = "Offsets",
+                   offsetsVarsigmaLN2 = "Offsets",
+                   transformLN2 = "CollapseTransformExtra"),
+         contains = c("SkeletonMissingDataset", "StrucZeroArrayMixin"),
+         validity = function(object) {
+           offsetsVarsigmaLN2 <- object@offsetsVarsigmaLN2
+           offsetsAlphaLN2 <- object@offsetsAlphaLN2
+           transformLN2 <- object@transformLN2
+           ## 'offsetsVarsigmaLN2' imply 'varsigma' has length 1
+           if (!identical(offsetsVarsigmaLN2[1L], offsetsVarsigmaLN2[2L]))
+             return(gettextf("'%s' implies '%s' does not have length %d",
+                             "offsetsVarsigmaLN2", "varsigmaLN2", 1L))
+           ## 'offsetsAlphaLN2 consistent with 'dimBefore from 'transformLN2'
+           diff <- offsetsAlphaLN2[2L] - offsetsAlphaLN2[1L] + 1L
+           length <- as.integer(prod(transformLN2@dimAfter))
+           if (!identical(diff, length))
+             return(gettextf("'%s' and '%s' inconsistent",
+                             "offsetsAlphaLN2", "transformLN2"))
+           TRUE
+         })
+
+
 setClassUnion("DemographicOrSkeletonMissingData",
               members = c("DemographicArray", "SkeletonMissingData"))
 

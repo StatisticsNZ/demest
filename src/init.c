@@ -2847,6 +2847,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(sigmaMax);
   ADD_SYM(ASigma);
   ADD_SYM(nuSigma);
+  ADD_SYM(updateVarsigmaLN2);
   ADD_SYM(varsigma);
   ADD_SYM(varsigmaMax);
   ADD_SYM(varsigmaSetToZero);

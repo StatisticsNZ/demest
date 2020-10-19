@@ -622,6 +622,44 @@ test_that("SkeletonMissingDataset creates valid object of class SkeletonMissingD
 })
 
 
+
+
+test_that("SkeletonMissingDataset creates valid object of class SkeletonMissingDatasetLN2", {
+  SkeletonMissingDataset <- demest:::SkeletonMissingDataset
+  Skeleton <- demest:::Skeleton
+  initialModel <- demest:::initialModel
+  object <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                                         age = 0:2)))
+  y <- Counts(array(1:12,
+                    dim = c(2:3, 2),
+                    dimnames = list(sex = c("f", "m"),
+                                    age = 0:2, region = c("a", "b"))))
+  transformComponent <- makeTransform(x = y, y = object)
+  constraints <- Values(array(NA_real_, dim = 2, dimnames = list(sex = c("f", "m"))))
+  model <- Model(y ~ LN2(constraints))
+  model <- initialModel(model, y = object, exposure = object + 1)
+  outputModel <- list(likelihood = list(mean = Skeleton(first = 20L,
+                                                        object = constraints,
+                                                        margin = 1L),
+                                        sd = Skeleton(first = 22L)))
+  skeletonComponent <-  Skeleton(first = 1L, object = y)
+  ans.obtained <- SkeletonMissingDataset(object = object,
+                                         model = model,
+                                         outputModel = outputModel,
+                                         skeletonComponent = skeletonComponent,
+                                         transformComponent = transformComponent)
+  ans.expected <- new("SkeletonMissingDatasetLN2",
+                      data = object,
+                      offsetsComponent = new("Offsets", c(1L, 12L)),
+                      transformComponent = transformComponent,
+                      offsetsAlphaLN2 = new("Offsets", c(20L, 21L)),
+                      offsetsVarsigmaLN2 = new("Offsets", c(22L, 22L)),
+                      strucZeroArray = model@strucZeroArray,
+                      transformLN2 = model@transformLN2)                        
+  expect_identical(ans.obtained, ans.expected)
+})
                         
     
 

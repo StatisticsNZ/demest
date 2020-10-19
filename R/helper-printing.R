@@ -354,13 +354,21 @@ printKnownEqns <- function(object, name) {
 }
 
 printLN2LikEqns  <- function(object) {
+    updateVarsigma <- object@updateVarsigmaLN2@.Data
+    varsigma <- object@varsigmaLN2@.Data
     nuVarsigma <- object@nuVarsigma@.Data
     AVarsigma <- object@AVarsigma@.Data
     varsigmaMax <- object@varsigmaMax@.Data
-    cat("   log(y[i] + 1) ~ N(log(exposure[i] + 1) + alpha[j[i]], sdData^2)\n")
-    cat("        alpha[i] ~ N*(0, sd^2)\n", sep = "")
-    cat("          sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
-    cat(squaredOrNA(AVarsigma), ", ", format(varsigmaMax, digits = 4), ")\n", sep = "")
+    cat("   log(y[i] + 1) ~ N(log(exposure[i] + 1) + alpha[j[i]], ")
+    if (updateVarsigma)
+        cat("sdData^2)\n")
+    else
+        cat(format(varsigma, digits = 4), "^2)\n", sep = "")
+    cat("        alpha[i] ~ N*(0, sdAlpha^2)\n", sep = "")
+    if (updateVarsigma) {
+        cat("          sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
+        cat(squaredOrNA(AVarsigma), ", ", format(varsigmaMax, digits = 4), ")\n", sep = "")
+    }
 }
 
 printLN2ModEqns <- function(object) {
@@ -369,6 +377,8 @@ printLN2ModEqns <- function(object) {
     ASigma <- object@ASigma@.Data
     sigmaMax <- object@sigmaMax
     nuSigma <- object@nuSigma
+    updateVarsigma <- object@updateVarsigmaLN2@.Data
+    varsigma <- object@varsigmaLN2@.Data    
     AVarsigma <- object@AVarsigma@.Data
     varsigmaMax <- object@varsigmaMax
     nuVarsigma <- object@nuVarsigma
@@ -384,15 +394,20 @@ printLN2ModEqns <- function(object) {
     n.spaces <- max(5L - nchar(name.y), 0L)
     spaces <- rep(" ", n.spaces)
     response <- sprintf("%slog(%s + 1)", spaces, name.y)
-    cat(name.y, response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], sd^2)\n",
-        sep = "")
+    cat(name.y, response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], ", sep = "")
+    if (updateVarsigma)
+        cat("sdData^2)\n")
+    else
+        cat(format(varsigma, digits = 4), "^2)\n")
     cat("      alpha[j] ~ N*(0, sdAlpha^2)")
-    cat("      sdAlpha ~ trunc-half-t(", nuSigma, ", ", sep = "")
-    cat(squaredOrNA(AVarsigma),
-        ", ",
-        format(varsigmaMax, digits = 4),
-        ")\n",
-        sep = "")
+    if (updateVarsigma) {
+        cat("      sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
+        cat(squaredOrNA(AVarsigma),
+            ", ",
+            format(varsigmaMax, digits = 4),
+            ")\n",
+            sep = "")
+    }
     cat("      sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
     cat(squaredOrNA(ASigma),
         ", ",
@@ -408,6 +423,8 @@ printLN2SpecEqns <- function(object) {
     sigmaMax <- object@sigmaMax
     nuSigma <- object@nuSigma
     AVarsigma <- object@AVarsigma@.Data
+    updateVarsigma <- object@updateVarsigmaLN2@.Data
+    varsigma <- object@varsigmaLN2@.Data    
     varsigmaMax <- object@varsigmaMax
     nuVarsigma <- object@nuVarsigma
     nameY <- object@nameY
@@ -420,15 +437,20 @@ printLN2SpecEqns <- function(object) {
     n.spaces <- max(5L - nchar(name.y), 0L)
     spaces <- paste(rep(" ", n.spaces), collapse = "")
     response <- sprintf("%slog(%s + 1)", spaces, name.y)
-    cat(response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], sdData^2)\n",
-        sep = "")
+    cat(response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], ", sep = "")
+    if (updateVarsigma)
+        cat("sdData^2)\n")
+    else
+        cat(format(varsigma, digits = 4), "^2)\n", sep = "")
     cat("      alpha[j] ~ N*(0, sd^2)\n")
-    cat("        sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
-    cat(squaredOrNA(AVarsigma),
-        ", ",
-        format(varsigmaMax, digits = 4),
-        ")\n",
-        sep = "")
+    if (updateVarsigma) {
+        cat("        sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
+        cat(squaredOrNA(AVarsigma),
+            ", ",
+            format(varsigmaMax, digits = 4),
+            ")\n",
+            sep = "")
+    }
     cat("            sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
     cat(squaredOrNA(ASigma),
         ", ",

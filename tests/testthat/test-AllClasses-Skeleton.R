@@ -956,7 +956,30 @@ test_that("validity tests for SkeletonMissingDatasetNormalFixedUseExp inherited 
 })
 
 
+test_that("can create valid object of class SkeletonMissingDatasetLN2", {
+    x <- new("SkeletonMissingDatasetLN2",
+             offsetsAlphaLN2 = new("Offsets", c(13L, 14L)),
+             offsetsVarsigmaLN2 = new("Offsets", c(15L, 15L)),
+             transformLN2 = dembase:::makeCollapseTransformExtra(new("CollapseTransform",
+                                                                     indices = list(c(1L, 2L), c(1L, 1L, 1L)),
+                                                                     dims = c(1L, 0L),
+                                                                     dimBefore = c(2L, 3L),
+                                                                     dimAfter = 2L)),
+             data = Counts(array(c(1:5, NA),
+                                 dim = 2:3,
+                                 dimnames = list(sex = c("f", "m"),
+                                                 age = 0:2))),
+             strucZeroArray = Counts(array(1L,
+                                           dim = 2:3,
+                                           dimnames = list(sex = c("f", "m"),
+                                                           age = 0:2))),
+             offsetsComponent = new("Offsets", c(1L, 12L)),
+             transformComponent = new("CollapseTransform",
+                                      indices = list(c(1L, 1L), 1:2, 1:3),
+                                      dims = c(0L, 1L, 2L),
+                                      dimBefore = c(2L, 2L, 3L),
+                                      dimAfter = c(2L, 3L)))                 
+    expect_true(validObject(x))
+})
 
 
-
- 
