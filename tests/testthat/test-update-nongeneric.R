@@ -10579,7 +10579,30 @@ test_that("updateVarsigmaLN2 gives valid answer", {
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else
-            expect_equal(ans.obtained, ans.expected)  }
+            expect_equal(ans.obtained, ans.expected)
+        ## fixed value for 'sd'
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, sd = 0.25))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateVarsigmaLN2(model, y = y, exposure = exposure)
+        ans.expected <- model
+        expect_identical(ans.obtained, ans.expected)
+        expect_identical(ans.obtained@varsigma@.Data, 0.25)        
+    }
 })
 
 
@@ -10637,6 +10660,32 @@ test_that("R and C versions of updateVarsigmaLN2 give same answer", {
             expect_identical(ans.R, ans.C)
         else
             expect_equal(ans.R, ans.C)
+        ## fixed value for 'sd'
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, sd = 0.25))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        expect_identical(ans.C@varsigma@.Data, 0.25)        
     }
 })
 

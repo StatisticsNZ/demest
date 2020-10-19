@@ -5036,6 +5036,9 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
         .Call(updateVarsigmaLN2_R, object, y, exposure)
     }
     else {
+        update.varsigma <- object@updateVarsigmaLN2@.Data
+        if (!update.varsigma)
+            return(object)
         varsigma <- object@varsigma@.Data
         varsigma.max <- object@varsigmaMax@.Data
         A <- object@AVarsigma@.Data

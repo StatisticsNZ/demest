@@ -7630,9 +7630,15 @@ test_that("whereEstimated works with TFixed", {
 test_that("whereEstimated works with LN2", {
     whereEstimated <- demest:::whereEstimated
     model <- new("LN2")
+    model@updateVarsigmaLN2@.Data <- TRUE
     ans.obtained <- whereEstimated(model)
     ans.expected <- list(c("likelihood", "mean"),
                          c("likelihood", "sd"),
+                         c("prior", "sd"))
+    expect_identical(ans.obtained, ans.expected)
+    model@updateVarsigmaLN2@.Data <- FALSE
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(c("likelihood", "mean"),
                          c("prior", "sd"))
     expect_identical(ans.obtained, ans.expected)
 })

@@ -1499,6 +1499,7 @@ setMethod("initialModel",
                            metadataAll = metadataAll)
           })
 
+
 ## NO_TESTS
 setMethod("initialModel",
           signature(object = "SpecLN2",
@@ -1517,6 +1518,8 @@ setMethod("initialModel",
               constraint.all <- object@constraintLN2
               sigma.max <- object@sigmaMax@.Data
               structural.zeros <- object@structuralZeros
+              update.varsigma <- object@updateVarsigmaLN2
+              varsigma <- object@varsigmaLN2
               varsigma.max <- object@varsigmaMax@.Data
               metadataY <- y@metadata
               ## make struc.zero.array
@@ -1524,19 +1527,6 @@ setMethod("initialModel",
                                                      y = y) 
               y <- checkAndTidyYForStrucZero(y = y, 
                                              strucZeroArray = struc.zero.array)
-              ## draw values for varsigma and sigma
-              varsigma <- stats::runif(n = 1L,
-                                       min = 0,
-                                       max = min(A.varsigma, varsigma.max))
-              sigma <- stats::runif(n = 1L,
-                                    min = 0,
-                                    max = min(A.sigma, sigma.max))
-              A.varsigma <- methods::new("Scale", A.varsigma)
-              A.sigma <- methods::new("Scale", A.sigma)
-              varsigma <- methods::new("Scale", varsigma)
-              sigma <- methods::new("Scale", sigma)
-              varsigma.max <- methods::new("Scale", varsigma.max)
-              sigma.max <- methods::new("Scale", sigma.max)
               ## subset 'constraint.all' to create 'constraint', allowing for
               ## the fact that some of the categories in 'constraint.all'
               ## are collapsed versions of ones in 'y', as described by
@@ -1574,6 +1564,22 @@ setMethod("initialModel",
                   stop(gettextf("'%s' and '%s' not compatible : %s",
                                 "constraint", "y", transform$message))
               transform <- makeCollapseTransformExtra(transform)
+              ## draw values for varsigma, if updated
+              if (update.varsigma@.Data) {
+                  varsigma <- stats::runif(n = 1L,
+                                           min = 0,
+                                           max = min(A.varsigma, varsigma.max))
+                  varsigma <- methods::new("Scale", varsigma)
+              }
+              A.varsigma <- methods::new("Scale", A.varsigma)
+              varsigma.max <- methods::new("Scale", varsigma.max)
+              ## draw values for sigma
+              sigma <- stats::runif(n = 1L,
+                                    min = 0,
+                                    max = min(A.sigma, sigma.max))
+              A.sigma <- methods::new("Scale", A.sigma)
+              sigma <- methods::new("Scale", sigma)
+              sigma.max <- methods::new("Scale", sigma.max)
               ## randomly draw 'alpha', using residuals and constraint
               alpha <- numeric(length = length(constraint))
               resid <- log1p(y) - log1p(exposure)
@@ -1601,6 +1607,7 @@ setMethod("initialModel",
                       stop(gettext("invalid value for '%s' [%s]",
                                    "constraint", constraint[i]))
               }
+              ## prepare return value
               alpha <- methods::new("ParameterVector", alpha)
               n.cell.before <- rep(0L, times = length(alpha)) # temporary value
               cellInLik <- rep(TRUE, times = length(y)) # temporary value
@@ -1620,6 +1627,7 @@ setMethod("initialModel",
                                     sigmaMax = sigma.max,
                                     strucZeroArray = struc.zero.array,
                                     transformLN2 = transform,
+                                    updateVarsigmaLN2 = update.varsigma,
                                     varsigma = varsigma,
                                     varsigmaMax = varsigma.max)
               model <- makeCellInLik(model = model,

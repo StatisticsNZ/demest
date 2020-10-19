@@ -262,10 +262,13 @@ Binomial <- function(formula, structuralZeros = NULL) {
 #' with values 0, -1, 1, and NA.
 #' @param concordances A named list of concordances used to
 #' map between \code{y} and \code{constraint}.
+#' @param sd Standard deviation of data-level errors. If a value is
+#' supplied, it is treated as known, rather than inferred from the
+#' data.
 #' 
 #' @export
 LN2 <- function(constraint, structuralZeros = NULL,
-                concordances = list(), priorSD = HalfT()) {
+                concordances = list(), sd = NULL, priorSD = HalfT()) {
     ## constraint
     if (!methods::is(constraint, "Values"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -297,6 +300,19 @@ LN2 <- function(constraint, structuralZeros = NULL,
             stop(gettextf("'%s' has duplicate names",
                           "concordances"))
     }
+    ## sd
+    if (is.null(sd)) {
+        varsigmaLN2 <- 1
+        updateVarsigmaLN2 <- TRUE
+    }
+    else {
+        checkNonNegativeNumeric(x = sd,
+                                name = "sd")
+        varsigmaLN2 <- as.numeric(sd)
+        updateVarsigmaLN2 <- FALSE
+    }
+    varsigmaLN2 <- methods::new("Scale", varsigmaLN2)
+    updateVarsigmaLN2 <- methods::new("LogicalFlag", updateVarsigmaLN2)
     ## priorSD
     if (!methods::is(priorSD, "HalfT"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -313,10 +329,10 @@ LN2 <- function(constraint, structuralZeros = NULL,
                  constraintLN2 = constraint,
                  nuVarsigma = nuVarsigma,
                  structuralZeros = structuralZeros,
+                 updateVarsigmaLN2 = updateVarsigmaLN2,
+                 varsigmaLN2 = varsigmaLN2,
                  varsigmaMax = varsigmaMax)
 }
-
-
 
 
 ## HAS_TESTS
@@ -1291,6 +1307,8 @@ setMethod("SpecModel",
               nu.varsigma <- specInner@nuVarsigma
               constraintLN2 <- specInner@constraintLN2
               structuralZeros <- specInner@structuralZeros
+              updateVarsigmaLN2 <- specInner@updateVarsigmaLN2
+              varsigmaLN2 <- specInner@varsigmaLN2
               varsigma.max <- specInner@varsigmaMax
               if (is.null(priorSD))
                   priorSD <- HalfT()
@@ -1350,6 +1368,8 @@ setMethod("SpecModel",
                            series = series,
                            sigmaMax = sigma.max,
                            structuralZeros = structuralZeros,
+                           updateVarsigmaLN2 = updateVarsigmaLN2,
+                           varsigmaLN2 = varsigmaLN2,
                            varsigmaMax = varsigma.max)
           })
 

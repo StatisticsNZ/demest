@@ -1775,6 +1775,8 @@ setMethod("makeOutputModel",
           function(model, pos, mcmc) {
               metadata <- model@constraintLN2@metadata
               alpha <- model@alphaLN2@.Data
+              update.varsigma <- model@updateVarsigmaLN2@.Data
+              varsigma <- model@varsigma@.Data
               ## make alpha
               first <- pos
               pos <- first + length(alpha)
@@ -1792,7 +1794,8 @@ setMethod("makeOutputModel",
               ## make varsigma
               first <- pos
               pos <- first + 1L
-              varsigma <- Skeleton(first = first)
+              if (update.varsigma)
+                  varsigma <- Skeleton(first = first)
               ## make sigma
               first <- pos
               pos <- first + 1L
@@ -4392,9 +4395,13 @@ setMethod("whereEstimated",
 setMethod("whereEstimated",
           signature(object = "LN2"),
           function(object) {
-              list(c("likelihood", "mean"),
-                   c("likelihood", "sd"),
-                   c("prior", "sd"))
+              if (object@updateVarsigmaLN2@.Data)
+                  list(c("likelihood", "mean"),
+                       c("likelihood", "sd"),
+                       c("prior", "sd"))
+              else
+                  list(c("likelihood", "mean"),
+                       c("prior", "sd"))
           })
 
 ## whereNoProposal ###################################################################

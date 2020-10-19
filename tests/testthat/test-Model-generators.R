@@ -1633,7 +1633,24 @@ test_that("initialModel creates object of class LN2 from valid inputs", {
                                  y = y,
                                  exposure = exposure)
     expect_true(validObject(ans.obtained))
+    y[2,1:2,] <- 0L
+    sz <- Values(array(c(1L, 1L, 0L, 1L),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0-39", "40+"),
+                                       sex = c("Female", "Male"))))
+    concordances <- list(sex = Concordance(data.frame(from = c("F", "M", "Female", "Male"),
+                                                      to = c("Female", "Male", "Female", "Male"))))
+    spec <- Model(y ~ LN2(constraint = constraint,
+                          structuralZeros = sz,
+                          concordances = concordances,
+                          sd = 0.2))
+    ans.obtained <- initialModel(spec,
+                                 y = y,
+                                 exposure = exposure)
+    expect_true(validObject(ans.obtained))
+    expect_identical(ans.obtained@varsigma@.Data, 0.2)
 })
+
 
 
 ## Aggregate #########################################################################

@@ -1615,6 +1615,85 @@ test_that("fetchResults works with object of class SkeletonMissingDatasetNormalF
 
 
 
+test_that("fetchResults works with object of class SkeletonMissingDatasetLN2", {
+  fetchResults <- demest:::fetchResults
+  SkeletonMissingDataset <- demest:::SkeletonMissingDataset
+  Skeleton <- demest:::Skeleton
+  initialModel <- demest:::initialModel
+  getDataFromFile <- demest:::getDataFromFile
+  addIterationsToTransform <- demest:::addIterationsToTransform
+  object <- Counts(array(c(1:5, NA),
+                         dim = 2:3,
+                         dimnames = list(sex = c("f", "m"),
+                                         age = 0:2)))
+  y <- Counts(array(1:12,
+                    dim = c(2:3, 2),
+                    dimnames = list(sex = c("f", "m"),
+                                    age = 0:2, region = c("a", "b"))))
+  transformComponent <- makeTransform(x = y, y = object)
+  constraints <- Values(array(NA_real_, dim = 2, dimnames = list(sex = c("f", "m"))))
+  model <- Model(y ~ LN2(constraints))
+  model <- initialModel(model, y = object, exposure = object + 1)
+  outputModel <- list(likelihood = list(mean = Skeleton(first = 20L,
+                                                        object = constraints,
+                                                        margin = 1L),
+                                        sd = Skeleton(first = 22L)))
+  skeletonComponent <-  Skeleton(first = 1L, object = y)
+  skeleton <- SkeletonMissingDataset(object = object,
+                                     model = model,
+                                     outputModel = outputModel,
+                                     skeletonComponent = skeletonComponent,
+                                     transformComponent = transformComponent)
+  filename <- tempfile()
+  con <- file(filename, "wb")
+  results <- new("ResultsModelEst")
+  results <- serialize(results, connection = NULL)
+  size.results <- length(results)
+  writeBin(size.results, con)
+  writeBin(10L, con)
+  writeBin(results, con)
+  writeBin(as.double(1:1000), con)
+  close(con)
+  ## impute is FALSE
+  ans.obtained <- fetchResults(object = skeleton,
+                               nameObject = "y",
+                               filename = filename,
+                               iterations = 1:10,
+                               nIteration = 10L,
+                               lengthIter = 100L,
+                               impute = FALSE)
+  ans.expected <- object
+  expect_identical(ans.obtained, ans.expected)
+  ## impute is TRUE
+  set.seed(1)
+  ans.obtained <- fetchResults(object = skeleton,
+                               nameObject = "y",
+                               filename = filename,
+                               iterations = 1:10,
+                               nIteration = 10L,
+                               lengthIter = 100L,
+                               impute = TRUE)
+  set.seed(1)
+  ans.expected <- Counts(array(c(1:5, NA),
+                               dim = c(2:3, 10),
+                               dimnames = list(sex = c("f", "m"),
+                                               age = 0:2,
+                                               iteration = 1:10)))
+  alpha.male <- 21 + seq(0, 900, 100)
+  varsigma <- 22 + seq(0, 900, 100)
+  exposure <- seq.int(from = 6, by = 100, length = 10) + seq.int(from = 12, by = 100, length = 10)
+  mean <- log(exposure + 1) + alpha.male
+  sd <- varsigma
+  imputed <- exp(rnorm(n = 10, mean = mean, sd = sd)) - 1
+  ans.expected[ 2, 3, ] <- imputed
+  if (test.identity)
+    expect_identical(ans.obtained, ans.expected)
+  else
+    expect_equal(ans.obtained, ans.expected)
+})
+
+
+
 
 
 

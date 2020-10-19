@@ -936,6 +936,81 @@ setMethod("fetchResults",
 
 
 
+## HAS_TESTS
+setMethod("fetchResults",
+          signature(object = "SkeletonMissingDatasetLN2"),
+          function(object, nameObject, filename, iterations,
+                   nIteration, lengthIter,
+                   impute = FALSE) {
+            data <- object@data
+            if (impute) {
+              offsets.alpha <- object@offsetsAlphaLN2
+              offsets.varsigma <- object@offsetsVarsigmaLN2
+              offsets.comp <- object@offsetsComponent
+              transform.alpha <- object@transformLN2
+              transform.comp <- object@transformComponent
+              struc.zero.array <- object@strucZeroArray
+              if (is.null(iterations))
+                iterations <- seq_len(nIteration)
+              metadata <- data@metadata
+              n.data <- prod(dim(metadata))
+              metadata <- dembase::addIterationsToMetadata(metadata,
+                                                           iterations = iterations)
+              n.iter <- length(iterations)
+              transform.alpha <- addIterationsToTransform(transform.alpha,
+                                                          nIter = n.iter)
+              transform.comp <- addIterationsToTransform(transform.comp,
+                                                         nIter = n.iter)
+              transform.alpha <- methods::new("ExtendTransform",
+                                              indices = transform.alpha@indices,
+                                              dims = transform.alpha@dims,
+                                              dimBefore = transform.alpha@dimAfter,
+                                              dimAfter = transform.alpha@dimBefore)
+              .Data <- array(data@.Data,
+                             dim = dim(metadata),
+                             dimnames = dimnames(metadata))
+              alpha <- getDataFromFile(filename = filename,
+                                       first = offsets.alpha[1L],
+                                       last = offsets.alpha[2L],
+                                       lengthIter = lengthIter,
+                                       iterations = iterations)
+              varsigma <- getDataFromFile(filename = filename,
+                                          first = offsets.varsigma[1L],
+                                          last = offsets.varsigma[2L],
+                                          lengthIter = lengthIter,
+                                          iterations = iterations)
+              exposure <- getDataFromFile(filename = filename,
+                                          first = offsets.comp[1L],
+                                          last = offsets.comp[2L],
+                                          lengthIter = lengthIter,
+                                          iterations = iterations)
+              alpha <- array(alpha,
+                             dim = transform.alpha@dimBefore)
+              varsigma <- rep(varsigma, each = n.data)
+              exposure <- array(exposure,
+                                dim = transform.comp@dimBefore)
+              alpha <- dembase::extend(alpha,
+                                       transform = transform.alpha)
+              exposure <- dembase::collapse(exposure,
+                                            transform = transform.comp)
+              is.struc.zero <- struc.zero.array@.Data == 0L
+              is.struc.zero <- array(is.struc.zero,
+                                     dim = dim(.Data))
+              is.missing <- is.na(.Data)
+              n.impute <- sum(is.missing)
+              mean <- log(exposure[is.missing] + 1) + alpha[is.missing]
+              sd <- varsigma[is.missing]
+              imputed <- exp(rnorm(n = n.impute, mean = mean, sd = sd)) - 1
+              .Data[is.missing] <- imputed
+              .Data[is.struc.zero] <- 0L
+              methods::new("Counts",
+                           .Data = .Data,
+                           metadata = metadata)
+            }
+            else
+              data
+          })
+
 
 ## getIndicesStrucZero #########################################################
 

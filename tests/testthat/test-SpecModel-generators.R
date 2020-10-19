@@ -79,6 +79,10 @@ test_that("LN2 creates objects of class SpecLikelihoodLN2 from valid inputs", {
     obj <- LN2(constraint = constraint)
     expect_is(obj, "SpecLikelihoodLN2")
     expect_true(validObject(obj))
+    obj <- LN2(constraint = constraint, sd = 2)
+    expect_is(obj, "SpecLikelihoodLN2")
+    expect_true(validObject(obj))
+    expect_false(obj@updateVarsigmaLN2@.Data)
     sz <- Values(array(c(1L, 0L, 0L, 1L),
                        dim = c(2, 2),
                        dimnames = list(age = c("0-39", "40+"),
@@ -89,7 +93,7 @@ test_that("LN2 creates objects of class SpecLikelihoodLN2 from valid inputs", {
                structuralZeros = sz,
                concordances = concordances)
     expect_is(obj, "SpecLikelihoodLN2")
-    expect_true(validObject(obj))
+    expect_true(validObject(obj))    
 })
 
 
@@ -940,7 +944,6 @@ test_that("SpecModel works with SpecTFixed", {
 })
 
 
-
 test_that("SpecModel works with SpecLikelihoodLN2", {
     SpecModel <- demest:::SpecModel
     constraint <- Values(array(c(NA, -1L, 0L, 1L),
@@ -975,6 +978,8 @@ test_that("SpecModel works with SpecLikelihoodLN2", {
                         sigmaMax = new("SpecScale", qhalft(0.999, 7, 1)),
                         structuralZeros = NULL,
                         useExpose = new("LogicalFlag", TRUE),
+                        updateVarsigmaLN2 = new("LogicalFlag", TRUE),
+                        varsigmaLN2 = new("Scale", 1),
                         varsigmaMax = new("SpecScale", qhalft(0.999, 7, 1)))
     expect_identical(ans.obtained, ans.expected)
     sz <- Values(array(c(1L, 0L, 0L, 1L),
@@ -1015,6 +1020,52 @@ test_that("SpecModel works with SpecLikelihoodLN2", {
                         sigmaMax = new("SpecScale", qhalft(0.999, 7, 0.5)),
                         structuralZeros = sz,
                         useExpose = new("LogicalFlag", TRUE),
+                        updateVarsigmaLN2 = new("LogicalFlag", TRUE),
+                        varsigmaLN2 = new("Scale", 1),
+                        varsigmaMax = new("SpecScale", qhalft(0.999, 7, 1)))
+    expect_identical(ans.obtained, ans.expected)
+    sz <- Values(array(c(1L, 0L, 0L, 1L),
+                       dim = c(2, 2),
+                       dimnames = list(age = c("0-39", "40+"),
+                                       sex = c("Female", "Male"))))
+    concordances <- list(sex = Concordance(data.frame(from = c("F", "M", "Female", "Male"),
+                                                      to = c("Female", "Male", "Female", "Male"))))
+    spec.inner <- LN2(constraint = constraint,
+                      structuralZeros = sz,
+                      concordances = concordances,
+                      sd = 0.2)
+    call <- call("Model",
+                 quote(y ~ LN2(constraint = constraint)),
+                 structuralZeros = sz,
+                 concordances = concordances,
+                 sd = 0.2)
+    ans.obtained <- SpecModel(specInner = spec.inner,
+                              call = call,
+                              nameY = new("Name", "y"),
+                              dots = list(),
+                              lower = NULL,
+                              upper = NULL,
+                              priorSD = HalfT(scale = 0.5),
+                              jump = NULL,
+                              series = NULL,
+                              aggregate = NULL)
+    ans.expected <- new("SpecLN2",
+                        ASigma = new("SpecScale", 0.5),
+                        AVarsigma = new("SpecScale", 1),
+                        call = call,
+                        concordances = concordances,
+                        multSigma = new("Scale", 1),
+                        multVarsigma = new("Scale", 1),
+                        nameY = new("Name", "y"),
+                        nuSigma = new("DegreesFreedom", 7),
+                        nuVarsigma = new("DegreesFreedom", 7),
+                        constraintLN2 = constraint,
+                        series = new("SpecName", as.character(NA)),
+                        sigmaMax = new("SpecScale", qhalft(0.999, 7, 0.5)),
+                        structuralZeros = sz,
+                        useExpose = new("LogicalFlag", TRUE),
+                        updateVarsigmaLN2 = new("LogicalFlag", FALSE),
+                        varsigmaLN2 = new("Scale", 0.2),
                         varsigmaMax = new("SpecScale", qhalft(0.999, 7, 1)))
     expect_identical(ans.obtained, ans.expected)
 })
