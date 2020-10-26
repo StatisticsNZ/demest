@@ -18,7 +18,7 @@ The main functions are:
 Install `demest` from github with:
 ```{r, echo = FALSE}
 library(devtools)
-install_github("StatisticsNZ/demest")
+install_github("StatisticsNZ/demest", build_vignettes = TRUE)
 ```
 
 ---
