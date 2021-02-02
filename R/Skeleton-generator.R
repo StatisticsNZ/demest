@@ -356,20 +356,28 @@ setMethod("SkeletonMissingDataset",
                     transformComponent = "CollapseTransform",
                     skeletonComponent = "SkeletonMany"),
           function(object, model, outputModel, transformComponent, skeletonComponent) {
-            fl.alpha <- outputModel$likelihood$mean
-            fl.varsigma <- outputModel$likelihood$sd
-            offsets.alpha <- methods::new("Offsets",
-                                          c(fl.alpha@first, fl.alpha@last))
-            offsets.varsigma <- methods::new("Offsets",
-                                             c(fl.varsigma@first, fl.varsigma@first))
-            offsets.component <- methods::new("Offsets",
-                                              c(skeletonComponent@first, skeletonComponent@last))
-            methods::new("SkeletonMissingDatasetLN2",
-                         offsetsAlphaLN2 = offsets.alpha,
-                         offsetsVarsigmaLN2 = offsets.varsigma,
-                         offsetsComponent = offsets.component,
-                         strucZeroArray = model@strucZeroArray,
-                         transformLN2 = model@transformLN2,
-                         transformComponent = transformComponent,
-                         data = object)
+              update.varsigma <- model@updateVarsigmaLN2
+              if (update.varsigma@.Data) {
+                  fl.varsigma <- outputModel$likelihood$sd
+                  offsets.varsigma <- methods::new("Offsets",
+                                                   c(fl.varsigma@first, fl.varsigma@first))
+              }
+              else
+                  offsets.varsigma <- methods::new("Offsets",
+                                                   c(1L, 1L)) ## not used
+              fl.alpha <- outputModel$likelihood$mean
+              offsets.alpha <- methods::new("Offsets",
+                                            c(fl.alpha@first, fl.alpha@last))
+              offsets.component <- methods::new("Offsets",
+                                                c(skeletonComponent@first, skeletonComponent@last))
+              methods::new("SkeletonMissingDatasetLN2",
+                           offsetsAlphaLN2 = offsets.alpha,
+                           offsetsVarsigmaLN2 = offsets.varsigma,
+                           offsetsComponent = offsets.component,
+                           strucZeroArray = model@strucZeroArray,
+                           transformLN2 = model@transformLN2,
+                           transformComponent = transformComponent,
+                           updateVarsigmaLN2 = update.varsigma,
+                           varsigma = model@varsigma,
+                           data = object)
           })

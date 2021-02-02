@@ -950,6 +950,7 @@ setMethod("fetchResults",
               transform.alpha <- object@transformLN2
               transform.comp <- object@transformComponent
               struc.zero.array <- object@strucZeroArray
+              update.varsigma <- object@updateVarsigmaLN2@.Data
               if (is.null(iterations))
                 iterations <- seq_len(nIteration)
               metadata <- data@metadata
@@ -974,11 +975,15 @@ setMethod("fetchResults",
                                        last = offsets.alpha[2L],
                                        lengthIter = lengthIter,
                                        iterations = iterations)
-              varsigma <- getDataFromFile(filename = filename,
-                                          first = offsets.varsigma[1L],
-                                          last = offsets.varsigma[2L],
-                                          lengthIter = lengthIter,
-                                          iterations = iterations)
+              if (update.varsigma)
+                  varsigma <- getDataFromFile(filename = filename,
+                                              first = offsets.varsigma[1L],
+                                              last = offsets.varsigma[2L],
+                                              lengthIter = lengthIter,
+                                              iterations = iterations)
+              else
+                  varsigma <- rep(object@varsigma@.Data,
+                                  times = n.iter)
               exposure <- getDataFromFile(filename = filename,
                                           first = offsets.comp[1L],
                                           last = offsets.comp[2L],

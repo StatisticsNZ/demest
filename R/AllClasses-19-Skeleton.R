@@ -611,7 +611,9 @@ setClass("SkeletonMissingDatasetNormalFixedUseExp",
 setClass("SkeletonMissingDatasetLN2",
          slots = c(offsetsAlphaLN2 = "Offsets",
                    offsetsVarsigmaLN2 = "Offsets",
-                   transformLN2 = "CollapseTransformExtra"),
+                   transformLN2 = "CollapseTransformExtra",
+                   updateVarsigmaLN2 = "LogicalFlag",
+                   varsigma = "Scale"),
          contains = c("SkeletonMissingDataset", "StrucZeroArrayMixin"),
          validity = function(object) {
            offsetsVarsigmaLN2 <- object@offsetsVarsigmaLN2
