@@ -175,6 +175,30 @@ setClass("Initial",
                       "SpecAMixin"))
 
 
+#' An S4 class to specify a truncated scaled
+#' inverse-chi-squared distribution.
+#'
+#' Truncated scaled inverse-chi-squared distributions
+#'
+#' @section Warning:
+#' In  normal usage, it should not be necessary to
+#' access, or even know about, the slots of a
+#' \code{InvChiSq} object.  The slots are not part of
+#' the API of the package, and may change in future.
+#'
+#' @slot nu Degrees of freedom.
+#' @slot A Scale.
+#' @slot scaleMax Maximum value.
+#'
+#' @seealso Objects of class \code{InvChiSq} are created
+#' by calls to function \code{\link{InvChiSq}}.  
+#' @export
+setClass("InvChiSq",
+         contains = c("NuMixin",
+                      "SpecAMixin",
+                      "SpecScaleMaxMixin"))
+
+
 #' An S4 class to specify the level term in a DLM prior.
 #'
 #' An object of class \code{Level} is used to specify the

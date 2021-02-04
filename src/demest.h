@@ -79,6 +79,7 @@ SEXP
   ASigma_sym,
   nuSigma_sym,
   updateVarsigmaLN2_sym,
+  varsigmaLN2HasHalfT_sym,
   varsigma_sym,
   varsigmaMax_sym,
   varsigmaSetToZero_sym,
@@ -630,6 +631,7 @@ void drawSigma_Varying(SEXP object_R);
 void drawTau(SEXP prior_R);
 void drawUEtaCoef(SEXP prior_R);
 void drawVarsigma(SEXP object_R);
+void drawVarsigmaLN2(SEXP object_R);
 
 
 /* loglikelihood */

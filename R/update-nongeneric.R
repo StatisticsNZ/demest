@@ -5016,6 +5016,8 @@ updateVarsigma <- function(object, y, useC = FALSE) {
     }
 }
 
+
+
 ## TRANSLATED
 ## HAS_TESTS
 updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
@@ -5039,13 +5041,15 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
         update.varsigma <- object@updateVarsigmaLN2@.Data
         if (!update.varsigma)
             return(object)
-        varsigma <- object@varsigma@.Data
-        varsigma.max <- object@varsigmaMax@.Data
         A <- object@AVarsigma@.Data
-        nu <- object@nuVarsigma@.Data
         alpha <- object@alphaLN2@.Data
         cell.in.lik <- object@cellInLik
+        max.attempt <- object@maxAttempt
+        nu <- object@nuVarsigma@.Data
         transform <- object@transformLN2
+        varsigma <- object@varsigma@.Data
+        varsigma.has.half.t <- object@varsigmaLN2HasHalfT@.Data
+        varsigma.max <- object@varsigmaMax@.Data
         V <- 0
         n <- 0L
         for (i in seq_along(y)) {
@@ -5056,17 +5060,33 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
                 n <- n + 1L
             }
         }
-        ##changed JAH 26/1/2020 after emails with John
         if (n > 0L) {
-            varsigma <- updateSDNorm(sigma = varsigma,
-                                 A = A,
-                                 nu = nu,
-                                 V = V,
-                                 n = n,
-                                 max = varsigma.max)
-            successfully.updated <- varsigma > 0
-            if (successfully.updated)
-                object@varsigma@.Data <- varsigma
+            if (varsigma.has.half.t) {
+                varsigma <- updateSDNorm(sigma = varsigma,
+                                         A = A,
+                                         nu = nu,
+                                         V = V,
+                                         n = n,
+                                         max = varsigma.max)
+                successfully.updated <- varsigma > 0
+                if (successfully.updated)
+                    object@varsigma@.Data <- varsigma
+            }
+            else { ## varsigma has scaled inv-chi-sq prior
+                df  <- nu + n
+                scaleSq  <- (nu * A + V) / (nu + n)
+                successfully.updated <- FALSE
+                for (i in seq_len(max.attempt)) {
+                    varsigma <- rinvchisq1(df = df,
+                                           scaleSq = scaleSq)
+                    if (varsigma < varsigma.max) {
+                        successfully.updated <- TRUE
+                        break
+                    }
+                }
+                if (successfully.updated)
+                    object@varsigma@.Data <- varsigma
+            }
         }
         else
             object@varsigma@.Data <- 0

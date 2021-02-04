@@ -420,7 +420,7 @@ setMethod("drawModelUseExp",
               }
               else {
                   object <- drawSigma_Varying(object) # not Varying, but works anyway
-                  object <- drawVarsigma(object)
+                  object <- drawVarsigmaLN2(object)
                   object <- drawAlphaLN2(object)
                   object
               }

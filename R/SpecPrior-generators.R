@@ -1610,6 +1610,39 @@ Initial <- function(mean = 0, sd = NULL, mult = 1) {
 }
 
 
+## NO_TESTS
+#' Specify an inverse chi-squared distribution.
+#'
+#' Specify an inverse chi-squared distribution,
+#' for use as a prior..
+#'
+#' @param df Degrees of freedom. A positive number.
+#' @param scaleSq Scale parameter. A positive number.
+#' @param max A positive number.  If finite, the
+#' distribution is truncated at this point.
+#'
+#' @return Object of class \code{\linkS4class{InvChiSq}}.
+#'
+#' @examples
+#' InvChiSq(df = 10, scale = 10, max)
+#' @export
+InvChiSq <- function(df, scaleSq, max = NULL) { ## must supply values for 'df' and 'scaleSq'
+    nu <- checkAndTidyNu(x = df,
+                         name = "df")
+    A <- checkAndTidySpecScale(x = scaleSq,
+                               name = "scaleSq")
+    if (is.null(max))
+        max <- 10 * scaleSq
+    scaleMax <- checkAndTidyScaleMax(x = max,
+                                     name = "max",
+                                     nu = nu,
+                                     A = A)
+    methods::new("InvChiSq",
+                 A = A,
+                 nu = nu,
+                 scaleMax = scaleMax)
+}
+
 
 #' Specify a prior where the mean varies but is treated as known.
 #'

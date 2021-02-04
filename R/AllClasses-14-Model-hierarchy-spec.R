@@ -138,6 +138,8 @@ setClass("SpecLikelihoodTFixed",
 validity_LN2 <- function(object) {
     constraintLN2 <- object@constraintLN2
     concordances <- object@concordances
+    updateVarsigmaLN2 <- object@updateVarsigmaLN2@.Data
+    varsigmaLN2HasHalfT <- object@varsigmaLN2HasHalfT@.Data
     ## 'constraintLN2' has type "integer"
     if (!is.integer(constraintLN2))
         return(gettextf("'%s' does not have type \"%s\"",
@@ -148,6 +150,10 @@ validity_LN2 <- function(object) {
     if (i.invalid > 0L)
         return(gettextf("'%s' has invalid value [%s]",
                         "constraintLN2", constraintLN2@.Data[[i.invalid]]))
+    ## 'varsigmaLN2HasHalfT' and 'updateVarsigmaLN2' are consistent
+    if (varsigmaLN2HasHalfT && !updateVarsigmaLN2)
+        return(gettextf("'%s' is %s but '%s' is %s",
+                        "varsigmaLN2HasHalfT", "TRUE", "updateVarsigmaLN2", "FALSE"))
     ## concordances
     if (!identical(concordances, list())) {
         if (!is.list(concordances))
@@ -179,7 +185,8 @@ setClass("SpecLikelihoodLN2",
          slots = c(constraintLN2 = "Values",
                    concordances = "list",
                    updateVarsigmaLN2 = "LogicalFlag",
-                   varsigmaLN2 = "Scale"),
+                   varsigmaLN2 = "Scale",
+                   varsigmaLN2HasHalfT = "LogicalFlag"),
          validity = validity_LN2)
 
 
@@ -465,5 +472,6 @@ setClass("SpecLN2",
          slots = c(constraintLN2 = "Values",
                    concordances = "list",
                    updateVarsigmaLN2 = "LogicalFlag",
-                   varsigmaLN2 = "Scale"),
+                   varsigmaLN2 = "Scale",
+                   varsigmaLN2HasHalfT = "LogicalFlag"),
          validity = validity_LN2)

@@ -1511,17 +1511,18 @@ setMethod("initialModel",
               A.sigma <- object@ASigma@.Data
               call <- object@call
               concordances <- object@concordances
+              constraint.all <- object@constraintLN2
+              metadataY <- y@metadata
               mult.sigma <- object@multSigma
               mult.varsigma <- object@multVarsigma
               nu.sigma <- object@nuSigma
               nu.varsigma <- object@nuVarsigma
-              constraint.all <- object@constraintLN2
               sigma.max <- object@sigmaMax@.Data
               structural.zeros <- object@structuralZeros
               update.varsigma <- object@updateVarsigmaLN2
               varsigma <- object@varsigmaLN2
+              varsigmaLN2HasHalfT <- object@varsigmaLN2HasHalfT
               varsigma.max <- object@varsigmaMax@.Data
-              metadataY <- y@metadata
               ## make struc.zero.array
               struc.zero.array <- makeStrucZeroArray(structuralZeros = structural.zeros, 
                                                      y = y) 
@@ -1629,6 +1630,7 @@ setMethod("initialModel",
                                     transformLN2 = transform,
                                     updateVarsigmaLN2 = update.varsigma,
                                     varsigma = varsigma,
+                                    varsigmaLN2HasHalfT = varsigmaLN2HasHalfT,
                                     varsigmaMax = varsigma.max)
               model <- makeCellInLik(model = model,
                                      y = y,

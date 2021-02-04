@@ -2226,6 +2226,7 @@ UPDATEOBJECT_WRAPPER_R(drawSigma_Varying);
 UPDATEOBJECT_WRAPPER_R(drawTau);
 UPDATEOBJECT_WRAPPER_R(drawUEtaCoef);
 UPDATEOBJECT_WRAPPER_R(drawVarsigma);
+UPDATEOBJECT_WRAPPER_R(drawVarsigmaLN2);
 
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */
@@ -2764,6 +2765,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(drawTau_R, 1),
   CALLDEF(drawUEtaCoef_R, 1),
   CALLDEF(drawVarsigma_R, 1),
+  CALLDEF(drawVarsigmaLN2_R, 1),
 
   {NULL}
 };
@@ -2850,6 +2852,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(updateVarsigmaLN2);
   ADD_SYM(varsigma);
   ADD_SYM(varsigmaMax);
+  ADD_SYM(varsigmaLN2HasHalfT);
   ADD_SYM(varsigmaSetToZero);
   ADD_SYM(AVarsigma);
   ADD_SYM(nuVarsigma);

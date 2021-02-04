@@ -8,6 +8,7 @@ LN2(
   constraint,
   structuralZeros = NULL,
   concordances = list(),
+  sd = NULL,
   priorSD = HalfT()
 )
 }
@@ -21,6 +22,10 @@ or, for the typical case, the word \code{"diag"}.}
 
 \item{concordances}{A named list of concordances used to
 map between \code{y} and \code{constraint}.}
+
+\item{sd}{Standard deviation of data-level errors. If a value is
+supplied, it is treated as known, rather than inferred from the
+data.}
 
 \item{priorSD}{An object of class \code{HalfT} specifying
 a non-default prior for the standard deviation in the

@@ -1424,7 +1424,7 @@ static __inline__ void
 drawModelUseExp_LN2_i(SEXP object_R, SEXP y_R, SEXP exposure_R)
 {
     drawSigma_Varying(object_R);
-    drawVarsigma(object_R);
+    drawVarsigmaLN2(object_R);
     drawAlphaLN2(object_R);
 }
 

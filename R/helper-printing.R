@@ -356,6 +356,7 @@ printKnownEqns <- function(object, name) {
 printLN2LikEqns  <- function(object) {
     updateVarsigma <- object@updateVarsigmaLN2@.Data
     varsigma <- object@varsigmaLN2@.Data
+    hasHalfT <- object@varsigmaLN2HasHalfT@.Data
     nuVarsigma <- object@nuVarsigma@.Data
     AVarsigma <- object@AVarsigma@.Data
     varsigmaMax <- object@varsigmaMax@.Data
@@ -366,8 +367,14 @@ printLN2LikEqns  <- function(object) {
         cat(format(varsigma, digits = 4), "^2)\n", sep = "")
     cat("        alpha[i] ~ N*(0, sdAlpha^2)\n", sep = "")
     if (updateVarsigma) {
-        cat("          sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
-        cat(squaredOrNA(AVarsigma), ", ", format(varsigmaMax, digits = 4), ")\n", sep = "")
+        if (hasHalfT) {
+            cat("          sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
+            cat(squaredOrNA(AVarsigma), ", ", format(varsigmaMax, digits = 4), ")\n", sep = "")
+        }
+        else {
+            cat("          sdData ~ trunc-inv-chi-sq(", nuVarsigma, ", ", sep = "")
+            cat(format(AVarsigma, digits = 4), ", ", format(varsigmaMax, digits = 4), ")\n", sep = "")
+        }
     }
 }
 
@@ -378,6 +385,7 @@ printLN2ModEqns <- function(object) {
     sigmaMax <- object@sigmaMax
     nuSigma <- object@nuSigma
     updateVarsigma <- object@updateVarsigmaLN2@.Data
+    hasHalfT <- object@varsigmaLN2HasHalfT@.Data
     varsigma <- object@varsigmaLN2@.Data    
     AVarsigma <- object@AVarsigma@.Data
     varsigmaMax <- object@varsigmaMax
@@ -401,14 +409,24 @@ printLN2ModEqns <- function(object) {
         cat(format(varsigma, digits = 4), "^2)\n")
     cat("      alpha[j] ~ N*(0, sdAlpha^2)")
     if (updateVarsigma) {
-        cat("      sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
-        cat(squaredOrNA(AVarsigma),
-            ", ",
-            format(varsigmaMax, digits = 4),
-            ")\n",
-            sep = "")
+        if (hasHalfT) {
+            cat("      sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
+            cat(squaredOrNA(AVarsigma),
+                ", ",
+                format(varsigmaMax, digits = 4),
+                ")\n",
+                sep = "")
+        }
+        else {
+            cat("      sdData ~ trunc-inv-chi-sq(", nuVarsigma, ", ", sep = "")
+            cat(format(AVarsigma, digits = 4),
+                ", ",
+                format(varsigmaMax, digits = 4),
+                ")\n",
+                sep = "")
+        }
     }
-    cat("      sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
+    cat("             sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
     cat(squaredOrNA(ASigma),
         ", ",
         format(sigmaMax, digits = 4),
@@ -424,6 +442,7 @@ printLN2SpecEqns <- function(object) {
     nuSigma <- object@nuSigma
     AVarsigma <- object@AVarsigma@.Data
     updateVarsigma <- object@updateVarsigmaLN2@.Data
+    hasHalfT <- object@varsigmaLN2HasHalfT@.Data
     varsigma <- object@varsigmaLN2@.Data    
     varsigmaMax <- object@varsigmaMax
     nuVarsigma <- object@nuVarsigma
@@ -444,14 +463,24 @@ printLN2SpecEqns <- function(object) {
         cat(format(varsigma, digits = 4), "^2)\n", sep = "")
     cat("      alpha[j] ~ N*(0, sd^2)\n")
     if (updateVarsigma) {
-        cat("        sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
-        cat(squaredOrNA(AVarsigma),
-            ", ",
-            format(varsigmaMax, digits = 4),
-            ")\n",
-            sep = "")
+        if (hasHalfT) {
+            cat("        sdData ~ trunc-half-t(", nuVarsigma, ", ", sep = "")
+            cat(squaredOrNA(AVarsigma),
+                ", ",
+                format(varsigmaMax, digits = 4),
+                ")\n",
+                sep = "")
+        }
+        else {
+            cat("        sdData ~ trunc-inv-chi-sq(", nuVarsigma, ", ", sep = "")
+            cat(format(AVarsigma, digits = 4),
+                ", ",
+                format(varsigmaMax, digits = 4),
+                ")\n",
+                sep = "")
+        }
     }
-    cat("            sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
+    cat("    sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
     cat(squaredOrNA(ASigma),
         ", ",
         format(sigmaMax, digits = 4),

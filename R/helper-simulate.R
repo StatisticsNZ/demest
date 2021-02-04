@@ -703,6 +703,49 @@ drawVarsigma <- function(object, useC = FALSE) {
 }
 
 
+## TRANSLATED
+## HAS_TESTS
+drawVarsigmaLN2 <- function(object, useC = FALSE) {
+    stopifnot(methods::is(object, "LN2"))
+    stopifnot(methods::validObject(object))
+    if (useC) {
+        .Call(drawVarsigmaLN2_R, object)
+    }
+    else {
+        update <- object@updateVarsigmaLN2@.Data
+        hasHalfT <- object@varsigmaLN2HasHalfT@.Data
+        max <- object@varsigmaMax@.Data
+        A <- object@AVarsigma@.Data
+        nu <- object@nuVarsigma@.Data
+        if (update) {
+            if (hasHalfT) {
+                val <- rhalftTrunc1(df = nu,
+                                    scale = A,
+                                    max = max,
+                                    useC = TRUE)
+            }
+            else {
+                maxAttempt <- object@maxAttempt
+                succeeded <- FALSE
+                for (i in seq_len(maxAttempt)) {
+                    val <- rinvchisq1(df = nu,
+                                      scaleSq = A,
+                                      useC = TRUE)
+                    if (val < max) {
+                        succeeded <- TRUE
+                        break
+                    }
+                }
+                if (!succeeded)
+                    val <- 0.5 * max
+            }
+            object@varsigma@.Data <- val
+        }
+        object
+    }
+}
+
+
 
 
 

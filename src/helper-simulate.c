@@ -323,7 +323,7 @@ drawSigma_Varying(SEXP object_R)
 
     double val = rhalftTrunc1(nu, A, sigma_max);
 
-    SET_DOUBLESCALE_SLOT(object_R, sigma_sym, val)
+    SET_DOUBLESCALE_SLOT(object_R, sigma_sym, val);
 }
 
 void
@@ -336,7 +336,7 @@ drawTau(SEXP prior_R)
 
     double tau = rhalftTrunc1(nu, A, tau_max);
 
-    SET_DOUBLESCALE_SLOT(prior_R, tau_sym, tau)
+    SET_DOUBLESCALE_SLOT(prior_R, tau_sym, tau);
 }
 
 void
@@ -363,5 +363,35 @@ drawVarsigma(SEXP object_R)
 
     double val = rhalftTrunc1(nu, A, varsigma_max);
 
-    SET_DOUBLESCALE_SLOT(object_R, varsigma_sym, val)
+    SET_DOUBLESCALE_SLOT(object_R, varsigma_sym, val);
+}
+
+void
+drawVarsigmaLN2(SEXP object_R)
+{
+  int update = *INTEGER(GET_SLOT(object_R, updateVarsigmaLN2_sym));
+  if (update) {
+    int hasHalfT = *INTEGER(GET_SLOT(object_R, varsigmaLN2HasHalfT_sym));
+    double max = *REAL(GET_SLOT(object_R, varsigmaMax_sym));
+    double A = *REAL(GET_SLOT(object_R, AVarsigma_sym));
+    double nu = *REAL(GET_SLOT(object_R, nuVarsigma_sym));
+    double val;
+    if (hasHalfT) {
+      val = rhalftTrunc1(nu, A, max);
+    }
+    else {
+      int maxAttempt = *INTEGER(GET_SLOT(object_R, maxAttempt_sym));
+      int succeeded = 0;
+      for (int i = 0; i < maxAttempt; i++) {
+	val = rinvchisq1(nu, A);
+	if (val < max) {
+	  succeeded = 1;
+	  break;
+	}
+      }
+      if (!succeeded)
+	val = 0.5 * max;
+    }
+    SET_DOUBLESCALE_SLOT(object_R, varsigma_sym, val);
+  }
 }

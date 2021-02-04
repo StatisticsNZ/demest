@@ -10504,6 +10504,7 @@ test_that("updateVarsigmaLN2 gives valid answer", {
     updateVarsigmaLN2 <- demest:::updateVarsigmaLN2
     initialModel <- demest:::initialModel
     updateSDNorm <- demest:::updateSDNorm
+    rinvchisq1 <- demest:::rinvchisq1
     for (seed in seq_len(n.test)) {
         ## no missing values
         set.seed(seed)
@@ -10601,7 +10602,40 @@ test_that("updateVarsigmaLN2 gives valid answer", {
         ans.obtained <- updateVarsigmaLN2(model, y = y, exposure = exposure)
         ans.expected <- model
         expect_identical(ans.obtained, ans.expected)
-        expect_identical(ans.obtained@varsigma@.Data, 0.25)        
+        expect_identical(ans.obtained@varsigma@.Data, 0.25)
+        ## has InvChiSq prior
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint,
+                              sd = InvChiSq(df = 5, scaleSq = 10)))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateVarsigmaLN2(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        alpha <- dembase::makeCompatible(x = Values(array(model@alphaLN2@.Data,
+                                                          dim = dim(model@constraintLN2),
+                                                          dimnames = dimnames(model@constraintLN2))),
+                                         y = y)
+        V <- sum(((log(y + 1) - log(exposure + 1) -  alpha)^2)[-(1:5)])
+        varsigma <- rinvchisq1(df = 5 + 19, scale = (10 * 5 + V) / (5 + 19))
+        ans.expected@varsigma@.Data <- varsigma
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
     }
 })
 
@@ -10686,6 +10720,31 @@ test_that("R and C versions of updateVarsigmaLN2 give same answer", {
         else
             expect_equal(ans.R, ans.C)
         expect_identical(ans.C@varsigma@.Data, 0.25)        
+        ## 'sd' has InvChiSq distribution
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, sd = InvChiSq(df = 3, scaleSq = 9)))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
     }
 })
 

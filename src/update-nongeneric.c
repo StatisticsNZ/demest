@@ -6916,6 +6916,7 @@ updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R)
 
   int update = *INTEGER(GET_SLOT(object_R, updateVarsigmaLN2_sym));
   if (update) {
+    int hasHalfT = *INTEGER(GET_SLOT(object_R, varsigmaLN2HasHalfT_sym));
     double varsigma = *REAL(GET_SLOT(object_R, varsigma_sym));
     double varsigma_max = *REAL(GET_SLOT(object_R, varsigmaMax_sym));
     double A = *REAL(GET_SLOT(object_R, AVarsigma_sym));
@@ -6938,8 +6939,23 @@ updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R)
       }
     }
     if (n > 0) {
-      varsigma = updateSDNorm(varsigma, A, nu, V, n, varsigma_max);
-      int successfully_updated = (varsigma > 0);
+      int successfully_updated = 0;
+      if (hasHalfT) {
+	varsigma = updateSDNorm(varsigma, A, nu, V, n, varsigma_max);
+	successfully_updated = (varsigma > 0);
+      }
+      else {			/* inv-chi-sq prior */
+	int maxAttempt = *INTEGER(GET_SLOT(object_R, maxAttempt_sym));
+	int  df = nu + n;
+        double scaleSq = (nu * A + V) / (nu + n);
+	for (int i = 0; i < maxAttempt; i++) {
+	  varsigma = rinvchisq1(df, scaleSq);
+	  if (varsigma < varsigma_max) {
+	    successfully_updated = 1;
+	    break;
+	  }
+	}
+      }
       if (successfully_updated) {
 	SET_DOUBLESCALE_SLOT(object_R, varsigma_sym, varsigma);
       }
