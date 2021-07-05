@@ -2208,25 +2208,25 @@ updateSubsequentExpMove_R(SEXP combined_R)
 
 
 /* helper_simulate */
-UPDATEOBJECT_WRAPPER_R(drawAlphaLN2);
-UPDATEOBJECT_WRAPPER_R(drawBetas);
-UPDATEOBJECT_WRAPPER_R(drawDataModelsAccount);
-UPDATEOBJECT_WRAPPER_R(drawDelta0);
-UPDATEOBJECT_WRAPPER_R(drawEta);
-UPDATEOBJECT_WRAPPER_R(drawOmegaAlpha);
-UPDATEOBJECT_WRAPPER_R(drawOmegaComponentWeightMix);
-UPDATEOBJECT_WRAPPER_R(drawOmegaDelta);
-UPDATEOBJECT_WRAPPER_R(drawOmegaLevelComponentWeightMix);
-UPDATEOBJECT_WRAPPER_R(drawOmegaSeason);
-UPDATEOBJECT_WRAPPER_R(drawOmegaVectorsMix);
-UPDATEOBJECT_WRAPPER_R(drawPhi);
-UPDATEOBJECT_WRAPPER_R(drawPhiMix);
-UPDATEOBJECT_WRAPPER_R(drawPriors);
-UPDATEOBJECT_WRAPPER_R(drawSigma_Varying);
-UPDATEOBJECT_WRAPPER_R(drawTau);
-UPDATEOBJECT_WRAPPER_R(drawUEtaCoef);
-UPDATEOBJECT_WRAPPER_R(drawVarsigma);
-UPDATEOBJECT_WRAPPER_R(drawVarsigmaLN2);
+UPDATEOBJECT_WRAPPER_R(drawAlphaLN2)
+UPDATEOBJECT_WRAPPER_R(drawBetas)
+UPDATEOBJECT_WRAPPER_R(drawDataModelsAccount)
+UPDATEOBJECT_WRAPPER_R(drawDelta0)
+UPDATEOBJECT_WRAPPER_R(drawEta)
+UPDATEOBJECT_WRAPPER_R(drawOmegaAlpha)
+UPDATEOBJECT_WRAPPER_R(drawOmegaComponentWeightMix)
+UPDATEOBJECT_WRAPPER_R(drawOmegaDelta)
+UPDATEOBJECT_WRAPPER_R(drawOmegaLevelComponentWeightMix)
+UPDATEOBJECT_WRAPPER_R(drawOmegaSeason)
+UPDATEOBJECT_WRAPPER_R(drawOmegaVectorsMix)
+UPDATEOBJECT_WRAPPER_R(drawPhi)
+UPDATEOBJECT_WRAPPER_R(drawPhiMix)
+UPDATEOBJECT_WRAPPER_R(drawPriors)
+UPDATEOBJECT_WRAPPER_R(drawSigma_Varying)
+UPDATEOBJECT_WRAPPER_R(drawTau)
+UPDATEOBJECT_WRAPPER_R(drawUEtaCoef)
+UPDATEOBJECT_WRAPPER_R(drawVarsigma)
+UPDATEOBJECT_WRAPPER_R(drawVarsigmaLN2)
 
 /* ******************************************************************************* */
 /* Create table describing R-visible versions of C functions ********************* */

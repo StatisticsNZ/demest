@@ -733,15 +733,13 @@ setMethod("updateCombined",
                   transforms <- object@transforms
                   for (i in seq_len(nUpdate)) {
                       object <- updateCountsAndThetaPoissonNotUseExp(object)
-                      model <- updateModelNotUseExp(object = object@model,
-                                                    y = object@y)
-                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
-                                                           datasets = datasets,
-                                                           transforms = transforms,
+                      object@model <- updateModelNotUseExp(object = object@model,
                                                            y = object@y)
+                      object@dataModels <- updateDataModelsCounts(dataModels = dataModels,
+                                                                  datasets = datasets,
+                                                                  transforms = transforms,
+                                                                  y = object@y)
                   }
-                  object@model <- model
-                  object@dataModels <- dataModels
                   object
               }
           })
@@ -772,16 +770,14 @@ setMethod("updateCombined",
                   transforms <- object@transforms
                   for (i in seq_len(nUpdate)) {
                       object <- updateCountsAndThetaPoissonUseExp(object)
-                      model <- updateModelUseExp(object = object@model,
-                                                 y = object@y,
-                                                 exposure = exposure)
-                      dataModels <- updateDataModelsCounts(dataModels = dataModels,
+                      object@model <- updateModelUseExp(object = object@model,
+                                                        y = object@y,
+                                                        exposure = exposure)
+                      object@dataModels <- updateDataModelsCounts(dataModels = dataModels,
                                                            datasets = datasets,
                                                            transforms = transforms,
                                                            y = object@y)
                   }
-                  object@model <- model
-                  object@dataModels <- dataModels
                   object
               }
           })

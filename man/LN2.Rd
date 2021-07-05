@@ -4,13 +4,7 @@
 \alias{LN2}
 \title{Log-normal model with two levels}
 \usage{
-LN2(
-  constraint,
-  structuralZeros = NULL,
-  concordances = list(),
-  sd = NULL,
-  priorSD = HalfT()
-)
+LN2(constraint, structuralZeros = NULL, concordances = list(), sd = HalfT())
 }
 \arguments{
 \item{constraint}{An object of class \code{\link[dembase:Values-class]{Values}},
@@ -23,13 +17,10 @@ or, for the typical case, the word \code{"diag"}.}
 \item{concordances}{A named list of concordances used to
 map between \code{y} and \code{constraint}.}
 
-\item{sd}{Standard deviation of data-level errors. If a value is
-supplied, it is treated as known, rather than inferred from the
-data.}
-
-\item{priorSD}{An object of class \code{HalfT} specifying
-a non-default prior for the standard deviation in the
-likelihood for the normal model.}
+\item{sd}{Standard deviation of data-level errors. Either a
+fixed value or a prior distribution. The prior distribution
+is specified via \code{\link{HalfT}} or \code{\link{InvChiSq}}.
+Defaults to a half-t distribution.}
 }
 \description{
 THIS FUNCTION IS STILL EXPERIMENTAL.
