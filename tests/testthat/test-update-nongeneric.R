@@ -10630,8 +10630,8 @@ test_that("updateVarsigmaLN2 gives valid answer", {
                                                           dimnames = dimnames(model@constraintLN2))),
                                          y = y)
         V <- sum(((log(y + 1) - log(exposure + 1) -  alpha)^2)[-(1:5)])
-        varsigma <- rinvchisq1(df = 5 + 19, scale = (10 * 5 + V) / (5 + 19))
-        ans.expected@varsigma@.Data <- varsigma
+        varsigma.sq <- rinvchisq1(df = 5 + 19, scale = (10 * 5 + V) / (5 + 19))
+        ans.expected@varsigma@.Data <- sqrt(varsigma.sq)
         if (test.identity)
             expect_identical(ans.obtained, ans.expected)
         else

@@ -181,7 +181,7 @@ printCovariatesEqns <- function(object) {
     meanEtaCoef <- object@meanEtaCoef@.Data
     nuEtaCoef <- object@nuEtaCoef@.Data
     n <- length(nuEtaCoef)
-    cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
+    cat("    covariate[j] = (Intercept) + data[j,] * coef\n")
     if (n == 1L)
         cat("            coef ~ t(", nuEtaCoef, ", ", meanEtaCoef, ", ", squaredOrNA(AEtaCoef), ")\n",
             sep = "")
@@ -198,9 +198,9 @@ printCovariatesDLMEqns <- function(object, isMain) {
     nuEtaCoef <- object@nuEtaCoef@.Data
         n <- length(nuEtaCoef)
     if (isMain)
-        cat("    covariate[j] ~ (Intercept) + data[j,] * coef\n")
+        cat("    covariate[j] = (Intercept) + data[j,] * coef\n")
     else
-        cat("  covariate[k,l] ~ (Intercept) + data[k,l,] * coef\n")
+        cat("  covariate[k,l] = (Intercept) + data[k,l,] * coef\n")
     if (n == 1L)
         cat("            coef ~ t(", nuEtaCoef, ", ", meanEtaCoef, ", ", squaredOrNA(AEtaCoef), ")\n",
             sep = "")
@@ -480,7 +480,7 @@ printLN2SpecEqns <- function(object) {
                 sep = "")
         }
     }
-    cat("    sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
+    cat("            sd ~ trunc-half-t(", nuSigma, ", ", sep = "")
     cat(squaredOrNA(ASigma),
         ", ",
         format(sigmaMax, digits = 4),
