@@ -6948,8 +6948,10 @@ updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R)
 	int maxAttempt = *INTEGER(GET_SLOT(object_R, maxAttempt_sym));
 	int  df = nu + n;
         double scaleSq = (nu * A + V) / (nu + n);
+	double varsigma_sq;
 	for (int i = 0; i < maxAttempt; i++) {
-	  varsigma = rinvchisq1(df, scaleSq);
+	  varsigma_sq = rinvchisq1(df, scaleSq);
+	  varsigma = sqrt(varsigma_sq);
 	  if (varsigma < varsigma_max) {
 	    successfully_updated = 1;
 	    break;

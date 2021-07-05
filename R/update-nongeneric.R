@@ -5077,8 +5077,9 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
                 scaleSq  <- (nu * A + V) / (nu + n)
                 successfully.updated <- FALSE
                 for (i in seq_len(max.attempt)) {
-                    varsigma <- rinvchisq1(df = df,
-                                           scaleSq = scaleSq)
+                    varsigma.sq <- rinvchisq1(df = df,
+                                              scaleSq = scaleSq)
+                    varsigma <- sqrt(varsigma.sq)
                     if (varsigma < varsigma.max) {
                         successfully.updated <- TRUE
                         break
