@@ -11,6 +11,7 @@ estimateCounts(
   dataModels,
   datasets,
   concordances = list(),
+  jointUpdate = TRUE,
   filename = NULL,
   nBurnin = 1000,
   nSim = 1000,
@@ -46,6 +47,12 @@ the datasets and counts.}
 \code{\link[dembase:Concordance-class]{concordances}},
 which are applied to \code{y} before it is supplied to
 the corresponding data model.}
+
+\item{jointUpdate}{If \code{TRUE} (the default), jointly update the
+counts and rates/probabilities. If \code{FALSE}, revert to
+the original behaviour of \code{estimateCounts}, which is
+to update counts and rates/probabilities separately. The
+new behaviour generally leads to faster convergence.}
 
 \item{filename}{The name of a file where output is collected.}
 

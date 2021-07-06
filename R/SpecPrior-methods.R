@@ -503,6 +503,22 @@ setMethod("show",
               }
           })    
 
+
+
+#' @rdname show-methods
+#' @export
+setMethod("show",
+          signature(object = "InvChiSq"),
+          function(object) {
+              nu <- object@nu
+              A <- object@A
+              max <- object@scaleMax
+              cat("An object of class \"", class(object), "\"\n", sep = "")
+              cat("trunc-inv-chi-sq(", nu, ", ", sep = "")
+              cat(A, ", ", max, ")\n", sep = "")
+          })
+
+
 #' @rdname show-methods
 #' @export
 setMethod("show",

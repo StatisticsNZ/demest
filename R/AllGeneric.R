@@ -398,7 +398,7 @@ setGeneric("initialCombinedAccountSimulate",
 
 setGeneric("initialCombinedCounts",
            function(object, y, exposure, dataModels, datasets,
-                    namesDatasets, transforms)
+                    namesDatasets, transforms, jointUpdate)
                standardGeneric("initialCombinedCounts"))
 
 setGeneric("initialCombinedCountsPredict",

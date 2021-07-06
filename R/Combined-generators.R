@@ -392,9 +392,10 @@ setMethod("initialCombinedCounts",
                     dataModels = "list",
                     datasets = "list",
                     namesDatasets = "character",
-                    transforms = "list"),
+                    transforms = "list",
+                    jointUpdate = "logical"),
           function(object, y, exposure, dataModels, datasets,
-                   namesDatasets, transforms) {
+                   namesDatasets, transforms, jointUpdate) {
               is.ag <- !methods::is(object@aggregate, "SpecAgPlaceholder")
               if (is.ag)
                   stop(gettextf("model cannot have aggregate values with function '%s'",
@@ -425,9 +426,9 @@ setMethod("initialCombinedCounts",
                   is.in.lik <- FALSE
                   for (i.dataset in seq_along(transforms)) {
                       transform <- transforms[[i.dataset]]
-                      i.cell.dataset <- dembase:::getIAfter(i = i.cell.y,
-                                                            transform = transform,
-                                                            useC = TRUE)
+                      i.cell.dataset <- dembase::getIAfter(i = i.cell.y,
+                                                           transform = transform,
+                                                           useC = TRUE)
                       if (i.cell.dataset > 0L) {
                           is.in.lik <- TRUE
                           break
@@ -437,6 +438,7 @@ setMethod("initialCombinedCounts",
                       y.tmp[i.cell.y] <- NA
               }
               has.exposure <- !is.null(exposure)
+              jointUpdate <- methods::new("LogicalFlag", jointUpdate)
               if (has.exposure) {
                   model <- initialModel(object, y = y.tmp, exposure = exposure)
                   model@updateTheta@.Data <- FALSE
@@ -447,7 +449,8 @@ setMethod("initialCombinedCounts",
                                dataModels = dataModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = jointUpdate)
               }
               else {
                   model <- initialModel(object, y = y.tmp, exposure = exposure)
@@ -458,7 +461,8 @@ setMethod("initialCombinedCounts",
                                dataModels = dataModels,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = jointUpdate)
               }
           })
 
@@ -470,9 +474,10 @@ setMethod("initialCombinedCounts",
                     dataModels = "list",
                     datasets = "list",
                     namesDatasets = "character",
-                    transforms = "list"),
+                    transforms = "list",
+                    jointUpdate = "logical"),
           function(object, y, exposure, dataModels, datasets,
-                   namesDatasets, transforms) {
+                   namesDatasets, transforms, jointUpdate) {
               is.ag <- !methods::is(object@aggregate, "SpecAgPlaceholder")
               if (is.ag)
                   stop(gettextf("model cannot have aggregate values with function '%s'",
@@ -506,9 +511,9 @@ setMethod("initialCombinedCounts",
                       is.in.lik <- FALSE
                       for (i.dataset in seq_along(transforms)) {
                           transform <- transforms[[i.dataset]]
-                          i.cell.dataset <- dembase:::getIAfter(i = i.cell.y,
-                                                                transform = transform,
-                                                                useC = TRUE)
+                          i.cell.dataset <- dembase::getIAfter(i = i.cell.y,
+                                                               transform = transform,
+                                                               useC = TRUE)
                           if (i.cell.dataset > 0L) {
                               is.in.lik <- TRUE
                               break
@@ -520,6 +525,7 @@ setMethod("initialCombinedCounts",
               }
               model <- initialModel(object, y = y.tmp, exposure = exposure)
               model@updateTheta@.Data <- FALSE
+              jointUpdate <- methods::new("LogicalFlag", jointUpdate)
               methods::new("CombinedCountsBinomial",
                            model = model,
                            y = y,
@@ -527,7 +533,8 @@ setMethod("initialCombinedCounts",
                            dataModels = dataModels,
                            datasets = datasets,
                            namesDatasets = namesDatasets,
-                           transforms = transforms)
+                           transforms = transforms,
+                           jointUpdate = jointUpdate)
           })
 
 

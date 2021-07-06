@@ -1155,7 +1155,8 @@ test_that("predictCombined works with object of class CombinedCountsBinomial", {
                                    dataModels = data.models,
                                    datasets = datasets,
                                    namesDatasets = namesDatasets,
-                                   transforms = transforms)
+                                   transforms = transforms,
+                                   jointUpdate = TRUE)
     exposure.pred <- toInteger(extrapolate(exposure, labels = c("4", "5"))[,,5:6])
     x.pred <- initialCombinedCountsPredict(x.est,
                                            along = 3L,
@@ -1238,7 +1239,8 @@ test_that("R, C generic and C specific versions of predictCombined give same ans
                                    dataModels = data.models,
                                    datasets = datasets,
                                    namesDatasets = namesDatasets,
-                                   transforms = transforms)
+                                   transforms = transforms,
+                                   jointUpdate = TRUE)
     exposure.pred <- toInteger(extrapolate(exposure, labels = c("4", "5"))[,,5:6])
     x.pred <- initialCombinedCountsPredict(x.est,
                                            along = 3L,
@@ -1324,7 +1326,8 @@ test_that("predictCombined works with object of class CombinedCountsPoissonHasEx
                                    dataModels = data.models,
                                    datasets = datasets,
                                    namesDatasets = namesDatasets,
-                                   transforms = transforms)
+                                   transforms = transforms,
+                                   jointUpdate = TRUE)
     exposure.pred <- toDouble(extrapolate(exposure, labels = c("4", "5"))[,,5:6])
     x.pred <- initialCombinedCountsPredict(x.est,
                                            along = 3L,
@@ -1404,7 +1407,8 @@ test_that("R, C generic and C specific versions of predictCombined give same ans
                                    dataModels = data.models,
                                    datasets = datasets,
                                    namesDatasets = namesDatasets,
-                                   transforms = transforms)
+                                   transforms = transforms,
+                                   jointUpdate = TRUE)
     exposure.pred <- toDouble(extrapolate(exposure, labels = c("4", "5"))[,,5:6])
     x.pred <- initialCombinedCountsPredict(x.est,
                                            along = 3L,
@@ -1492,7 +1496,8 @@ test_that("predictCombined works with object of class CombinedCountsPoissonNotHa
                                    dataModels = data.models,
                                    datasets = datasets,
                                    namesDatasets = namesDatasets,
-                                   transforms = transforms)
+                                   transforms = transforms,
+                                   jointUpdate = TRUE)
     x.pred <- initialCombinedCountsPredict(x.est,
                                            along = 3L,
                                            labels = NULL,
@@ -1571,7 +1576,8 @@ test_that("R, C generic and C specific versions of predictCombined give same ans
                                    dataModels = data.models,
                                    datasets = datasets,
                                    namesDatasets = namesDatasets,
-                                   transforms = transforms)
+                                   transforms = transforms,
+                                   jointUpdate = TRUE)
     x.pred <- initialCombinedCountsPredict(x.est,
                                            along = 3L,
                                            labels = NULL,
@@ -1921,7 +1927,7 @@ test_that("R, specific C, and generic C versions of updateCombined give same ans
 
 ## CombinedCounts #####################################################################
 
-test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates correct slots", {
+test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates correct slots - joint update is TRUE", {
     initialCombinedCounts <- demest:::initialCombinedCounts
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateCombined <- demest:::updateCombined
@@ -1945,7 +1951,8 @@ test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates corr
                                 dataModels = data.models,
                                 datasets = datasets,
                                 namesDatasets = namesDatasets,
-                                transforms = transforms)
+                                transforms = transforms,
+                                jointUpdate = TRUE)
     x0@y[1] <- 100L
     x1 <- updateCombined(x0)
     for (name in c("model", "y", "dataModels")) {
@@ -1955,8 +1962,45 @@ test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates corr
         expect_true(identical(slot(x1, name), slot(x0, name)))
 })
 
+
+test_that("updateCombined method for CombinedCountsPoissonNotHasExp updates correct slots - jointUpdate is FALSE", {
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateCombined <- demest:::updateCombined
+    set.seed(100)
+    y <- Counts(array(c(1:12),
+                      dim = c(6, 2),
+                      dimnames = list(age = 0:5, sex = c("f", "m"))))
+    model <- Model(y ~ Poisson(mean ~ age, useExpose = FALSE))
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+                        Model(tax ~ Binomial(mean ~ 1)))
+    datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
+                                  dimnames = list(age = 0:5, sex = c("f", "m")))),
+                     Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
+    namesDatasets <- c("register", "tax")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]]),
+                       makeTransform(x = y, y = datasets[[2]]))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedCounts(model,
+                                y = y,
+                                exposure = NULL,
+                                dataModels = data.models,
+                                datasets = datasets,
+                                namesDatasets = namesDatasets,
+                                transforms = transforms,
+                                jointUpdate = FALSE)
+    x0@y[1] <- 100L
+    x1 <- updateCombined(x0)
+    for (name in c("model", "y", "dataModels")) {
+        expect_false(identical(slot(x1, name), slot(x0, name)))
+    }
+    for (name in c("namesDatasets", "datasets", "transforms", "iMethodCombined", "slotsToExtract"))
+        expect_true(identical(slot(x1, name), slot(x0, name)))
+})
+
+
 ## tests equal but not identical
-test_that("R, specific C, and generic C versions of updateCombined method for CombinedCountsPoissonNotHasExp give same answer", {
+test_that("R, specific C, and generic C versions of updateCombined method for CombinedCountsPoissonNotHasExp give same answer - jointUpdate is TRUE", {
     initialCombinedCounts <- demest:::initialCombinedCounts
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateCombined <- demest:::updateCombined
@@ -1980,7 +2024,8 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
                                dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = TRUE)
     set.seed(100)
     x1.R <- updateCombined(x0, useC = FALSE)
     set.seed(100)
@@ -1994,7 +2039,49 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     expect_identical(x1.C.specific, x1.C.generic)
 })
 
-test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct slots", {
+
+## tests equal but not identical
+test_that("R, specific C, and generic C versions of updateCombined method for CombinedCountsPoissonNotHasExp give same answer - jointUpdate is FALSE", {
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateCombined <- demest:::updateCombined
+    set.seed(10)
+    y <- Counts(array(c(1:11, 20L),
+                      dim = c(6, 2),
+                      dimnames = list(age = 0:5, sex = c("f", "m"))))
+    model <- Model(y ~ Poisson(mean ~ age, useExpose = FALSE))
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+                        Model(tax ~ Binomial(mean ~ 1)))
+    datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
+                                  dimnames = list(age = 0:5, sex = c("f", "m")))),
+                         Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
+    namesDatasets <- c("register", "tax")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]]),
+                       makeTransform(x = y, y = datasets[[2]]))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedCounts(model,
+                               y = y,
+                               exposure = NULL,
+                               dataModels = data.models,
+                               datasets = datasets,
+                               namesDatasets = namesDatasets,
+                               transforms = transforms,
+                               jointUpdate = FALSE)
+    set.seed(100)
+    x1.R <- updateCombined(x0, useC = FALSE)
+    set.seed(100)
+    x1.C.specific <- updateCombined(x0, useC = TRUE, useSpecific = TRUE)
+    set.seed(100)
+    x1.C.generic <- updateCombined(x0, useC = TRUE, useSpecific = FALSE)
+    if (test.identity)
+        expect_identical(x1.R, x1.C.specific)
+    else
+        expect_equal(x1.R, x1.C.specific)
+    expect_identical(x1.C.specific, x1.C.generic)
+})
+
+
+test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct slots - jointUpdate is TRUE", {
     initialCombinedCounts <- demest:::initialCombinedCounts
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateCombined <- demest:::updateCombined
@@ -2021,7 +2108,8 @@ test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct
                                dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = TRUE)
     x1 <- updateCombined(x0)
     for (name in c("model", "y", "dataModels")) {
         expect_false(identical(slot(x1, name), slot(x0, name)))
@@ -2030,8 +2118,47 @@ test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct
         expect_true(identical(slot(x1, name), slot(x0, name)))
 })
 
+
+test_that("updateCombined method for CombinedCountsPoissonHasExp updates correct slots - jointUpdate is FALSE", {
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateCombined <- demest:::updateCombined
+    set.seed(100)
+    y <- Counts(array(c(1:11, 20L),
+                      dim = c(6, 2),
+                      dimnames = list(age = 0:5, sex = c("f", "m"))))
+    exposure <- Counts(array(runif(12, max = 20),
+                      dim = c(6, 2),
+                      dimnames = list(age = 0:5, sex = c("f", "m"))))
+    model <- Model(y ~ Poisson(mean ~ age), jump = 1.5)
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+                        Model(tax ~ Binomial(mean ~ 1)))
+    datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
+                                  dimnames = list(age = 0:5, sex = c("f", "m")))),
+                         Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
+    namesDatasets <- c("register", "tax")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]]),
+                       makeTransform(x = y, y = datasets[[2]]))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedCounts(model,
+                               y = y,
+                               exposure = exposure,
+                               dataModels = data.models,
+                               datasets = datasets,
+                               namesDatasets = namesDatasets,
+                               transforms = transforms,
+                               jointUpdate = FALSE)
+    x1 <- updateCombined(x0)
+    for (name in c("model", "y", "dataModels")) {
+        expect_false(identical(slot(x1, name), slot(x0, name)))
+    }
+    for (name in c("namesDatasets", "datasets", "exposure", "transforms", "iMethodCombined", "slotsToExtract"))
+        expect_true(identical(slot(x1, name), slot(x0, name)))
+})
+
+
 ## tests equal but not identical
-test_that("R, specific C, and generic C versions of updateCombined method for CombinedCountsPoissonHasExp give same answer", {
+test_that("R, specific C, and generic C versions of updateCombined method for CombinedCountsPoissonHasExp give same answer - jointUpdate is TRUE", {
     initialCombinedCounts <- demest:::initialCombinedCounts
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateCombined <- demest:::updateCombined
@@ -2058,7 +2185,8 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
                                dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = TRUE)
     set.seed(100)
     x1.R <- updateCombined(x0, useC = FALSE)
     set.seed(100)
@@ -2072,7 +2200,52 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
     expect_identical(x1.C.specific, x1.C.generic)
 })
 
-test_that("updateCombined method for CombinedCountsBinomial updates correct slots", {
+
+## tests equal but not identical
+test_that("R, specific C, and generic C versions of updateCombined method for CombinedCountsPoissonHasExp give same answer - jointUpdate is FALSE", {
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateCombined <- demest:::updateCombined
+    set.seed(10)
+    y <- Counts(array(c(1:11, 20L),
+                      dim = c(6, 2),
+                      dimnames = list(age = 0:5, sex = c("f", "m"))))
+    exposure <- Counts(array(runif(12, max = 20),
+                      dim = c(6, 2),
+                      dimnames = list(age = 0:5, sex = c("f", "m"))))
+    model <- Model(y ~ Poisson(mean ~ age), jump = 1.5)
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+                        Model(tax ~ Binomial(mean ~ 1)))
+    datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
+                                  dimnames = list(age = 0:5, sex = c("f", "m")))),
+                         Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
+    namesDatasets <- c("register", "tax")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]]),
+                       makeTransform(x = y, y = datasets[[2]]))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedCounts(model,
+                               y = y,
+                               exposure = exposure,
+                               dataModels = data.models,
+                               datasets = datasets,
+                               namesDatasets = namesDatasets,
+                               transforms = transforms,
+                               jointUpdate = FALSE)
+    set.seed(100)
+    x1.R <- updateCombined(x0, useC = FALSE)
+    set.seed(100)
+    x1.C.specific <- updateCombined(x0, useC = TRUE, useSpecific = TRUE)
+    set.seed(100)
+    x1.C.generic <- updateCombined(x0, useC = TRUE, useSpecific = FALSE)
+    if (test.identity)
+        expect_identical(x1.R, x1.C.specific)
+    else
+        expect_equal(x1.R, x1.C.specific)
+    expect_identical(x1.C.specific, x1.C.generic)
+})
+
+
+test_that("updateCombined method for CombinedCountsBinomial updates correct slots - jointUpdate is TRUE", {
     initialCombinedCounts <- demest:::initialCombinedCounts
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateCombined <- demest:::updateCombined
@@ -2097,7 +2270,8 @@ test_that("updateCombined method for CombinedCountsBinomial updates correct slot
                                dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = TRUE)
     x1 <- updateCombined(x0)
     for (i in 1:5)
         x1 <- updateCombined(x1)
@@ -2109,8 +2283,48 @@ test_that("updateCombined method for CombinedCountsBinomial updates correct slot
         expect_true(identical(slot(x1, name), slot(x0, name)))
 })
 
+
+test_that("updateCombined method for CombinedCountsBinomial updates correct slots - jointUpdate is FALSE", {
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateCombined <- demest:::updateCombined
+    set.seed(100)
+    y <- Counts(array(c(1:11, 20L),
+                      dim = c(6, 2),
+                      dimnames = list(age = 0:5, sex = c("f", "m"))))
+    exposure <- y + y
+    model <- Model(y ~ Binomial(mean ~ age), jump = 1)
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+                        Model(tax ~ Binomial(mean ~ 1)))
+    datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
+                                  dimnames = list(age = 0:5, sex = c("f", "m")))),
+                         Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
+    namesDatasets <- c("register", "tax")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]]),
+                       makeTransform(x = y, y = datasets[[2]]))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedCounts(model,
+                               y = y,
+                               exposure = exposure,
+                               dataModels = data.models,
+                               datasets = datasets,
+                               namesDatasets = namesDatasets,
+                               transforms = transforms,
+                               jointUpdate = FALSE)
+    x1 <- updateCombined(x0)
+    for (i in 1:5)
+        x1 <- updateCombined(x1)
+    for (name in c("model", "y", "dataModels")) {
+        expect_false(identical(slot(x1, name), slot(x0, name)))
+    }
+    for (name in c("namesDatasets", "datasets", "exposure", "transforms", "iMethodCombined",
+                   "slotsToExtract"))
+        expect_true(identical(slot(x1, name), slot(x0, name)))
+})
+
+
 ## tests equal but not identical
-test_that("R, specific C, and generic C versions of updateCombined method for CombinedCountsBinomial give same answer", {
+test_that("R, specific C, and generic C versions of updateCombined method for CombinedCountsBinomial give same answer - jointUpdate is TRUE", {
     initialCombinedCounts <- demest:::initialCombinedCounts
     makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
     updateCombined <- demest:::updateCombined
@@ -2135,7 +2349,8 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
                                dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = TRUE)
     set.seed(100)
     x1.R <- updateCombined(x0, useC = FALSE)
     set.seed(100)
@@ -2148,6 +2363,49 @@ test_that("R, specific C, and generic C versions of updateCombined method for Co
         expect_equal(x1.R, x1.C.specific)
     expect_identical(x1.C.specific, x1.C.generic)
 })
+
+
+## tests equal but not identical
+test_that("R, specific C, and generic C versions of updateCombined method for CombinedCountsBinomial give same answer - jointUpdate is FALSE", {
+    initialCombinedCounts <- demest:::initialCombinedCounts
+    makeCollapseTransformExtra <- dembase::makeCollapseTransformExtra
+    updateCombined <- demest:::updateCombined
+    set.seed(10)
+    y <- Counts(array(c(1:11, 20L),
+                      dim = c(6, 2),
+                      dimnames = list(age = 0:5, sex = c("f", "m"))))
+    exposure <- y + y
+    model <- Model(y ~ Binomial(mean ~ age))
+    data.models <- list(Model(register ~ PoissonBinomial(prob = 0.98)),
+                        Model(tax ~ Binomial(mean ~ 1)))
+    datasets <- list(Counts(array(c(0L, 2:12), dim = c(6, 2),
+                                  dimnames = list(age = 0:5, sex = c("f", "m")))),
+                         Counts(array(c(1:5, NA), dim = 6, dimnames = list(age = 0:5))))
+    namesDatasets <- c("register", "tax")
+    transforms <- list(makeTransform(x = y, y = datasets[[1]]),
+                       makeTransform(x = y, y = datasets[[2]]))
+    transforms <- lapply(transforms, makeCollapseTransformExtra)
+    x0 <- initialCombinedCounts(model,
+                               y = y,
+                               exposure = exposure,
+                               dataModels = data.models,
+                               datasets = datasets,
+                               namesDatasets = namesDatasets,
+                               transforms = transforms,
+                               jointUpdate = FALSE)
+    set.seed(100)
+    x1.R <- updateCombined(x0, useC = FALSE)
+    set.seed(100)
+    x1.C.specific <- updateCombined(x0, useC = TRUE, useSpecific = TRUE)
+    set.seed(100)
+    x1.C.generic <- updateCombined(x0, useC = TRUE, useSpecific = FALSE)
+    if (test.identity)
+        expect_identical(x1.R, x1.C.specific)
+    else
+        expect_equal(x1.R, x1.C.specific)
+    expect_identical(x1.C.specific, x1.C.generic)
+})
+
 
 
 ## Accounts ##############################################################################

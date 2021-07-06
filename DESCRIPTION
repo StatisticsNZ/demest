@@ -1,7 +1,7 @@
 Package: demest
 Title: Bayesian Demographic Estimation and Forecasting
-Version: 0.0.0.3.1
-Date: 2020-05-25
+Version: 0.0.0.4.0
+Date: 2021-07-06
 Authors@R: c(
     person(given = "John",
            family = "Bryant",
@@ -48,7 +48,8 @@ Imports:
 Suggests:
     datasets,
     demdata,
-    testthat,
-    knitr
+    knitr,
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1

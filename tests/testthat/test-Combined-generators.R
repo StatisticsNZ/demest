@@ -465,10 +465,12 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonNo
                                dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = TRUE)
     expect_true(validObject(x))
     expect_is(x, "CombinedCountsPoissonNotHasExp")
     expect_true(!any(is.na(x@y)))
+    expect_true(x@jointUpdate@.Data)
 })
 
 test_that("initialCombinedCounts creates object of class CombinedCountsPoissonHasExp from valid inputs", {
@@ -498,10 +500,12 @@ test_that("initialCombinedCounts creates object of class CombinedCountsPoissonHa
                                dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = FALSE)
     expect_true(validObject(x))
     expect_is(x, "CombinedCountsPoissonHasExp")
     expect_true(!any(is.na(x@y)))
+    expect_false(x@jointUpdate@.Data)
 })
 
 test_that("initialCombinedCounts creates object of class CombinedCountsBinomial from valid inputs", {
@@ -531,10 +535,12 @@ test_that("initialCombinedCounts creates object of class CombinedCountsBinomial 
                                dataModels = data.models,
                                datasets = datasets,
                                namesDatasets = namesDatasets,
-                               transforms = transforms)
+                               transforms = transforms,
+                               jointUpdate = TRUE)
     expect_true(validObject(x))
     expect_is(x, "CombinedCountsBinomial")
     expect_true(!any(is.na(x@y)))
+    expect_true(x@jointUpdate@.Data)
 })
 
 
@@ -568,7 +574,8 @@ test_that("initialCombinedCounts throws appropriate errors with CombinedCountsBi
                                        dataModels = data.models,
                                        datasets = datasets,
                                        namesDatasets = namesDatasets,
-                                       transforms = transforms),
+                                       transforms = transforms,
+                                       jointUpdate = TRUE),
                  "'y' greater than 'exposure'")
 })
 
@@ -605,7 +612,8 @@ test_that("initialCombinedCountsPredict creates object of class CombinedCountsBi
                                    dataModels = data.models,
                                    datasets = datasets,
                                    namesDatasets = namesDatasets,
-                                   transforms = transforms)
+                                   transforms = transforms,
+                                   jointUpdate = TRUE)
     expect_true(validObject(x.est))
     expect_is(x.est, "CombinedCountsBinomial")
     exposure.pred <- extrapolate(exposure, labels = c("4", "5"))[,,5:6]
@@ -668,7 +676,8 @@ test_that("initialCombinedCountsPredict creates object of class CombinedCountsPo
                                    dataModels = data.models,
                                    datasets = datasets,
                                    namesDatasets = namesDatasets,
-                                   transforms = transforms)
+                                   transforms = transforms,
+                                   jointUpdate = TRUE)
     expect_true(validObject(x.est))
     expect_is(x.est, "CombinedCountsPoissonHasExp")
     exposure.pred <- extrapolate(exposure, labels = c("4", "5"))[,,5:6]
@@ -731,7 +740,8 @@ test_that("initialCombinedCountsPredict creates object of class CombinedCountsPo
                                    dataModels = data.models,
                                    datasets = datasets,
                                    namesDatasets = namesDatasets,
-                                   transforms = transforms)
+                                   transforms = transforms,
+                                   jointUpdate = TRUE)
     expect_true(validObject(x.est))
     expect_is(x.est, "CombinedCountsPoissonNotHasExp")
     x.pred <- initialCombinedCountsPredict(x.est,

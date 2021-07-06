@@ -5103,6 +5103,244 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
 
 ## TRANSLATED
 ## HAS_TESTS
+updateCountsPoissonNotUseExp <- function(y, model, dataModels, datasets,
+                                         transforms, useC = FALSE) {
+    ## y
+    stopifnot(methods::is(y, "Counts"))
+    stopifnot(is.integer(y))
+    stopifnot(!any(is.na(y)))
+    stopifnot(all(y >= 0))
+    stopifnot(all(round(y) == y))
+    ## model
+    stopifnot(methods::is(model, "Model"))
+    stopifnot(methods::is(model, "Poisson"))
+    stopifnot(methods::is(model, "NotUseExposure"))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
+    ## datasets
+    stopifnot(is.list(datasets))
+    stopifnot(all(sapply(datasets, methods::is, "Counts")))
+    stopifnot(all(sapply(datasets, is.integer)))
+    stopifnot(all(sapply(datasets, function(x) all(x[!is.na(x)] >= 0))))
+    ## transforms
+    stopifnot(is.list(transforms))
+    stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
+    ## y and transforms
+    for (i in seq_along(transforms))
+        stopifnot(identical(dim(y), transforms[[i]]@dimBefore))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
+    ## datasets and transforms
+    for (i in seq_along(datasets))
+        stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
+    if (useC) {
+        .Call(updateCountsPoissonNotUseExp_R, y, model,
+              dataModels, datasets, transforms)
+    }
+    else {
+        ## y, model, dataModels, datasets, transforms
+        theta <- model@theta
+        struc.zero.array <- model@strucZeroArray
+        has.subtotals <- methods::is(y, "HasSubtotals")
+        if (has.subtotals) {
+            transform.subtotals <- y@transformSubtotals
+        }
+        for (i in seq_along(y)) {
+            if (struc.zero.array[i] != 0L) {
+                if (has.subtotals) {
+                    i.other <- makeIOther(i = i, transform = transform.subtotals)
+                    if (i.other > 0L) { ## found other cell with same subtotal
+                        i <- c(i, i.other)
+                        sum.y <- sum(y[i])
+                        y.prop <- as.integer(stats::rmultinom(n = 1L, size = sum.y, prob = theta[i]))
+                    }
+                    else if (i.other == 0L) { ## subtotal refers to single cell
+                        next
+                    }
+                    else { ## cell not included in any subtotal
+                        ## as.integer needed for R < 3.0
+                        y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i]))
+                    }
+                }
+                else {
+                    ## as.integer needed for R < 3.0
+                    y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i]))
+                }
+                diff.log.lik <- diffLogLik(yProp = y.prop,
+                                           y = y,
+                                           indicesY = i,
+                                           dataModels = dataModels,
+                                           datasets = datasets,
+                                           transforms = transforms)
+                accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
+                if (accept)
+                    y[i] <- y.prop
+            }
+        }
+        y
+    }
+}
+
+## TRANSLATED
+## HAS_TESTS
+updateCountsPoissonUseExp <- function(y, model, exposure, dataModels, datasets,
+                                      transforms, useC = FALSE) {
+    ## y
+    stopifnot(methods::is(y, "Counts"))
+    stopifnot(is.integer(y))
+    stopifnot(!any(is.na(y)))
+    stopifnot(all(y >= 0))
+    stopifnot(all(round(y) == y))
+    ## model
+    stopifnot(methods::is(model, "Model"))
+    stopifnot(methods::is(model, "Poisson"))
+    stopifnot(methods::is(model, "UseExposure"))
+    ## exposure
+    stopifnot(methods::is(exposure, "Counts"))
+    stopifnot(!any(is.na(exposure)))
+    stopifnot(is.double(exposure))
+    stopifnot(all(exposure >= 0))
+    stopifnot(all(y[exposure == 0] == 0))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
+    ## datasets
+    stopifnot(is.list(datasets))
+    stopifnot(all(sapply(datasets, methods::is, "Counts")))
+    stopifnot(all(sapply(datasets, is.integer)))
+    stopifnot(all(sapply(datasets, function(x) all(x[!is.na(x)] >= 0))))
+    ## transforms
+    stopifnot(is.list(transforms))
+    stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
+    ## y and transforms
+    for (i in seq_along(transforms))
+        stopifnot(identical(dim(y), transforms[[i]]@dimBefore))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
+    ## datasets and transforms
+    for (i in seq_along(datasets))
+        stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
+    if (useC) {
+        .Call(updateCountsPoissonUseExp_R, y, model, exposure,
+              dataModels, datasets, transforms)
+    }
+    else {
+        theta <- model@theta
+        has.subtotals <- methods::is(y, "HasSubtotals")
+        struc.zero.array <- model@strucZeroArray
+        if (has.subtotals)
+            transform.subtotals <- y@transformSubtotals
+        for (i in seq_along(y)) {
+            if (struc.zero.array[i] != 0L) {
+                if (has.subtotals) {
+                    i.other <- makeIOther(i = i, transform = transform.subtotals)
+                    if (i.other > 0L) { ## other cell found
+                        i <- c(i, i.other)
+                        sum.y <- sum(y[i])
+                        ## as.integer needed for R < 3.0
+                        y.prop <- as.integer(stats::rmultinom(n = 1L, size = sum.y, prob = theta[i] * exposure[i]))
+                    }
+                    else if (i.other == 0L) ## subtotal refers to single cell
+                        next
+                    else ## not included in subtotal; as.integer needed for R < 3.0
+                        y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i] * exposure[i]))
+                }
+                else ## as.integer needed for R < 3.0
+                    y.prop <- as.integer(stats::rpois(n = 1L, lambda = theta[i] * exposure[i]))
+                diff.log.lik <- diffLogLik(yProp = y.prop,
+                                           y = y,
+                                           indicesY = i,
+                                           dataModels = dataModels,
+                                           datasets = datasets,
+                                           transforms = transforms)
+                accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
+                if (accept)
+                    y[i] <- y.prop
+            }
+        }
+        y
+    }
+}
+
+## TRANSLATED
+## HAS_TESTS
+updateCountsBinomial <- function(y, model, exposure, dataModels, datasets,
+                                 transforms, useC = FALSE) {
+    ## y
+    stopifnot(methods::is(y, "Counts"))
+    stopifnot(!methods::is(y, "HasSubtotals"))
+    stopifnot(is.integer(y))
+    stopifnot(!any(is.na(y)))
+    stopifnot(all(y >= 0))
+    ## model
+    stopifnot(methods::is(model, "Model"))
+    stopifnot(methods::is(model, "Binomial"))
+    ## exposure
+    stopifnot(methods::is(model, "UseExposure"))
+    stopifnot(methods::is(exposure, "Counts"))
+    stopifnot(!any(is.na(exposure)))
+    stopifnot(is.integer(exposure))
+    stopifnot(all(exposure >= 0))
+    ## dataModels
+    stopifnot(is.list(dataModels))
+    stopifnot(all(sapply(dataModels, methods::is, "Model")))
+    stopifnot(all(sapply(dataModels, methods::is, "UseExposure")))
+    ## datasets
+    stopifnot(is.list(datasets))
+    stopifnot(all(sapply(datasets, methods::is, "Counts")))
+    stopifnot(all(sapply(datasets, is.integer)))
+    stopifnot(all(sapply(datasets, function(x) all(x[!is.na(x)] >= 0))))
+    ## transforms
+    stopifnot(is.list(transforms))
+    stopifnot(all(sapply(transforms, methods::is, "CollapseTransformExtra")))
+    ## y and exposure
+    stopifnot(all(y <= exposure))
+    ## y and transforms
+    for (i in seq_along(transforms))
+        stopifnot(identical(dim(y), transforms[[i]]@dimBefore))
+    ## dataModels and datasets
+    stopifnot(identical(length(dataModels), length(datasets)))
+    ## dataModels and transforms
+    stopifnot(identical(length(dataModels), length(transforms)))
+    ## datasets and transforms
+    for (i in seq_along(datasets))
+        stopifnot(identical(transforms[[i]]@dimAfter, dim(datasets[[i]])))
+    if (useC) {
+        .Call(updateCountsBinomial_R, y, model, exposure,
+              dataModels, datasets, transforms)
+    }
+    else {
+        theta <- model@theta
+        for (i in seq_along(y)) {
+            y.prop <- stats::rbinom(n = 1L, size = exposure[i], prob = theta[i])
+            y.prop <- as.integer(y.prop)  # needed for R < 3.0
+            diff.log.lik <- diffLogLik(yProp = y.prop,
+                                       y = y,
+                                       indicesY = i,
+                                       dataModels = dataModels,
+                                       datasets = datasets,
+                                       transforms = transforms)
+            accept <- (diff.log.lik >= 0) || (stats::runif(n = 1L) < exp(diff.log.lik))
+            if (accept)
+                y[i] <- y.prop
+        }
+        y
+    }
+}
+
+
+
+
+
+## TRANSLATED
+## HAS_TESTS
 updateCountsAndThetaBinomial <- function(object, useC = FALSE) {
     stopifnot(methods::is(object, "CombinedCountsBinomial"))
     stopifnot(methods::validObject(object))

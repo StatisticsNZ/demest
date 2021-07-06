@@ -984,7 +984,8 @@ test_that("makeResultsCounts works with no exposure", {
                                                       dataModels = data.models,
                                                       datasets = datasets,
                                                       namesDatasets = c("register", "census"),
-                                                      transforms = transforms))
+                                                      transforms = transforms,
+                                                      jointUpdate = TRUE))
     filename <- "filename"
     call <- call("estimateCounts", list("model"))
     mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L, nCore = 3L)
@@ -1033,7 +1034,8 @@ test_that("makeResultsCounts works with exposure", {
                                                       dataModels = data.models,
                                                       datasets = datasets,
                                                       namesDatasets = c("register", "census"),
-                                                      transforms = transforms))
+                                                      transforms = transforms,
+                                                      jointUpdate = TRUE))
     filename <- "filename"
     call <- call("estimateCounts", list("model"))
     mcmcArgs <- list(nBurnin = 1000L, nSim = 1000L, nChain = 3L, nThin = 20L, nCore = 3L)

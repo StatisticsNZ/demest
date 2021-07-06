@@ -798,12 +798,17 @@ updateCombined_CombinedCountsPoissonNotHasExp(SEXP object_R,
     SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
     SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
     SEXP transforms_R = GET_SLOT(object_R, transforms_sym);
+    int jointUpdate = *(INTEGER(GET_SLOT(object_R, jointUpdate_sym)));
 
     int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
 
     while (nUpdate > 0) {
 
+      if (jointUpdate)
         updateCountsAndThetaPoissonNotUseExp(object_R);
+      else
+	updateCountsPoissonNotUseExp(y_R, model_R, dataModels_R,
+				     datasets_R, transforms_R);
 
         updateModelNotUseExp_Internal(model_R, y_R, i_method_model);
 
@@ -824,12 +829,16 @@ updateCombined_CombinedCountsPoissonHasExp(SEXP object_R, int nUpdate)
     SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
     SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
     SEXP transforms_R = GET_SLOT(object_R, transforms_sym);
+    int jointUpdate = *(INTEGER(GET_SLOT(object_R, jointUpdate_sym)));
 
     int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
 
     while (nUpdate > 0) {
-
+      if (jointUpdate)
         updateCountsAndThetaPoissonUseExp(object_R);
+      else
+	updateCountsPoissonUseExp(y_R, model_R, exposure_R,
+				  dataModels_R, datasets_R, transforms_R);
         updateModelUseExp_Internal(model_R, y_R, exposure_R, i_method_model);
         updateDataModelsCounts(y_R, dataModels_R, datasets_R,
                                         transforms_R);
@@ -847,12 +856,16 @@ updateCombined_CombinedCountsBinomial(SEXP object_R, int nUpdate)
     SEXP dataModels_R = GET_SLOT(object_R, dataModels_sym);
     SEXP datasets_R = GET_SLOT(object_R, datasets_sym);
     SEXP transforms_R = GET_SLOT(object_R, transforms_sym);
+    int jointUpdate = *(INTEGER(GET_SLOT(object_R, jointUpdate_sym)));
 
     int i_method_model = *(INTEGER(GET_SLOT(model_R, iMethodModel_sym)));
 
     while (nUpdate > 0) {
-
-      updateCountsAndThetaBinomial(object_R);
+      if (jointUpdate)
+	updateCountsAndThetaBinomial(object_R);
+      else
+	updateCountsBinomial(y_R, model_R, exposure_R, dataModels_R,
+			     datasets_R, transforms_R);
 
         updateModelUseExp_Internal(model_R, y_R, exposure_R, i_method_model);
 

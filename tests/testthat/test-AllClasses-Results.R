@@ -451,7 +451,8 @@ test_that("can create valid object of class ResultsCountsEst", {
                                              dataModels = data.models.spec,
                                              datasets = datasets.data,
                                              namesDatasets = namesDatasets,
-                                             transforms = transforms))
+                                             transforms = transforms,
+                                             jointUpdate = TRUE))
     pos <- 1L
     model <- makeOutputModel(model = final[[1]]@model, pos = pos, mcmc = mcmc)
     pos <- pos + changeInPos(model)
@@ -538,7 +539,8 @@ test_that("validity tests for ResultsCountsEst inherited from ResultsCountsEst w
                                              dataModels = data.models.spec,
                                              datasets = datasets.data,
                                              namesDatasets = namesDatasets,
-                                             transforms = transforms))
+                                             transforms = transforms,
+                                             jointUpdate = TRUE))
     pos <- 1L
     model <- makeOutputModel(model = final[[1]]@model, pos = pos, mcmc = mcmc)
     pos <- pos + changeInPos(model)
@@ -666,7 +668,8 @@ test_that("can create valid object of class ResultsCountsExposureEst", {
                                              dataModels = data.models.spec,
                                              datasets = datasets.data,
                                              namesDatasets = namesDatasets,
-                                             transforms = transforms))
+                                             transforms = transforms,
+                                             jointUpdate = TRUE))
     pos <- 1L
     model <- makeOutputModel(model = final[[1]]@model, pos = pos, mcmc = mcmc)
     pos <- pos + changeInPos(model)

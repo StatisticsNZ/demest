@@ -205,7 +205,8 @@ setClass("CombinedModelCMPHasExp",
 ## CombinedCounts #############################################################
 
 setClass("CombinedCounts",
-         slots = c(model = "Model"),
+         slots = c(model = "Model",
+                   jointUpdate = "LogicalFlag"),
          contains = c("VIRTUAL",
                       "Combined",
                       "YNonNegativeCounts",

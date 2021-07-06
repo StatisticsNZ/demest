@@ -411,6 +411,11 @@ predictModel <- function(filenameEst, filenamePred,
 #' \code{\link[dembase:Concordance-class]{concordances}},
 #' which are applied to \code{y} before it is supplied to
 #' the corresponding data model.
+#' @param jointUpdate If \code{TRUE} (the default), jointly update the
+#' counts and rates/probabilities. If \code{FALSE}, revert to
+#' the original behaviour of \code{estimateCounts}, which is
+#' to update counts and rates/probabilities separately. The
+#' new behaviour generally leads to faster convergence.
 #' 
 #'
 #' @seealso \code{\link{estimateModel}}, \code{\link{estimateAccount}}
@@ -447,6 +452,7 @@ predictModel <- function(filenameEst, filenamePred,
 #' @export
 estimateCounts <- function(model, y, exposure = NULL, dataModels,
                            datasets, concordances = list(),
+                           jointUpdate = TRUE,
                            filename = NULL, nBurnin = 1000,
                            nSim = 1000, nChain = 4, nThin = 1,
                            parallel = TRUE, nCore = NULL,
@@ -495,6 +501,8 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
     control.args <- makeControlArgs(call = call,
                                     parallel = parallel,
                                     nUpdateMax = nUpdateMax)
+    ## check 'jointUpdate'
+    checkLogical(jointUpdate)
     ## initial values
     combineds <- replicate(n = mcmc.args$nChain,
                            initialCombinedCounts(model,
@@ -503,7 +511,8 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
                                                  dataModels = dataModels,
                                                  datasets = datasets,
                                                  namesDatasets = namesDatasets,
-                                                 transforms = transforms))
+                                                 transforms = transforms,
+                                                 jointUpdate = jointUpdate))
     parallel <- control.args$parallel
     tempfiles <- paste(filename, seq_len(mcmc.args$nCore), sep = "_")
     MoreArgs <- c(list(seed = NULL),

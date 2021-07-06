@@ -1005,7 +1005,7 @@ setMethod("fetchResults",
               n.impute <- sum(is.missing)
               mean <- log(exposure[is.missing] + 1) + alpha[is.missing]
               sd <- varsigma[is.missing]
-              imputed <- exp(rnorm(n = n.impute, mean = mean, sd = sd)) - 1
+              imputed <- exp(stats::rnorm(n = n.impute, mean = mean, sd = sd)) - 1
               .Data[is.missing] <- imputed
               .Data[is.struc.zero] <- 0L
               methods::new("Counts",

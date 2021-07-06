@@ -1624,7 +1624,7 @@ Initial <- function(mean = 0, sd = NULL, mult = 1) {
 #' @return Object of class \code{\linkS4class{InvChiSq}}.
 #'
 #' @examples
-#' InvChiSq(df = 10, scale = 10, max)
+#' InvChiSq(df = 10, scaleSq = 10, max = 15)
 #' @export
 InvChiSq <- function(df, scaleSq, max = NULL) { ## must supply values for 'df' and 'scaleSq'
     nu <- checkAndTidyNu(x = df,

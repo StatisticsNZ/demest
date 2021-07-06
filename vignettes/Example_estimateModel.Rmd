@@ -322,7 +322,7 @@ predictModel(filename.fancy.est,
 
 results in
 
-```{r}
+```{r, fig.width = 6.5, fig.height = 7}
 rates.fancy <- fetchBoth(filenameEst = filename.fancy.est,
                          filenamePred = filename.fancy.pred,
                          where = c("model", "likelihood", "rate"))

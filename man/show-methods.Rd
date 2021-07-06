@@ -33,6 +33,7 @@
 \alias{show,SpecLN2-method}
 \alias{show,Components-method}
 \alias{show,Covariates-method}
+\alias{show,InvChiSq-method}
 \alias{show,Error-method}
 \alias{show,HalfT-method}
 \alias{show,Initial-method}
@@ -109,6 +110,8 @@
 \S4method{show}{Components}(object)
 
 \S4method{show}{Covariates}(object)
+
+\S4method{show}{InvChiSq}(object)
 
 \S4method{show}{Error}(object)
 

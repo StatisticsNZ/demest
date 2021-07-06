@@ -22,5 +22,5 @@ Specify an inverse chi-squared distribution,
 for use as a prior..
 }
 \examples{
-InvChiSq(df = 10, scale = 10, max)
+InvChiSq(df = 10, scaleSq = 10, max = 15)
 }

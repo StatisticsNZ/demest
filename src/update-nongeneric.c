@@ -6975,6 +6975,282 @@ updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R)
 
 
 void
+updateCountsPoissonNotUseExp(SEXP y_R, SEXP model_R, SEXP dataModels_R,
+                 SEXP datasets_R, SEXP transforms_R)
+{
+
+#ifdef DEBUGGING
+  PrintValue(y_R);
+  PrintValue(model_R);
+  PrintValue(dataModels_R);
+  PrintValue(datasets_R);
+  PrintValue(transforms_R);
+  PrintValue(GET_SLOT(model_R, theta_sym));
+#endif
+
+  double *theta = REAL(GET_SLOT(model_R, theta_sym));
+  int n_y = LENGTH(y_R);
+  int *y = INTEGER(y_R);
+  int *strucZeroArray = INTEGER(GET_SLOT(model_R, strucZeroArray_sym));
+
+  int has_subtotals = 0;
+
+  SEXP transformSubtotals_R = NULL;
+  if (R_has_slot(y_R, transformSubtotals_sym)) {
+    has_subtotals = 1;
+    transformSubtotals_R = GET_SLOT(y_R, transformSubtotals_sym);
+  }
+
+
+#ifdef DEBUGGING
+  PrintValue(ScalarInteger(100));
+  PrintValue(ScalarInteger(has_subtotals));
+  if(has_subtotals) {
+    PrintValue(ScalarInteger(110));
+    PrintValue(transformSubtotals_R);
+  }
+#endif
+
+  for (int ir = 1; ir <= n_y; ++ir) {
+
+        if (strucZeroArray[ir - 1] != 0) {
+
+#ifdef DEBUGGING
+      PrintValue(ScalarInteger(200));
+      PrintValue(ScalarInteger(ir));
+#endif
+
+      int nInd = 2; /* number of indices (proposals) to deal with */
+      int yProp[nInd]; /* make space > 1 (may only need one) */
+      int indices[nInd]; /* make space > 1 (may only need one) */
+      /* put ir into first pos in indices
+       * if nInd=2 second pos will be filled later */
+      indices[0] = ir;
+
+      if (has_subtotals) {
+    int ir_other = makeIOther(ir, transformSubtotals_R);
+
+#ifdef DEBUGGING
+    PrintValue(ScalarInteger(300));
+    PrintValue(ScalarInteger(ir_other));
+#endif
+
+    if (ir_other > 0) { /* found other cell with same subtotal */
+
+      getTwoMultinomialProposalsNoExp(yProp,
+                      y, theta, ir, ir_other);
+
+      indices[1] = ir_other; /* only need if nInd = 2 */
+
+    }
+
+    else if (ir_other < 0) { /* cell not included in any subtotal */
+      nInd = 1;
+
+#ifdef DEBUGGING
+      PrintValue(ScalarInteger(700));
+      PrintValue(ScalarReal(theta[ir-1]));
+#endif
+
+      /* the R code for R 3.0.0 onwards seems to just use
+       * a cast to an int, so that's what I have done. */
+      yProp[0] = (int) rpois(theta[ir-1]);
+
+#ifdef DEBUGGING
+      PrintValue(ScalarInteger(750));
+      PrintValue(ScalarReal(yProp[0]));
+#endif
+    }
+    else { /* ir_other == 0, subtotal refers to single cell */
+#ifdef DEBUGGING
+      PrintValue(ScalarInteger(600));
+#endif
+      continue; /* next ir in for loop */
+    }
+      }
+      else { /* no subtotals */
+    nInd = 1;
+    /* the R code for R 3.0.0 onwards seems to just use
+     * a cast to an int, so that's what I have done. */
+    yProp[0] = (int) rpois(theta[ir-1]);
+#ifdef DEBUGGING
+    PrintValue(ScalarInteger(800));
+    PrintValue(ScalarReal(yProp[0]));
+#endif
+      }
+
+      double diffLL = diffLogLik(yProp, y_R, indices, nInd,
+                 dataModels_R, datasets_R, transforms_R);
+
+#ifdef DEBUGGING
+      PrintValue(ScalarInteger(900));
+      PrintValue(ScalarReal(diffLL));
+#endif
+
+#ifndef DEBUGGING
+      if ( !( diffLL < 0.0) || ( runif(0.0, 1.0) < exp(diffLL) ) ) {
+    /* accept proposals */
+    for (int i = 0; i < nInd; ++i) {
+      y[ indices[i] - 1] = yProp[i];
+    }
+      }
+#endif
+
+#ifdef DEBUGGING
+      int accept = 0;
+      if (!(diffLL < 0.0)) {
+    PrintValue(ScalarInteger(950));
+    accept = 1;
+      }
+      else {
+    double ru = runif(0.0,1.0);
+    double edll = exp(diffLL);
+    PrintValue(ScalarInteger(960));
+    PrintValue(ScalarReal(ru));
+    PrintValue(ScalarInteger(970));
+    PrintValue(ScalarReal(edll));
+    int tmp = (ru < edll);
+    PrintValue(ScalarInteger(980));
+    PrintValue(ScalarInteger(tmp));
+    if (tmp) {
+      accept = 1;
+    }
+      }
+      PrintValue(ScalarInteger(1000));
+      PrintValue(ScalarInteger(accept));
+
+      if ( accept ) {
+    /* accept proposals */
+    for (int i = 0; i < nInd; ++i) {
+      y[ indices[i] - 1] = yProp[i];
+    }
+      }
+#endif
+
+#ifdef DEBUGGING
+      PrintValue(ScalarInteger(10000));
+      PrintValue(y_R);
+#endif
+    }
+  }
+
+}
+
+
+/* ONLY tested without subtotals*/
+void
+updateCountsPoissonUseExp(SEXP y_R, SEXP model_R,
+              SEXP exposure_R, SEXP dataModels_R,
+              SEXP datasets_R, SEXP transforms_R)
+{
+  double *theta = REAL(GET_SLOT(model_R, theta_sym));
+  double *exposure = REAL(exposure_R);
+  int n_y = LENGTH(y_R);
+  int *y = INTEGER(y_R);
+  int *strucZeroArray = INTEGER(GET_SLOT(model_R, strucZeroArray_sym));
+
+  int has_subtotals = 0;
+  SEXP transformSubtotals_R = NULL;
+  if (R_has_slot(y_R, transformSubtotals_sym)) {
+    has_subtotals = 1;
+    transformSubtotals_R = GET_SLOT(y_R, transformSubtotals_sym);
+  }
+
+  for (int ir = 1; ir <= n_y; ++ir) {
+
+    if (strucZeroArray[ir - 1] != 0) {
+
+      int nInd = 2; /* number of indices (proposals) to deal with */
+      int yProp[nInd]; /* make space > 1 (may only need one)  */
+      int indices[nInd]; /* make space > 1 (may only need one) */
+      /* put ir into first pos in indices
+       * if nInd=2 second pos will be filled later */
+      indices[0] = ir;
+
+      if (has_subtotals) {
+    int ir_other = makeIOther(ir, transformSubtotals_R);
+
+    if (ir_other > 0) { /* found other cell with same subtotal */
+
+      getTwoMultinomialProposalsWithExp(yProp,
+                        y, theta, exposure, ir, ir_other);
+
+      indices[1] = ir_other; /* only need if nInd = 2 */
+
+    }
+
+    else if (ir_other < 0) { /* cell not included in any subtotal */
+      nInd = 1;
+      /* the R code for R 3.0.0 onwards seems to just use
+       * a cast to an int, so that's what I have done. */
+      yProp[0] = (int) rpois(theta[ir-1]*exposure[ir-1]);
+    }
+    else { /* ir_other == 0, subtotal refers to single cell */
+      continue; /* next ir in for loop */
+    }
+      }
+      else { /* no subtotals */
+
+    nInd = 1;
+    /* the R code for R 3.0.0 onwards seems to just use
+     * a cast to an int, so that's what I have done. */
+    yProp[0] = (int) rpois(theta[ir-1]*exposure[ir-1]);
+
+      }
+
+      double diffLL = diffLogLik(yProp, y_R, indices, nInd,
+                 dataModels_R, datasets_R, transforms_R);
+
+
+      if (!( diffLL < 0.0) || ( runif(0.0, 1.0) < exp(diffLL) )) {
+    /* accept proposals */
+
+    for (int i = 0; i < nInd; ++i) {
+      y[ indices[i] - 1] = yProp[i];
+    }
+      }
+
+    }
+
+  }
+
+}
+
+void
+updateCountsBinomial(SEXP y_R, SEXP model_R,
+             SEXP exposure_R, SEXP dataModels_R,
+             SEXP datasets_R, SEXP transforms_R)
+{
+
+  double *theta = REAL(GET_SLOT(model_R, theta_sym));
+  int *exposure = INTEGER(exposure_R);
+  int nY = LENGTH(y_R);
+  int *y = INTEGER(y_R);
+
+  for(int i = 0; i < nY; ++i) {
+
+    int ir = i+1; /* R style index */
+
+    int yProp = rbinom(exposure[i], theta[i]);
+    /* cast to int */
+
+    double diffLL = diffLogLik(&yProp, y_R,
+                   &ir, 1,
+                   dataModels_R, datasets_R, transforms_R);
+
+
+    int accept =  ( !( diffLL < 0.0)
+            || ( runif(0.0, 1.0) < exp(diffLL) ) );
+    if (accept) {
+      /* accept proposals */
+      y[i] = yProp;
+    }
+  }
+}
+
+
+
+void
 updateCountsAndThetaBinomial(SEXP object_R)
 {
 

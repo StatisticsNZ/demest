@@ -51,11 +51,11 @@ setClassUnion("dataframeOrNULL",
 setClassUnion("listOrNULL",
               members = c("list", "NULL"))
 
-setClassUnion("numericOrNULL",
-              members = c("numeric", "NULL"))
+## setClassUnion("numericOrNULL",
+##               members = c("numeric", "NULL"))
 
-setClassUnion("numericOrCharacterOrNULL",
-              members = c("numeric", "character", "NULL"))
+## setClassUnion("numericOrCharacterOrNULL",
+##               members = c("numeric", "character", "NULL"))
 
 setClassUnion("matrixOrNULL",
               members = c("matrix", "NULL"))
@@ -63,6 +63,6 @@ setClassUnion("matrixOrNULL",
 setClassUnion("ValuesOrNULL",
               members = c("Values", "NULL"))
 
-setClassUnion("ValuesOrNumeric",
-              members = c("Values", "numeric"))
+## setClassUnion("ValuesOrNumeric",
+##               members = c("Values", "numeric"))
 
