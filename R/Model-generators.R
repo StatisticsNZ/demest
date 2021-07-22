@@ -1439,6 +1439,23 @@ setMethod("initialModel",
 
 ## HAS_TESTS
 setMethod("initialModel",
+          signature(object = "SpecExact",
+                    y = "Counts",
+                    exposure = "Counts",
+                    weights = "missing"),
+          function(object, y, exposure) {
+              call <- object@call
+              metadataY <- y@metadata
+              if (anyNA(y@.Data))
+                  stop(gettextf("using '%s' data model, but data contains missing values",
+                                "Exact"))
+              methods::new("Exact",
+                           call = call,
+                           metadataY = metadataY)
+          })
+
+## HAS_TESTS
+setMethod("initialModel",
           signature(object = "SpecTFixed",
                     y = "DemographicArray",
                     exposure = "ANY",
@@ -1970,6 +1987,24 @@ setMethod("initialModelPredict",
                                                      n = n)
               i.method.model.second <- i.method.model.first + 100L
               methods::new("Round3Predict",
+                           metadataY = metadata.second,
+                           iMethodModel = i.method.model.second)
+          })
+
+
+## HAS_TESTS
+setMethod("initialModelPredict",
+          signature(model = "Exact"),
+          function(model, along, labels, n, offsetModel,
+                   covariates, aggregate, lower, upper) {
+              metadata.first <- model@metadataY
+              i.method.model.first <- model@iMethodModel
+              metadata.second <- makeMetadataPredict(metadata = metadata.first,
+                                                     along = along,
+                                                     labels = labels,
+                                                     n = n)
+              i.method.model.second <- i.method.model.first + 100L
+              methods::new("ExactPredict",
                            metadataY = metadata.second,
                            iMethodModel = i.method.model.second)
           })

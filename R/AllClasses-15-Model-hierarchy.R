@@ -376,6 +376,12 @@ setClass("Round3",
          prototype = prototype(slotsToExtract = character(),
                                iMethodModel = 34L))
 
+## HAS_TESTS
+setClass("Exact",
+         contains = c("Model",
+                      "UseExposure"),
+         prototype = prototype(slotsToExtract = character(),
+                               iMethodModel = 38L))
 
 ## HAS_TESTS
 setClass("TFixedNotUseExp",
@@ -923,6 +929,13 @@ setClass("Round3Predict",
          contains = "Round3",
          prototype = prototype(slotsToExtract = character(),
                                iMethodModel = 134L))
+
+
+## HAS_TESTS
+setClass("ExactPredict",
+         contains = "Exact",
+         prototype = prototype(slotsToExtract = character(),
+                               iMethodModel = 138L))
 
 ## HAS_TESTS
 setClass("TFixedNotUseExpPredict",

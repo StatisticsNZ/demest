@@ -165,6 +165,7 @@ test_that("can create valid object of class SkeletonBetaIntercept", {
     x <- new("SkeletonBetaIntercept",
              first = 2L,
              last = 2L)
+    expect_true(validObject(x))
 })
 
 test_that("validity tests for SkeletonBetaIntercept inherited from SkeletonBetaIntercept work", {
@@ -194,7 +195,8 @@ test_that("can create valid object of class SkeletonBetaTerm", {
              last = 5L,
              metadata = new("MetaData", nms = "region", dimtypes = "state",
                  DimScales = list(new("Categories",
-                     dimvalues = c("a", "b", "c", "d")))))
+                                      dimvalues = c("a", "b", "c", "d")))))
+    expect_true(validObject(x))
 })
 
 test_that("can create valid object of class SkeletonMu", {

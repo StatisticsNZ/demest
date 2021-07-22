@@ -3253,7 +3253,7 @@ test_that("R and C versions of updateOmegaSeason give same answer", {
     }
 })
 
-test_that("updateOmegaVectorsMix gives valid answer", {
+## test_that("updateOmegaVectorsMix gives valid answer", {
     ## updateOmegaVectorsMix <- demest:::updateOmegaVectorsMix
     ## updateSDNorm <- demest:::updateSDNorm
     ## set.seed(100)
@@ -3306,7 +3306,7 @@ test_that("updateOmegaVectorsMix gives valid answer", {
     ##     else
     ##         expect_equal(ans.obtained, ans.expected)
     ## }
-})
+## })
 
 test_that("R and C versions of updateOmegaVectorsMix give same answer", {
     updateOmegaVectorsMix <- demest:::updateOmegaVectorsMix

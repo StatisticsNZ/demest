@@ -806,8 +806,8 @@ transferLevelComponentWeightOldMix_R(SEXP values_R, SEXP offset_R,
 }
 
 /* wrapper for rmvnorm functions */
-RMV_WRAPPER_R(rmvnorm1);
-RMV_WRAPPER_R(rmvnorm2);
+RMV_WRAPPER_R(rmvnorm1)
+RMV_WRAPPER_R(rmvnorm2)
 
 /* one-off wrapper for estimateOneChain */
 SEXP estimateOneChain_R(SEXP object_R, SEXP filename_R,
@@ -1308,6 +1308,7 @@ TRANSFERPARAM_WRAPPER_R(transferParamModel_BinomialVaryingPredict)
 TRANSFERPARAM_WRAPPER_R(transferParamModel_PoissonVaryingUseExpPredict)
 TRANSFERPARAM_WRAPPER_R(transferParamModel_PoissonBinomialMixture)
 TRANSFERPARAM_WRAPPER_R(transferParamModel_Round3)
+TRANSFERPARAM_WRAPPER_R(transferParamModel_Exact)
 TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedNotUseExpPredict)
 TRANSFERPARAM_WRAPPER_R(transferParamModel_NormalFixedUseExpPredict)
 TRANSFERPARAM_WRAPPER_R(transferParamModel_TFixedNotUseExpPredict)
@@ -1325,6 +1326,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_BinomialVaryingPredict)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_PoissonVaryingUseExpPredict)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_PoissonBinomialMixturePredict)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_Round3Predict)
+UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_ExactPredict)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_NormalFixedUseExpPredict)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_TFixedUseExpPredict)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(predictModelUseExp_LN2Predict)
@@ -1354,6 +1356,7 @@ UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVarying)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonVarying)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_PoissonBinomialMixture)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_Round3)
+UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_Exact)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVaryingAgCertain)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVaryingAgNormal)
 UPDATEOBJECT_WITHEXP_WRAPPER_R(updateModelUseExp_BinomialVaryingAgFun)
@@ -1869,7 +1872,7 @@ UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveComp)
 UPDATEOBJECT_WRAPPER_UPDATEPROPOSAL_R(updateProposalAccountMoveCompSmall)
 
 /* wrapper for diffLogLikAccountMovePopn */
-DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMovePopn);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMovePopn)
 
 /* one-off wrapper for diffLogLikPopn */
 SEXP
@@ -1920,7 +1923,7 @@ diffLogLikPopnOneCell_R(SEXP iAfter_R, SEXP diff_R, SEXP population_R,
 }
 
 /* wrapper for diffLogLikAccountMoveOrigDest */
-DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveOrigDest);
+DIFFLOGLIKCOMBINED_WRAPPER_R(diffLogLikAccountMoveOrigDest)
 
 
 /* one-off wrapper for diffLogLikCellComp */
@@ -2453,6 +2456,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(transferParamModel_PoissonVaryingUseExpPredict_R, 4),
   CALLDEF(transferParamModel_PoissonBinomialMixture_R, 4),
   CALLDEF(transferParamModel_Round3_R, 4),
+  CALLDEF(transferParamModel_Exact_R, 4),
   CALLDEF(transferParamModel_NormalFixedNotUseExpPredict_R, 4),
   CALLDEF(transferParamModel_NormalFixedUseExpPredict_R, 4),
   CALLDEF(transferParamModel_TFixedNotUseExpPredict_R, 4),
@@ -2470,6 +2474,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(predictModelUseExp_PoissonVaryingUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_PoissonBinomialMixturePredict_R, 3),
   CALLDEF(predictModelUseExp_Round3Predict_R, 3),
+  CALLDEF(predictModelUseExp_ExactPredict_R, 3),
   CALLDEF(predictModelUseExp_NormalFixedUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_TFixedUseExpPredict_R, 3),
   CALLDEF(predictModelUseExp_LN2Predict_R, 3),
@@ -2498,6 +2503,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(updateModelUseExp_PoissonVarying_R, 3),
   CALLDEF(updateModelUseExp_PoissonBinomialMixture_R, 3),
   CALLDEF(updateModelUseExp_Round3_R, 3),
+  CALLDEF(updateModelUseExp_Exact_R, 3),
   CALLDEF(updateModelUseExp_BinomialVaryingAgCertain_R, 3),
   CALLDEF(updateModelUseExp_BinomialVaryingAgNormal_R, 3),
   CALLDEF(updateModelUseExp_BinomialVaryingAgFun_R, 3),

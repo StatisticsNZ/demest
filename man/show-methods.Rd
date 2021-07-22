@@ -18,6 +18,7 @@
 \alias{show,SpecLikelihoodPoisson-method}
 \alias{show,SpecLikelihoodPoissonBinomialMixture-method}
 \alias{show,SpecLikelihoodRound3-method}
+\alias{show,SpecLikelihoodExact-method}
 \alias{show,SpecLikelihoodNormalFixed-method}
 \alias{show,SpecLikelihoodTFixed-method}
 \alias{show,SpecLikelihoodLN2-method}
@@ -28,6 +29,7 @@
 \alias{show,SpecPoissonVarying-method}
 \alias{show,SpecPoissonBinomialMixture-method}
 \alias{show,SpecRound3-method}
+\alias{show,SpecExact-method}
 \alias{show,SpecNormalFixed-method}
 \alias{show,SpecTFixed-method}
 \alias{show,SpecLN2-method}
@@ -81,6 +83,8 @@
 
 \S4method{show}{SpecLikelihoodRound3}(object)
 
+\S4method{show}{SpecLikelihoodExact}(object)
+
 \S4method{show}{SpecLikelihoodNormalFixed}(object)
 
 \S4method{show}{SpecLikelihoodTFixed}(object)
@@ -100,6 +104,8 @@
 \S4method{show}{SpecPoissonBinomialMixture}(object)
 
 \S4method{show}{SpecRound3}(object)
+
+\S4method{show}{SpecExact}(object)
 
 \S4method{show}{SpecNormalFixed}(object)
 

@@ -1367,6 +1367,17 @@ test_that("can create valid object of class Round3", {
 })
 
 
+test_that("can create valid object of class Exact", {
+    expect_true(validObject(new("Exact",
+                                metadataY = new("MetaData",
+                                                nms = c("age", "region"),
+                                                dimtypes = c("age", "state"),
+                                                DimScales = list(new("Intervals", dimvalues = 0:5),
+                                                                 new("Categories", dimvalues = c("a", "b", "c", "d")))))))
+})
+
+
+
 test_that("can create valid object of class TFixedNotUseExp", {
     x <- new("TFixedNotUseExp",
              call = call("Model", reg.deaths ~ TFixed(location = location, scale = scale, useExpose = FALSE)),
@@ -6132,6 +6143,17 @@ test_that("can create valid object of class Round3Predict", {
 })
 
 
+test_that("can create valid object of class ExactPredict", {
+    expect_true(validObject(new("ExactPredict",
+                                metadataY = new("MetaData",
+                                                nms = c("age", "region"),
+                                                dimtypes = c("age", "state"),
+                                                DimScales = list(new("Intervals", dimvalues = 0:5),
+                                                                 new("Categories", dimvalues = c("a", "b", "c", "d")))))))
+})
+
+
+
 
 
 ## test iMethodModel
@@ -6199,6 +6221,8 @@ test_that("Model classes have correct value for iMethodModel", {
     expect_identical(x@iMethodModel, 33L)
     x <- new("Round3")
     expect_identical(x@iMethodModel, 34L)
+    x <- new("Exact")
+    expect_identical(x@iMethodModel, 38L)
     ## Predict
     x <- new("NormalVaryingVarsigmaKnownPredict")
     expect_identical(x@iMethodModel, 104L)
@@ -6245,5 +6269,7 @@ test_that("Model classes have correct value for iMethodModel", {
     expect_identical(x@iMethodModel, 133L)
     x <- new("Round3Predict")
     expect_identical(x@iMethodModel, 134L)
+    x <- new("ExactPredict")
+    expect_identical(x@iMethodModel, 138L)
 })
 

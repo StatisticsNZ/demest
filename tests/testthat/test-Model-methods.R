@@ -2829,6 +2829,7 @@ test_that("makeOutputModel works with PoissonBinomialMixture", {
     model <- new("PoissonBinomialMixture", prob = 0.98)
     ans.obtained <- makeOutputModel(model = model, pos = pos)
     ans.expected <- list(prob = 0.98)
+    expect_identical(ans.obtained, ans.expected)
 })
 
 
@@ -3545,6 +3546,35 @@ test_that("R, generic C, and specific C versions predictModelUseExp method for R
     y.est <- round3(exposure.est)
     y.pred <- round3(exposure.pred)
     spec <- Model(y ~ Round3())
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 1L,
+                                 labels = NULL,
+                                 n = 10,
+                                 offsetModel = 1L)
+    ans.R <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                useC = FALSE)
+    ans.C.specific <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                         useC = TRUE, useSpecific = TRUE)
+    ans.C.generic <- predictModelUseExp(model, y = y.pred, exposure = exposure.pred,
+                                        useC = TRUE, useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
+
+test_that("R, generic C, and specific C versions predictModelUseExp method for Exact give same answer", {
+    predictModelUseExp <- demest:::predictModelUseExp
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    exposure.est <- Counts(array(as.integer(rpois(n = 20, lambda = 50)),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(10, 4),
+                                  dimnames = list(age = 5:14, region = letters[1:4])))
+    y.est <- exposure.est
+    y.pred <- exposure.pred
+    spec <- Model(y ~ Exact())
     model <- initialModel(spec, y = y.est, exposure = exposure.est)
     model <- initialModelPredict(model,
                                  along = 1L,
@@ -4519,6 +4549,73 @@ test_that("R, generic C, and specific C versions transferParamModel method for R
     expect_identical(ans.C.generic, ans.C.specific)
 })
 
+
+test_that("transferParamModel method for ExactPredict works", {
+    transferParamModel <- demest:::transferParamModel
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    exposure.est <- Counts(array(as.integer(rpois(n = 20, lambda = 50)),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(10, 4),
+                                  dimnames = list(age = 5:14, region = letters[1:4])))
+    spec <- Model(y ~ Exact())
+    y.est <- exposure.est
+    y.pred <- exposure.pred
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 1L,
+                                 labels = NULL,
+                                 n = 10,
+                                 offsetModel = 1L)
+    ans <- transferParamModel(model,
+                              filename = "file",
+                              lengthIter = 100L,
+                              iteration = 1L)
+    expect_identical(ans, model)
+})
+
+
+test_that("R, generic C, and specific C versions transferParamModel method for ExactPredict give same answer", {
+    transferParamModel <- demest:::transferParamModel
+    initialModel <- demest:::initialModel
+    initialModelPredict <- demest:::initialModelPredict
+    exposure.est <- Counts(array(as.integer(rpois(n = 20, lambda = 50)),
+                                 dim = c(5, 4),
+                                 dimnames = list(age = 0:4, region = letters[1:4])))
+    exposure.pred <- Counts(array(as.integer(NA),
+                                  dim = c(10, 4),
+                                  dimnames = list(age = 5:14, region = letters[1:4])))
+    spec <- Model(y ~ Exact())
+    y.est <- exposure.est
+    y.pred <- exposure.pred
+    model <- initialModel(spec, y = y.est, exposure = exposure.est)
+    model <- initialModelPredict(model,
+                                 along = 1L,
+                                 labels = NULL,
+                                 n = 10,
+                                 offsetModel = 1L)
+    ans.R <- transferParamModel(model,
+                                filename = "file",
+                                lengthIter = 100L,
+                                iteration = 1L,
+                                useC = FALSE)
+    ans.C.specific <- transferParamModel(model,
+                                         filename = "file",
+                                         lengthIter = 100L,
+                                         iteration = 1L,
+                                         useC = TRUE,
+                                         useSpecific = TRUE)
+    ans.C.generic <- transferParamModel(model,
+                                        filename = "file",
+                                        lengthIter = 100L,
+                                        iteration = 1L,
+                                        useC = TRUE,
+                                        useSpecific = FALSE)
+    expect_identical(ans.R, ans.C.specific)
+    expect_identical(ans.C.generic, ans.C.specific)
+})
 
 
 test_that("transferParamModel gives valid answer with NormalFixedNotUseExpPredict", {
@@ -6175,6 +6272,23 @@ test_that("R, C specific and C generic versions of updateModelUseExp for Round3 
                      x)
 })
 
+test_that("R, C specific and C generic versions of updateModelUseExp for Exact return object unchanged", {
+    updateModelUseExp <- demest:::updateModelUseExp
+    initialModel <- demest:::initialModel
+    x <- new("Exact")
+    exposure <- Counts(array(as.integer(rpois(n = 20, lambda = 10)),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = c("a", "b", "c", "d"))))
+    y <- exposure
+    expect_identical(updateModelUseExp(x, y = y, exposure = exposure, useC = FALSE),
+                     x)
+    expect_identical(updateModelUseExp(x, y = y, exposure = exposure, useC = TRUE, useSpecific = FALSE),
+                     x)
+    expect_identical(updateModelUseExp(x, y = y, exposure = exposure, useC = TRUE, useSpecific = TRUE),
+                     x)
+})
+
+
 
 ## updateModelUseExp for BinomialVaryingAgCertain
 
@@ -6971,6 +7085,9 @@ test_that("whereAcceptance works", {
     x <- new("Round3")
     expect_identical(whereAcceptance(x),
                      list(NULL))
+    x <- new("Exact")
+    expect_identical(whereAcceptance(x),
+                     list(NULL))
     x <- new("NormalFixedNotUseExp")
     expect_identical(whereAcceptance(x),
                      list(NULL))
@@ -7050,6 +7167,9 @@ test_that("whereAutocorr works", {
     x <- new("Round3")
     expect_identical(whereAutocorr(x),
                      list(NULL))
+    x <- new("Exact")
+    expect_identical(whereAutocorr(x),
+                     list(NULL))
     x <- new("TFixedNotUseExp")
     expect_identical(whereAutocorr(x),
                      list(NULL))
@@ -7123,6 +7243,9 @@ test_that("whereJump works", {
     expect_identical(whereJump(x),
                      list(NULL))
     x <- new("Round3")
+    expect_identical(whereJump(x),
+                     list(NULL))
+    x <- new("Exact")
     expect_identical(whereJump(x),
                      list(NULL))
     x <- new("LN2")
@@ -7606,6 +7729,16 @@ test_that("whereEstimated works with Round3", {
     expect_identical(ans.obtained, ans.expected)
 })
 
+## Exact
+
+test_that("whereEstimated works with Exact", {
+    whereEstimated <- demest:::whereEstimated
+    model <- new("Exact")
+    ans.obtained <- whereEstimated(model)
+    ans.expected <- list(NULL)
+    expect_identical(ans.obtained, ans.expected)
+})
+
 ## NormalFixed
 
 test_that("whereEstimated works with NormalFixed", {
@@ -7719,6 +7852,9 @@ test_that("whereNoProposal works", {
     x <- new("Round3")
     expect_identical(whereNoProposal(x),
                      list(NULL))
+    x <- new("Exact")
+    expect_identical(whereNoProposal(x),
+                     list(NULL))
     x <- new("TFixedNotUseExp")
     expect_identical(whereNoProposal(x),
                      list(NULL))
@@ -7750,6 +7886,8 @@ test_that("whereTheta works", {
     expect_error(whereTheta(x), "'object' has class \"NormalFixedNotUseExp\"")
     x <- new("Round3")
     expect_error(whereTheta(x), "'object' has class \"Round3\"")
+    x <- new("Exact")
+    expect_error(whereTheta(x), "'object' has class \"Exact\"")
     x <- new("TFixedNotUseExp")
     expect_error(whereTheta(x), "'object' has class \"TFixedNotUseExp\"")
     x <- new("LN2")

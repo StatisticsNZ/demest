@@ -744,7 +744,7 @@ Model <- function(formula, ..., lower = NULL, upper = NULL,
                   aggregate = NULL) {
     kValidDistributions <- c("Poisson", "Binomial", "Normal", "CMP",
                              "PoissonBinomial", "NormalFixed", "TFixed",
-                             "Round3", "LN2")
+                             "Round3", "Exact", "LN2")
     kValidDistributions <- c(kValidDistributions,
                              paste0("demest::", kValidDistributions))
     call <- match.call()
@@ -857,6 +857,28 @@ PoissonBinomial <- function(prob) {
 #' @export
 Round3 <- function() {
     methods::new("SpecLikelihoodRound3")
+}
+
+
+#' Specify that a dataset is to be treated as error-free.
+#'
+#' Specify that a dataset gives complete, and error-free,
+#' measurements of a series in a demographic account.
+#'
+#' The dataset is used to populate the corresponding
+#' series in the demographic account, and after that
+#' the series is never updated.
+#'
+#' @return An object of class \code{\linkS4class{SpecLikelihood}}.
+#' 
+#' @seealso \code{Exact} is typically used as
+#' part of a call to function \code{\link{Model}}.
+#'
+#' @examples
+#' Exact()
+#' @export
+Exact <- function() {
+    methods::new("SpecLikelihoodExact")
 }
 
 
@@ -1237,6 +1259,31 @@ setMethod("SpecModel",
                            nameY = nameY,
                            series = series)
           })
+
+
+## HAS_TESTS
+setMethod("SpecModel",
+          signature(specInner = "SpecLikelihoodExact"),
+          function(specInner, call, nameY, dots, lower, upper,
+                   priorSD, jump,
+                   series, aggregate) {
+              if (length(dots) > 0L)
+                  stop(gettextf("priors specified, but model is %s",
+                                "Exact"))
+              for (name in c("lower", "upper", "priorSD", "jump",
+                             "aggregate")) {
+                  value <- get(name)
+                  if (!is.null(value))
+                      stop(gettextf("'%s' specified, but model is %s",
+                                    name, "Exact"))
+              }
+              series <- checkAndTidySeries(series)
+              methods::new("SpecExact",
+                           call = call,
+                           nameY = nameY,
+                           series = series)
+          })
+
 
 ## HAS_TESTS
 setMethod("SpecModel",

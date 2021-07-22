@@ -416,6 +416,21 @@ test_that("can create valid object of class SpecRound3", {
     expect_true(validObject(x))
 })
 
+test_that("can create valid object of class SpecExact", {
+    ## nameY and series supplied
+    x <- new("SpecExact",
+             call = call("Model", reg.deaths ~ Exact()),
+             nameY = new("Name", "reg.deaths"),
+             series = new("SpecName", "deaths"))
+    expect_true(validObject(x))
+    ## series NULL
+    x <- new("SpecExact",
+             call = call("Model", y ~ Exact()),
+             nameY = new("Name", "y"),
+             series = new("SpecName", as.character(NA)))
+    expect_true(validObject(x))
+})
+
 test_that("can create valid object of class SpecTFixed", {
     ## nameY and series supplied
     x <- new("SpecTFixed",

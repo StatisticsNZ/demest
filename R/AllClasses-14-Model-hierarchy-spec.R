@@ -128,6 +128,11 @@ setClass("SpecLikelihoodRound3",
 
 #' @rdname SpecLikelihood-class
 #' @export
+setClass("SpecLikelihoodExact",
+         contains = "SpecLikelihood")
+
+#' @rdname SpecLikelihood-class
+#' @export
 setClass("SpecLikelihoodTFixed",
          prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecLikelihood",
@@ -438,8 +443,12 @@ setClass("SpecRound3",
          prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
          contains = c("SpecModel", "SpecSeriesMixin"))
 
-
-
+## HAS_TESTS
+#' @rdname SpecModel-class
+#' @export
+setClass("SpecExact",
+         prototype = prototype(useExpose = methods::new("LogicalFlag", TRUE)),
+         contains = c("SpecModel", "SpecSeriesMixin"))
 
 ## NO_TESTS
 #' @rdname SpecModel-class

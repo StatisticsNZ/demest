@@ -222,6 +222,59 @@ makeSeriesIndices <- function(dataModels, account) {
 }
 
 ## HAS_TESTS
+checkExactDataModels <- function(dataModels,
+                                 datasets,
+                                 seriesIndices,
+                                 namesComponents,
+                                 namesDatasets) {
+    is.exact <- sapply(dataModels, methods::is, "SpecExact")
+    if (!any(is.exact))
+        return(NULL)        
+    ## 'population' does not have Exact data model
+    is.popn <- seriesIndices == 0L
+    is.popn.and.exact <- is.popn & is.exact
+    i.popn.and.exact <- match(TRUE, is.popn.and.exact, nomatch = 0L)
+    if (i.popn.and.exact > 0L)
+        stop(gettextf("data model for dataset '%s' is '%s' but refers to '%s' series",
+                      namesDatasets[i.popn.and.exact], "Exact", "population"))
+    ## datasets with Exact data models do not have any NAs
+    has.na <- sapply(datasets, anyNA)
+    is.exact.with.na <- is.exact & has.na
+    i.exact.with.na <- match(TRUE, is.exact.with.na, nomatch = 0L)
+    if (i.exact.with.na > 0L)
+        stop(gettextf("data model for dataset '%s' is '%s' but dataset '%s' has missing values",
+                      namesDatasets[i.exact.with.na],
+                      "Exact",
+                      namesDatasets[i.exact.with.na]))
+    ## if a series has an Exact data model,
+    ## it does not have any other data models
+    has.exact <- tapply(is.exact, seriesIndices, any)
+    num.models <- table(seriesIndices)
+    is.too.many <- has.exact & (num.models > 1L)
+    if (any(is.too.many)) {
+        i.too.many <- as.integer(names(has.exact))[is.too.many][1L]
+        stop(gettextf("series \"%s\" has '%s' data model, but also has other data models",
+                      namesComponents[i.too.many], "Exact"))
+    }
+    ## must have component that does not have Exact model
+    if (identical(sum(is.exact), length(namesComponents)))
+        stop(gettextf("all components have '%s' data models",
+                      "Exact"))
+    NULL
+}
+
+## NO_TESTS
+makeCumProbComp <- function(nComponents, dataModels, seriesIndices) {
+    for (i in seq_along(dataModels)) {
+        if (methods::is(dataModels[[i]], "SpecExact")) {
+            i.comp <- seriesIndices[i]
+            nComponents[i.comp] <- 0L
+        }
+    }
+    cumsum(nComponents) / sum(nComponents)
+}
+
+## HAS_TESTS
 makeTransformsAccountToDatasets <- function(account, datasets, concordances,
                                             namesDatasets, seriesIndices) {
     population <- account@population

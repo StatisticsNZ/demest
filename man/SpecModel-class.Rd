@@ -11,6 +11,7 @@
 \alias{SpecNormalFixed-class}
 \alias{SpecPoissonBinomialMixture-class}
 \alias{SpecRound3-class}
+\alias{SpecExact-class}
 \alias{SpecTFixed-class}
 \alias{SpecLN2-class}
 \title{S4 classes to specify a model.}

@@ -1427,6 +1427,28 @@ test_that("initialModel creates object of class Round3 from valid inputs", {
 })
 
 
+## Exact #############################################################
+
+test_that("initialModel creates object of class Exact from valid inputs", {
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rpois(n = 20, lambda = 0.3 * exposure),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Exact())
+    x <- initialModel(spec, y = y, exposure = exposure)
+    expect_equal(x,
+                 new("Exact",
+                     call = call("Model", formula = y ~ Exact()),
+                     metadataY = y@metadata))
+    y[1] <- NA
+    expect_error(initialModel(spec, y = y, exposure = exposure),
+                 "using 'Exact' data model, but data contains missing values")
+})
+
+
 ## NormalFixed #############################################################
 
 test_that("initialModel creates object of class NormalFixedUseExp from valid inputs", {
@@ -2312,6 +2334,33 @@ test_that("initialModelPredict works with Round3", {
     expect_identical(ans@metadataY, metadata.expected)
     expect_identical(ans@iMethodModel, model@iMethodModel + 100L)
 })
+
+
+
+test_that("initialModelPredict works with Exact", {
+    initialModelPredict <- demest:::initialModelPredict
+    initialModel <- demest:::initialModel
+    exposure <- Counts(array(rpois(n = 20, lambda = 20),
+                             dim = c(5, 4),
+                             dimnames = list(age = 0:4, region = letters[1:4])))
+    y <- Counts(array(rbinom(n = 20, size = exposure, prob = 0.5),
+                      dim = c(5, 4),
+                      dimnames = list(age = 0:4, region = letters[1:4])))
+    spec <- Model(y ~ Exact())
+    model <- initialModel(spec, y = y, exposure = exposure)
+    ans <- initialModelPredict(model,
+                               along = 1L,
+                               labels = NULL,
+                               n = 5L,
+                               offsetModel = 1L)
+    expect_true(validObject(ans))
+    metadata.expected <- Counts(array(1L,
+                                      dim = c(5, 4),
+                                      dimnames = list(age = 5:9, region = letters[1:4])))@metadata
+    expect_identical(ans@metadataY, metadata.expected)
+    expect_identical(ans@iMethodModel, model@iMethodModel + 100L)
+})
+
 
 
 

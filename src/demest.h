@@ -867,6 +867,8 @@ void transferParamModel_NormalFixedUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
 void transferParamModel_Round3(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
+void transferParamModel_Exact(SEXP model_R,
+        const char *filename, int lengthIter, int iteration);
 void transferParamModel_TFixedNotUseExpPredict(SEXP model_R,
         const char *filename, int lengthIter, int iteration);
 void transferParamModel_TFixedUseExpPredict(SEXP model_R,
@@ -887,6 +889,7 @@ void predictModelUseExp_BinomialVaryingPredict(SEXP object, SEXP y_R, SEXP expos
 void predictModelUseExp_PoissonVaryingUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_PoissonBinomialMixturePredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_Round3Predict(SEXP object, SEXP y_R, SEXP exposure_R);
+void predictModelUseExp_ExactPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_NormalFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_TFixedUseExpPredict(SEXP object, SEXP y_R, SEXP exposure_R);
 void predictModelUseExp_LN2Predict(SEXP object, SEXP y_R, SEXP exposure_R);
@@ -918,6 +921,8 @@ void updateModelUseExp_PoissonVarying(SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_PoissonBinomialMixture
                                 (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_Round3
+                        (SEXP object, SEXP y_R, SEXP exposure_R);
+void updateModelUseExp_Exact
                         (SEXP object, SEXP y_R, SEXP exposure_R);
 void updateModelUseExp_BinomialVaryingAgCertain
                             (SEXP object, SEXP y_R, SEXP exposure_R);

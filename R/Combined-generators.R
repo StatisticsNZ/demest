@@ -828,10 +828,12 @@ setMethod("initialCombinedAccount",
               n.components <- sapply(components, length)
               n.cell.account <- n.popn + sum(n.components)
               if (updateInitialPopn)
-                  prob.popn <- n.popn / (n.popn + sum(n.components))
+                  prob.popn <- n.popn / n.cell.account
               else
                   prob.popn <- -1
-              cum.prob.comp <- cumsum(n.components) / sum(n.components)
+              cum.prob.comp <- makeCumProbComp(nComponents = n.components,
+                                               dataModels = dataModels,
+                                               seriesIndices = seriesIndices) 
               is.births <- sapply(components, methods::is, "Births")
               is.orig.dest <- sapply(components, methods::is, "HasOrigDest")
               is.par.ch <- sapply(components, methods::is, "HasParentChild")
@@ -992,6 +994,13 @@ setMethod("initialCombinedAccount",
                       struc.zero.array <- model@strucZeroArray@.Data
                       dataset@.Data[struc.zero.array == 0L] <- 0L
                       datasets[[i]] <- dataset
+                  }
+                  is.exact <- methods::is(dataModels[[i]], "Exact")
+                  if (is.exact) {
+                      component <- dembase::makeCompatible(x = datasets[[i]],
+                                                           y = components[[series.index]],
+                                                           subset = TRUE)
+                      account@components[[series.index]] <- component
                   }
               }
               scaleNoise <- methods::new("Scale", as.double(scaleNoise))

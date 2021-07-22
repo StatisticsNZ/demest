@@ -474,6 +474,9 @@ estimateCounts <- function(model, y, exposure = NULL, dataModels,
     ## check and tidy data models and align to datasets
     checkDataModels(dataModels = dataModels,
                     needsNonDefaultSeriesArg = FALSE)
+    if (any(sapply(dataModels, methods::is, "Exact")))
+        stop(gettextf("'%s' data models only permitted with function '%s'",
+                      "Exact", "estimateAccount"))
     datasets <- checkAndTidyDatasets(datasets)
     namesDatasets <- names(datasets)
     names(datasets) <- NULL
@@ -780,6 +783,13 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     ## make 'seriesIndices', mapping data models to account
     seriesIndices <- makeSeriesIndices(dataModels = dataModels,
                                        account = account)
+    ## check 'Exact' data models (if present)
+    namesComponents <- componentNames(account)
+    checkExactDataModels(dataModels = dataModels,
+                         datasets = datasets,
+                         seriesIndices = seriesIndices,
+                         namesComponents = namesComponents,
+                         namesDatasets = namesDatasets)
     ## make transforms from account to datasets
     checkConcordancesDatasets(concordances = concordances,
                               datasets = datasets,

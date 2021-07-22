@@ -595,7 +595,6 @@ setClass("SkeletonMissingDatasetPoissonBinomial",
 setClass("SkeletonMissingDatasetRound3",
          contains = "SkeletonMissingDataset")
 
-
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonMissingDatasetNormalFixedUseExp",

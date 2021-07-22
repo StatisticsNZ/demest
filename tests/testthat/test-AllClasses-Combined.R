@@ -1026,6 +1026,7 @@ test_that("can create valid object of class CombinedModelPoissonHasExp", {
              model = model,
              y = y,
              exposure = exposure)
+    expect_true(validObject(x))
 })
 
 test_that("validity tests for CombinedModelPoissonHasExp inherited from HasExposure work", {

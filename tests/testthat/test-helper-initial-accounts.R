@@ -341,6 +341,105 @@ test_that("makeSeriesIndices works", {
                  "'dataModels' contains a model for 'wrong', but 'account' does not have a series called 'wrong'")
 })
 
+test_that("checkExactDataModels works", {
+    checkExactDataModels <- demest:::checkExactDataModels
+    dataModels <- list(Model(census ~ Poisson(mean ~ eth), series = "population"),
+                        Model(reg.births ~ Exact(), series = "births"),
+                        Model(reg.deaths ~ Poisson(mean ~ time), series = "deaths"))
+    population <- Counts(array(c(200L, 220L, 190L,
+                                 220L, 180L, 190L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("A", "B", "C"),
+                                               time = c("2000", "2005"))))
+    births <- Counts(array(c(40L, 30L, 10L),
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    deaths <- Counts(array(c(40L, 30L, 10L),
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    datasets  <- list(population, births, deaths)
+    seriesIndices <- 0:2
+    namesComponents <- c("births", "deaths")
+    namesDatasets <- c("census", "reg.births", "reg.deaths")
+    ## all inputs valid
+    ans.obtained <- checkExactDataModels(dataModels = dataModels,
+                                         datasets = datasets,
+                                         seriesIndices = seriesIndices,
+                                         namesComponents = namesComponents,
+                                         namesDatasets = namesDatasets)
+    ans.expected <- NULL
+    expect_identical(ans.obtained, ans.expected)
+    ## 'population' has Exact data model
+    dataModels.wrong <- dataModels
+    dataModels.wrong[[1]] <- Model(census ~ Exact(), series = "population")
+    expect_error(checkExactDataModels(dataModels = dataModels.wrong,
+                                      datasets = datasets,
+                                      seriesIndices = seriesIndices,
+                                      namesComponents = namesComponents,
+                                      namesDatasets = namesDatasets),
+                 "data model for dataset 'census' is 'Exact' but refers to 'population' series")
+    ## component with 'Exact' data model has NAs
+    datasets.wrong <- datasets
+    datasets.wrong[[2]][1] <- NA
+    expect_error(checkExactDataModels(dataModels = dataModels,
+                                      datasets = datasets.wrong,
+                                      seriesIndices = seriesIndices,
+                                      namesComponents = namesComponents,
+                                      namesDatasets = namesDatasets),
+                 "data model for dataset 'reg.births' is 'Exact' but dataset 'reg.births' has missing values")
+    ## if has Exact data model for component, does not have other data models for that component
+    dataModels.wrong <- list(Model(census ~ Poisson(mean ~ eth), series = "population"),
+                             Model(reg.births ~ Exact(), series = "births"),
+                             Model(reg.births ~ Poisson(mean ~ time), series = "births"))
+    datasets.wrong  <- list(population, births, births)
+    seriesIndices.wrong <- c(0L, 1L, 1L)
+    namesDatasets.wrong <- c("census", "reg.births1", "reg.births2")
+    expect_error(checkExactDataModels(dataModels = dataModels.wrong,
+                                      datasets = datasets.wrong,
+                                      seriesIndices = seriesIndices.wrong,
+                                      namesComponents = namesComponents,
+                                      namesDatasets = namesDatasets.wrong),
+                 "series \"births\" has 'Exact' data model, but also has other data models")
+    ## must have component that does not have Exact model
+    dataModels.wrong <- list(Model(census ~ Poisson(mean ~ eth), series = "population"),
+                             Model(reg.births ~ Exact(), series = "births"),
+                             Model(reg.births ~ Exact(), series = "deaths"))
+    expect_error(checkExactDataModels(dataModels = dataModels.wrong,
+                                      datasets = datasets,
+                                      seriesIndices = seriesIndices,
+                                      namesComponents = namesComponents,
+                                      namesDatasets = namesDatasets),
+                 "all components have 'Exact' data models")
+})
+
+test_that("makeCumProbComp works", {
+    makeCumProbComp <- demest:::makeCumProbComp
+    nComponents <- c(80L, 140L, 140L)
+    dataModels <- list(Model(census ~ Poisson(mean ~ eth), series = "population"),
+                       Model(reg.births ~ Exact(), series = "births"),
+                       Model(reg.deaths ~ Poisson(mean ~ time), series = "deaths"),
+                       Model(inmig ~ PoissonBinomial(prob = 0.95), series = "immigration"))
+    seriesIndices <- 0:3
+    ## has Exact
+    ans.obtained <- makeCumProbComp(nComponents = nComponents,
+                                    dataModels = dataModels,
+                                    seriesIndices = seriesIndices)
+    ans.expected <- cumsum(c(0, 140, 140)) / 280
+    expect_equal(ans.obtained, ans.expected)
+    ## no Exact
+    dataModels.noexact <- list(Model(census ~ Poisson(mean ~ eth), series = "population"),
+                               Model(reg.births ~ Poisson(mean ~ time), series = "births"),
+                               Model(reg.deaths ~ Poisson(mean ~ time), series = "deaths"),
+                               Model(inmig ~ PoissonBinomial(prob = 0.95), series = "immigration"))
+    ans.obtained <- makeCumProbComp(nComponents = nComponents,
+                                    dataModels = dataModels.noexact,
+                                    seriesIndices = seriesIndices)
+    ans.expected <- cumsum(nComponents) / sum(nComponents)
+    expect_equal(ans.obtained, ans.expected)
+})
+
 test_that("makeTransformsAccountToDatasets works", {
     makeTransformsAccountToDatasets <- demest:::makeTransformsAccountToDatasets
     makeCollapseTransformExtra <- dembase:::makeCollapseTransformExtra

@@ -128,6 +128,13 @@ transferParamModel_Round3_i(SEXP model_R, const char *filename,
 }
 
 static __inline__ void
+transferParamModel_Exact_i(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    /* null op */
+}
+
+static __inline__ void
 transferParamModel_NormalFixedNotUseExpPredict_i(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
 {
@@ -219,6 +226,10 @@ transferParamModel(SEXP model_R, const char *filename,
             transferParamModel_LN2Predict_i(model_R,
                         filename, lengthIter, iteration);
             break;
+        case 138:
+            transferParamModel_Exact_i(model_R,
+                        filename, lengthIter, iteration);
+            break;
         default:
             error("unknown i_method_model in transferParamModel: %d",
                                                         i_method_model);
@@ -280,6 +291,14 @@ transferParamModel_Round3(SEXP model_R, const char *filename,
                                 int lengthIter, int iteration)
 {
     transferParamModel_Round3_i(model_R, filename,
+                                lengthIter, iteration);
+}
+
+void
+transferParamModel_Exact(SEXP model_R, const char *filename,
+                                int lengthIter, int iteration)
+{
+    transferParamModel_Exact_i(model_R, filename,
                                 lengthIter, iteration);
 }
 
@@ -417,6 +436,12 @@ predictModelUseExp_Round3Predict_i(SEXP object, SEXP y_R, SEXP exposure_R)
 }
 
 static __inline__ void
+predictModelUseExp_ExactPredict_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    /*  do nothing */
+}
+
+static __inline__ void
 predictModelUseExp_NormalFixedUseExpPredict_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     /*  do nothing */
@@ -505,6 +530,9 @@ predictModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
         case 137:
             predictModelUseExp_LN2Predict_i(object, y_R, exposure_R);
             break;
+        case 138:
+            predictModelUseExp_ExactPredict_i(object, y_R, exposure_R);
+            break;
         default:
             error("unknown i_method_model: %d", i_method_model);
             break;
@@ -574,6 +602,13 @@ void
 predictModelUseExp_Round3Predict(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     predictModelUseExp_Round3Predict_i(object, y_R, exposure_R);
+
+}
+
+void
+predictModelUseExp_ExactPredict(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    predictModelUseExp_ExactPredict_i(object, y_R, exposure_R);
 
 }
 
@@ -867,6 +902,12 @@ updateModelUseExp_Round3_i(SEXP object, SEXP y_R, SEXP exposure_R)
 }
 
 static __inline__ void
+updateModelUseExp_Exact_i(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    /* do nothing */
+}
+
+static __inline__ void
 updateModelUseExp_BinomialVaryingAgCertain_i(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateTheta_BinomialVaryingAgCertain(object, y_R, exposure_R);
@@ -1119,6 +1160,9 @@ updateModelUseExp_Internal(SEXP object, SEXP y_R, SEXP exposure_R,
         case 37:
             updateModelUseExp_LN2_i(object, y_R, exposure_R);
             break;
+        case 38:
+            updateModelUseExp_Exact_i(object, y_R, exposure_R);
+            break;
         default:
             error("unknown i_method_model: %d", i_method_model);
             break;
@@ -1259,6 +1303,12 @@ void
 updateModelUseExp_Round3(SEXP object, SEXP y_R, SEXP exposure_R)
 {
     updateModelUseExp_Round3_i(object, y_R, exposure_R);
+}
+
+void
+updateModelUseExp_Exact(SEXP object, SEXP y_R, SEXP exposure_R)
+{
+    updateModelUseExp_Exact_i(object, y_R, exposure_R);
 }
 
 void

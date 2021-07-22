@@ -785,6 +785,7 @@ setMethod("logLikelihood",
               }
           })
 
+
 ## TRANSLATED
 ## HAS_TESTS
 ## Calling function should test that dataset[i] is not missing
@@ -1719,6 +1720,15 @@ setMethod("makeOutputModel",
               list("<none>" = NULL)
           })
 
+## Exact
+
+setMethod("makeOutputModel",
+          signature(model = "Exact"),
+          function(model) {
+              list("<none>" = NULL)
+          })
+
+
 ## NormalFixed
 
 ## HAS_TESTS
@@ -2074,6 +2084,36 @@ setMethod("predictModelUseExp",
               }
           })
 
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("predictModelUseExp",
+          signature(object = "ExactPredict"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(is.na(y)))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(is.na(exposure)))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(predictModelUseExp_ExactPredict_R,
+                            object, y, exposure)
+                  else
+                      .Call(predictModelUseExp_R,
+                            object, y, exposure)
+              }
+              else {
+                  object
+              }
+          })
+
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("predictModelUseExp",
@@ -2387,6 +2427,12 @@ setMethod("showModelHelper",
           })
 
 setMethod("showModelHelper",
+          signature(object = "Exact"),
+          function(object) {
+              printExactModEqns(object)
+          })
+
+setMethod("showModelHelper",
           signature(object = "NormalFixed"),
           function(object) {
               printNormalFixedModEqns(object)
@@ -2649,6 +2695,27 @@ setMethod("transferParamModel",
                   model
               }
           })
+
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("transferParamModel",
+          signature(model = "ExactPredict"),
+          function(model, filename, lengthIter, iteration,
+                   useC = FALSE, useSpecific = FALSE) {
+              if (useC) {
+                  if (useSpecific)
+                      .Call(transferParamModel_Exact_R,
+                            model, filename, lengthIter, iteration)
+                  else
+                      .Call(transferParamModel_R,
+                            model, filename, lengthIter, iteration)
+              }
+              else {
+                  model
+              }
+          })
+
 
 ## TRANSLATED
 ## HAS_TESTS
@@ -3357,6 +3424,36 @@ setMethod("updateModelUseExp",
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
+          signature(object = "Exact"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(!anyNA(y))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              stopifnot(!anyNA(exposure))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_Exact_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("updateModelUseExp",
           signature(object = "BinomialVaryingAgCertain"),
           function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
               ## object
@@ -3703,6 +3800,36 @@ setMethod("updateModelUseExp",
               }
           })
 
+
+## TRANSLATED
+## HAS_TESTS
+setMethod("updateModelUseExp",
+          signature(object = "Exact"),
+          function(object, y, exposure, useC = FALSE, useSpecific = FALSE) {
+              ## object
+              stopifnot(methods::validObject(object))
+              ## y
+              stopifnot(is.integer(y))
+              stopifnot(all(y@.Data[!is.na(y@.Data)] >= 0))
+              ## exposure
+              stopifnot(is.integer(exposure))
+              stopifnot(all(exposure[!is.na(exposure)] >= 0L))
+              ## y and exposure
+              stopifnot(identical(length(exposure), length(y)))
+              stopifnot(all(is.na(exposure) <= is.na(y)))
+              if (useC) {
+                  if (useSpecific)
+                      .Call(updateModelUseExp_Exact_R, object, y, exposure)
+                  else
+                      .Call(updateModelUseExp_R, object, y, exposure)
+              }
+              else {
+                  ## object is not updated
+                  object
+              }
+          })
+
+
 ## TRANSLATED
 ## HAS_TESTS
 setMethod("updateModelUseExp",
@@ -3918,6 +4045,11 @@ setMethod("whereAcceptance",
 
 ## HAS_TESTS
 setMethod("whereAcceptance",
+          signature(object = "Exact"),
+          function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereAcceptance",
           signature(object = "NormalFixed"),
           function(object) list(NULL))
 
@@ -4035,6 +4167,11 @@ setMethod("whereAutocorr",
 ## HAS_TESTS
 setMethod("whereAutocorr",
           signature(object = "Round3"),
+          function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereAutocorr",
+          signature(object = "Exact"),
           function(object) list(NULL))
 
 ## HAS_TESTS
@@ -4161,6 +4298,11 @@ setMethod("whereJump",
 ## HAS_TESTS
 setMethod("whereJump",
           signature(object = "Round3"),
+          function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereJump",
+          signature(object = "Exact"),
           function(object) list(NULL))
 
 ## HAS_TESTS
@@ -4383,6 +4525,13 @@ setMethod("whereEstimated",
 
 ## HAS_TESTS
 setMethod("whereEstimated",
+          signature(object = "Exact"),
+          function(object) {
+              list(NULL)
+          })
+
+## HAS_TESTS
+setMethod("whereEstimated",
           signature(object = "NormalFixed"),
           function(object) list(NULL))
 
@@ -4545,6 +4694,11 @@ setMethod("whereNoProposal",
 
 ## HAS_TESTS
 setMethod("whereNoProposal",
+          signature(object = "Exact"),
+          function(object) list(NULL))
+
+## HAS_TESTS
+setMethod("whereNoProposal",
           signature(object = "NormalFixed"),
           function(object) list(NULL))
 
@@ -4592,6 +4746,14 @@ setMethod("whereTheta",
 ## HAS_TESTS
 setMethod("whereTheta",
           signature(object = "Round3"),
+          function(object) {
+              stop(gettextf("'%s' has class \"%s\"",
+                            "object", class(object)))
+          })
+
+## HAS_TESTS
+setMethod("whereTheta",
+          signature(object = "Exact"),
           function(object) {
               stop(gettextf("'%s' has class \"%s\"",
                             "object", class(object)))
