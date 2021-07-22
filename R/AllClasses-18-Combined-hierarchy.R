@@ -319,5 +319,3 @@ setClass("CombinedAccountMovementsHasAge",
                                usePriorPopn = methods::new("LogicalFlag", TRUE)),
          contains = c("CombinedAccountMovements",
                       "MovementsAgeMixin"))
-
-
