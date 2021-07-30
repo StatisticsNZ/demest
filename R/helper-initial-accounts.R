@@ -202,6 +202,24 @@ checkSystemModels <- function(systemModels) {
 }
 
 ## HAS_TESTS
+insertExactData <- function(account,
+                            dataModels,
+                            datasets,
+                            seriesIndices) {
+    for (i in seq_along(dataModels)) {
+        is.exact <- methods::is(dataModels[[i]], "SpecExact")
+        series.index <- seriesIndices[i]
+        if (is.exact) {
+            component <- dembase::makeCompatible(x = datasets[[i]],
+                                                 y = account@components[[series.index]],
+                                                 subset = TRUE)
+            account@components[[series.index]][] <- as.integer(component) ## to preserve class of component
+        }
+    }
+    account
+}
+
+## HAS_TESTS
 ## Note that every data model has to relate to one series,
 ## but every series does not have to have a data model.
 makeSeriesIndices <- function(dataModels, account) {

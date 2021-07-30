@@ -414,6 +414,41 @@ test_that("checkExactDataModels works", {
                  "all components have 'Exact' data models")
 })
 
+test_that("insertExactData works", {
+    insertExactData <- demest:::insertExactData
+    population <- Counts(array(c(200L, 220L, 190L,
+                                 220L, 180L, 190L),
+                               dim = c(3, 2),
+                               dimnames = list(reg = c("A", "B", "C"),
+                                               time = c("2000", "2005"))))
+    births <- Counts(array(c(40L, 30L, 10L),
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    deaths <- Counts(array(c(40L, 30L, 10L),
+                           dim = c(3, 1),
+                           dimnames = list(reg = c("A", "B", "C"),
+                                           time = "2001-2005")))
+    account <- Movements(population = population,
+                         births = births,
+                         exits = list(deaths = deaths))
+    datasets  <- list(population + 1L, births + 1L, deaths + 2L)
+    dataModels <- list(Model(census ~ Poisson(mean ~ eth), series = "population"),
+                       Model(reg.births ~ Exact(), series = "births"),
+                       Model(reg.deaths ~ Poisson(mean ~ time), series = "deaths"))
+    seriesIndices <- 0:2
+    ans.obtained <- insertExactData(account = account,
+                                    dataModels = dataModels,
+                                    datasets = datasets,
+                                    seriesIndices = seriesIndices)
+    expect_identical(ans.obtained@components[[1]], datasets[[2]])
+    expect_false(identical(ans.obtained@population, datasets[[1]]))
+    expect_false(identical(ans.obtained@components[[2]], datasets[[3]]))
+})
+
+
+
+
 test_that("makeCumProbComp works", {
     makeCumProbComp <- demest:::makeCumProbComp
     nComponents <- c(80L, 140L, 140L)

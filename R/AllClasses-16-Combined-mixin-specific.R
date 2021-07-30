@@ -106,8 +106,8 @@ setClass("ProbAccountMixin",
                  return(gettextf("'%s' has values between %d and %d",
                                  "cumProbComp", 0L, 1L))
              ## 'cumProbComp' strictly increasing
-             if (any(diff(cumProbComp) <= 0))
-                 return(gettextf("'%s' not strictly increasing",
+             if (any(diff(cumProbComp) < 0))
+                 return(gettextf("values of '%s' decreasing",
                                  "cumProbComp"))
              ## 'probPopn' has length 1
              if (!identical(length(probPopn), 1L))

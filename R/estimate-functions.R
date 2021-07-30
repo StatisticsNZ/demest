@@ -761,9 +761,6 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
     checkNonNegativeNumeric(x = scaleNoise,
                             name = "scaleNoise")
     probSmallUpdate <- checkAndTidyProbSmallUpdate(probSmallUpdate)
-    ## make account consistent, if necessary
-    if (!all(dembase::isConsistent(account)))
-        account <- dembase::makeConsistent(account)
     ## align system models to account
     checkSystemModels(systemModels)
     systemModels <- alignSystemModelsToAccount(systemModels = systemModels,
@@ -790,6 +787,14 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
                          seriesIndices = seriesIndices,
                          namesComponents = namesComponents,
                          namesDatasets = namesDatasets)
+    ## insert data from 'Exact' datasets into account
+    account <- insertExactData(account = account,
+                               dataModels = dataModels,
+                               datasets = datasets,
+                               seriesIndices = seriesIndices)
+    ## make account consistent, if necessary
+    if (!all(dembase::isConsistent(account)))
+        account <- dembase::makeConsistent(account)
     ## make transforms from account to datasets
     checkConcordancesDatasets(concordances = concordances,
                               datasets = datasets,

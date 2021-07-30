@@ -398,6 +398,7 @@ test_that("makeOutputMCMC works with valid input", {
                          nThin = 30L,
                          nCore = 4L,
                          nIteration = 33L)
+    expect_identical(ans.obtained, ans.expected)
 })
 
 test_that("makeOutputMCMC raises appropriate errors", {

@@ -995,22 +995,18 @@ setMethod("initialCombinedAccount",
                       dataset@.Data[struc.zero.array == 0L] <- 0L
                       datasets[[i]] <- dataset
                   }
-                  is.exact <- methods::is(dataModels[[i]], "Exact")
-                  if (is.exact) {
-                      component <- dembase::makeCompatible(x = datasets[[i]],
-                                                           y = components[[series.index]],
-                                                           subset = TRUE)
-                      account@components[[series.index]] <- component
-                  }
               }
               scaleNoise <- methods::new("Scale", as.double(scaleNoise))
-              ## Create flags showing models or components are updated.
-              ## At present this is used only for simulation, but in future
-              ## we will probably allow for an 'identity' data model, which
-              ## means that neither the data model nor the component is updated.
               update.system.model <- rep(TRUE, times = length(systemModels))
-              update.data.model <- rep(TRUE, times = length(dataModels))              
+              update.data.model <- rep(TRUE, times = length(dataModels))
               update.component <- rep(TRUE, times = length(components))
+              for (i in seq_along(dataModels)) {
+                  is.exact <- methods::is(dataModels[[i]], "Exact")
+                  if (is.exact) {
+                      i.comp <- seriesIndices[i]
+                      update.component[i.comp] <- FALSE
+                  }
+              }   
               if (has.age) {
                   accession <- dembase::accession(account,
                                                   births = FALSE,

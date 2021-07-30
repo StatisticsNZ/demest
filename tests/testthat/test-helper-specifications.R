@@ -1059,7 +1059,7 @@ test_that("initialMixAllPredict works", {
     expect_identical(l$allStrucZero, rep(FALSE, 20*2*20))
     expect_identical(length(l$alphaMix@.Data), l$J@.Data)
     expect_identical(l$CMix, new("ParameterVector", rep(1, times = 20)))
-    expect_identical(length(l$componentWeightMix), 20L * 10L))
+    expect_identical(length(l$componentWeightMix), 20L * 10L)
     expect_identical(l$latentWeightMix, new("UnitIntervalVec", rep(0, 800)))
     expect_identical(l$dimBeta, c(20L, 2L, 20L))
     expect_identical(l$iAlong, 3L)

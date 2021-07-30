@@ -405,10 +405,12 @@ setMethod("whereMetropStat",
               data.models <- final@dataModels
               names.series <- c("population", account@namesComponents)
               names.datasets <- final@namesDatasets
+              update.component <- final@updateComponent
               ans.account <- FUN(account)
               if (identical(ans.account, list(NULL)))
                   ans.account <- NULL
               else {
+                  ans.account[[1L]] <- ans.account[[1L]][c(TRUE, update.component)]
                   ans.account <- lapply(ans.account[[1L]],
                                         function(x) c("account", x))
               }
