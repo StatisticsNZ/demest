@@ -1005,7 +1005,7 @@ test_that("getTransform works with BinomialVarying", {
     x <- new("BinomialVarying")
     ans.obtained <- getTransform(x)
     ans.expected <- function(x) log(x / (1 - x))
-    expect_equal(ans.obtained, ans.expected)
+    expect_equal(ans.obtained(0.5), ans.expected(0.5))
 })
 
 test_that("getTransform works with NormalVarying", {
@@ -1013,7 +1013,7 @@ test_that("getTransform works with NormalVarying", {
     x <- new("NormalVaryingVarsigmaKnown")
     ans.obtained <- getTransform(x)
     ans.expected <- function(x) x
-    expect_equal(ans.obtained, ans.expected)
+    expect_equal(ans.obtained(0.5), ans.expected(0.5))
 })
 
 test_that("getTransform works with PoissonVarying", {
@@ -1021,7 +1021,7 @@ test_that("getTransform works with PoissonVarying", {
     x <- new("PoissonVaryingUseExpAgCertain")
     ans.obtained <- getTransform(x)
     ans.expected <- log
-    expect_equal(ans.obtained, ans.expected)
+    expect_equal(ans.obtained(0.5), ans.expected(0.5))
 })
 
 

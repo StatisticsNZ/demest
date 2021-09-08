@@ -965,13 +965,13 @@ setMethod("initialCombinedAccount",
                                         dimnames = dimnames(population))
               metadata.theta.popn <- population@metadata
               theta.popn <- methods::new("Counts",
-                                .Data = .Data.theta.popn,
-                                metadata = metadata.theta.popn)
+                                         .Data = .Data.theta.popn,
+                                         metadata = metadata.theta.popn)
               expected.exposure <- dembase::exposure(theta.popn,
                                                      triangles = has.age)
               expected.exposure <- methods::new("Exposure",
-                                       .Data = expected.exposure@.Data,
-                                       metadata = expected.exposure@metadata)
+                                                .Data = expected.exposure@.Data,
+                                                metadata = expected.exposure@metadata)
               for (i in seq_along(dataModels)) {
                   series.index <- seriesIndices[i]
                   series <- if (series.index == 0L) population else components[[series.index]]

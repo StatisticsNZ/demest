@@ -124,6 +124,13 @@ initialModelPredictHelper <- function(model, along, labels, n, offsetModel,
     val.betas <- lapply(betas, function(x) rep(0, length(x)))
     meansBetas <- val.betas
     variancesBetas <- val.betas
+    for (i in seq_along(betas)) {
+        is_na_i <- is.na(betas[[i]])
+        if (any(is_na_i)) {
+            meansBetas[[i]][is_na_i] <- NA
+            variancesBetas[[i]][is_na_i] <- NA
+        }
+    }
     fun <- function(x) x@isZeroVar@.Data || x@isSaturated@.Data
     beta.equals.mean <- sapply(priors.betas, fun)
     iterator.betas <- BetaIterator(dim = dim, margins = margins)

@@ -441,9 +441,9 @@ test_that("insertExactData works", {
                                     dataModels = dataModels,
                                     datasets = datasets,
                                     seriesIndices = seriesIndices)
-    expect_identical(ans.obtained@components[[1]], datasets[[2]])
-    expect_false(identical(ans.obtained@population, datasets[[1]]))
-    expect_false(identical(ans.obtained@components[[2]], datasets[[3]]))
+    expect_identical(ans.obtained@components[[1]]@.Data, datasets[[2]]@.Data)
+    expect_false(identical(ans.obtained@population@.Data, datasets[[1]]@.Data))
+    expect_false(identical(ans.obtained@components[[2]]@.Data, datasets[[3]]@.Data))
 })
 
 

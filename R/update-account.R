@@ -873,6 +873,8 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
             val.curr.out <- component[i.cell.out]
             val.curr.in <- component[i.cell.in]
             lower <- val.curr.in - min.val.in
+            if (lower < val.curr.out - val.curr.in)
+                lower <- val.curr.out - val.curr.in
             upper <- val.curr.out + min.val.out
             theta.out <- theta[i.cell.out]
             if (uses.exposure) {
@@ -2704,9 +2706,9 @@ diffLogDensExpOneOrigDestParChPool <- function(iCell, hasAge, ageTimeStep, updat
                 if (exposure.prop > -1 * tol.exposure)
                     exposure.prop <- 0
                 else {
-                    if (exposure.curr < 0)
-                        return(-Inf)
-                    stop(sprintf("negative value for 'exposure.prop' : %f", exposure.prop))
+                    return(-Inf)
+                    ## exposureProp < 0 can result from problems with the formula for exposure
+                    ## when the number of events is large relative to the size of the population
                 }
             }
             for (j in seq_len(length.vec)) {
@@ -4176,7 +4178,6 @@ diffLogDensJumpCompSmall <- function(combined, useC = FALSE) {
                 else {
                     if (expose.low.curr < 0)
                         return(-Inf)
-                    browser()
                     stop(sprintf("negative value for 'expose.low.prop' : %f", expose.low.prop))
                 }
             }

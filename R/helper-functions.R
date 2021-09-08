@@ -248,7 +248,7 @@ rcateg1 <- function(cumProb, useC = FALSE) {
     stopifnot(is.double(cumProb))
     stopifnot(length(cumProb) > 0L)
     stopifnot(!any(is.na(cumProb)))
-    stopifnot(all(cumProb > 0))
+    stopifnot(all(cumProb >= 0))
     if (length(cumProb) > 1L)
         stopifnot(all(diff(cumProb) >= 0))
     stopifnot(all.equal(cumProb[length(cumProb)], 1))

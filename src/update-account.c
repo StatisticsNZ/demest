@@ -927,6 +927,9 @@ updateProposalAccountMovePool(SEXP combined_R)
         int lower = valCurrIn - minValIn;
         int upper = valCurrOut + minValOut;
 
+	if (valCurrIn < valCurrOut - lower)
+	  lower = valCurrOut - valCurrIn;
+
         double thetaOut = theta[iCellOut];
 
         double lambdaOut = thetaOut;
@@ -941,6 +944,7 @@ updateProposalAccountMovePool(SEXP combined_R)
             lambdaOut *= expectedExposureOut;
         }
 
+
         int foundValue = 0;
         int valPropOut = 0;
 
@@ -954,6 +958,11 @@ updateProposalAccountMovePool(SEXP combined_R)
         if (foundValue) {
             diffProp = valPropOut - valCurrOut;
             generatedNewProposal = (diffProp != 0);
+	    if (valCurrIn + diffProp < 0)
+	      error("valCurrOut=%d, valCurrIn=%d, diffProp=%d", valCurrOut, valCurrIn, diffProp);
+	    /* if (generatedNewProposal) */
+	      /* printf("iCellOut=%d, iCellIn=%d, valCurrOut=%d, valCurrIn=%d, diffProp=%d, lower=%d, upper=%d\n", */
+	      /* 	     iCellOut, iCellIn, valCurrOut, valCurrIn, diffProp, lower, upper); */
         }
         else {
             generatedNewProposal = 0;
@@ -2576,13 +2585,21 @@ diffLogDensExpOneOrigDestParChPool(int iCell_r, int hasAge,
       if (exposureProp > -1 * tolExposure)
 	exposureProp = 0;
       else {
-	if (exposureCurr < 0) {
-	  ans = R_NegInf;
-	  keepGoing = 0;
-	}
-	else
-	  error("negative value for 'exposureProp' : %f", exposureProp);
+	/* exposureProp < 0 can result from problems with the formula for exposure
+           when the number of events is large relative to the size of the population */
+	ans = R_NegInf;
+	keepGoing = 0;
       }
+	/* if (exposureCurr < 0) { */
+	/*   ans = R_NegInf; */
+	/*   keepGoing = 0; */
+	/* } */
+	/* else */
+	/*   /\* error("negative value for 'exposureProp' : %f", exposureProp); *\/ */
+	/* error("negative value for 'exposureProp' : %f, 'exposureCurr'=%f, diff=%d, isFinal=%d, isUpper=%d, iExpFirst_r=%d, iCell_r=%d, iExp_r=%d, valComp=%d, firstOnly=%d, updatedPopn=%d, updatedBirths=%d", */
+	/*       exposureProp, exposureCurr, diff, isFinal, isUpper, iExpFirst_r, iCell_r, iExp_r, component[iCell_r - 1], firstOnly, */
+	/* 	  updatedPopn, updatedBirths); */
+      /* } */
     }
     int j = 0;
     while (j < lengthVec && keepGoing) {
@@ -2945,12 +2962,16 @@ diffLogDensExpOrigDestPoolNet(SEXP combined_R)
                 double diffLogOrig = 0;
                 double diffLogDest = 0;
 
+		  /* printf("iComp_r=%d, i=%d, diff=%d\n", */
+		  /* 	 iComp_r, i, diff); */
+		
                 if (isOrigDest || isPool) {
 
 		  int iCellOrig_r = getICellCompFromExp(iExpFirstOrig_r,
 							mappingFromExposure_R);
 		  int iCellDest_r = getICellCompFromExp(iExpFirstDest_r,
 							mappingFromExposure_R);
+
 		  diffLogOrig
 		    = diffLogDensExpOneOrigDestParChPool(iCellOrig_r,
 							 hasAge, ageTimeStep,

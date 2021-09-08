@@ -392,12 +392,12 @@ test_that("makeOutputMCMC works with valid input", {
     finalCombineds <- list("combined")
     ans.obtained <- makeOutputMCMC(mcmcArgs = mcmcArgs,
                                    finalCombineds = finalCombineds)
-    ans.expected <- list(nBurnin = 0L,
-                         nSim = 1000L,
-                         nChain = 1L,
-                         nThin = 30L,
-                         nCore = 4L,
-                         nIteration = 33L)
+    ans.expected <- c(nBurnin = 0L,
+                      nSim = 1000L,
+                      nChain = 1L,
+                      nThin = 30L,
+                      nCore = 4L,
+                      nIteration = 33L)
     expect_identical(ans.obtained, ans.expected)
 })
 

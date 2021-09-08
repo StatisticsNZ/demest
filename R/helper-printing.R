@@ -216,11 +216,11 @@ printDLMEqns <- function(object, name, order, hasTrend, hasSeason, hasCovariates
     if (is.null(name))
         name <- "parameter"
     if (is.main) {
-        name <- sprintf("%13s", name, sep = "")
+        name <- sprintf("%13s", name)
         cat(name, "[j] = level[j] + ", sep = "")
     }
     else {
-        name <- sprintf("%11s", name, sep = "")
+        name <- sprintf("%11s", name)
         cat(name, "[k,l] = level[k,l] + ", sep = "")
     }                  
     if (hasSeason) {
@@ -655,7 +655,7 @@ printMixEqns <- function(object, name, hasCovariates) {
     shape2 <- object@shape2Phi@.Data
     if (is.null(name))
         name <- "parameter"
-    name <- sprintf("%11s", name, sep = "")
+    name <- sprintf("%11s", name = "")
     cat(name, "[k,l] ~ Mix(components, weights, ", sep = "")
     if (hasCovariates)
         cat("covariates, ")

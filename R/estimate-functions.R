@@ -793,8 +793,13 @@ estimateAccount <- function(account, systemModels, datasets, dataModels,
                                datasets = datasets,
                                seriesIndices = seriesIndices)
     ## make account consistent, if necessary
-    if (!all(dembase::isConsistent(account)))
-        account <- dembase::makeConsistent(account)
+    if (!all(dembase::isConsistent(account))) {
+        is.exact <- sapply(dataModels, methods::is, "Exact")
+        i.comp <- seriesIndices[is.exact]
+        fixed <- namesComponents[i.comp]
+        account <- dembase::makeConsistent(account,
+                                           fixed = fixed)
+    }
     ## make transforms from account to datasets
     checkConcordancesDatasets(concordances = concordances,
                               datasets = datasets,
