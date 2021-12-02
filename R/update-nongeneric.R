@@ -1903,6 +1903,7 @@ updateAlphaLN2 <- function(object, y, exposure, useC = FALSE) {
         .Call(updateAlphaLN2_R, object, y, exposure)
     }
     else {
+        add1 <- object@add1@.Data
         alpha <- object@alphaLN2@.Data
         cell.in.lik <- object@cellInLik
         n.cell.vec <- object@nCellBeforeLN2
@@ -1915,7 +1916,10 @@ updateAlphaLN2 <- function(object, y, exposure, useC = FALSE) {
         resid.vec <- rep(0, times = length(alpha)) # or could use alpha
         for (i in seq_along(y)) {
             if (cell.in.lik[i]) {
-                resid <- log1p(y[i]) - log1p(exposure[i])
+                if (add1)
+                    resid <- log1p(y[i]) - log1p(exposure[i])
+                else
+                    resid <- log(y[i]) - log(exposure[i])
                 j <- dembase::getIAfter(i = i,
                                         transform = transform)
                 resid.vec[j] <- resid.vec[j] + resid
@@ -5042,6 +5046,7 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
         if (!update.varsigma)
             return(object)
         A <- object@AVarsigma@.Data
+        add1 <- object@add1@.Data
         alpha <- object@alphaLN2@.Data
         cell.in.lik <- object@cellInLik
         max.attempt <- object@maxAttempt
@@ -5056,7 +5061,10 @@ updateVarsigmaLN2 <- function(object, y, exposure, useC = FALSE) {
             if (cell.in.lik[i]) {
                 j <- dembase::getIAfter(i = i,
                                         transform = transform)
-                V <- V + (log1p(y[i]) - log1p(exposure[i]) - alpha[j])^2
+                if (add1)
+                    V <- V + (log1p(y[i]) - log1p(exposure[i]) - alpha[j])^2
+                else
+                    V <- V + (log(y[i]) - log(exposure[i]) - alpha[j])^2
                 n <- n + 1L
             }
         }

@@ -576,15 +576,14 @@ SEXP rtnorm1_R(SEXP mean_R, SEXP sd_R, SEXP lower_R, SEXP upper_R)
 
 
 SEXP
-rpoisTrunc1_R(SEXP lambda_R, SEXP lower_R, SEXP upper_R, SEXP maxAttempt_R)
+rpoisTrunc1_R(SEXP lambda_R, SEXP lower_R, SEXP upper_R)
 {
     double lambda = *REAL(lambda_R);
     int lower = *INTEGER(lower_R);
     int upper = *INTEGER(upper_R);
-    int maxAttempt = *INTEGER(maxAttempt_R);
 
     GetRNGstate();
-    int ans = rpoisTrunc1(lambda, lower, upper, maxAttempt);
+    int ans = rpoisTrunc1(lambda, lower, upper);
     PutRNGstate();
 
     return ScalarInteger(ans);
@@ -2311,7 +2310,7 @@ R_CallMethodDef callMethods[] = {
   CALLDEF(rnormTruncated_R, 8),
   CALLDEF(rnormIntTrunc1_R, 4),
   CALLDEF(rtnorm1_R, 4),
-  CALLDEF(rpoisTrunc1_R, 4),
+  CALLDEF(rpoisTrunc1_R, 3),
 
   CALLDEF(betaHat_R, 1),
   CALLDEF(betaHatAlphaDLM_R, 1),
@@ -3189,6 +3188,7 @@ R_init_demest(DllInfo *info)
   ADD_SYM(cumProbComp);
   ADD_SYM(scaleNoise);
   ADD_SYM(nCellAccount);
+  ADD_SYM(add1);
   ADD_SYM(alphaLN2);
   ADD_SYM(transformLN2);
   ADD_SYM(constraintLN2);

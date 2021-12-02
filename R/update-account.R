@@ -169,8 +169,7 @@ updateProposalAccountMovePopn <- function(combined, useC = FALSE) {
             lambda <- theta[i.cell]
             val.prop <- rpoisTrunc1(lambda = lambda,
                                     lower = lower,
-                                    upper = upper,
-                                    maxAttempt = max.attempt)
+                                    upper = upper)
             found.value <- !is.na(val.prop)
             if (found.value) {
                 diff.prop <- unname(val.prop - val.curr)
@@ -301,8 +300,7 @@ updateProposalAccountMoveBirths <- function(combined, useC = FALSE) {
                 lambda <- theta.cell
             val.prop <- rpoisTrunc1(lambda = lambda,
                                     lower = lower,
-                                    upper = upper,
-                                    maxAttempt = max.attempt)
+                                    upper = upper)
             found.value <- !is.na(val.prop)
             if (found.value) {
                 diff.prop <- unname(val.prop - val.curr)
@@ -569,8 +567,7 @@ updateProposalAccountMoveOrigDest <- function(combined, useC = FALSE) {
                     upper <- NA_integer_
                 val.prop <- rpoisTrunc1(lambda = lambda,
                                         lower = lower,
-                                        upper = upper,
-                                        maxAttempt = max.attempt)
+                                        upper = upper)
                 found.value <- !is.na(val.prop)
             }
             if (found.value) {
@@ -888,8 +885,7 @@ updateProposalAccountMovePool <- function(combined, useC = FALSE) {
             else {
                 val.prop.out <- rpoisTrunc1(lambda = lambda.out,
                                             lower = lower,
-                                            upper = upper,
-                                            maxAttempt = max.attempt)
+                                            upper = upper)
                 found.value <- !is.na(val.prop.out)
             }
             if (found.value) {
@@ -1212,8 +1208,7 @@ updateProposalAccountMoveComp <- function(combined, useC = FALSE) {
                     lambda <- theta.cell
                 val.prop <- rpoisTrunc1(lambda = lambda,
                                         lower = lower,
-                                        upper = upper,
-                                        maxAttempt = max.attempt)
+                                        upper = upper)
             }
             found.value <- !is.na(val.prop)
             if (found.value) {

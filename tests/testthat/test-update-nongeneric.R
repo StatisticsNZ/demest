@@ -4782,7 +4782,7 @@ test_that("R and C versions of updateWeightMix give same answer", {
 
 ## UPDATING MODELS ################################################################
 
-test_that("updateAlphaLN2 gives valid answer", {
+test_that("updateAlphaLN2 gives valid answer - add1 is TRUE", {
     updateAlphaLN2 <- demest:::updateAlphaLN2
     initialModel <- demest:::initialModel
     rtnorm1 <- demest:::rtnorm1
@@ -4889,7 +4889,7 @@ test_that("updateAlphaLN2 gives valid answer", {
 })
 
 
-test_that("R and C versions of updateAlphaLN2 give same answer", {
+test_that("R and C versions of updateAlphaLN2 give same answer - add1 is TRUE", {
     updateAlphaLN2 <- demest:::updateAlphaLN2
     initialModel <- demest:::initialModel
     rtnorm1 <- demest:::rtnorm1
@@ -4927,6 +4927,171 @@ test_that("R and C versions of updateAlphaLN2 give same answer", {
         ## with missing values
         y[1:4] <- NA
         spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateAlphaLN2(model,
+                                y = y,
+                                exposure = exposure,
+                                useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateAlphaLN2(model,
+                                y = y,
+                                exposure = exposure,
+                                useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+test_that("updateAlphaLN2 gives valid answer - add1 is FALSE", {
+    updateAlphaLN2 <- demest:::updateAlphaLN2
+    initialModel <- demest:::initialModel
+    rtnorm1 <- demest:::rtnorm1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        ## no missing values
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateAlphaLN2(model,
+                                       y = y,
+                                       exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        constr <- ans.expected@constraintLN2@.Data
+        include <- is.na(constr) | (constr != 0L)
+        alpha <- rep(0, times = length(constr))
+        resid.vec <- collapse(log(y) - log(exposure),
+                              transform = ans.expected@transformLN2)
+        V.vec <- 1 / ((ans.expected@nCellBeforeLN2/ans.expected@varsigma@.Data^2)
+            + (1/ans.expected@sigma@.Data^2))
+        mean.vec <- (1/ans.expected@varsigma@.Data^2) * V.vec * resid.vec # ncell cancels
+        for (j in seq_along(constr)) {
+            if (include[j]) {
+                if (is.na(constr[j]))
+                    alpha[j] <- rnorm(n = 1,
+                                      mean = mean.vec[j],
+                                      sd = sqrt(V.vec[j]))
+                else if (constr[j] == -1L)
+                    alpha[j] <- rtnorm1(mean = mean.vec[j],
+                                        sd = sqrt(V.vec[j]),
+                                        lower = -Inf,
+                                        upper = 0)
+                else
+                    alpha[j] <- rtnorm1(mean = mean.vec[j],
+                                        sd = sqrt(V.vec[j]),
+                                        lower = 0,
+                                        upper = Inf)
+            }
+        }
+        ans.expected@alphaLN2@.Data <- alpha
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        ## with missing values
+        y[1:4] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateAlphaLN2(model,
+                                       y = y,
+                                       exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        constr <- ans.expected@constraintLN2@.Data
+        include <- is.na(constr) | (constr != 0L)
+        alpha <- rep(0, times = length(constr))
+        resid.vec <- log(y) - log(exposure)
+        resid.vec[1:4] <- 0
+        resid.vec <- collapse(resid.vec,
+                              transform = ans.expected@transformLN2)
+        V.vec <- 1 / ((ans.expected@nCellBeforeLN2/ans.expected@varsigma@.Data^2)
+            + (1/ans.expected@sigma@.Data^2))
+        mean.vec <- (1/ans.expected@varsigma@.Data^2) * V.vec * resid.vec # ncell cancels
+        for (j in seq_along(constr)) {
+            if (include[j]) {
+                if (is.na(constr[j]))
+                    alpha[j] <- rnorm(n = 1,
+                                      mean = mean.vec[j],
+                                      sd = sqrt(V.vec[j]))
+                else if (constr[j] == -1L)
+                    alpha[j] <- rtnorm1(mean = mean.vec[j],
+                                        sd = sqrt(V.vec[j]),
+                                        lower = -Inf,
+                                        upper = 0)
+                else
+                    alpha[j] <- rtnorm1(mean = mean.vec[j],
+                                        sd = sqrt(V.vec[j]),
+                                        lower = 0,
+                                        upper = Inf)
+            }
+        }
+        ans.expected@alphaLN2@.Data <- alpha
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+
+test_that("R and C versions of updateAlphaLN2 give same answer - add1 is FALSE", {
+    updateAlphaLN2 <- demest:::updateAlphaLN2
+    initialModel <- demest:::initialModel
+    rtnorm1 <- demest:::rtnorm1
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        ## no missing values
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateAlphaLN2(model,
+                                y = y,
+                                exposure = exposure,
+                                useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateAlphaLN2(model,
+                                y = y,
+                                exposure = exposure,
+                                useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## with missing values
+        y[1:4] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
         model <- initialModel(spec,
                               y = y,
                               exposure = exposure)
@@ -10500,7 +10665,7 @@ test_that("R and C versions of updateVarsigma give same answer", {
 
 ## updateVarsigmaLN2
 
-test_that("updateVarsigmaLN2 gives valid answer", {
+test_that("updateVarsigmaLN2 gives valid answer - add1 is TRUE", {
     updateVarsigmaLN2 <- demest:::updateVarsigmaLN2
     initialModel <- demest:::initialModel
     updateSDNorm <- demest:::updateSDNorm
@@ -10640,7 +10805,7 @@ test_that("updateVarsigmaLN2 gives valid answer", {
 })
 
 
-test_that("R and C versions of updateVarsigmaLN2 give same answer", {
+test_that("R and C versions of updateVarsigmaLN2 give same answer - add1 is TRUE", {
     updateVarsigmaLN2 <- demest:::updateVarsigmaLN2
     initialModel <- demest:::initialModel
     updateSDNorm <- demest:::updateSDNorm
@@ -10734,6 +10899,257 @@ test_that("R and C versions of updateVarsigmaLN2 give same answer", {
         exposure <- y + rpois(n = 24, lambda = 5)
         y[1:5] <- NA
         spec <- Model(y ~ LN2(constraint = constraint, sd = InvChiSq(df = 3, scaleSq = 9)))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
+test_that("updateVarsigmaLN2 gives valid answer - add1 is FALSE", {
+    updateVarsigmaLN2 <- demest:::updateVarsigmaLN2
+    initialModel <- demest:::initialModel
+    updateSDNorm <- demest:::updateSDNorm
+    rinvchisq1 <- demest:::rinvchisq1
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateVarsigmaLN2(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        alpha <- dembase::makeCompatible(x = Values(array(model@alphaLN2@.Data,
+                                                          dim = dim(model@constraintLN2),
+                                                          dimnames = dimnames(model@constraintLN2))),
+                                         y = y)
+        V <- sum((log(y) - log(exposure) -  alpha)^2)
+        proposed <- updateSDNorm(sigma = ans.expected@varsigma@.Data,
+                                 A = ans.expected@AVarsigma@.Data,
+                                 nu = ans.expected@nuVarsigma@.Data,
+                                 V = V,
+                                 n = length(y),
+                                 max = ans.expected@varsigmaMax@.Data)
+        if (proposed > 0)
+            ans.expected@varsigma@.Data <- proposed
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        ## has missing values
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateVarsigmaLN2(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        alpha <- dembase::makeCompatible(x = Values(array(model@alphaLN2@.Data,
+                                                          dim = dim(model@constraintLN2),
+                                                          dimnames = dimnames(model@constraintLN2))),
+                                         y = y)
+        V <- sum(((log(y) - log(exposure) -  alpha)^2)[-(1:5)])
+        proposed <- updateSDNorm(sigma = ans.expected@varsigma@.Data,
+                                 A = ans.expected@AVarsigma@.Data,
+                                 nu = ans.expected@nuVarsigma@.Data,
+                                 V = V,
+                                 n = length(y) - 5L,
+                                 max = ans.expected@varsigmaMax@.Data)
+        if (proposed > 0)
+            ans.expected@varsigma@.Data <- proposed
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        ## fixed value for 'sd'
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, sd = 0.25, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateVarsigmaLN2(model, y = y, exposure = exposure)
+        ans.expected <- model
+        expect_identical(ans.obtained, ans.expected)
+        expect_identical(ans.obtained@varsigma@.Data, 0.25)
+        ## has InvChiSq prior
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint,
+                              sd = InvChiSq(df = 5, scaleSq = 10),
+                              add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- updateVarsigmaLN2(model, y = y, exposure = exposure)
+        set.seed(seed + 1)
+        ans.expected <- model
+        alpha <- dembase::makeCompatible(x = Values(array(model@alphaLN2@.Data,
+                                                          dim = dim(model@constraintLN2),
+                                                          dimnames = dimnames(model@constraintLN2))),
+                                         y = y)
+        V <- sum(((log(y) - log(exposure) -  alpha)^2)[-(1:5)])
+        varsigma.sq <- rinvchisq1(df = 5 + 19, scale = (10 * 5 + V) / (5 + 19))
+        ans.expected@varsigma@.Data <- sqrt(varsigma.sq)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+
+test_that("R and C versions of updateVarsigmaLN2 give same answer - add1 is TRUE", {
+    updateVarsigmaLN2 <- demest:::updateVarsigmaLN2
+    initialModel <- demest:::initialModel
+    updateSDNorm <- demest:::updateSDNorm
+    for (seed in seq_len(n.test)) {
+        ## no missing values
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## has missing values
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## fixed value for 'sd'
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, sd = 0.25, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- updateVarsigmaLN2(model, y = y, exposure = exposure, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        expect_identical(ans.C@varsigma@.Data, 0.25)        
+        ## 'sd' has InvChiSq distribution
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        y[1:5] <- NA
+        spec <- Model(y ~ LN2(constraint = constraint, sd = InvChiSq(df = 3, scaleSq = 9),
+                              add1 = FALSE))
         model <- initialModel(spec,
                               y = y,
                               exposure = exposure)

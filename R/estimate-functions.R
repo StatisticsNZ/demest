@@ -699,7 +699,9 @@ predictCounts <- function(filenameEst, filenamePred, along = NULL, labels = NULL
 #'
 #' Infer the contents of a demographic account, and fit models
 #' describing series within the account, using multiple noisy datasets.
-#' \emph{The function is still under construction.}
+#'
+#' The problems with integer overflow can occur when dealing with
+#' large populations, eg China.
 #'
 #' @inheritParams estimateCounts
 #' @param account An object of class

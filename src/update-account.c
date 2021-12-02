@@ -120,7 +120,7 @@ updateProposalAccountMovePopn(SEXP combined_R)
         int upper = NA_INTEGER;
 
         double lambda = theta[iCell];
-        int valProp = rpoisTrunc1(lambda, lower, upper, maxAttempt);
+        int valProp = rpoisTrunc1(lambda, lower, upper);
 
         int foundValue = !(valProp == NA_INTEGER);
 
@@ -275,7 +275,7 @@ updateProposalAccountMoveBirths(SEXP combined_R)
             lambda *= expectedExposureCell;
         }
 
-        int valProp = rpoisTrunc1(lambda, lower, upper, maxAttempt);
+        int valProp = rpoisTrunc1(lambda, lower, upper);
 
         int foundValue = !(valProp == NA_INTEGER);
 
@@ -573,7 +573,7 @@ updateProposalAccountMoveOrigDest(SEXP combined_R)
 
         if (!(lower > upper)) {
 
-            valProp = rpoisTrunc1(lambda, lower, upper, maxAttempt);
+            valProp = rpoisTrunc1(lambda, lower, upper);
 
             foundValue = !(valProp == NA_INTEGER);
         }
@@ -950,7 +950,7 @@ updateProposalAccountMovePool(SEXP combined_R)
 
         if (!(lower > upper)) {
 
-            valPropOut = rpoisTrunc1(lambdaOut, lower, upper, maxAttempt);
+            valPropOut = rpoisTrunc1(lambdaOut, lower, upper);
 
             foundValue = !(valPropOut == NA_INTEGER);
         }
@@ -1333,7 +1333,7 @@ updateProposalAccountMoveComp(SEXP combined_R)
                 lambda *= expectedExposureCell;
             }
 
-            valProp = rpoisTrunc1(lambda, lower, upper, maxAttempt);
+            valProp = rpoisTrunc1(lambda, lower, upper);
         }
 
         int foundValue = !(valProp == NA_INTEGER);

@@ -1367,7 +1367,7 @@ test_that("R, C-generic, and C-specific versions of logLikelihood give same answ
     }
 })
 
-test_that("R, C-generic, and C-specific versions of logLikelihood give same answer with LN2", {
+test_that("R, C-generic, and C-specific versions of logLikelihood give same answer with LN2 - add1 is TRUE", {
     logLikelihood <- demest:::logLikelihood
     initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {
@@ -1413,6 +1413,55 @@ test_that("R, C-generic, and C-specific versions of logLikelihood give same answ
         expect_identical(ans.C.generic, ans.C.specific)
     }
 })
+
+
+test_that("R, C-generic, and C-specific versions of logLikelihood give same answer with LN2 - add1 is FALSE", {
+    logLikelihood <- demest:::logLikelihood
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        dataset <- Counts(array(rpois(n = 24, lambda = 10),
+                                dim = c(2, 4, 3),
+                                dimnames = c(list(sex = c("Female", "Male"),
+                                                  age = c("0-19", "20-39", "40-59", "60+"),
+                                                  time = c("2000", "2010", "2020")))))
+        exposure <- dataset + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = dataset,
+                              exposure = exposure)
+        model <- initialModel(spec, y = dataset, exposure = exposure)
+        i <- sample.int(length(dataset), size = 1)
+        ans.R <- logLikelihood(model = model,
+                               count = exposure[[i]],
+                               dataset = dataset,
+                               i = i,
+                               useC = FALSE)
+        ans.C.generic <- logLikelihood(model = model,
+                                       count = exposure[[i]],
+                                       dataset = dataset,
+                                       i = i,
+                                       useC = TRUE,
+                                       useSpecific = FALSE)
+        ans.C.specific <- logLikelihood(model = model,
+                                        count = exposure[[i]],
+                                        dataset = dataset,
+                                        i = i,
+                                        useC = TRUE,
+                                        useSpecific = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C.generic)
+        else
+            expect_equal(ans.R, ans.C.generic)
+        expect_identical(ans.C.generic, ans.C.specific)
+    }
+})
+
 
 
 

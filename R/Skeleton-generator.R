@@ -371,6 +371,7 @@ setMethod("SkeletonMissingDataset",
               offsets.component <- methods::new("Offsets",
                                                 c(skeletonComponent@first, skeletonComponent@last))
               methods::new("SkeletonMissingDatasetLN2",
+                           add1 = model@add1,
                            offsetsAlphaLN2 = offsets.alpha,
                            offsetsVarsigmaLN2 = offsets.varsigma,
                            offsetsComponent = offsets.component,

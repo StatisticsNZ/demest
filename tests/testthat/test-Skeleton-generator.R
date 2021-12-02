@@ -648,6 +648,7 @@ test_that("SkeletonMissingDataset creates valid object of class SkeletonMissingD
                                          skeletonComponent = skeletonComponent,
                                          transformComponent = transformComponent)
   ans.expected <- new("SkeletonMissingDatasetLN2",
+                      add1 = new("LogicalFlag", TRUE),
                       data = object,
                       offsetsComponent = new("Offsets", c(1L, 12L)),
                       transformComponent = transformComponent,
@@ -687,6 +688,7 @@ test_that("SkeletonMissingDataset creates valid object of class SkeletonMissingD
                                          skeletonComponent = skeletonComponent,
                                          transformComponent = transformComponent)
   ans.expected <- new("SkeletonMissingDatasetLN2",
+                      add1 = new("LogicalFlag", TRUE),
                       data = object,
                       offsetsComponent = new("Offsets", c(1L, 12L)),
                       transformComponent = transformComponent,

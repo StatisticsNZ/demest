@@ -360,7 +360,11 @@ printLN2LikEqns  <- function(object) {
     nuVarsigma <- object@nuVarsigma@.Data
     AVarsigma <- object@AVarsigma@.Data
     varsigmaMax <- object@varsigmaMax@.Data
-    cat("   log(y[i] + 1) ~ N(log(exposure[i] + 1) + alpha[j[i]], ")
+    add1 <- object@add1@.Data
+    if (add1)
+        cat("   log(y[i] + 1) ~ N(log(exposure[i] + 1) + alpha[j[i]], ")
+    else
+        cat("   log(y[i]) ~ N(log(exposure[i]) + alpha[j[i]], ")
     if (updateVarsigma)
         cat("sdData^2)\n")
     else
@@ -390,6 +394,7 @@ printLN2ModEqns <- function(object) {
     AVarsigma <- object@AVarsigma@.Data
     varsigmaMax <- object@varsigmaMax
     nuVarsigma <- object@nuVarsigma
+    add1 <- object@add1@.Data
     name.y <- deparse(call$formula[[2L]])
     if (is.null(series)) {
         if (identical(name.y, "y"))
@@ -401,8 +406,14 @@ printLN2ModEqns <- function(object) {
         exposure <- series
     n.spaces <- max(5L - nchar(name.y), 0L)
     spaces <- rep(" ", n.spaces)
-    response <- sprintf("%slog(%s + 1)", spaces, name.y)
-    cat(name.y, response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], ", sep = "")
+    if (add1)
+        response <- sprintf("%slog(%s + 1)", spaces, name.y)
+    else
+        response <- sprintf("%slog(%s)", spaces, name.y)
+    if (add1)
+        cat(name.y, response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], ", sep = "")
+    else
+        cat(name.y, response, " ~ N(log(", exposure, "[i]) + alpha[j[i]], ", sep = "")
     if (updateVarsigma)
         cat("sdData^2)\n")
     else
@@ -447,6 +458,7 @@ printLN2SpecEqns <- function(object) {
     varsigmaMax <- object@varsigmaMax
     nuVarsigma <- object@nuVarsigma
     nameY <- object@nameY
+    add1 <- object@add1@.Data
     has.series <- !is.na(series)
     name.y <- deparse(call$formula[[2L]])
     if (has.series)
@@ -455,8 +467,14 @@ printLN2SpecEqns <- function(object) {
         exposure <- "exposure"
     n.spaces <- max(5L - nchar(name.y), 0L)
     spaces <- paste(rep(" ", n.spaces), collapse = "")
-    response <- sprintf("%slog(%s + 1)", spaces, name.y)
-    cat(response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], ", sep = "")
+    if (add1)
+        response <- sprintf("%slog(%s + 1)", spaces, name.y)
+    else
+        response <- sprintf("%slog(%s)", spaces, name.y)
+    if (add1)
+        cat(response, " ~ N(log(", exposure, "[i] + 1) + alpha[j[i]], ", sep = "")
+    else
+        cat(response, " ~ N(log(", exposure, "[i]) + alpha[j[i]], ", sep = "")
     if (updateVarsigma)
         cat("sdData^2)\n")
     else

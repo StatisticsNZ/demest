@@ -1788,30 +1788,23 @@ test_that("rpoisTrunc1 gives valid answer", {
         set.seed(seed)
         lambda <- runif(1, 0, 20)
         set.seed(seed + 1)
-        ans.obtained <- rpoisTrunc1(lambda = lambda, lower = 0L, upper = NA_integer_,
-                                    maxAttempt = 1L)
+        ans.obtained <- rpoisTrunc1(lambda = lambda, lower = 0L, upper = NA_integer_)
         set.seed(seed + 1)
         ans.expected <- rpois(n = 1L, lambda = lambda)
         expect_identical(ans.obtained, ans.expected)
         ## within range
-        ans <- rpoisTrunc1(lambda = lambda, lower = 2L, upper = 10L,
-                           maxAttempt = 100L)
+        ans <- rpoisTrunc1(lambda = lambda, lower = 2L, upper = 10L)
         expect_true((is.na(ans)) || ((ans >= 2L) && ans <= 10L))
         ## returns 0 if upper = 0
-        ans <- rpoisTrunc1(lambda = 1000, lower = -1L, upper = 0L,
-                           maxAttempt = 1L)
+        ans <- rpoisTrunc1(lambda = 1000, lower = -1L, upper = 0L)
         expect_identical(ans, 0L)
-        ## returns NA_integer_ if failed
-        ans <- rpoisTrunc1(lambda = 1000, lower = -1L, upper = 1L,
-                           maxAttempt = 1L)
-        expect_identical(ans, NA_integer_)
         ## lower is NA gives same answer as lower is 0
         set.seed(seed + 1)
         ans.obtained <- rpoisTrunc1(lambda = lambda, lower = NA_integer_,
-                                    upper = 100L, maxAttempt = 100L)
+                                    upper = 100L)
         set.seed(seed + 1)
         ans.expected <- rpoisTrunc1(lambda = lambda, lower = 0L,
-                                    upper = 100L, maxAttempt = 100L)
+                                    upper = 100L)
         expect_identical(ans.obtained, ans.expected)
     }
 })
@@ -1828,21 +1821,20 @@ test_that("R and C versions of rpoisTrunc1 give same answer", {
             upper <- NA_integer_
         set.seed(seed + 1)
         ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                             maxAttempt = 10L, useC = FALSE)
+                             useC = FALSE)
         set.seed(seed + 1)
         ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                             maxAttempt = 10L, useC = TRUE)
+                             useC = TRUE)
         expect_identical(ans.R, ans.C)
         set.seed(seed + 1)
         ans.R <- rpoisTrunc1(lambda = lambda, lower = NA_integer_, upper = upper,
-                             maxAttempt = 10L, useC = FALSE)
+                             useC = FALSE)
         set.seed(seed + 1)
         ans.C <- rpoisTrunc1(lambda = lambda, lower = NA_integer_, upper = upper,
-                             maxAttempt = 10L, useC = TRUE)
+                             useC = TRUE)
         expect_identical(ans.R, ans.C)
     }
 })
-
 
 test_that("More tests for R and C versions of rpoisTrunc1 give same answer", {
     rpoisTrunc1 <- demest:::rpoisTrunc1
@@ -1853,29 +1845,58 @@ test_that("More tests for R and C versions of rpoisTrunc1 give same answer", {
             upper <- NA_integer_ ## non-finite upper
             set.seed(seed + 1)
             ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 maxAttempt = 10L, useC = FALSE)
+                                 useC = FALSE)
             set.seed(seed + 1)
             ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 maxAttempt = 10L, useC = TRUE)
+                                 useC = TRUE)
             expect_identical(ans.R, ans.C)
             upper <- lower ## upper == lower
             set.seed(seed + 1)
             ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 maxAttempt = 10L, useC = FALSE)
+                                 useC = FALSE)
             set.seed(seed + 1)
             ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 maxAttempt = 10L, useC = TRUE)
+                                 useC = TRUE)
             expect_identical(ans.R, ans.C)
             upper <- lower + as.integer(rpois(1, lambda = 10)) ## upper > lower
             set.seed(seed + 1)
             ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 maxAttempt = 10L, useC = FALSE)
+                                 useC = FALSE)
             set.seed(seed + 1)
             ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 maxAttempt = 10L, useC = TRUE)
+                                 useC = TRUE)
             expect_identical(ans.R, ans.C)            
     }
 })
+
+test_that("rpoisTrunc1 gives the same distribution as using brute force", {
+    rpoisTrunc1 <- demest:::rpoisTrunc1
+    set.seed(0)
+    ans_rpoisTrunc1 <- replicate(n = 10000, rpoisTrunc1(lambda = 5, lower = 10L, upper = 15L, useC = TRUE)) 
+    ans_brute <- rpois(n = 100000, lambda = 5)
+    ans_brute <- ans_brute[(ans_brute >= 10L) & (ans_brute <= 15L)]
+    expect_equal(mean(ans_rpoisTrunc1), mean(ans_brute), tolerance = 0.1)
+    expect_equal(median(ans_rpoisTrunc1), median(ans_brute), tolerance = 0.1)
+    expect_equal(var(ans_rpoisTrunc1), var(ans_brute), tolerance = 0.1)
+    expect_equal(mean(ans_rpoisTrunc1 == 10L), mean(ans_brute == 10L), tolerance = 0.05)
+})
+
+
+test_that("rpoisTrunc1 works for large values of lower, upper, lambda", {
+    rpoisTrunc1 <- demest:::rpoisTrunc1
+    set.seed(0)
+    ans_rpoisTrunc1 <- replicate(n = 10000, rpoisTrunc1(lambda = 10000, lower = 10000L, upper = 10050L, useC = TRUE)) 
+    ans_brute <- rpois(n = 100000, lambda = 10000)
+    ans_brute <- ans_brute[(ans_brute >= 10000L) & (ans_brute <= 10050L)]
+    expect_true(all(ans_rpoisTrunc1 >= 10000))
+    expect_true(all(ans_rpoisTrunc1 <= 10050))
+    expect_equal(mean(ans_rpoisTrunc1), mean(ans_brute), tolerance = 0.1)
+    expect_equal(median(ans_rpoisTrunc1), median(ans_brute), tolerance = 0.1)
+    expect_equal(var(ans_rpoisTrunc1), var(ans_brute), tolerance = 0.1)
+    expect_equal(mean(ans_rpoisTrunc1 == 10L), mean(ans_brute == 10L), tolerance = 0.05)
+})
+
+
 
 test_that("rhalft works", {
     ## scale = 1
@@ -5883,7 +5904,7 @@ test_that("R and C versions of logLikelihood give same answer with TFixedUseExp"
     }
 })
 
-test_that("logLikelihood_LN2 gives valid answer", {
+test_that("logLikelihood_LN2 gives valid answer - add1 = TRUE", {
     logLikelihood_LN2 <- demest:::logLikelihood_LN2
     initialModel <- demest:::initialModel
     getIAfter <- dembase::getIAfter
@@ -5922,7 +5943,7 @@ test_that("logLikelihood_LN2 gives valid answer", {
     }
 })
 
-test_that("R and C versions of logLikelihood_LN2 give same answer", {
+test_that("R and C versions of logLikelihood_LN2 give same answer - add1 = TRUE", {
     logLikelihood_LN2 <- demest:::logLikelihood_LN2
     initialModel <- demest:::initialModel
     getIAfter <- dembase::getIAfter
@@ -5960,6 +5981,87 @@ test_that("R and C versions of logLikelihood_LN2 give same answer", {
             expect_equal(ans.R, ans.C)
     }
 })
+
+test_that("logLikelihood_LN2 gives valid answer - add1 = FALSE", {
+    logLikelihood_LN2 <- demest:::logLikelihood_LN2
+    initialModel <- demest:::initialModel
+    getIAfter <- dembase::getIAfter
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        dataset <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- dataset + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = dataset,
+                              exposure = exposure)
+        model <- initialModel(spec, y = dataset, exposure = exposure)
+        i <- sample.int(length(dataset), size = 1)
+        ans.obtained <- logLikelihood_LN2(model = model,
+                                          count = exposure[[i]],
+                                          dataset = dataset,
+                                          i = i)
+        j <- getIAfter(i, model@transformLN2)
+        ans.expected <- dnorm(x = log(dataset[i]),
+                              mean = log(exposure[[i]]) +
+                                  model@alphaLN2@.Data[[j]],
+                              sd = model@varsigma@.Data,
+                              log = TRUE)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of logLikelihood_LN2 give same answer - add1 = FALSE", {
+    logLikelihood_LN2 <- demest:::logLikelihood_LN2
+    initialModel <- demest:::initialModel
+    getIAfter <- dembase::getIAfter
+    for (seed in seq_len(n.test)) {
+        set.seed(seed)
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        dataset <- Counts(array(rpois(n = 24, lambda = 10),
+                                dim = c(2, 4, 3),
+                                dimnames = c(list(sex = c("Female", "Male"),
+                                                  age = c("0-19", "20-39", "40-59", "60+"),
+                                                  time = c("2000", "2010", "2020")))))
+        exposure <- dataset + rpois(n = 24, lambda = 5)
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = dataset,
+                              exposure = exposure)
+        model <- initialModel(spec, y = dataset, exposure = exposure)
+        i <- sample.int(length(dataset), size = 1)
+        ans.R <- logLikelihood_LN2(model = model,
+                                   count = exposure[[i]],
+                                   dataset = dataset,
+                                   i = i,
+                                   useC = FALSE)
+        ans.C <- logLikelihood_LN2(model = model,
+                                   count = exposure[[i]],
+                                   dataset = dataset,
+                                   i = i,
+                                   useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+    }
+})
+
+
+
 
 
 test_that("makeIOther gives valid answers", {

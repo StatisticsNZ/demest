@@ -2510,6 +2510,7 @@ get_log_gamma_dens(int n, double theta[],
 void
 updateAlphaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R)
 {
+    int add1 = *INTEGER(GET_SLOT(object_R, add1_sym));
     SEXP alpha_R = GET_SLOT(object_R, alphaLN2_sym);
     double * alpha = REAL(alpha_R);
     int n_alphas = LENGTH(alpha_R);
@@ -2534,12 +2535,19 @@ updateAlphaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R)
         resid_vec[j] = 0.0;
     }
 
+    double resid;
+    
     for (int i = 0; i < n_y; ++i) {
 
         if (cell_in_lik[i]) {
-            double resid = log1p(y[i]) - log1p(exposure[i]);
-            int j_r = dembase_getIAfter(i+1, transform_R);
-            resid_vec[j_r - 1] += resid;
+	  if (add1) {
+            resid = log1p(y[i]) - log1p(exposure[i]);
+	  }
+	  else {
+	    resid = log(y[i]) - log(exposure[i]);
+	  }
+	  int j_r = dembase_getIAfter(i+1, transform_R);
+	  resid_vec[j_r - 1] += resid;
         }
     }
 
@@ -6920,6 +6928,7 @@ updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R)
     double varsigma = *REAL(GET_SLOT(object_R, varsigma_sym));
     double varsigma_max = *REAL(GET_SLOT(object_R, varsigmaMax_sym));
     double A = *REAL(GET_SLOT(object_R, AVarsigma_sym));
+    int add1 = *INTEGER(GET_SLOT(object_R, add1_sym));
     double nu = *REAL(GET_SLOT(object_R, nuVarsigma_sym));
     double * alpha = REAL(GET_SLOT(object_R, alphaLN2_sym));
     int * cell_in_lik = INTEGER(GET_SLOT(object_R, cellInLik_sym));
@@ -6929,11 +6938,15 @@ updateVarsigmaLN2(SEXP object_R, SEXP y_R, SEXP exposure_R)
     int n_y = LENGTH(y_R);
     int * y = INTEGER(y_R);
     int * exposure = INTEGER(exposure_R);
+    double tmp;
     for (int i = 0; i < n_y; ++i) {
       if (cell_in_lik[i]) {
 	int j_r = dembase_getIAfter(i+1, transform_R);
 	double alpha_j = alpha[j_r - 1];
-	double tmp = log1p(y[i]) - log1p(exposure[i]) - alpha_j;
+	if (add1)
+	  tmp = log1p(y[i]) - log1p(exposure[i]) - alpha_j;
+	else
+	  tmp = log(y[i]) - log(exposure[i]) - alpha_j;
 	V += tmp * tmp;
 	n++;
       }

@@ -497,12 +497,11 @@ double getRtnorm1_x(double bnd1, double bnd2)
 }
 
 
-/* new (R >= 3.0.0) R rpois just seems to use a cast from
- * the double return from rpois in C to get new integer
- * return value in R so I have done the same. */
 int
-rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
+rpoisTrunc1(double lambda, int lower, int upper)
 {
+  int max_return_val = 1000000000; // set well below max int, to avoid overflow later
+
     if (lower == NA_INTEGER)
       lower = 0;
 
@@ -526,34 +525,22 @@ rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt)
 
     if (!found) {
 
-        int n_attempt = 0;
-        double prop_value = 0;
-
-        while ( !found && (n_attempt < maxAttempt) ) {
-
-      n_attempt += 1;
-
-      prop_value = rpois(lambda);
-
-      if (lower == 0) {     /* must have finite_upper is TRUE */
-        found = !(prop_value > upper);
+      double pLower = ppois(lower - 1, lambda, 1, 0);
+      double pUpper = finite_upper ? ppois(upper, lambda, 1, 0) : 1;
+      double U = runif(pLower, pUpper);
+      double retValueTmp = qpois(U, lambda, 1, 0);
+      if (retValueTmp > max_return_val) {
+	printf("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow\n");
+	retValue = max_return_val;
       }
       else {
-        int m = ceil(lower - lambda);
-        if (m < 0)
-          m = 0;
-        prop_value += m;
-        found = ( !(prop_value < lower)
-              && (runif(0, 1) < (lower / prop_value)) );
-        if (finite_upper)
-          found = found && !(prop_value > upper);
-
+	retValue = (int)retValueTmp;
       }
-
-        }
-        if (found) {
-            retValue = (int) prop_value;
-        }
+      // values sometimes fall outside bounds, presumably because of numerical errors
+      if (retValue < lower)
+	retValue = lower; 
+      if (retValue > upper)
+	retValue = upper;
 
     }
 
@@ -2660,18 +2647,26 @@ logLikelihood_TFixedUseExp(SEXP model_R, int count,
 
 double
 logLikelihood_LN2(SEXP model_R, int count,
-                                SEXP dataset_R, int i)
+		  SEXP dataset_R, int i)
 {
-    double *alpha = REAL(GET_SLOT(model_R, alphaLN2_sym));
-    SEXP transform_R = GET_SLOT(model_R, transformLN2_sym);
-    double sd = *REAL(GET_SLOT(model_R, varsigma_sym));
-    int *dataset = INTEGER(dataset_R);
-    int i_c = i - 1;
-    double x = log1p(dataset[i_c]);
-    int j_r = dembase_getIAfter(i, transform_R);
-    double mean = log1p(count) + alpha[j_r - 1];
-
-    return dnorm(x, mean, sd, USE_LOG);
+  double *alpha = REAL(GET_SLOT(model_R, alphaLN2_sym));
+  SEXP transform_R = GET_SLOT(model_R, transformLN2_sym);
+  double sd = *REAL(GET_SLOT(model_R, varsigma_sym));
+  int *dataset = INTEGER(dataset_R);
+  int add1 = *INTEGER(GET_SLOT(model_R, add1_sym));
+  int i_c = i - 1;
+  int j_r = dembase_getIAfter(i, transform_R);
+  double x;
+  double mean;
+  if (add1) {
+    x = log1p(dataset[i_c]);
+    mean = log1p(count) + alpha[j_r - 1];
+  }
+  else {
+    x = log(dataset[i_c]);
+    mean = log(count) + alpha[j_r - 1];
+  }
+  return dnorm(x, mean, sd, USE_LOG);
 }
 
 

@@ -399,8 +399,6 @@ test_that("R and C versions of drawAlphaLN2 give same answer", {
         else
             expect_equal(ans.R, ans.C)
     }
-    if (!has.non.zero)
-        warning("no non-zero entries")
 })
 
 
@@ -1785,7 +1783,7 @@ test_that("R and C versions of drawVarsigma give same answer", {
     }
 })
 
-test_that("drawVarsigmaLN2 gives valid answer", {
+test_that("drawVarsigmaLN2 gives valid answer - add1 is TRUE", {
     drawVarsigmaLN2 <- demest:::drawVarsigmaLN2
     initialModel <- demest:::initialModel
     rhalftTrunc1 <- demest:::rhalftTrunc1
@@ -1857,7 +1855,133 @@ test_that("drawVarsigmaLN2 gives valid answer", {
     }
 })
 
-test_that("R and C versions of drawVarsigmaLN2 give same answer", {
+test_that("R and C versions of drawVarsigmaLN2 give same answer - add1 is TRUE", {
+    drawVarsigmaLN2 <- demest:::drawVarsigmaLN2
+    initialModel <- demest:::initialModel
+    for (seed in seq_len(n.test)) {
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        ## half-t prior
+        spec <- Model(y ~ LN2(constraint = constraint))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- drawVarsigmaLN2(model, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- drawVarsigmaLN2(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## inv-chi-sq prior
+        spec <- Model(y ~ LN2(constraint = constraint,
+                              sd = InvChiSq(df = 5, scaleSq = 1)))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.R <- drawVarsigmaLN2(model, useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- drawVarsigmaLN2(model, useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.R, ans.C)
+        else
+            expect_equal(ans.R, ans.C)
+        ## fixed 'sd'
+        spec <- Model(y ~ LN2(constraint = constraint,
+                              sd = 0.2))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        ans.R <- drawVarsigmaLN2(model, useC = FALSE)
+        ans.C <- drawVarsigmaLN2(model, useC = TRUE)
+        expect_identical(ans.R, ans.C)
+    }
+})
+
+
+test_that("drawVarsigmaLN2 gives valid answer - add1 is FALSE", {
+    drawVarsigmaLN2 <- demest:::drawVarsigmaLN2
+    initialModel <- demest:::initialModel
+    rhalftTrunc1 <- demest:::rhalftTrunc1
+    rinvchisq1 <- demest:::rinvchisq1
+    for (seed in seq_len(n.test)) {
+        constraint <- Values(array(sample(c(NA, -1L, 0L, 1L), size = 4, replace = TRUE),
+                                   dim = c(2, 2),
+                                   dimnames = list(age = c("0-39", "40+"),
+                                                   sex = c("Female", "Male"))))
+        y <- Counts(array(rpois(n = 24, lambda = 10),
+                          dim = c(2, 4, 3),
+                          dimnames = c(list(sex = c("Female", "Male"),
+                                            age = c("0-19", "20-39", "40-59", "60+"),
+                                            time = c("2000", "2010", "2020")))))
+        exposure <- y + rpois(n = 24, lambda = 5)
+        ## half-t prior
+        spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- drawVarsigmaLN2(model)
+        set.seed(seed + 1)
+        ans.expected <- model
+        alpha <- dembase::makeCompatible(x = Values(array(model@alphaLN2@.Data,
+                                                          dim = dim(model@constraintLN2),
+                                                          dimnames = dimnames(model@constraintLN2))),
+                                         y = y)
+        V <- sum((log(y) - log(exposure) -  alpha)^2)
+        ans.expected@varsigma@.Data <- rhalftTrunc1(df = model@nuVarsigma@.Data,
+                                                    scale = model@AVarsigma@.Data,
+                                                    max = model@varsigmaMax@.Data,
+                                                    useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        ## inv-chi-sq prior
+        spec <- Model(y ~ LN2(constraint = constraint,
+                              sd = InvChiSq(df = 5, scaleSq = 1)))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        set.seed(seed + 1)
+        ans.obtained <- drawVarsigmaLN2(model)
+        set.seed(seed + 1)
+        ans.expected <- model
+        alpha <- dembase::makeCompatible(x = Values(array(model@alphaLN2@.Data,
+                                                          dim = dim(model@constraintLN2),
+                                                          dimnames = dimnames(model@constraintLN2))),
+                                         y = y)
+        V <- sum((log(y) - log(exposure) -  alpha)^2)
+        ans.expected@varsigma@.Data <- rinvchisq1(df = model@nuVarsigma@.Data,
+                                                  scale = model@AVarsigma@.Data,
+                                                  useC = TRUE)
+        if (test.identity)
+            expect_identical(ans.obtained, ans.expected)
+        else
+            expect_equal(ans.obtained, ans.expected)
+        ## fixed 'sd'
+        spec <- Model(y ~ LN2(constraint = constraint,
+                              sd = 0.2))
+        model <- initialModel(spec,
+                              y = y,
+                              exposure = exposure)
+        ans.obtained <- drawVarsigmaLN2(model)
+        ans.expected <- model
+        expect_identical(ans.obtained, ans.expected)
+    }
+})
+
+test_that("R and C versions of drawVarsigmaLN2 give same answer - add1 is FALSE", {
     drawVarsigmaLN2 <- demest:::drawVarsigmaLN2
     initialModel <- demest:::initialModel
     for (seed in seq_len(n.test)) {

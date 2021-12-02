@@ -1641,6 +1641,7 @@ test_that("initialModel creates object of class LN2 from valid inputs", {
                                  y = y,
                                  exposure = exposure)
     expect_true(validObject(ans.obtained))
+    expect_true(ans.obtained@add1@.Data)
     y[2,1:2,] <- 0L
     sz <- Values(array(c(1L, 1L, 0L, 1L),
                        dim = c(2, 2),
@@ -1683,6 +1684,22 @@ test_that("initialModel creates object of class LN2 from valid inputs", {
                                  exposure = exposure)
     expect_true(validObject(ans.obtained))
     expect_false(ans.obtained@varsigmaLN2HasHalfT@.Data)
+    constraint <- Values(array(c(NA, -1L, 0L, 1L),
+                               dim = c(2, 2),
+                               dimnames = list(age = c("0-39", "40+"),
+                                               sex = c("Female", "Male"))))
+    y <- Counts(array(10L,
+                      dim = c(2, 4, 3),
+                      dimnames = c(list(sex = c("Female", "Male"),
+                                        age = c("0-19", "20-39", "40-59", "60+"),
+                                        time = c("2000", "2010", "2020")))))
+    exposure <- 2L * y
+    spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+    ans.obtained <- initialModel(spec,
+                                 y = y,
+                                 exposure = exposure)
+    expect_true(validObject(ans.obtained))
+    expect_false(ans.obtained@add1@.Data)
 })
 
 
@@ -2519,6 +2536,21 @@ test_that("initialModelPredict creates object of class LN2Predict from valid inp
     expect_true(validObject(x))
     expect_is(x, "LN2Predict")
     expect_identical(as.character(limits(x@constraintLN2)$time), c("2030", "2060"))
+    expect_true(x@add1@.Data)
+    spec <- Model(y ~ LN2(constraint = constraint, add1 = FALSE))
+    mod.est <- initialModel(spec, y = y, exposure = exposure)
+    x <- initialModelPredict(mod.est,
+                             along = 3L,
+                             labels = NULL,
+                             n = 4L,
+                             offsetModel = 1L,
+                             covariates = NULL,
+                             aggregate = NULL,
+                             lower = NULL,
+                             upper = NULL)
+    expect_true(validObject(x))
+    expect_is(x, "LN2Predict")
+    expect_false(x@add1@.Data)
 })
 
 

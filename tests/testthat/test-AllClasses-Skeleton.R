@@ -960,6 +960,7 @@ test_that("validity tests for SkeletonMissingDatasetNormalFixedUseExp inherited 
 
 test_that("can create valid object of class SkeletonMissingDatasetLN2", {
     x <- new("SkeletonMissingDatasetLN2",
+             add1 = new("LogicalFlag", TRUE),
              offsetsAlphaLN2 = new("Offsets", c(13L, 14L)),
              offsetsVarsigmaLN2 = new("Offsets", c(15L, 15L)),
              transformLN2 = dembase:::makeCollapseTransformExtra(new("CollapseTransform",

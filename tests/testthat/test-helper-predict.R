@@ -466,8 +466,6 @@ test_that("R and C versions of predictAlphaLN2 give same answer", {
         else
             expect_equal(ans.R, ans.C)
     }
-    if (!has.non.zero)
-        warning("no non-zero entries")
 })
 
 test_that("predictAlphaDLMNoTrend works", {

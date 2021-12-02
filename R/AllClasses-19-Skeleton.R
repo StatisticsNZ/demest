@@ -608,7 +608,8 @@ setClass("SkeletonMissingDatasetNormalFixedUseExp",
 ## HAS_TESTS
 ## HAS_FETCH
 setClass("SkeletonMissingDatasetLN2",
-         slots = c(offsetsAlphaLN2 = "Offsets",
+         slots = c(add1 = "LogicalFlag",
+                   offsetsAlphaLN2 = "Offsets",
                    offsetsVarsigmaLN2 = "Offsets",
                    transformLN2 = "CollapseTransformExtra",
                    updateVarsigmaLN2 = "LogicalFlag",

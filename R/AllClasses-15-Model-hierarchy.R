@@ -402,7 +402,8 @@ setClass("TFixedUseExp",
 
 ## NO_TESTS
 setClass("LN2",
-         slots = c(alphaLN2 = "ParameterVector",
+         slots = c(add1 = "LogicalFlag",
+                   alphaLN2 = "ParameterVector",
                    constraintLN2 = "Values",
                    constraintAllLN2 = "Values",
                    nCellBeforeLN2 = "integer",

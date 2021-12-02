@@ -728,7 +728,8 @@ rtnorm1 <- function(mean = 0, sd = 1, lower = -Inf, upper = Inf,
 ## TRANSLATED
 ## HAS_TESTS
 ## If no upper limit, 'upper' is NA_integer_
-rpoisTrunc1 <- function(lambda, lower, upper, maxAttempt, useC = FALSE) {
+## Modified from function 'rng_tpois' in package extraDistr
+rpoisTrunc1 <- function(lambda, lower, upper, useC = FALSE) {
     ## lambda
     stopifnot(is.double(lambda))
     stopifnot(identical(length(lambda), 1L))
@@ -740,17 +741,13 @@ rpoisTrunc1 <- function(lambda, lower, upper, maxAttempt, useC = FALSE) {
     ## upper
     stopifnot(is.integer(upper))
     stopifnot(identical(length(upper), 1L))
-    ## maxAttempt
-    stopifnot(is.integer(maxAttempt))
-    stopifnot(identical(length(maxAttempt), 1L))
-    stopifnot(!is.na(maxAttempt))
-    stopifnot(maxAttempt > 0L)
     ## lower, upper
     stopifnot(is.na(lower) || is.na(upper) || (lower <= upper))
     if (useC) {
-        .Call(rpoisTrunc1_R, lambda, lower, upper, maxAttempt)
+        .Call(rpoisTrunc1_R, lambda, lower, upper)
     }
     else {
+        maxReturnVal <- 1000000000L
         if (is.na(lower))
             lower <- 0L
         if (lower < 0L)
@@ -762,33 +759,38 @@ rpoisTrunc1 <- function(lambda, lower, upper, maxAttempt, useC = FALSE) {
             ans <- stats::rpois(n = 1L, lambda = lambda)
             return(ans)
         }
-        n.attempt <- 0L
-        found <- FALSE
-        while (!found && (n.attempt < maxAttempt)) {
-            n.attempt <- n.attempt + 1L
-            if (lower == 0L) {
-                prop.value <- stats::rpois(n = 1L, lambda = lambda)
-                found <- prop.value <= upper
-            }
-            else {
-                ## modified from algorithm presented in Geyer (2006)
-                ## "The K-Truncated Poisson Distribution"
-                ## http://www.stat.umn.edu/geyer/aster/library/aster/doc/ktp.pdf
-                ## (downloaded 5 April 2019)
-                m <- max(ceiling(lower - lambda), 0L)
-                prop.value <- stats::rpois(n = 1L, lambda) + m
-                found <- ((prop.value >= lower)
-                    && (stats::runif(n = 1L) < (lower / prop.value)))
-                if (finite.upper)
-                    found <- found && (prop.value <= upper)
-            }
-        }
-        if (found)
-            as.integer(prop.value)
+        p_lower <- stats::ppois(q = lower - 1,
+                                lambda = lambda,
+                                lower.tail = TRUE,
+                                log.p = FALSE)
+        if (finite.upper)
+            p_upper <- stats::ppois(q = upper,
+                                    lambda = lambda,
+                                    lower.tail = TRUE,
+                                    log.p = FALSE)
         else
-            NA_integer_
+            p_upper <- 1
+        U <- stats::runif(n = 1L,
+                          min = p_lower,
+                          max = p_upper)
+        ans <- stats::qpois(p = U,
+                            lambda = lambda,
+                            lower.tail = TRUE,
+                            log.p = FALSE)
+        if (ans > maxReturnVal) {
+            print("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow")
+            ans <- maxReturnVal
+        }
+        else
+            ans <- as.integer(ans)
+        ans <- max(ans, lower)
+        ans <- min(ans, upper)
+        ans
     }
 }
+
+
+        
 
 ## ALONG ITERATOR ################################################################
 
@@ -2313,10 +2315,17 @@ logLikelihood_LN2 <- function(model, count, dataset, i, useC = FALSE) {
         alpha <- model@alphaLN2@.Data
         transform <- model@transformLN2
         sd <- model@varsigma@.Data
-        x <- log1p(dataset[[i]])
+        add1 <- model@add1@.Data
         j <- dembase::getIAfter(i = i,
                                 transform = transform)
-        mean <- log1p(count) + alpha[j]
+        if (add1) {
+            x <- log1p(dataset[[i]])
+            mean <- log1p(count) + alpha[j]
+        }
+        else {
+            x <- log(dataset[[i]])
+            mean <- log(count) + alpha[j]
+        }
         stats::dnorm(x = x,
                      mean = mean,
                      sd = sd,

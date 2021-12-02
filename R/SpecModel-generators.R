@@ -240,13 +240,22 @@ Binomial <- function(formula, structuralZeros = NULL) {
 ## HAS_TESTS
 #' Log-normal model with two levels
 #'
-#' THIS FUNCTION IS STILL EXPERIMENTAL.
+#' A hierarchical model for datasets with systematic
+#' biases, where these biases are modelled as proportional
+#' differences.
 #'
-#' A simple hierarchical model in which the log of y + 1
-#' equals the log of exposure + 1, plus a bias term.
-#' The bias term can be subject to constraints.
+#' When \code{add1} is \code{TRUE} (the default), the
+#' model assumes
+#' 
+#' \deqn{y[i] + 1 \sim N(exposure[i] + 1 + alpha[j[i]], sd^2)}
+#' 
+#' and when \code{add1} is \code{FALSE}, the model
+#' assumes
 #'
-#' The bias term has the same level of detail as the constraints,
+#' \deqn{y[i] \sim N(exposure[i] + alpha[j[i]], sd^2)}.
+#'
+#' The \code{alpha} term measures bias. It has
+#' the same level of detail as the constraints,
 #' which will almost always be less than the level of detail
 #' of \code{y}.
 #'
@@ -257,6 +266,9 @@ Binomial <- function(formula, structuralZeros = NULL) {
 #' implies that it must be positive, and a NA
 #' implies that there is no constraint.
 #'
+#' Adding 1 to the response and exposure is a way of dealing with
+#' zeros in the response.
+#' 
 #' @inheritParams likelihood
 #' @param constraint An object of class \code{\link[dembase:Values-class]{Values}},
 #' with values 0, -1, 1, and NA.
@@ -266,10 +278,18 @@ Binomial <- function(formula, structuralZeros = NULL) {
 #' fixed value or a prior distribution. The prior distribution
 #' is specified via \code{\link{HalfT}} or \code{\link{InvChiSq}}.
 #' Defaults to a half-t distribution.
-#' 
+#' @param add1 Whether to add 1 to the response and exposure.
+#'
+#' @examples
+#' constraint <- ValuesOne(c(NA, NA, -1),
+#'                         labels = c("0-19", "20-64", "65"),
+#'                         name = "age")
+#' spec <- LN2(constraint)
+#' spec
 #' @export
 LN2 <- function(constraint, structuralZeros = NULL,
-                concordances = list(), sd = HalfT()) {
+                concordances = list(), sd = HalfT(),
+                add1 = TRUE) {
     ## constraint
     if (!methods::is(constraint, "Values"))
         stop(gettextf("'%s' has class \"%s\"",
@@ -328,9 +348,14 @@ LN2 <- function(constraint, structuralZeros = NULL,
     varsigmaLN2 <- methods::new("Scale", varsigmaLN2)
     updateVarsigmaLN2 <- methods::new("LogicalFlag", updateVarsigmaLN2)
     varsigmaLN2HasHalfT <- methods::new("LogicalFlag", sd.is.half.t)
+    ## add1
+    checkLogical(x = add1,
+                 name = "add1")
+    add1 <- methods::new("LogicalFlag", add1)    
     ## return
     methods::new("SpecLikelihoodLN2",
                  AVarsigma = AVarsigma,
+                 add1 = add1,
                  concordances = concordances,
                  multVarsigma = multVarsigma,
                  constraintLN2 = constraint,
@@ -1357,6 +1382,7 @@ setMethod("SpecModel",
                    priorSD, jump,
                    series, aggregate) {
               A.varsigma <- specInner@AVarsigma
+              add1 <- specInner@add1
               concordances <- specInner@concordances
               constraintLN2 <- specInner@constraintLN2
               mult.varsigma <- specInner@multVarsigma
@@ -1413,6 +1439,7 @@ setMethod("SpecModel",
               methods::new("SpecLN2",
                            ASigma = A.sigma,
                            AVarsigma = A.varsigma,
+                           add1 = add1,
                            call = call,
                            concordances = concordances,
                            multSigma = mult.sigma,

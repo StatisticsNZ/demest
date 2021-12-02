@@ -99,6 +99,11 @@ test_that("LN2 creates objects of class SpecLikelihoodLN2 from valid inputs", {
     expect_true(validObject(obj))
     expect_true(obj@updateVarsigmaLN2@.Data)
     expect_false(obj@varsigmaLN2HasHalfT@.Data)
+    expect_true(obj@add1@.Data)
+    obj <- LN2(constraint = constraint, sd = InvChiSq(df = 10, scaleSq = 10), add1 = FALSE)
+    expect_is(obj, "SpecLikelihoodLN2")
+    expect_true(validObject(obj))
+    expect_false(obj@add1@.Data)
 })
 
 
@@ -1019,6 +1024,7 @@ test_that("SpecModel works with SpecLikelihoodLN2", {
                               series = NULL,
                               aggregate = NULL)
     ans.expected <- new("SpecLN2",
+                        add1 = new("LogicalFlag", TRUE),
                         ASigma = new("SpecScale", 1),
                         AVarsigma = new("SpecScale", 1),
                         call = call,
@@ -1046,11 +1052,13 @@ test_that("SpecModel works with SpecLikelihoodLN2", {
                                                       to = c("Female", "Male", "Female", "Male"))))
     spec.inner <- LN2(constraint = constraint,
                       structuralZeros = sz,
-                      concordances = concordances)
+                      concordances = concordances,
+                      add1 = FALSE)
     call <- call("Model",
                  quote(y ~ LN2(constraint = constraint)),
                  structuralZeros = sz,
-                 concordances = concordances)
+                 concordances = concordances,
+                 add1 = FALSE)
     ans.obtained <- SpecModel(specInner = spec.inner,
                               call = call,
                               nameY = new("Name", "y"),
@@ -1062,6 +1070,7 @@ test_that("SpecModel works with SpecLikelihoodLN2", {
                               series = NULL,
                               aggregate = NULL)
     ans.expected <- new("SpecLN2",
+                        add1 = new("LogicalFlag", FALSE),
                         ASigma = new("SpecScale", 0.5),
                         AVarsigma = new("SpecScale", 1),
                         call = call,
@@ -1107,6 +1116,7 @@ test_that("SpecModel works with SpecLikelihoodLN2", {
                               series = NULL,
                               aggregate = NULL)
     ans.expected <- new("SpecLN2",
+                        add1 = new("LogicalFlag", TRUE),
                         ASigma = new("SpecScale", 0.5),
                         AVarsigma = new("SpecScale", 1),
                         call = call,
@@ -1148,6 +1158,7 @@ test_that("SpecModel works with SpecLikelihoodLN2", {
                               series = NULL,
                               aggregate = NULL)
     ans.expected <- new("SpecLN2",
+                        add1 = new("LogicalFlag", TRUE),
                         ASigma = new("SpecScale", 0.5),
                         AVarsigma = new("SpecScale", 5),
                         call = call,

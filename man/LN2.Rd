@@ -4,7 +4,13 @@
 \alias{LN2}
 \title{Log-normal model with two levels}
 \usage{
-LN2(constraint, structuralZeros = NULL, concordances = list(), sd = HalfT())
+LN2(
+  constraint,
+  structuralZeros = NULL,
+  concordances = list(),
+  sd = HalfT(),
+  add1 = TRUE
+)
 }
 \arguments{
 \item{constraint}{An object of class \code{\link[dembase:Values-class]{Values}},
@@ -21,16 +27,27 @@ map between \code{y} and \code{constraint}.}
 fixed value or a prior distribution. The prior distribution
 is specified via \code{\link{HalfT}} or \code{\link{InvChiSq}}.
 Defaults to a half-t distribution.}
+
+\item{add1}{Whether to add 1 to the response and exposure.}
 }
 \description{
-THIS FUNCTION IS STILL EXPERIMENTAL.
+A hierarchical model for datasets with systematic
+biases, where these biases are modelled as proportional
+differences.
 }
 \details{
-A simple hierarchical model in which the log of y + 1
-equals the log of exposure + 1, plus a bias term.
-The bias term can be subject to constraints.
+When \code{add1} is \code{TRUE} (the default), the
+model assumes
 
-The bias term has the same level of detail as the constraints,
+\deqn{y[i] + 1 \sim N(exposure[i] + 1 + alpha[j[i]], sd^2)}
+
+and when \code{add1} is \code{FALSE}, the model
+assumes
+
+\deqn{y[i] \sim N(exposure[i] + alpha[j[i]], sd^2)}.
+
+The \code{alpha} term measures bias. It has
+the same level of detail as the constraints,
 which will almost always be less than the level of detail
 of \code{y}.
 
@@ -40,4 +57,14 @@ implies that the bias term is set to 0; a
 -1 implies that it must be negative; a 1
 implies that it must be positive, and a NA
 implies that there is no constraint.
+
+Adding 1 to the response and exposure is a way of dealing with
+zeros in the response.
+}
+\examples{
+constraint <- ValuesOne(c(NA, NA, -1),
+                        labels = c("0-19", "20-64", "65"),
+                        name = "age")
+spec <- LN2(constraint)
+spec
 }

@@ -406,6 +406,7 @@ SEXP
   cumProbComp_sym,
   nCellAccount_sym,
   /* LN@ */
+  add1_sym,
   alphaLN2_sym,
   transformLN2_sym,
   constraintLN2_sym,
@@ -536,7 +537,7 @@ SEXP rnormTruncated(int n, SEXP mean_R, SEXP sd_R,
 int rnormIntTrunc1(double mean, double sd,
                 int lower, int upper);
 double rtnorm1(double mean, double sd, double lower, double upper);
-int rpoisTrunc1(double lambda, int lower, int upper, int maxAttempt);
+int rpoisTrunc1(double lambda, int lower, int upper);
 
 void betaHat(double *beta_hat, SEXP prior_R, int J);
 void betaHatAlphaDLM(double *beta_hat, SEXP prior_R, int J);

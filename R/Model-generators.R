@@ -1526,6 +1526,7 @@ setMethod("initialModel",
           function(object, y, exposure) {
               A.varsigma <- object@AVarsigma@.Data
               A.sigma <- object@ASigma@.Data
+              add1 <- object@add1
               call <- object@call
               concordances <- object@concordances
               constraint.all <- object@constraintLN2
@@ -1600,7 +1601,10 @@ setMethod("initialModel",
               sigma.max <- methods::new("Scale", sigma.max)
               ## randomly draw 'alpha', using residuals and constraint
               alpha <- numeric(length = length(constraint))
-              resid <- log1p(y) - log1p(exposure)
+              if (add1@.Data)
+                  resid <- log1p(y) - log1p(exposure)
+              else
+                  resid <- log(y) - log(exposure)
               resid[is.na(resid)] <- 0
               resid <- dembase::collapse(resid,
                                          transform = transform)
@@ -1630,6 +1634,7 @@ setMethod("initialModel",
               n.cell.before <- rep(0L, times = length(alpha)) # temporary value
               cellInLik <- rep(TRUE, times = length(y)) # temporary value
               model <- methods::new("LN2",
+                                    add1 = add1,
                                     alphaLN2 = alpha,
                                     ASigma = A.sigma,
                                     AVarsigma = A.varsigma,

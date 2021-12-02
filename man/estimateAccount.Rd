@@ -108,7 +108,10 @@ for debugging.}
 \description{
 Infer the contents of a demographic account, and fit models
 describing series within the account, using multiple noisy datasets.
-\emph{The function is still under construction.}
+}
+\details{
+The problems with integer overflow can occur when dealing with
+large populations, eg China.
 }
 \references{
 Bryant, J., Graham, P. Bayesian demographic accounts:
