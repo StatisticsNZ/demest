@@ -500,52 +500,104 @@ double getRtnorm1_x(double bnd1, double bnd2)
 int
 rpoisTrunc1(double lambda, int lower, int upper)
 {
-  int max_return_val = 1000000000; // set well below max int, to avoid overflow later
-
-    if (lower == NA_INTEGER)
-      lower = 0;
-
-    if (lower < 0)
-      lower = 0;
-
-    int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1);
-
-    int found = 0;
-    int retValue = NA_INTEGER;
-
-    if ( finite_upper && (upper == lower) ) {
-      found = 1;
-      retValue = lower;
-    }
-
-    if ( (lower == 0) && !finite_upper ) {
-      found = 1;
-      retValue = rpois(lambda);
-    }
-
-    if (!found) {
-
-      double pLower = ppois(lower - 1, lambda, 1, 0);
-      double pUpper = finite_upper ? ppois(upper, lambda, 1, 0) : 1;
-      double U = runif(pLower, pUpper);
-      double retValueTmp = qpois(U, lambda, 1, 0);
-      if (retValueTmp > max_return_val) {
-	printf("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow\n");
-	retValue = max_return_val;
-      }
-      else {
-	retValue = (int)retValueTmp;
-      }
-      // values sometimes fall outside bounds, presumably because of numerical errors
-      if (retValue < lower)
-	retValue = lower; 
-      if (retValue > upper)
-	retValue = upper;
-
-    }
-
-    return retValue;
+  double max_return_val = 1000000000; // set well below max int, to avoid overflow later
+  // fix up 'lower'
+  if (ISNA(lower))
+    lower = 0;
+  if (lower < 0)
+    lower = 0;
+  // characterise bounds
+  int has_lower_bound = lower > 0;
+  int has_upper_bound = !ISNA(upper);
+  // deal with case where no lower or upper bound
+  if (!has_lower_bound && !has_upper_bound)
+    return rpois(lambda);
+  // deal with case where lower bound equals upper bound
+  if (has_lower_bound && has_upper_bound && (lower == upper))
+    return lower;
+  // convert lower bound to 0-1 scale
+  double p_lower;
+  if (has_lower_bound)
+    p_lower = ppois(lower - 1, lambda, 1, 0);
+  else
+    p_lower = 0;
+  // convert upper bound to 0-1 scale
+  double p_upper;
+  if (has_upper_bound)
+    p_upper = ppois(upper, lambda, 1, 0);
+  else
+    p_upper = 1;
+  // draw value on 0-1 scale
+  double U = runif(p_lower, p_upper);
+  // convert back to original scale
+  double ans_dbl = qpois(U, lambda, 1, 0);
+  // reduce if value would cause integer overflow
+  if (ans_dbl > max_return_val) {
+    ans_dbl = max_return_val;
+    printf("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow: lambda=%f, lower=%d, upper=%d, val=%f, p_lower=%f, p_upper=%f\n",
+    lambda, lower, upper, ans_dbl, p_lower, p_upper);
+  }
+  // convert to integer
+  int ans = (int) ans_dbl;
+  // if value below lower limit, increase to lower limit
+  if (has_lower_bound && (ans < lower))
+    ans = lower; 
+  if (has_upper_bound && (ans > upper))
+    ans = upper;
+  // return anser
+  return ans;
 }
+
+  
+/* int */
+/* rpoisTrunc1(double lambda, int lower, int upper) */
+/* { */
+/*   int max_return_val = 1000000000; // set well below max int, to avoid overflow later */
+
+/*     if (lower == NA_INTEGER) */
+/*       lower = 0; */
+
+/*     if (lower < 0) */
+/*       lower = 0; */
+
+/*     int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1); */
+
+/*     int found = 0; */
+/*     int retValue = NA_INTEGER; */
+
+/*     if ( finite_upper && (upper == lower) ) { */
+/*       found = 1; */
+/*       retValue = lower; */
+/*     } */
+
+/*     if ( (lower == 0) && !finite_upper ) { */
+/*       found = 1; */
+/*       retValue = rpois(lambda); */
+/*     } */
+
+/*     if (!found) { */
+
+/*       double pLower = ppois(lower - 1, lambda, 1, 0); */
+/*       double pUpper = finite_upper ? ppois(upper, lambda, 1, 0) : 1; */
+/*       double U = runif(pLower, pUpper); */
+/*       double retValueTmp = qpois(U, lambda, 1, 0); */
+/*       if (finite_upper && (retValueTmp > max_return_val)) { */
+/* 	printf("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow\n"); */
+/* 	retValue = max_return_val; */
+/*       } */
+/*       else { */
+/* 	retValue = (int)retValueTmp; */
+/*       } */
+/*       // values sometimes fall outside bounds, presumably because of numerical errors */
+/*       if (retValue < lower) */
+/* 	retValue = lower;  */
+/*       if (retValue > upper) */
+/* 	retValue = upper; */
+
+/*     } */
+
+/*     return retValue; */
+/* } */
 
 
 /* helper function to make two multinomial proposals, no exposure.

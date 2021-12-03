@@ -777,7 +777,7 @@ rpoisTrunc1 <- function(lambda, lower, upper, useC = FALSE) {
                             lambda = lambda,
                             lower.tail = TRUE,
                             log.p = FALSE)
-        if (ans > maxReturnVal) {
+        if (finite.upper & (ans > maxReturnVal)) {
             print("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow")
             ans <- maxReturnVal
         }
@@ -788,6 +788,92 @@ rpoisTrunc1 <- function(lambda, lower, upper, useC = FALSE) {
         ans
     }
 }
+
+
+## TRANSLATED
+## HAS_TESTS
+## If no upper limit, 'upper' is NA_integer_
+## Modified from function 'rng_tpois' in package extraDistr
+rpoisTrunc1 <- function(lambda, lower, upper, useC = FALSE) {
+    ## lambda
+    stopifnot(is.double(lambda))
+    stopifnot(identical(length(lambda), 1L))
+    stopifnot(!is.na(lambda))
+    stopifnot(lambda >= 0)
+    ## lower
+    stopifnot(is.integer(lower))
+    stopifnot(identical(length(lower), 1L))
+    ## upper
+    stopifnot(is.integer(upper))
+    stopifnot(identical(length(upper), 1L))
+    ## lower, upper
+    stopifnot(is.na(lower) || is.na(upper) || (lower <= upper))
+    if (useC) {
+        .Call(rpoisTrunc1_R, lambda, lower, upper)
+    }
+    else {
+        maxReturnVal <- 1000000000
+        ## fix up 'lower'
+        if (is.na(lower))
+            lower <- 0L
+        if (lower < 0L)
+            lower <- 0L
+        ## characterise bounds
+        has_lower_bound <- lower > 0L
+        has_upper_bound <- !is.na(upper)
+        ## deal with case where no lower or upper bound
+        if (!has_lower_bound & !has_upper_bound) {
+            ans <- stats::rpois(n = 1L, lambda = lambda)
+            return(ans)
+        }
+        ## deal with case where lower bound equals upper bound
+        if (has_lower_bound && has_upper_bound && (lower == upper)) {
+            ans <- lower
+            return(ans)
+        }
+        ## generate lower bound on 0-1 scale
+        if (has_lower_bound)
+            p_lower <- stats::ppois(q = lower - 1,
+                                    lambda = lambda,
+                                    lower.tail = TRUE,
+                                    log.p = FALSE)
+        else
+            p_lower <- 0
+        ## generate upper bound on 0-1 scale
+        if (has_upper_bound)
+            p_upper <- stats::ppois(q = upper,
+                                    lambda = lambda,
+                                    lower.tail = TRUE,
+                                    log.p = FALSE)
+        else
+            p_upper <- 1
+        ## draw value on 0-1 scale
+        U <- stats::runif(n = 1L,
+                          min = p_lower,
+                          max = p_upper)
+        ## convert back to original scale
+        ans <- stats::qpois(p = U,
+                            lambda = lambda,
+                            lower.tail = TRUE,
+                            log.p = FALSE)
+        ## reduce if value would cause integer overflow
+        if (ans > maxReturnVal) {
+            print("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow")
+            ans <- maxReturnVal
+        }
+        ## convert to integer
+        ans <- as.integer(ans)
+        ## if value below lower limit (due to rounding errors etc) increase to lower limit
+        if (has_lower_bound && (ans < lower))
+            ans <- lower
+        ## if value above upper limit (due to rounding errors etc) reduce to upper limit
+        if (has_upper_bound && (ans > upper))
+            ans <- upper
+        ## return value
+        ans
+    }
+}
+
 
 
         

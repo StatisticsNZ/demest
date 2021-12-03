@@ -1841,35 +1841,35 @@ test_that("More tests for R and C versions of rpoisTrunc1 give same answer", {
     for (seed in seq_len(n.test)) {
         set.seed(seed)
         lambda <- runif(1, 0, 15)
-            lower <- as.integer(rpois(n = 1, lambda = 5))
-            upper <- NA_integer_ ## non-finite upper
-            set.seed(seed + 1)
-            ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 useC = FALSE)
-            set.seed(seed + 1)
-            ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 useC = TRUE)
-            expect_identical(ans.R, ans.C)
-            upper <- lower ## upper == lower
-            set.seed(seed + 1)
-            ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 useC = FALSE)
-            set.seed(seed + 1)
-            ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 useC = TRUE)
-            expect_identical(ans.R, ans.C)
-            upper <- lower + as.integer(rpois(1, lambda = 10)) ## upper > lower
-            set.seed(seed + 1)
-            ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 useC = FALSE)
-            set.seed(seed + 1)
-            ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
-                                 useC = TRUE)
-            expect_identical(ans.R, ans.C)            
+        lower <- as.integer(rpois(n = 1, lambda = 5))
+        upper <- NA_integer_ ## non-finite upper
+        set.seed(seed + 1)
+        ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
+                             useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
+                             useC = TRUE)
+        expect_identical(ans.R, ans.C)
+        upper <- lower ## upper == lower
+        set.seed(seed + 1)
+        ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
+                             useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
+                             useC = TRUE)
+        expect_identical(ans.R, ans.C)
+        upper <- lower + as.integer(rpois(1, lambda = 10)) ## upper > lower
+        set.seed(seed + 1)
+        ans.R <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
+                             useC = FALSE)
+        set.seed(seed + 1)
+        ans.C <- rpoisTrunc1(lambda = lambda, lower = lower, upper = upper,
+                             useC = TRUE)
+        expect_identical(ans.R, ans.C)            
     }
 })
 
-test_that("rpoisTrunc1 gives the same distribution as using brute force", {
+test_that("rpoisTrunc1 gives the same distribution as using brute force - lower and upper bounds", {
     rpoisTrunc1 <- demest:::rpoisTrunc1
     set.seed(0)
     ans_rpoisTrunc1 <- replicate(n = 10000, rpoisTrunc1(lambda = 5, lower = 10L, upper = 15L, useC = TRUE)) 
@@ -1881,6 +1881,29 @@ test_that("rpoisTrunc1 gives the same distribution as using brute force", {
     expect_equal(mean(ans_rpoisTrunc1 == 10L), mean(ans_brute == 10L), tolerance = 0.05)
 })
 
+test_that("rpoisTrunc1 gives the same distribution as using brute force - lower bounds only", {
+    rpoisTrunc1 <- demest:::rpoisTrunc1
+    set.seed(0)
+    ans_rpoisTrunc1 <- replicate(n = 10000, rpoisTrunc1(lambda = 5, lower = 10L, upper = NA_integer_, useC = TRUE)) 
+    ans_brute <- rpois(n = 100000, lambda = 5)
+    ans_brute <- ans_brute[ans_brute >= 10L]
+    expect_equal(mean(ans_rpoisTrunc1), mean(ans_brute), tolerance = 0.1)
+    expect_equal(median(ans_rpoisTrunc1), median(ans_brute), tolerance = 0.1)
+    expect_equal(var(ans_rpoisTrunc1), var(ans_brute), tolerance = 0.1)
+    expect_equal(mean(ans_rpoisTrunc1 == 10L), mean(ans_brute == 10L), tolerance = 0.05)
+})
+
+test_that("rpoisTrunc1 gives the same distribution as using brute force - upper bounds only", {
+    rpoisTrunc1 <- demest:::rpoisTrunc1
+    set.seed(0)
+    ans_rpoisTrunc1 <- replicate(n = 10000, rpoisTrunc1(lambda = 5, lower = NA_integer_, upper = 15L, useC = TRUE)) 
+    ans_brute <- rpois(n = 100000, lambda = 5)
+    ans_brute <- ans_brute[ans_brute <= 15L]
+    expect_equal(mean(ans_rpoisTrunc1), mean(ans_brute), tolerance = 0.1)
+    expect_equal(median(ans_rpoisTrunc1), median(ans_brute), tolerance = 0.1)
+    expect_equal(var(ans_rpoisTrunc1), var(ans_brute), tolerance = 0.1)
+    expect_equal(mean(ans_rpoisTrunc1 == 10L), mean(ans_brute == 10L), tolerance = 0.05)
+})
 
 test_that("rpoisTrunc1 works for large values of lower, upper, lambda", {
     rpoisTrunc1 <- demest:::rpoisTrunc1
@@ -1895,8 +1918,6 @@ test_that("rpoisTrunc1 works for large values of lower, upper, lambda", {
     expect_equal(var(ans_rpoisTrunc1), var(ans_brute), tolerance = 0.1)
     expect_equal(mean(ans_rpoisTrunc1 == 10L), mean(ans_brute == 10L), tolerance = 0.05)
 })
-
-
 
 test_that("rhalft works", {
     ## scale = 1
