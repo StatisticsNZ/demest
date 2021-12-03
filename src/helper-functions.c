@@ -502,13 +502,13 @@ rpoisTrunc1(double lambda, int lower, int upper)
 {
   double max_return_val = 1000000000; // set well below max int, to avoid overflow later
   // fix up 'lower'
-  if (ISNA(lower))
+  if (lower == NA_INTEGER)
     lower = 0;
   if (lower < 0)
     lower = 0;
   // characterise bounds
   int has_lower_bound = lower > 0;
-  int has_upper_bound = !ISNA(upper);
+  int has_upper_bound = !(upper == NA_INTEGER);
   // deal with case where no lower or upper bound
   if (!has_lower_bound && !has_upper_bound)
     return rpois(lambda);
@@ -544,60 +544,11 @@ rpoisTrunc1(double lambda, int lower, int upper)
     ans = lower; 
   if (has_upper_bound && (ans > upper))
     ans = upper;
-  // return anser
+  // return answer
+  /* printf("lambda=%f, lower=%d, upper=%d, p_lower=%f, p_upper=%f, U=%f, ISNA(ans)=%d, (upper==NA_INTEGER)=%d, (ans==NA_INTEGER)=%d, ans=%d\n", */
+  /* 	 lambda, lower, upper, p_lower, p_upper, U, ISNA(ans), (upper == NA_INTEGER), (ans == NA_INTEGER), ans); */
   return ans;
 }
-
-  
-/* int */
-/* rpoisTrunc1(double lambda, int lower, int upper) */
-/* { */
-/*   int max_return_val = 1000000000; // set well below max int, to avoid overflow later */
-
-/*     if (lower == NA_INTEGER) */
-/*       lower = 0; */
-
-/*     if (lower < 0) */
-/*       lower = 0; */
-
-/*     int finite_upper = ( (upper == NA_INTEGER) ? 0 : 1); */
-
-/*     int found = 0; */
-/*     int retValue = NA_INTEGER; */
-
-/*     if ( finite_upper && (upper == lower) ) { */
-/*       found = 1; */
-/*       retValue = lower; */
-/*     } */
-
-/*     if ( (lower == 0) && !finite_upper ) { */
-/*       found = 1; */
-/*       retValue = rpois(lambda); */
-/*     } */
-
-/*     if (!found) { */
-
-/*       double pLower = ppois(lower - 1, lambda, 1, 0); */
-/*       double pUpper = finite_upper ? ppois(upper, lambda, 1, 0) : 1; */
-/*       double U = runif(pLower, pUpper); */
-/*       double retValueTmp = qpois(U, lambda, 1, 0); */
-/*       if (finite_upper && (retValueTmp > max_return_val)) { */
-/* 	printf("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow\n"); */
-/* 	retValue = max_return_val; */
-/*       } */
-/*       else { */
-/* 	retValue = (int)retValueTmp; */
-/*       } */
-/*       // values sometimes fall outside bounds, presumably because of numerical errors */
-/*       if (retValue < lower) */
-/* 	retValue = lower;  */
-/*       if (retValue > upper) */
-/* 	retValue = upper; */
-
-/*     } */
-
-/*     return retValue; */
-/* } */
 
 
 /* helper function to make two multinomial proposals, no exposure.
