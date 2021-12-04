@@ -521,6 +521,10 @@ rpoisTrunc1(double lambda, int lower, int upper)
     p_lower = ppois(lower - 1, lambda, 1, 0);
   else
     p_lower = 0;
+  // If 'p_lower' is too high, then the algorithm
+  // breaks down. Return 'lower'
+  if (p_lower > 0.999999)
+    return lower;
   // convert upper bound to 0-1 scale
   double p_upper;
   if (has_upper_bound)

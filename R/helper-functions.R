@@ -839,6 +839,10 @@ rpoisTrunc1 <- function(lambda, lower, upper, useC = FALSE) {
                                     log.p = FALSE)
         else
             p_lower <- 0
+        ## If 'p_lower' is too high, then the algorithm
+        ## breaks down. Return 'lower'
+        if (p_lower > 0.999999)
+            return(lower)
         ## generate upper bound on 0-1 scale
         if (has_upper_bound)
             p_upper <- stats::ppois(q = upper,
