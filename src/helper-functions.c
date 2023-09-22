@@ -1,4 +1,6 @@
-
+#ifndef  USE_FC_LEN_T
+# define USE_FC_LEN_T
+#endif
 #include "helper-functions.h"
 #include "iterators-methods.h"
 #include "Combined-methods.h"
@@ -6,6 +8,10 @@
 
 #include "R_ext/BLAS.h"
 /* for BLAS level 2 documention see www.netlib.org/blas/blas2-paper.ps */
+
+#ifndef FCONE
+# define FCONE
+#endif
 
 #include "R_ext/Lapack.h"
 
@@ -243,7 +249,7 @@ rmvnorm1_Internal(double *ans, double *mean, double *var, int n)
     char uplo = 'U';
     int info = 0; /* could be changed by call */
 
-    F77_CALL(dpotrf)(&uplo, &n, varchol, &n, &info);
+    F77_CALL(dpotrf)(&uplo, &n, varchol, &n, &info FCONE);
     if (info) error("error in dpotrf in rnorm1: %d", info);
     /* on exit, varchol contains U from factorisation varchol = U**T*U*/
 
@@ -254,7 +260,7 @@ rmvnorm1_Internal(double *ans, double *mean, double *var, int n)
 
     /*dtrmv triangular matrix - vector multiplication*/
     F77_CALL(dtrmv)(&uplo, &transN, &diag, &n,
-                    varchol, &n, ans, &inc_blas);
+                    varchol, &n, ans, &inc_blas FCONE FCONE FCONE);
     /* ans should now contain U*ans */
 
     /* add on the means*/
@@ -538,7 +544,7 @@ rpoisTrunc1(double lambda, int lower, int upper)
   // reduce if value would cause integer overflow
   if (ans_dbl > max_return_val) {
     ans_dbl = max_return_val;
-    printf("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow: lambda=%f, lower=%d, upper=%d, val=%f, p_lower=%f, p_upper=%f\n",
+    Rprintf("function 'rpoisTrunc1' reduced variate to 1000000000 to avoid integer overflow: lambda=%f, lower=%d, upper=%d, val=%f, p_lower=%f, p_upper=%f\n",
     lambda, lower, upper, ans_dbl, p_lower, p_upper);
   }
   // convert to integer
@@ -549,7 +555,7 @@ rpoisTrunc1(double lambda, int lower, int upper)
   if (has_upper_bound && (ans > upper))
     ans = upper;
   // return answer
-  /* printf("lambda=%f, lower=%d, upper=%d, p_lower=%f, p_upper=%f, U=%f, ISNA(ans)=%d, (upper==NA_INTEGER)=%d, (ans==NA_INTEGER)=%d, ans=%d\n", */
+  /* Rprintf("lambda=%f, lower=%d, upper=%d, p_lower=%f, p_upper=%f, U=%f, ISNA(ans)=%d, (upper==NA_INTEGER)=%d, (ans==NA_INTEGER)=%d, ans=%d\n", */
   /* 	 lambda, lower, upper, p_lower, p_upper, U, ISNA(ans), (upper == NA_INTEGER), (ans == NA_INTEGER), ans); */
   return ans;
 }
@@ -781,7 +787,7 @@ betaHat_CovariatesInternal(double *beta_hat, SEXP prior_R, int J)
     /* drop(Z %*% eta) */
     F77_CALL(dgemv)(&transN, &J, &P, &alpha_blas,
                 z, &J, eta, &inc, &beta_blas,
-                beta_hat, &inc);
+		    beta_hat, &inc FCONE);
     /* result is stored in beta_hat */
 
 }
@@ -890,7 +896,7 @@ betaHatCovariates(double *beta_hat, SEXP prior_R, int J)
     /* drop(Z %*% eta) */
     F77_CALL(dgemv)(&transN, &J, &P, &alpha_blas,
                 z, &J, eta, &inc, &beta_blas,
-                beta_hat, &inc);
+		    beta_hat, &inc FCONE);
     /* result is stored in beta_hat */
 
 }

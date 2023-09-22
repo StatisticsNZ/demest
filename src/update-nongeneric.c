@@ -373,12 +373,12 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
         /* t(UC[[i]]) %*% t(G)*/
         F77_CALL(dgemm)(&transT, &transT, &q, &q, &q,
                 &alpha_blas_one, thisUC, &q, G, &q,
-                &beta_blas_zero, work1, &q);
+                &beta_blas_zero, work1, &q FCONE FCONE);
         /* after call, work1 contains t(UC[[i]]) %*% t(G) */
         /* DC[[i]] %*% t(UC[[i]]) %*% t(G)*/
         F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                 &alpha_blas_one, thisDC, &q, work1, &q,
-                &beta_blas_zero, work2, &q);
+                &beta_blas_zero, work2, &q FCONE FCONE);
         /* after call, work2 contains DC[[i]] %*% t(UC[[i]]) %*% t(G) */
 
         /*  M.R <- rbind(DC[[i]] %*% t(UC[[i]]) %*% t(G), W.sqrt) */
@@ -407,7 +407,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
                      &dim_m, singulars, &dummyU, &ldu, /* U not used */
                      work1, &dim_n, /* work1 for VT */
                      work_svd, &lwork,
-                     iwork_svd, &info);
+                     iwork_svd, &info FCONE);
             if (info) error("error in dgesdd in updateAlphaDeltaDLMWithTrend: %d", info);
         }
         /* after call, work1 contains V**T */
@@ -457,7 +457,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
                      &dim_m, singulars, &dummyU, &ldu, /* U not used */
                      work1, &dim_n, /* work1 for VT */
                      work_svd, &lwork,
-                     iwork_svd, &info);
+                     iwork_svd, &info FCONE);
             if (info) error("error in dgesdd in updateAlphaDeltaDLMWithTrend: %d", info);
         }
 
@@ -469,7 +469,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
         F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
                 &alpha_blas_one, thisUR, &q,
                 work1, &q, /* work1 is t(svd.C$v)) */
-                &beta_blas_zero, newUC, &q);
+                &beta_blas_zero, newUC, &q FCONE FCONE);
         /* after call, newUC contains UR[[i]] %*% svd.C$v */
 
         for (int rowi = 0; rowi < q; ++rowi) {
@@ -492,7 +492,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
         /* a[[i]] <- drop(G %*% m[[i]])*/
         F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas_one, G,
                 &q, this_m, &inc_blas, &beta_blas_zero,
-                this_a, &inc_blas);
+                this_a, &inc_blas FCONE);
         /* this_a should have new a[[i]] */
 
         /* e <- betaTilde[indices.v[i]] - a[[i]][1L]*/
@@ -502,15 +502,15 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
         F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
                 &alpha_blas_one, newDC, &q,
                 newUC, &q,
-                &beta_blas_zero, work1, &q);
+                &beta_blas_zero, work1, &q FCONE FCONE);
         F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                 &alpha_blas_one, newDC, &q,
                 work1, &q,
-                &beta_blas_zero, work2, &q);
+                &beta_blas_zero, work2, &q FCONE FCONE);
         F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                 &alpha_blas_one, newUC, &q,
                 work2, &q,
-                &beta_blas_zero, new_C, &q);
+                &beta_blas_zero, new_C, &q FCONE FCONE);
 
         /*  A <- C[[i + 1L]][1:2] / v[indices.v[i]]
             m[[i + 1L]] <- a[[i]] + A * e */
@@ -522,7 +522,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
         F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                 &alpha_blas_one, lastUC, &q,
                 lastDC, &q,
-                &beta_blas_zero, work1, &q);
+                &beta_blas_zero, work1, &q FCONE FCONE);
         /* sqrtC in work1 */
 
         {
@@ -537,7 +537,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
         /* theta <- m[[K + 1L]] + drop(sqrt.C %*% z)*/
         F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas_one, work1,
                 &q, z, &inc_blas, &beta_blas_one,
-                work2, &inc_blas);
+                work2, &inc_blas FCONE);
         /* theta is in first q elements of work2 */
         }
 
@@ -583,15 +583,15 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
             F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
                     &alpha_blas_one, thisDCInv, &q,
                     thisUC, &q,
-                    &beta_blas_zero, work1, &q);
+                    &beta_blas_zero, work1, &q FCONE FCONE);
             F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                     &alpha_blas_one, thisDCInv, &q,
                     work1, &q,
-                    &beta_blas_zero, work2, &q);
+                    &beta_blas_zero, work2, &q FCONE FCONE);
             F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                     &alpha_blas_one, thisUC, &q,
                     work2, &q,
-                    &beta_blas_zero, work1, &q);
+                    &beta_blas_zero, work1, &q FCONE FCONE);
             /* CInv in work1 */
 
             /* sigma.inv.1 <- C.inv[1L] */
@@ -701,26 +701,26 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
             F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
                     &alpha_blas_one, thisDRInv, &q,
                     thisUR, &q,
-                    &beta_blas_zero, work1, &q);
+                    &beta_blas_zero, work1, &q FCONE FCONE);
             F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                     &alpha_blas_one, thisDRInv, &q,
                     work1, &q,
-                    &beta_blas_zero, work2, &q);
+                    &beta_blas_zero, work2, &q FCONE FCONE);
             F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                     &alpha_blas_one, thisUR, &q,
                     work2, &q,
-                    &beta_blas_zero, work1, &q);
+                    &beta_blas_zero, work1, &q FCONE FCONE);
             /* RInv in work1 */
 
             /*B <- C[[i + 1L]] %*% t(G) %*% R.inv*/
             F77_CALL(dgemm)(&transT, &transN, &q, &q, &q,
                     &alpha_blas_one, G, &q,
                     work1, &q,
-                    &beta_blas_zero, work2, &q);
+                    &beta_blas_zero, work2, &q FCONE FCONE);
             F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                     &alpha_blas_one, this_C, &q,
                     work2, &q,
-                    &beta_blas_zero, work1, &q);
+                    &beta_blas_zero, work1, &q FCONE FCONE);
             /* B in work1 */
 
             /*M.C.star <- rbind(W.sqrt.inv.G,
@@ -728,7 +728,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
             F77_CALL(dgemm)(&transN, &transT, &q, &q, &q,
                     &alpha_blas_one, thisDCInv, &q,
                     thisUC, &q,
-                    &beta_blas_zero, work2, &q);
+                    &beta_blas_zero, work2, &q FCONE FCONE);
             /* DC.inv[[i + 1L]] %*% t(UC[[i + 1L]]) in work 2*/
 
             /* put M.C.star into work 3 ( dimensions 2q x q ) */
@@ -755,7 +755,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
                          &dim_m, singulars, &dummyU, &ldu, /* U not used */
                          work2, &dim_n, /* work2 for VT */
                          work_svd, &lwork,
-                         iwork_svd, &info);
+                         iwork_svd, &info FCONE);
                 if (info) error("error in dgesdd in updateAlphaDeltaDLMWithTrend: %d", info);
             }
             /* after call, work2 contains V**T */
@@ -779,7 +779,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
             F77_CALL(dgemm)(&transN, &transN, &q, &q, &q,
                     &alpha_blas_one, UCstar, &q,
                     DCstar, &q,
-                    &beta_blas_zero, sqrtCstar, &q);
+                    &beta_blas_zero, sqrtCstar, &q FCONE FCONE);
 
 
             theta_prev_minus_a[0] = alpha[index_ad] - this_a[0];
@@ -794,7 +794,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
             /* m.star <- m[[i + 1L]] + drop(B %*% (theta.prev - a[[i + 1L]]))*/
             F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas_one, work1, /* B in work1 */
                     &q, theta_prev_minus_a, &inc_blas, &beta_blas_one,
-                    m_star, &inc_blas);
+                    m_star, &inc_blas FCONE);
             /* m_star complete */
 
             /*theta.curr <- m.star + drop(sqrt.C.star %*% z)*/
@@ -802,7 +802,7 @@ updateAlphaDeltaDLMWithTrend(SEXP prior_R, double *betaTilde, int J)
             memcpy(theta_curr, m_star, q*sizeof(double));
             F77_CALL(dgemv)(&transN, &q, &q, &alpha_blas_one, sqrtCstar,
                     &q, z, &inc_blas, &beta_blas_one,
-                    theta_curr, &inc_blas);
+                    theta_curr, &inc_blas FCONE);
             /* theta_curr complete */
 
             int index_ad_now = indices_ad[i] - 1;
@@ -953,7 +953,7 @@ updateEta(SEXP prior_R, double* beta, int J)
     /*crossprod(Z, diag(1 / v)) %*% Z*/
     F77_CALL(dgemm)(&transN, &transN, &P, &P, &J,
                             &alpha_blas_one, work1, &P, z, &J,
-                            &beta_blas_zero, work2, &P);
+                            &beta_blas_zero, work2, &P FCONE FCONE);
     /* PxP  result is in work2 */
 
     /* U.eta <- c(A.eta.intercept^2, U.eta.coef)
@@ -983,7 +983,7 @@ updateEta(SEXP prior_R, double* beta, int J)
     /*b <- crossprod(Z, diag(1 / v)) %*% beta */
     F77_CALL(dgemv)(&transN, &P, &J, &alpha_blas_one, work1,
                         &P, beta, &inc_blas, &beta_blas_zero,
-                        b, &inc_blas);
+                        b, &inc_blas FCONE);
 
     /*eta.hat <- qr.solve(qr, b)
      * qr.solve(a,b) does same as qr.coef(a,b) when a is a qr
@@ -1028,7 +1028,7 @@ updateEta(SEXP prior_R, double* beta, int J)
       * UPLO, N, A, LDA, INFO */
     char uplo = 'U';
 
-    F77_CALL(dpotrf)(&uplo, &P, work3, &P, &info);
+    F77_CALL(dpotrf)(&uplo, &P, work3, &P, &info FCONE);
     if (info) error("error in dpotrf in updateEta: %d", info);
     /* on exit, work3 contains U from factorisation var.inv = U**T*U
      * ie work3 contains R from R <- chol(var.inv)*/

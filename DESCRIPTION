@@ -39,7 +39,6 @@ LazyData: yes
 LinkingTo:
     dembase
 Imports:
-    MASS,
     coda,
     graphics,
     methods,
@@ -52,4 +51,4 @@ Suggests:
     rmarkdown,
     testthat
 VignetteBuilder: knitr
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
